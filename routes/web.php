@@ -9,8 +9,10 @@ use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProductBrandController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SizeController;
 use App\Http\Controllers\Admin\SubCategoryController;
 use App\Http\Controllers\Admin\SupplierController;
+use App\Http\Controllers\Admin\UnitController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -59,4 +61,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // ── Color ────────────────────────────────────────
   Route::resource('color', ColorController::class)->names('admin.colors')->except(['show']);
   Route::post('color/{color}/toggle', [ColorController::class, 'toggleStatus'])->name('admin.colors.toggle');
+ // ── Product Size ────────────────────────────────────────
+ Route::resource('size', SizeController::class)->names('admin.sizes')->except(['show', 'create']);
+ Route::post('size/{size}/toggle', [SizeController::class, 'toggleStatus'])->name('admin.sizes.toggle');
+  // ── Product Unit List ────────────────────────────────────────
+ Route::resource('unit', UnitController::class)->names('admin.units')->except(['show', 'create']);
+ Route::post('unit/{unit}/toggle', [UnitController::class, 'toggleStatus'])->name('admin.units.toggle');
 });

@@ -103,11 +103,11 @@
                 <i class="bi bi-dot"></i> Color
             </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.sizes.*') ? 'active' : '' }}"
-               href="#">
+               href="{{ route('admin.sizes.index') }}">
                 <i class="bi bi-dot"></i> Size
             </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.units.*') ? 'active' : '' }}"
-               href="#">
+               href="{{ route('admin.units.index') }}">
                 <i class="bi bi-dot"></i> Unit
             </a>
         </div>
