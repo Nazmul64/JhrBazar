@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\Adminauthcontroller;
 use App\Http\Controllers\Admin\Admincontroller;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\PermissionController;
@@ -53,10 +54,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
    Route::resource('subcategory', SubCategoryController::class)->names('admin.subcategory');
    Route::post('subcategory/{subcategory}/toggle', [SubCategoryController::class, 'toggleStatus'])->name('admin.subcategory.toggle');
    // ── Productbrand ────────────────────────────────────────
-Route::resource('productbrand', ProductBrandController::class)
-    ->names('admin.productbrands')
-    ->except(['create', 'show']);
-
-Route::post('productbrand/{productbrand}/toggle', [ProductBrandController::class, 'toggleStatus'])
-    ->name('admin.productbrands.toggle');
+  Route::resource('productbrand', ProductBrandController::class)->names('admin.productbrands')->except(['create', 'show']);
+  Route::post('productbrand/{productbrand}/toggle', [ProductBrandController::class, 'toggleStatus'])->name('admin.productbrands.toggle');
+    // ── Color ────────────────────────────────────────
+  Route::resource('color', ColorController::class)->names('admin.colors')->except(['show']);
+  Route::post('color/{color}/toggle', [ColorController::class, 'toggleStatus'])->name('admin.colors.toggle');
 });

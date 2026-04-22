@@ -99,7 +99,7 @@
                 <i class="bi bi-dot"></i> Brand
             </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.colors.*') ? 'active' : '' }}"
-               href="#">
+               href="{{ route('admin.colors.index') }}">
                 <i class="bi bi-dot"></i> Color
             </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.sizes.*') ? 'active' : '' }}"
