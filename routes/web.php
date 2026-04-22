@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\Adminauthcontroller;
 use App\Http\Controllers\Admin\Admincontroller;
 use App\Http\Controllers\Admin\AipromptController;
+use App\Http\Controllers\Admin\AlltaxesController;
 use App\Http\Controllers\Admin\BusinessSettingController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ColorController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Admin\SubCategoryController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\GeneralSettingController;
+use App\Http\Controllers\Admin\ThemecolorssettingController;
 use App\Http\Controllers\Admin\VerificatiootpsettingsController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -91,4 +93,14 @@ Route::post('aiprompt/update-blog', [AipromptController::class, 'updateBlog'])->
 // ── Currencies ────────────────────────────────────────
 Route::resource('currency', CurrencieController::class)->names('admin.currencies');
 Route::post('currency/{currency}/toggle', [CurrencieController::class, 'toggleStatus'])->name('admin.currencies.toggle');
+
+// ── Alltaxes ────────────────────────────────────────
+Route::resource('alltaxes',AlltaxesController::class)->names('admin.alltaxes');
+Route::post('alltaxes/{alltaxes}/toggle', [AlltaxesController::class, 'toggleStatus'])->name('admin.alltaxes.toggle');
+// Theme Colors Settings
+Route::resource('themecolorssettings', ThemecolorssettingController::class)->names('admin.themecolorssettings');
+Route::post('themecolorssettings/{Themecolorssetting}/toggle', [ThemecolorssettingController::class, 'toggleStatus'])->name('admin.themecolorssettings.toggle');
+// AJAX palette generator
+Route::post('themecolorssettings/generate-palette', [ThemecolorssettingController::class, 'generatePalette']) ->name('admin.themecolorssettings.generate-palette');
 });
+

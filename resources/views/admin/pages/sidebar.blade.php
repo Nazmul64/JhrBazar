@@ -254,10 +254,11 @@
             <a class="nav-item-custom" href="{{ route('admin.currencies.index') }}">
                 <i class="bi bi-dot"></i> Currency
             </a>
-            <a class="nav-item-custom" href="#">
+            <a class="nav-item-custom" href="{{ route('admin.alltaxes.index') }}">
                 <i class="bi bi-dot"></i> VAT & Tax
             </a>
-            <a class="nav-item-custom" href="#">
+            <a class="nav-item-custom" href="{{ route('admin.themecolorssettings.index') }}">
+                 <i class="bi bi-dot"></i> Theme Colors
                 <i class="bi bi-dot"></i> Theme Colors
             </a>
             <a class="nav-item-custom" href="#">
