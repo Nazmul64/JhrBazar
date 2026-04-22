@@ -8,11 +8,14 @@ Auth::routes();
 
 
 
-// Admin  Login Routes Start
-Route::get('admin/login', [Adminauthcontroller::class, 'adminlogin'])->name('admin.login');
+Route::get('admin/login',  [Adminauthcontroller::class, 'adminlogin'])->name('admin.login');
+Route::post('admin/login', [Adminauthcontroller::class, 'admin_login_submit'])->name('admin.login.submit');
+Route::post('admin/logout',[Adminauthcontroller::class, 'admin_logout'])->name('admin.logout');
 
+// ── Admin Protected Routes ──────────────────────────────
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('admin/dashboard', [Admincontroller::class, 'dashboard'])->name('admin.dashboard');
+});
 
-
-Route::get('admin/dashboard',[Admincontroller::class, 'dashboard'])->name('admin.dashboard');
 
 
