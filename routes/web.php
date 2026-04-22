@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\SubCategoryController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\GeneralSettingController;
+use App\Http\Controllers\Admin\SociallinkListController;
 use App\Http\Controllers\Admin\ThemecolorssettingController;
 use App\Http\Controllers\Admin\VerificatiootpsettingsController;
 use Illuminate\Support\Facades\Auth;
@@ -102,5 +103,9 @@ Route::resource('themecolorssettings', ThemecolorssettingController::class)->nam
 Route::post('themecolorssettings/{Themecolorssetting}/toggle', [ThemecolorssettingController::class, 'toggleStatus'])->name('admin.themecolorssettings.toggle');
 // AJAX palette generator
 Route::post('themecolorssettings/generate-palette', [ThemecolorssettingController::class, 'generatePalette']) ->name('admin.themecolorssettings.generate-palette');
+
+// ── sociallinkList ────────────────────────────────────────
+Route::resource('sociallinkList', SociallinkListController::class)->names('admin.sociallinkList')->except(['create', 'store', 'show', 'destroy']);
+Route::post('sociallinkList/{sociallinkList}/toggle', [SociallinkListController::class, 'toggleStatus'])->name('admin.sociallinkList.toggle');
 });
 

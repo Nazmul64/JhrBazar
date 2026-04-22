@@ -261,7 +261,7 @@
                  <i class="bi bi-dot"></i> Theme Colors
                 <i class="bi bi-dot"></i> Theme Colors
             </a>
-            <a class="nav-item-custom" href="#">
+            <a class="nav-item-custom" href="{{ route('admin.sociallinkList.index') }}">
                 <i class="bi bi-dot"></i> Social Links
             </a>
             <a class="nav-item-custom" href="#">
