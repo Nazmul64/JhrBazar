@@ -1,5 +1,5 @@
 <?php
-// database/migrations/xxxx_create_permissions_table.php
+// FILE 2: database/migrations/2024_01_01_000002_create_permissions_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -11,9 +11,9 @@ return new class extends Migration
     {
         Schema::create('permissions', function (Blueprint $table) {
             $table->id();
-            $table->string('group');       // e.g. "Order", "Product"
-            $table->string('name');        // e.g. "list", "create"
-            $table->string('key')->unique(); // e.g. "order.list"
+            $table->string('group');        // e.g. "Admin", "Shop"
+            $table->string('name');         // e.g. "Shop", "Product"
+            $table->string('key');          // e.g. "list", "create"
             $table->timestamps();
         });
     }

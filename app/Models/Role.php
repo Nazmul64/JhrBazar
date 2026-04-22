@@ -9,6 +9,10 @@ class Role extends Model
 {
     protected $fillable = ['name', 'applicable_for_shop'];
 
+    protected $casts = [
+        'applicable_for_shop' => 'boolean',
+    ];
+
     public function permissions()
     {
         return $this->belongsToMany(Permission::class, 'role_permissions');
@@ -17,5 +21,10 @@ class Role extends Model
     public function users()
     {
         return $this->hasMany(User::class, 'role_id');
+    }
+
+    public function employees()
+    {
+        return $this->hasMany(Employeecreate::class, 'role_id');
     }
 }
