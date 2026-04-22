@@ -232,7 +232,42 @@
         <a class="nav-item-custom" href="#"><i class="bi bi-arrow-left-right"></i> Import / Export</a>
         <a class="nav-item-custom" href="#"><i class="bi bi-geo-alt"></i> Address</a>
         <a class="nav-item-custom" href="#"><i class="bi bi-translate"></i> Languages</a>
-        <a class="nav-item-custom" href="#"><i class="bi bi-gear"></i> Business Settings</a>
+
+        {{-- ─── Business Settings (with submenu) ─── --}}
+        <div class="nav-item-custom has-sub" data-sub="business-settings">
+            <i class="bi bi-gear"></i> Business Settings
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-business-settings">
+            <a class="nav-item-custom" href="{{ route('admin.generalsettings.index') }}">
+                <i class="bi bi-dot"></i> General Settings
+            </a>
+            <a class="nav-item-custom" href="#">
+                <i class="bi bi-dot"></i> Business Setup
+            </a>
+            <a class="nav-item-custom" href="#">
+                <i class="bi bi-dot"></i> Manage Verification
+            </a>
+            <a class="nav-item-custom" href="#">
+                <i class="bi bi-dot"></i> Ai Prompt
+            </a>
+            <a class="nav-item-custom" href="#">
+                <i class="bi bi-dot"></i> Currency
+            </a>
+            <a class="nav-item-custom" href="#">
+                <i class="bi bi-dot"></i> VAT & Tax
+            </a>
+            <a class="nav-item-custom" href="#">
+                <i class="bi bi-dot"></i> Theme Colors
+            </a>
+            <a class="nav-item-custom" href="#">
+                <i class="bi bi-dot"></i> Social Links
+            </a>
+            <a class="nav-item-custom" href="#">
+                <i class="bi bi-dot"></i> Ticket Issue Types
+            </a>
+        </div>
+
         <a class="nav-item-custom" href="#"><i class="bi bi-file-code"></i> CMS</a>
         <a class="nav-item-custom" href="#"><i class="bi bi-plug"></i> 3rd Party Configuration</a>
         <a class="nav-item-custom" href="#"><i class="bi bi-envelope"></i> Contact Us</a>
