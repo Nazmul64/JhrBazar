@@ -242,16 +242,16 @@
             <a class="nav-item-custom" href="{{ route('admin.generalsettings.index') }}">
                 <i class="bi bi-dot"></i> General Settings
             </a>
-            <a class="nav-item-custom" href="#">
+            <a class="nav-item-custom" href="{{ route('admin.businesssettings.index') }}">
                 <i class="bi bi-dot"></i> Business Setup
             </a>
-            <a class="nav-item-custom" href="#">
+            <a class="nav-item-custom" href="{{ route('admin.verificationotpsettings.index') }}">
                 <i class="bi bi-dot"></i> Manage Verification
             </a>
-            <a class="nav-item-custom" href="#">
+            <a class="nav-item-custom" href="{{ route('admin.aiprompt.index') }}">
                 <i class="bi bi-dot"></i> Ai Prompt
             </a>
-            <a class="nav-item-custom" href="#">
+            <a class="nav-item-custom" href="{{ route('admin.currencies.index') }}">
                 <i class="bi bi-dot"></i> Currency
             </a>
             <a class="nav-item-custom" href="#">
