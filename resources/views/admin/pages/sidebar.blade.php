@@ -89,14 +89,16 @@
       <i class="bi bi-chevron-right arrow ms-auto"></i>
     </div>
     <div class="nav-submenu" id="sub-customer">
-      <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> All Customers</a>
+      <a class="nav-item-custom" href="{{ route('admin.customers.index') }}"><i class="bi bi-dot"></i> All Customers</a>
     </div>
     <div class="nav-item-custom has-sub" data-sub="driver">
-      <i class="bi bi-bicycle"></i> Driver Management
+      <i class="bi bi-bicycle"></i> Roles & Permissions
       <i class="bi bi-chevron-right arrow ms-auto"></i>
     </div>
     <div class="nav-submenu" id="sub-driver">
-      <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> All Drivers</a>
+      <a class="nav-item-custom" href="{{ route('admin.role.index') }}">
+         <i class="bi bi-dot"></i> All Roles & Permissions
+     </a>
     </div>
     <div class="nav-item-custom has-sub" data-sub="employee">
       <i class="bi bi-person-badge"></i> Employee Management
@@ -128,16 +130,16 @@
     <a class="nav-item-custom" href="#"><i class="bi bi-plug"></i> 3rd Party Configuration</a>
     <a class="nav-item-custom" href="#"><i class="bi bi-key"></i> Roles &amp; Permissions</a>
     <a class="nav-item-custom" href="#"><i class="bi bi-envelope"></i> Contact Us</a>
-    <a class="nav-item-custom" href="#"><i class="bi bi-puzzle"></i> Add-ons</a>
+    <!-- Your link stays exactly the same style -->
+    <a class="nav-item-custom" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+        <i class="bi bi-box-arrow-right"></i> Logout
+    </a>
+
+    <!-- Hidden form anywhere on the page -->
+    <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" style="display:none;">
+        @csrf
+    </form>
   </div>
 
-  <!-- sidebar footer -->
-  <div style="padding:16px 20px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;">
-    <span style="font-size:11px;color:var(--muted);">v 4.2.5</span>
-    <div style="display:flex;gap:8px;">
-      <button class="header-action" id="darkToggleBtn" title="Toggle Dark Mode">
-        <i class="bi bi-moon-stars-fill"></i>
-      </button>
-    </div>
-  </div>
+
 </aside>

@@ -19,6 +19,7 @@ return new class extends Migration
                 'manager','employee','vendor',
                 'subadmin','super_admin','staff'
             ])->default('user');
+            // ❌ role_id এখানে নেই — আলাদা migration এ থাকবে
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
