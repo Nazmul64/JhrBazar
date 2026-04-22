@@ -1,4 +1,3 @@
-<!-- Sidebar overlay (mobile backdrop) -->
 <div id="sidebar-overlay"></div>
 
 <aside id="sidebar">
@@ -9,7 +8,7 @@
         <div class="brand-name">Jhr<br><span>Bazar</span></div>
     </a>
 
-    <div class="pt-1 pb-3 flex-grow-1">
+    <div class="sidebar-inner">
 
         {{-- ─────────── MAIN ─────────── --}}
         <div class="nav-section-title">Main</div>
@@ -19,10 +18,12 @@
             <i class="bi bi-grid-fill"></i> Dashboard
         </a>
 
-        <a class="nav-item-custom" href="#">
+        <a class="nav-item-custom {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}"
+           href="#">
             <i class="bi bi-bag-check"></i> Order Management
         </a>
 
+        {{-- POS Management --}}
         <div class="nav-item-custom has-sub" data-sub="pos">
             <i class="bi bi-display"></i> POS Management
             <i class="bi bi-chevron-right arrow ms-auto"></i>
@@ -44,31 +45,77 @@
         {{-- ─────────── CATALOG ─────────── --}}
         <div class="nav-section-title">Catalog</div>
 
-        <div class="nav-item-custom has-sub" data-sub="category">
+        {{-- Category Management --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.categories.*') || request()->routeIs('admin.subcategory.*') ? 'active' : '' }}"
+             data-sub="category">
             <i class="bi bi-grid-3x3-gap"></i> Category Management
             <i class="bi bi-chevron-right arrow ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-category">
-            <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> All Categories</a>
-            <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> Add Category</a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.categories.index') ? 'active' : '' }}"
+               href="{{ route('admin.categories.index') }}">
+                <i class="bi bi-dot"></i> All Categories
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.categories.create') ? 'active' : '' }}"
+               href="{{ route('admin.categories.create') }}">
+                <i class="bi bi-dot"></i> Add Category
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.subcategory.index') ? 'active' : '' }}"
+               href="{{ route('admin.subcategory.index') }}">
+                <i class="bi bi-dot"></i> All SubCategories
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.subcategory.create') ? 'active' : '' }}"
+               href="{{ route('admin.subcategory.create') }}">
+                <i class="bi bi-dot"></i> Add SubCategory
+            </a>
         </div>
 
-        <div class="nav-item-custom has-sub" data-sub="product">
+        {{-- Product Management --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.products.*') ? 'active' : '' }}"
+             data-sub="product">
             <i class="bi bi-box-seam"></i> Product Management
             <i class="bi bi-chevron-right arrow ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-product">
-            <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> All Products</a>
-            <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> Add Product</a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.products.index') ? 'active' : '' }}"
+               href="#">
+                <i class="bi bi-dot"></i> All Products
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.products.create') ? 'active' : '' }}"
+               href="#">
+                <i class="bi bi-dot"></i> Add Product
+            </a>
         </div>
 
-        <a class="nav-item-custom" href="#">
+        {{-- Product Variant Management --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.productbrands.*') || request()->routeIs('admin.colors.*') || request()->routeIs('admin.sizes.*') || request()->routeIs('admin.units.*') ? 'active' : '' }}"
+             data-sub="variant">
             <i class="bi bi-layers"></i> Product Variant Management
-        </a>
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-variant">
+            <a class="nav-item-custom {{ request()->routeIs('admin.productbrands.*') ? 'active' : '' }}"
+               href="{{ route('admin.productbrands.index') }}">
+                <i class="bi bi-dot"></i> Brand
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.colors.*') ? 'active' : '' }}"
+               href="#">
+                <i class="bi bi-dot"></i> Color
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.sizes.*') ? 'active' : '' }}"
+               href="#">
+                <i class="bi bi-dot"></i> Size
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.units.*') ? 'active' : '' }}"
+               href="#">
+                <i class="bi bi-dot"></i> Unit
+            </a>
+        </div>
 
         {{-- ─────────── COMMERCE ─────────── --}}
         <div class="nav-section-title">Commerce</div>
 
+        {{-- Purchase --}}
         <div class="nav-item-custom has-sub" data-sub="purchase">
             <i class="bi bi-cart3"></i> Purchase
             <i class="bi bi-chevron-right arrow ms-auto"></i>
@@ -78,6 +125,7 @@
             <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> Suppliers</a>
         </div>
 
+        {{-- Promotion Management --}}
         <div class="nav-item-custom has-sub" data-sub="promo">
             <i class="bi bi-gift"></i> Promotion Management
             <i class="bi bi-chevron-right arrow ms-auto"></i>
@@ -94,6 +142,7 @@
         {{-- ─────────── MANAGEMENT ─────────── --}}
         <div class="nav-section-title">Management</div>
 
+        {{-- Blog Management --}}
         <div class="nav-item-custom has-sub" data-sub="blog">
             <i class="bi bi-pencil-square"></i> Blog Management
             <i class="bi bi-chevron-right arrow ms-auto"></i>
@@ -103,7 +152,7 @@
             <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> Add Post</a>
         </div>
 
-        {{-- Customer Management — ✅ route exists --}}
+        {{-- Customer Management --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}"
              data-sub="customer">
             <i class="bi bi-people"></i> Customer Management
@@ -116,7 +165,7 @@
             </a>
         </div>
 
-        {{-- Roles & Permissions — ✅ route exists --}}
+        {{-- Roles & Permissions --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.role.*') ? 'active' : '' }}"
              data-sub="roles">
             <i class="bi bi-shield-lock"></i> Roles & Permissions
@@ -129,7 +178,7 @@
             </a>
         </div>
 
-        {{-- Employee Management — ✅ route exists --}}
+        {{-- Employee Management --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}"
              data-sub="employee">
             <i class="bi bi-person-badge"></i> Employee Management
@@ -146,7 +195,7 @@
             </a>
         </div>
 
-        {{-- Supplier Management — ✅ route exists --}}
+        {{-- Supplier Management --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.supplier.*') ? 'active' : '' }}"
              data-sub="supplier">
             <i class="bi bi-truck"></i> Supplier Management
@@ -163,6 +212,7 @@
             </a>
         </div>
 
+        {{-- Shop Management --}}
         <div class="nav-item-custom has-sub" data-sub="shop">
             <i class="bi bi-shop"></i> Shop Management
             <i class="bi bi-chevron-right arrow ms-auto"></i>
@@ -187,8 +237,8 @@
         <a class="nav-item-custom" href="#"><i class="bi bi-plug"></i> 3rd Party Configuration</a>
         <a class="nav-item-custom" href="#"><i class="bi bi-envelope"></i> Contact Us</a>
 
-        {{-- Logout — ✅ route exists --}}
-        <a class="nav-item-custom text-danger" href="#"
+        {{-- Logout --}}
+        <a class="nav-item-custom text-danger mt-2" href="#"
            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <i class="bi bi-box-arrow-right"></i> Logout
         </a>
@@ -196,5 +246,70 @@
             @csrf
         </form>
 
-    </div>
+    </div>{{-- /.sidebar-inner --}}
 </aside>
+
+{{-- ── JavaScript ──────────────────────────────────────────── --}}
+<script>
+(function () {
+    'use strict';
+
+    /* ── Submenu toggle ─────────────────────────────────── */
+    document.querySelectorAll('.nav-item-custom.has-sub').forEach(function (trigger) {
+        trigger.addEventListener('click', function () {
+            var key     = this.dataset.sub;
+            var submenu = document.getElementById('sub-' + key);
+            if (!submenu) return;
+
+            var isOpen = submenu.classList.contains('open');
+
+            /* Close every open submenu */
+            document.querySelectorAll('.nav-submenu.open').forEach(function (el) {
+                el.classList.remove('open');
+            });
+            document.querySelectorAll('.nav-item-custom.has-sub.open').forEach(function (el) {
+                el.classList.remove('open');
+            });
+
+            /* Open the clicked one (if it was closed) */
+            if (!isOpen) {
+                submenu.classList.add('open');
+                this.classList.add('open');
+            }
+        });
+    });
+
+    /* ── Auto-open submenu when a child link is active ── */
+    document.querySelectorAll('.nav-submenu .nav-item-custom.active').forEach(function (activeLink) {
+        var submenu = activeLink.closest('.nav-submenu');
+        if (!submenu) return;
+        submenu.classList.add('open');
+        var trigger = submenu.previousElementSibling;
+        while (trigger && !trigger.classList.contains('has-sub')) {
+            trigger = trigger.previousElementSibling;
+        }
+        if (trigger) trigger.classList.add('open');
+    });
+
+    /* ── Mobile: overlay closes sidebar ─────────────────── */
+    var overlay = document.getElementById('sidebar-overlay');
+    var sidebar = document.getElementById('sidebar');
+
+    if (overlay && sidebar) {
+        overlay.addEventListener('click', function () {
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+        });
+    }
+
+    /* ── Mobile toggle (call from hamburger button) ──────
+       Usage anywhere: sidebarToggle()
+    ── */
+    window.sidebarToggle = function () {
+        if (!sidebar || !overlay) return;
+        var open = sidebar.classList.toggle('show');
+        overlay.classList.toggle('show', open);
+    };
+
+})();
+</script>

@@ -2,10 +2,13 @@
 
 use App\Http\Controllers\Admin\Adminauthcontroller;
 use App\Http\Controllers\Admin\Admincontroller;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\ProductBrandController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SubCategoryController;
 use App\Http\Controllers\Admin\SupplierController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -38,8 +41,22 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('admin/employee/{employee}/permission', [EmployeeController::class, 'updatePermission'])->name('admin.employees.updatePermission');
     Route::post('admin/employee/{employee}/toggle-status',[EmployeeController::class, 'toggleStatus'])->name('admin.employees.toggleStatus');
     Route::post('admin/employee/{employee}/reset-password',[EmployeeController::class, 'resetPassword'])->name('admin.employees.resetPassword');
-
+   // ── Suppliers ────────────────────────────────────────
    Route::resource('supplier', SupplierController::class)->names('admin.supplier');
    Route::post('supplier/{supplier}/toggle-status', [SupplierController::class, 'toggleStatus'])->name('admin.supplier.toggleStatus');
    Route::post('supplier/{supplier}/pay', [SupplierController::class, 'pay'])->name('admin.supplier.pay');
+
+   // ── Category ────────────────────────────────────────
+   Route::resource('category', CategoryController::class)->names('admin.categories');
+   Route::post('category/{category}/toggle', [CategoryController::class, 'toggleStatus'])->name('admin.categories.toggle');
+   // ── subCategory ────────────────────────────────────────
+   Route::resource('subcategory', SubCategoryController::class)->names('admin.subcategory');
+   Route::post('subcategory/{subcategory}/toggle', [SubCategoryController::class, 'toggleStatus'])->name('admin.subcategory.toggle');
+   // ── Productbrand ────────────────────────────────────────
+Route::resource('productbrand', ProductBrandController::class)
+    ->names('admin.productbrands')
+    ->except(['create', 'show']);
+
+Route::post('productbrand/{productbrand}/toggle', [ProductBrandController::class, 'toggleStatus'])
+    ->name('admin.productbrands.toggle');
 });
