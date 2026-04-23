@@ -132,7 +132,9 @@
         </div>
         <div class="nav-submenu" id="sub-promo">
             <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> Coupons</a>
-            <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> Flash Sales</a>
+            <a class="nav-item-custom" href="{{ route('admin.flashsale.index') }}">
+                <i class="bi bi-dot"></i> Flash Sales
+            </a>
         </div>
 
         <a class="nav-item-custom" href="#">

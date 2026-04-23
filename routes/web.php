@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\CurrencieController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\FlashsaleController;
 use App\Http\Controllers\Admin\GenaralSettingController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProductBrandController;
@@ -110,17 +111,12 @@ Route::resource('sociallinkList', SociallinkListController::class)->names('admin
 Route::post('sociallinkList/{sociallinkList}/toggle', [SociallinkListController::class, 'toggleStatus'])->name('admin.sociallinkList.toggle');
 // ── Products ────────────────────────────────────────────────────
 // ⚠️ subcategories route অবশ্যই resource-এর আগে থাকতে হবে
-Route::get('products/subcategories/{categoryId}', [ProductControllerController::class, 'getSubCategories'])
-    ->name('products.subcategories');
-
-Route::post('products/{product}/toggle', [ProductControllerController::class, 'toggleStatus'])
-    ->name('products.toggle');
-
-Route::get('products/{product}/barcode', [ProductControllerController::class, 'barcode'])
-    ->name('products.barcode');
-
-Route::resource('products', ProductControllerController::class)
-    ->names('products')
-    ->except(['show']);
+Route::get('products/subcategories/{categoryId}', [ProductControllerController::class, 'getSubCategories']) ->name('products.subcategories');
+Route::post('products/{product}/toggle', [ProductControllerController::class, 'toggleStatus'])->name('products.toggle');
+Route::get('products/{product}/barcode', [ProductControllerController::class, 'barcode'])->name('products.barcode');
+Route::resource('products', ProductControllerController::class)->names('products')->except(['show']);
+// ── flashsale ────────────────────────────────────────
+Route::resource('flashsale', FlashsaleController::class)->names('admin.flashsale');
+Route::post('flashsale/{flashsale}/toggle', [FlashsaleController::class, 'toggleStatus'])->name('admin.flashsale.toggle');
 });
 
