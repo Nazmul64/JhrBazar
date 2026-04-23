@@ -126,14 +126,20 @@
         </div>
 
         {{-- Promotion Management --}}
-        <div class="nav-item-custom has-sub" data-sub="promo">
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.flashsale.*') || request()->routeIs('admin.banner.*') ? 'active' : '' }}"
+             data-sub="promo">
             <i class="bi bi-gift"></i> Promotion Management
             <i class="bi bi-chevron-right arrow ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-promo">
             <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> Coupons</a>
-            <a class="nav-item-custom" href="{{ route('admin.flashsale.index') }}">
+            <a class="nav-item-custom {{ request()->routeIs('admin.flashsale.*') ? 'active' : '' }}"
+               href="{{ route('admin.flashsale.index') }}">
                 <i class="bi bi-dot"></i> Flash Sales
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.banner.*') ? 'active' : '' }}"
+               href="{{ route('admin.banner.index') }}">
+                <i class="bi bi-dot"></i> Banners
             </a>
         </div>
 
@@ -335,6 +341,16 @@
             trigger = trigger.previousElementSibling;
         }
         if (trigger) trigger.classList.add('open');
+    });
+
+    /* ── Auto-open submenu when parent trigger has active class ── */
+    document.querySelectorAll('.nav-item-custom.has-sub.active').forEach(function (trigger) {
+        var key     = trigger.dataset.sub;
+        var submenu = document.getElementById('sub-' + key);
+        if (submenu) {
+            submenu.classList.add('open');
+            trigger.classList.add('open');
+        }
     });
 
     /* ── Mobile: overlay closes sidebar ─────────────────── */
