@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\SubCategoryController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\GeneralSettingController;
+use App\Http\Controllers\Admin\ProductControllerController;
 use App\Http\Controllers\Admin\SociallinkListController;
 use App\Http\Controllers\Admin\ThemecolorssettingController;
 use App\Http\Controllers\Admin\VerificatiootpsettingsController;
@@ -107,5 +108,19 @@ Route::post('themecolorssettings/generate-palette', [ThemecolorssettingControlle
 // ── sociallinkList ────────────────────────────────────────
 Route::resource('sociallinkList', SociallinkListController::class)->names('admin.sociallinkList')->except(['create', 'store', 'show', 'destroy']);
 Route::post('sociallinkList/{sociallinkList}/toggle', [SociallinkListController::class, 'toggleStatus'])->name('admin.sociallinkList.toggle');
+// ── Products ────────────────────────────────────────────────────
+// ⚠️ subcategories route অবশ্যই resource-এর আগে থাকতে হবে
+Route::get('products/subcategories/{categoryId}', [ProductControllerController::class, 'getSubCategories'])
+    ->name('products.subcategories');
+
+Route::post('products/{product}/toggle', [ProductControllerController::class, 'toggleStatus'])
+    ->name('products.toggle');
+
+Route::get('products/{product}/barcode', [ProductControllerController::class, 'barcode'])
+    ->name('products.barcode');
+
+Route::resource('products', ProductControllerController::class)
+    ->names('products')
+    ->except(['show']);
 });
 

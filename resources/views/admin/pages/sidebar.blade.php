@@ -71,18 +71,18 @@
         </div>
 
         {{-- Product Management --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.products.*') ? 'active' : '' }}"
+        <div class="nav-item-custom has-sub {{ request()->routeIs('products.*') ? 'active' : '' }}"
              data-sub="product">
             <i class="bi bi-box-seam"></i> Product Management
             <i class="bi bi-chevron-right arrow ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-product">
-            <a class="nav-item-custom {{ request()->routeIs('admin.products.index') ? 'active' : '' }}"
-               href="#">
+            <a class="nav-item-custom {{ request()->routeIs('products.index') ? 'active' : '' }}"
+               href="{{ route('products.index') }}">
                 <i class="bi bi-dot"></i> All Products
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.products.create') ? 'active' : '' }}"
-               href="#">
+            <a class="nav-item-custom {{ request()->routeIs('products.create') ? 'active' : '' }}"
+               href="{{ route('products.create') }}">
                 <i class="bi bi-dot"></i> Add Product
             </a>
         </div>
@@ -233,35 +233,43 @@
         <a class="nav-item-custom" href="#"><i class="bi bi-geo-alt"></i> Address</a>
         <a class="nav-item-custom" href="#"><i class="bi bi-translate"></i> Languages</a>
 
-        {{-- ─── Business Settings (with submenu) ─── --}}
-        <div class="nav-item-custom has-sub" data-sub="business-settings">
+        {{-- Business Settings --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.generalsettings.*') || request()->routeIs('admin.businesssettings.*') || request()->routeIs('admin.verificationotpsettings.*') || request()->routeIs('admin.aiprompt.*') || request()->routeIs('admin.currencies.*') || request()->routeIs('admin.alltaxes.*') || request()->routeIs('admin.themecolorssettings.*') || request()->routeIs('admin.sociallinkList.*') ? 'active' : '' }}"
+             data-sub="business-settings">
             <i class="bi bi-gear"></i> Business Settings
             <i class="bi bi-chevron-right arrow ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-business-settings">
-            <a class="nav-item-custom" href="{{ route('admin.generalsettings.index') }}">
+            <a class="nav-item-custom {{ request()->routeIs('admin.generalsettings.*') ? 'active' : '' }}"
+               href="{{ route('admin.generalsettings.index') }}">
                 <i class="bi bi-dot"></i> General Settings
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.businesssettings.index') }}">
+            <a class="nav-item-custom {{ request()->routeIs('admin.businesssettings.*') ? 'active' : '' }}"
+               href="{{ route('admin.businesssettings.index') }}">
                 <i class="bi bi-dot"></i> Business Setup
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.verificationotpsettings.index') }}">
+            <a class="nav-item-custom {{ request()->routeIs('admin.verificationotpsettings.*') ? 'active' : '' }}"
+               href="{{ route('admin.verificationotpsettings.index') }}">
                 <i class="bi bi-dot"></i> Manage Verification
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.aiprompt.index') }}">
-                <i class="bi bi-dot"></i> Ai Prompt
+            <a class="nav-item-custom {{ request()->routeIs('admin.aiprompt.*') ? 'active' : '' }}"
+               href="{{ route('admin.aiprompt.index') }}">
+                <i class="bi bi-dot"></i> AI Prompt
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.currencies.index') }}">
+            <a class="nav-item-custom {{ request()->routeIs('admin.currencies.*') ? 'active' : '' }}"
+               href="{{ route('admin.currencies.index') }}">
                 <i class="bi bi-dot"></i> Currency
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.alltaxes.index') }}">
+            <a class="nav-item-custom {{ request()->routeIs('admin.alltaxes.*') ? 'active' : '' }}"
+               href="{{ route('admin.alltaxes.index') }}">
                 <i class="bi bi-dot"></i> VAT & Tax
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.themecolorssettings.index') }}">
-                 <i class="bi bi-dot"></i> Theme Colors
+            <a class="nav-item-custom {{ request()->routeIs('admin.themecolorssettings.*') ? 'active' : '' }}"
+               href="{{ route('admin.themecolorssettings.index') }}">
                 <i class="bi bi-dot"></i> Theme Colors
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.sociallinkList.index') }}">
+            <a class="nav-item-custom {{ request()->routeIs('admin.sociallinkList.*') ? 'active' : '' }}"
+               href="{{ route('admin.sociallinkList.index') }}">
                 <i class="bi bi-dot"></i> Social Links
             </a>
             <a class="nav-item-custom" href="#">
@@ -338,9 +346,7 @@
         });
     }
 
-    /* ── Mobile toggle (call from hamburger button) ──────
-       Usage anywhere: sidebarToggle()
-    ── */
+    /* ── Mobile toggle ── */
     window.sidebarToggle = function () {
         if (!sidebar || !overlay) return;
         var open = sidebar.classList.toggle('show');
