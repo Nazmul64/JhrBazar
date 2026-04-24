@@ -304,7 +304,7 @@
 
         <a class="nav-item-custom" href="#"><i class="bi bi-file-code"></i> CMS</a>
         <a class="nav-item-custom" href="#"><i class="bi bi-plug"></i> 3rd Party Configuration</a>
-        <a class="nav-item-custom" href="#"><i class="bi bi-envelope"></i> Contact Us</a>
+        <a class="nav-item-custom" href="{{ route('admin.contact.index') }}"><i class="bi bi-envelope"></i> Contact Us</a>
 
         {{-- Logout --}}
         <a class="nav-item-custom text-danger mt-2" href="#"

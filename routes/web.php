@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BusinessSettingController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ColorController;
+use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\CurrencieController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\EmployeeController;
@@ -191,5 +192,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::delete('draft-orders/{draft}',   [PointOfSalePosController::class, 'draftDestroy'])->name('draft.destroy');
 
     }); // end pointofsalepos group
+    // ── contact ───────────────────────────────────────────────────────────
+    Route::resource('contact',ContactController::class)->names('admin.contact');
+    Route::post('contact/{contact}/toggle', [ContactController::class, 'toggleStatus'])->name('admin.contact.toggle');
+    Route::resource('contact', ContactController::class)->names('admin.contact')->except(['show']);
+
 
 }); // end middleware group
