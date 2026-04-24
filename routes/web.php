@@ -27,6 +27,20 @@ use App\Http\Controllers\Admin\PromocodeController;
 use App\Http\Controllers\Admin\SociallinkListController;
 use App\Http\Controllers\Admin\ThemecolorssettingController;
 use App\Http\Controllers\Admin\VerificatiootpsettingsController;
+use App\Http\Controllers\Admin\StripeGatewayController;
+use App\Http\Controllers\Admin\PaypalGatewayController;
+use App\Http\Controllers\Admin\RazorpayGatewayController;
+use App\Http\Controllers\Admin\PaystackGatewayController;
+use App\Http\Controllers\Admin\AamarpayGatewayController;
+use App\Http\Controllers\Admin\BkashGatewayController;
+use App\Http\Controllers\Admin\PaytabsGatewayController;
+use App\Http\Controllers\Admin\QicardGatewayController;
+use App\Http\Controllers\Admin\JazzcashGatewayController;
+use App\Http\Controllers\Admin\SteadfastCourierController;
+use App\Http\Controllers\Admin\BkashPaymentController;
+use App\Http\Controllers\Admin\ShurjopayGatewayController;
+use App\Http\Controllers\Admin\PathaoCourierController;
+use App\Http\Controllers\Admin\SmsGatewayController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -192,10 +206,77 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::delete('draft-orders/{draft}',   [PointOfSalePosController::class, 'draftDestroy'])->name('draft.destroy');
 
     }); // end pointofsalepos group
-    // ── contact ───────────────────────────────────────────────────────────
-    Route::resource('contact',ContactController::class)->names('admin.contact');
+
+    // ── Contact ───────────────────────────────────────────────────────────────
+    // ⚠️ toggle must come BEFORE resource
     Route::post('contact/{contact}/toggle', [ContactController::class, 'toggleStatus'])->name('admin.contact.toggle');
     Route::resource('contact', ContactController::class)->names('admin.contact')->except(['show']);
 
+    // ─── Main Settings / Gateways Page ───────────────────────────────────────
+    // ✅ FIX: was named 'settings.gateways' — now correctly named 'admin.settings.gateways'
+    Route::get('/settings/gateways', function () {
+        $data = [
+            'stripe'     => \App\Models\StripeGateway::first(),
+            'paypal'     => \App\Models\PaypalGateway::first(),
+            'razorpay'   => \App\Models\RazorpayGateway::first(),
+            'paystack'   => \App\Models\PaystackGateway::first(),
+            'aamarpay'   => \App\Models\AamarpayGateway::first(),
+            'bkash'      => \App\Models\BkashGateway::first(),
+            'paytabs'    => \App\Models\PaytabsGateway::first(),
+            'qicard'     => \App\Models\QicardGateway::first(),
+            'jazzcash'   => \App\Models\JazzcashGateway::first(),
+            'steadfast'  => \App\Models\SteadfastCourier::first(),
+            'bkashPay'   => \App\Models\BkashPayment::first(),
+            'shurjopay'  => \App\Models\ShurjopayGateway::first(),
+            'pathao'     => \App\Models\PathaoCourier::first(),
+            'sms'        => \App\Models\SmsGateway::first(),
+        ];
+        return view('admin.settings.gateways', $data);
+    })->name('admin.settings.gateways');
+
+    // ─── Payment Gateways ────────────────────────────────────────────────────
+    Route::post('/settings/stripe/update',    [StripeGatewayController::class,    'update'])      ->name('admin.stripe.update');
+    Route::post('/settings/stripe/toggle',    [StripeGatewayController::class,    'toggleStatus'])->name('admin.stripe.toggle');
+
+    Route::post('/settings/paypal/update',    [PaypalGatewayController::class,    'update'])      ->name('admin.paypal.update');
+    Route::post('/settings/paypal/toggle',    [PaypalGatewayController::class,    'toggleStatus'])->name('admin.paypal.toggle');
+
+    Route::post('/settings/razorpay/update',  [RazorpayGatewayController::class,  'update'])      ->name('admin.razorpay.update');
+    Route::post('/settings/razorpay/toggle',  [RazorpayGatewayController::class,  'toggleStatus'])->name('admin.razorpay.toggle');
+
+    Route::post('/settings/paystack/update',  [PaystackGatewayController::class,  'update'])      ->name('admin.paystack.update');
+    Route::post('/settings/paystack/toggle',  [PaystackGatewayController::class,  'toggleStatus'])->name('admin.paystack.toggle');
+
+    Route::post('/settings/aamarpay/update',  [AamarpayGatewayController::class,  'update'])      ->name('admin.aamarpay.update');
+    Route::post('/settings/aamarpay/toggle',  [AamarpayGatewayController::class,  'toggleStatus'])->name('admin.aamarpay.toggle');
+
+    Route::post('/settings/bkash/update',     [BkashGatewayController::class,     'update'])      ->name('admin.bkash.update');
+    Route::post('/settings/bkash/toggle',     [BkashGatewayController::class,     'toggleStatus'])->name('admin.bkash.toggle');
+
+    Route::post('/settings/paytabs/update',   [PaytabsGatewayController::class,   'update'])      ->name('admin.paytabs.update');
+    Route::post('/settings/paytabs/toggle',   [PaytabsGatewayController::class,   'toggleStatus'])->name('admin.paytabs.toggle');
+
+    Route::post('/settings/qicard/update',    [QicardGatewayController::class,    'update'])      ->name('admin.qicard.update');
+    Route::post('/settings/qicard/toggle',    [QicardGatewayController::class,    'toggleStatus'])->name('admin.qicard.toggle');
+
+    Route::post('/settings/jazzcash/update',  [JazzcashGatewayController::class,  'update'])      ->name('admin.jazzcash.update');
+    Route::post('/settings/jazzcash/toggle',  [JazzcashGatewayController::class,  'toggleStatus'])->name('admin.jazzcash.toggle');
+
+    // ─── Courier ─────────────────────────────────────────────────────────────
+    Route::post('/settings/steadfast/update', [SteadfastCourierController::class, 'update'])      ->name('admin.steadfast.update');
+    Route::post('/settings/steadfast/toggle', [SteadfastCourierController::class, 'toggleStatus'])->name('admin.steadfast.toggle');
+
+    Route::post('/settings/pathao/update',    [PathaoCourierController::class,    'update'])      ->name('admin.pathao.update');
+    Route::post('/settings/pathao/toggle',    [PathaoCourierController::class,    'toggleStatus'])->name('admin.pathao.toggle');
+
+    // ─── BD Payment ──────────────────────────────────────────────────────────
+    Route::post('/settings/bkash-pay/update', [BkashPaymentController::class,     'update'])      ->name('admin.bkash-pay.update');
+    Route::post('/settings/bkash-pay/toggle', [BkashPaymentController::class,     'toggleStatus'])->name('admin.bkash-pay.toggle');
+
+    Route::post('/settings/shurjopay/update', [ShurjopayGatewayController::class, 'update'])      ->name('admin.shurjopay.update');
+    Route::post('/settings/shurjopay/toggle', [ShurjopayGatewayController::class, 'toggleStatus'])->name('admin.shurjopay.toggle');
+
+    // ─── SMS Gateway ─────────────────────────────────────────────────────────
+    Route::post('/settings/sms/update',       [SmsGatewayController::class,       'update'])      ->name('admin.sms.update');
 
 }); // end middleware group

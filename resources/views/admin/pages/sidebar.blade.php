@@ -303,8 +303,84 @@
         </div>
 
         <a class="nav-item-custom" href="#"><i class="bi bi-file-code"></i> CMS</a>
-        <a class="nav-item-custom" href="#"><i class="bi bi-plug"></i> 3rd Party Configuration</a>
-        <a class="nav-item-custom" href="{{ route('admin.contact.index') }}"><i class="bi bi-envelope"></i> Contact Us</a>
+
+        {{-- ── 3rd Party Configuration ── --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.settings.gateways') || request()->routeIs('admin.stripe.*') || request()->routeIs('admin.paypal.*') || request()->routeIs('admin.razorpay.*') || request()->routeIs('admin.paystack.*') || request()->routeIs('admin.aamarpay.*') || request()->routeIs('admin.bkash.*') || request()->routeIs('admin.paytabs.*') || request()->routeIs('admin.qicard.*') || request()->routeIs('admin.jazzcash.*') || request()->routeIs('admin.steadfast.*') || request()->routeIs('admin.pathao.*') || request()->routeIs('admin.bkash-pay.*') || request()->routeIs('admin.shurjopay.*') || request()->routeIs('admin.sms.*') ? 'active' : '' }}"
+             data-sub="third-party">
+            <i class="bi bi-plug"></i> 3rd Party Configuration
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-third-party">
+            {{-- Payment Gateways --}}
+            <a class="nav-item-custom {{ request()->routeIs('admin.settings.gateways') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways') }}">
+                <i class="bi bi-dot"></i> Payment Gateways
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.stripe.*') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways') }}#stripe">
+                <i class="bi bi-dot"></i> Stripe
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.paypal.*') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways') }}#paypal">
+                <i class="bi bi-dot"></i> PayPal
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.razorpay.*') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways') }}#razorpay">
+                <i class="bi bi-dot"></i> Razorpay
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.paystack.*') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways') }}#paystack">
+                <i class="bi bi-dot"></i> Paystack
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.aamarpay.*') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways') }}#aamarpay">
+                <i class="bi bi-dot"></i> AamarPay
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.bkash.*') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways') }}#bkash">
+                <i class="bi bi-dot"></i> BKash
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.paytabs.*') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways') }}#paytabs">
+                <i class="bi bi-dot"></i> PayTabs
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.qicard.*') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways') }}#qicard">
+                <i class="bi bi-dot"></i> QiCard
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.jazzcash.*') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways') }}#jazzcash">
+                <i class="bi bi-dot"></i> JazzCash
+            </a>
+            {{-- Courier --}}
+            <a class="nav-item-custom {{ request()->routeIs('admin.steadfast.*') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways') }}#steadfast">
+                <i class="bi bi-dot"></i> Steadfast Courier
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.pathao.*') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways') }}#pathao">
+                <i class="bi bi-dot"></i> Pathao Courier
+            </a>
+            {{-- BD Payment --}}
+            <a class="nav-item-custom {{ request()->routeIs('admin.bkash-pay.*') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways') }}#bkash-pay">
+                <i class="bi bi-dot"></i> Bkash Payment
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.shurjopay.*') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways') }}#shurjopay">
+                <i class="bi bi-dot"></i> Shurjopay
+            </a>
+            {{-- SMS --}}
+            <a class="nav-item-custom {{ request()->routeIs('admin.sms.*') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways') }}#sms">
+                <i class="bi bi-dot"></i> SMS Gateway
+            </a>
+        </div>
+
+        <a class="nav-item-custom {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}"
+           href="{{ route('admin.contact.index') }}">
+            <i class="bi bi-envelope"></i> Contact Us
+        </a>
 
         {{-- Logout --}}
         <a class="nav-item-custom text-danger mt-2" href="#"
