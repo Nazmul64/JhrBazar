@@ -46,6 +46,8 @@ use App\Http\Controllers\Admin\TelesignGatewayController;
 use App\Http\Controllers\Admin\NexmoGatewayController;
 use App\Http\Controllers\Admin\MessagebirdGatewayController;
 use App\Http\Controllers\Admin\MailConfigurationController;
+use App\Http\Controllers\Admin\PixelController;
+use App\Http\Controllers\Admin\ShippingChargeController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -314,5 +316,21 @@ Route::post('/settingsconfiguration/messagebird/toggle', [MessagebirdGatewayCont
 Route::get('/mail-configuration', [MailConfigurationController::class, 'index'])->name('admin.mailconfiguration.index');
 Route::post('/mail-configuration/update', [MailConfigurationController::class, 'update'])->name('admin.mailconfiguration.update');
 Route::post('/mail-configuration/send-test', [MailConfigurationController::class, 'sendTestMail'])->name('admin.mailconfiguration.send-test');
+/*
+|--------------------------------------------------------------------------
+| Pixels Routes
+|--------------------------------------------------------------------------
+*/
+// ✅ এখন হবে
+Route::resource('pixels', PixelController::class)->names('admin.pixels');          // ← names() দিয়ে prefix দাও->except(['show']);
+Route::patch('pixels/{pixel}/toggle-status', [PixelController::class, 'toggleStatus'])->name('admin.pixels.toggle-status');  // ← এটাও admin. prefix
+
+/*
+|--------------------------------------------------------------------------
+| Shipping Charge Routes
+|--------------------------------------------------------------------------
+*/
+Route::resource('shippingcharge',ShippingChargeController::class)->names('admin.shippingcharge')->except(['show']);
+Route::patch('shippingcharge/{shippingcharge}/toggle-status', [ShippingChargeController::class, 'toggleStatus'])->name('admin.shippingcharge.toggle-status');
 
 }); // end middleware group

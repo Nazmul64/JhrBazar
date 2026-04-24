@@ -2,7 +2,7 @@
 
 <aside id="sidebar">
 
-    {{-- Brand --}}
+    {{-- ── Brand ── --}}
     <a class="sidebar-brand" href="{{ route('admin.dashboard') }}">
         <div class="brand-icon"><i class="bi bi-bag-heart-fill"></i></div>
         <div class="brand-name">Jhr<br><span>Bazar</span></div>
@@ -10,7 +10,7 @@
 
     <div class="sidebar-inner">
 
-        {{-- ─────────── MAIN ─────────── --}}
+        {{-- ══════════════ MAIN ══════════════ --}}
         <div class="nav-section-title">Main</div>
 
         <a class="nav-item-custom {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
@@ -37,11 +37,11 @@
             <a class="nav-item-custom" href="#">
                 <i class="bi bi-dot"></i> POS Orders
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.pointofsalepos.sales.index') ? 'active' : '' }}"
+            <a class="nav-item-custom {{ request()->routeIs('admin.pointofsalepos.sales.*') ? 'active' : '' }}"
                href="{{ route('admin.pointofsalepos.sales.index') }}">
                 <i class="bi bi-dot"></i> POS Sales History
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.pointofsalepos.draft.index') ? 'active' : '' }}"
+            <a class="nav-item-custom {{ request()->routeIs('admin.pointofsalepos.draft.*') ? 'active' : '' }}"
                href="{{ route('admin.pointofsalepos.draft.index') }}">
                 <i class="bi bi-dot"></i> POS Sales Draft
             </a>
@@ -56,7 +56,7 @@
             <span class="badge-count">9+</span>
         </a>
 
-        {{-- ─────────── CATALOG ─────────── --}}
+        {{-- ══════════════ CATALOG ══════════════ --}}
         <div class="nav-section-title">Catalog</div>
 
         {{-- Category Management --}}
@@ -126,7 +126,7 @@
             </a>
         </div>
 
-        {{-- ─────────── COMMERCE ─────────── --}}
+        {{-- ══════════════ COMMERCE ══════════════ --}}
         <div class="nav-section-title">Commerce</div>
 
         {{-- Purchase --}}
@@ -164,7 +164,7 @@
             <i class="bi bi-bell"></i> Push Notification
         </a>
 
-        {{-- ─────────── MANAGEMENT ─────────── --}}
+        {{-- ══════════════ MANAGEMENT ══════════════ --}}
         <div class="nav-section-title">Management</div>
 
         {{-- Blog Management --}}
@@ -246,7 +246,7 @@
             <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> All Shops</a>
         </div>
 
-        {{-- ─────────── SYSTEM ─────────── --}}
+        {{-- ══════════════ SYSTEM ══════════════ --}}
         <div class="nav-section-title">System</div>
 
         <a class="nav-item-custom" href="#"><i class="bi bi-person-circle"></i> My Profile</a>
@@ -302,10 +302,27 @@
             </a>
         </div>
 
+        {{-- Site Settings --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.pixels.*') || request()->routeIs('admin.shippingcharge.*') ? 'active' : '' }}"
+             data-sub="site-settings">
+            <i class="bi bi-sliders"></i> Site Settings
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-site-settings">
+            <a class="nav-item-custom {{ request()->routeIs('admin.pixels.*') ? 'active' : '' }}"
+               href="{{ route('admin.pixels.index') }}">
+                <i class="bi bi-dot"></i> Pixels Manage
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.shippingcharge.*') ? 'active' : '' }}"
+               href="{{ route('admin.shippingcharge.index') }}">
+                <i class="bi bi-dot"></i> Shipping Charge
+            </a>
+        </div>
+
         <a class="nav-item-custom" href="#"><i class="bi bi-file-code"></i> CMS</a>
 
-        {{-- ── 3rd Party Configuration ── --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.settings.gateways') || request()->routeIs('admin.stripe.*') || request()->routeIs('admin.paypal.*') || request()->routeIs('admin.razorpay.*') || request()->routeIs('admin.paystack.*') || request()->routeIs('admin.aamarpay.*') || request()->routeIs('admin.bkash.*') || request()->routeIs('admin.paytabs.*') || request()->routeIs('admin.qicard.*') || request()->routeIs('admin.jazzcash.*') || request()->routeIs('admin.steadfast.*') || request()->routeIs('admin.pathao.*') || request()->routeIs('admin.bkash-pay.*') || request()->routeIs('admin.shurjopay.*') || request()->routeIs('admin.sms.*') || request()->routeIs('admin.twilio.*') || request()->routeIs('admin.telesign.*') || request()->routeIs('admin.nexmo.*') || request()->routeIs('admin.messagebird.*') ? 'active' : '' }}"
+        {{-- 3rd Party Configuration --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.settings.gateways') || request()->routeIs('admin.stripe.*') || request()->routeIs('admin.paypal.*') || request()->routeIs('admin.razorpay.*') || request()->routeIs('admin.paystack.*') || request()->routeIs('admin.aamarpay.*') || request()->routeIs('admin.bkash.*') || request()->routeIs('admin.paytabs.*') || request()->routeIs('admin.qicard.*') || request()->routeIs('admin.jazzcash.*') || request()->routeIs('admin.steadfast.*') || request()->routeIs('admin.pathao.*') || request()->routeIs('admin.bkash-pay.*') || request()->routeIs('admin.shurjopay.*') || request()->routeIs('admin.sms.*') || request()->routeIs('admin.twilio.*') || request()->routeIs('admin.nexmo.*') || request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
              data-sub="third-party">
             <i class="bi bi-plug"></i> 3rd Party Configuration
             <i class="bi bi-chevron-right arrow ms-auto"></i>
@@ -379,19 +396,19 @@
                href="{{ route('admin.settings.gateways') }}#sms">
                 <i class="bi bi-dot"></i> SMS Gateway
             </a>
-
-            {{-- ✅ FIXED: was route('admin.settingsconfiguration.gateways') — now correctly uses route('admin.sms.configuration') --}}
             <a class="nav-item-custom {{ request()->routeIs('admin.sms.configuration') ? 'active' : '' }}"
                href="{{ route('admin.sms.configuration') }}">
                 <i class="bi bi-dot"></i> SMS Configuration Settings
             </a>
-             <a class="nav-item-custom {{ request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
-                href="{{ route('admin.mailconfiguration.index') }}">
+
+            {{-- Mail --}}
+            <a class="nav-item-custom {{ request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
+               href="{{ route('admin.mailconfiguration.index') }}">
                 <i class="bi bi-dot"></i> Mail Configuration
             </a>
-
         </div>
 
+        {{-- Contact Us --}}
         <a class="nav-item-custom {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}"
            href="{{ route('admin.contact.index') }}">
             <i class="bi bi-envelope"></i> Contact Us
@@ -409,12 +426,12 @@
     </div>{{-- /.sidebar-inner --}}
 </aside>
 
-{{-- ── JavaScript ──────────────────────────────────────────── --}}
+{{-- ══ JavaScript ══ --}}
 <script>
 (function () {
     'use strict';
 
-    /* ── Submenu toggle ─────────────────────────────────── */
+    /* ── Submenu toggle ── */
     document.querySelectorAll('.nav-item-custom.has-sub').forEach(function (trigger) {
         trigger.addEventListener('click', function () {
             var key     = this.dataset.sub;
@@ -461,7 +478,7 @@
         }
     });
 
-    /* ── Mobile: overlay closes sidebar ─────────────────── */
+    /* ── Mobile: overlay closes sidebar ── */
     var overlay = document.getElementById('sidebar-overlay');
     var sidebar = document.getElementById('sidebar');
 
@@ -472,7 +489,7 @@
         });
     }
 
-    /* ── Mobile toggle ── */
+    /* ── Mobile toggle (called from topbar hamburger button) ── */
     window.sidebarToggle = function () {
         if (!sidebar || !overlay) return;
         var open = sidebar.classList.toggle('show');
