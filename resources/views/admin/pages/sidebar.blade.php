@@ -24,13 +24,27 @@
         </a>
 
         {{-- POS Management --}}
-        <div class="nav-item-custom has-sub" data-sub="pos">
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.pointofsalepos.*') ? 'active' : '' }}"
+             data-sub="pos">
             <i class="bi bi-display"></i> POS Management
             <i class="bi bi-chevron-right arrow ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-pos">
-            <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> POS Orders</a>
-            <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> POS Settings</a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.pointofsalepos.index') ? 'active' : '' }}"
+               href="{{ route('admin.pointofsalepos.index') }}">
+                <i class="bi bi-dot"></i> POS
+            </a>
+            <a class="nav-item-custom" href="#">
+                <i class="bi bi-dot"></i> POS Orders
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.pointofsalepos.sales.index') ? 'active' : '' }}"
+               href="{{ route('admin.pointofsalepos.sales.index') }}">
+                <i class="bi bi-dot"></i> POS Sales History
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.pointofsalepos.draft.index') ? 'active' : '' }}"
+               href="{{ route('admin.pointofsalepos.draft.index') }}">
+                <i class="bi bi-dot"></i> POS Sales Draft
+            </a>
         </div>
 
         <a class="nav-item-custom" href="#">
