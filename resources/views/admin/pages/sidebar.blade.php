@@ -305,12 +305,13 @@
         <a class="nav-item-custom" href="#"><i class="bi bi-file-code"></i> CMS</a>
 
         {{-- ── 3rd Party Configuration ── --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.settings.gateways') || request()->routeIs('admin.stripe.*') || request()->routeIs('admin.paypal.*') || request()->routeIs('admin.razorpay.*') || request()->routeIs('admin.paystack.*') || request()->routeIs('admin.aamarpay.*') || request()->routeIs('admin.bkash.*') || request()->routeIs('admin.paytabs.*') || request()->routeIs('admin.qicard.*') || request()->routeIs('admin.jazzcash.*') || request()->routeIs('admin.steadfast.*') || request()->routeIs('admin.pathao.*') || request()->routeIs('admin.bkash-pay.*') || request()->routeIs('admin.shurjopay.*') || request()->routeIs('admin.sms.*') ? 'active' : '' }}"
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.settings.gateways') || request()->routeIs('admin.stripe.*') || request()->routeIs('admin.paypal.*') || request()->routeIs('admin.razorpay.*') || request()->routeIs('admin.paystack.*') || request()->routeIs('admin.aamarpay.*') || request()->routeIs('admin.bkash.*') || request()->routeIs('admin.paytabs.*') || request()->routeIs('admin.qicard.*') || request()->routeIs('admin.jazzcash.*') || request()->routeIs('admin.steadfast.*') || request()->routeIs('admin.pathao.*') || request()->routeIs('admin.bkash-pay.*') || request()->routeIs('admin.shurjopay.*') || request()->routeIs('admin.sms.*') || request()->routeIs('admin.twilio.*') || request()->routeIs('admin.telesign.*') || request()->routeIs('admin.nexmo.*') || request()->routeIs('admin.messagebird.*') ? 'active' : '' }}"
              data-sub="third-party">
             <i class="bi bi-plug"></i> 3rd Party Configuration
             <i class="bi bi-chevron-right arrow ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-third-party">
+
             {{-- Payment Gateways --}}
             <a class="nav-item-custom {{ request()->routeIs('admin.settings.gateways') ? 'active' : '' }}"
                href="{{ route('admin.settings.gateways') }}">
@@ -352,6 +353,7 @@
                href="{{ route('admin.settings.gateways') }}#jazzcash">
                 <i class="bi bi-dot"></i> JazzCash
             </a>
+
             {{-- Courier --}}
             <a class="nav-item-custom {{ request()->routeIs('admin.steadfast.*') ? 'active' : '' }}"
                href="{{ route('admin.settings.gateways') }}#steadfast">
@@ -361,6 +363,7 @@
                href="{{ route('admin.settings.gateways') }}#pathao">
                 <i class="bi bi-dot"></i> Pathao Courier
             </a>
+
             {{-- BD Payment --}}
             <a class="nav-item-custom {{ request()->routeIs('admin.bkash-pay.*') ? 'active' : '' }}"
                href="{{ route('admin.settings.gateways') }}#bkash-pay">
@@ -370,11 +373,23 @@
                href="{{ route('admin.settings.gateways') }}#shurjopay">
                 <i class="bi bi-dot"></i> Shurjopay
             </a>
+
             {{-- SMS --}}
             <a class="nav-item-custom {{ request()->routeIs('admin.sms.*') ? 'active' : '' }}"
                href="{{ route('admin.settings.gateways') }}#sms">
                 <i class="bi bi-dot"></i> SMS Gateway
             </a>
+
+            {{-- ✅ FIXED: was route('admin.settingsconfiguration.gateways') — now correctly uses route('admin.sms.configuration') --}}
+            <a class="nav-item-custom {{ request()->routeIs('admin.sms.configuration') ? 'active' : '' }}"
+               href="{{ route('admin.sms.configuration') }}">
+                <i class="bi bi-dot"></i> SMS Configuration Settings
+            </a>
+             <a class="nav-item-custom {{ request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
+                href="{{ route('admin.mailconfiguration.index') }}">
+                <i class="bi bi-dot"></i> Mail Configuration
+            </a>
+
         </div>
 
         <a class="nav-item-custom {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}"

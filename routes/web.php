@@ -41,6 +41,11 @@ use App\Http\Controllers\Admin\BkashPaymentController;
 use App\Http\Controllers\Admin\ShurjopayGatewayController;
 use App\Http\Controllers\Admin\PathaoCourierController;
 use App\Http\Controllers\Admin\SmsGatewayController;
+use App\Http\Controllers\Admin\TwilioGatewayController;
+use App\Http\Controllers\Admin\TelesignGatewayController;
+use App\Http\Controllers\Admin\NexmoGatewayController;
+use App\Http\Controllers\Admin\MessagebirdGatewayController;
+use App\Http\Controllers\Admin\MailConfigurationController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -278,5 +283,36 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // ─── SMS Gateway ─────────────────────────────────────────────────────────
     Route::post('/settings/sms/update',       [SmsGatewayController::class,       'update'])      ->name('admin.sms.update');
+    // ── SMS Configuration Page ────────────────────────────────────────────────
+Route::get('/settings/configuration/sms-configuration', function () {
+    $data = [
+        'twilio'      => \App\Models\TwilioGateway::first(),
+        'telesign'    => \App\Models\TelesignGateway::first(),
+        'nexmo'       => \App\Models\NexmoGateway::first(),
+        'messagebird' => \App\Models\MessagebirdGateway::first(),
+    ];
+    return view('admin.smsconfiguration.sms-configuration', $data);
+})->name('admin.sms.configuration');
+
+// ── Twilio ────────────────────────────────────────────────────────────────
+Route::post('/settingsconfiguration/twilio/update', [TwilioGatewayController::class, 'update'])      ->name('admin.twilio.update');
+Route::post('/settingsconfiguration/twilio/toggle', [TwilioGatewayController::class, 'toggleStatus'])->name('admin.twilio.toggle');
+
+// ── Telesign ──────────────────────────────────────────────────────────────
+Route::post('/settingsconfiguration/telesign/update', [TelesignGatewayController::class, 'update'])      ->name('admin.telesign.update');
+Route::post('/settingsconfiguration/telesign/toggle', [TelesignGatewayController::class, 'toggleStatus'])->name('admin.telesign.toggle');
+
+// ── Nexmo ─────────────────────────────────────────────────────────────────
+Route::post('/settingsconfiguration/nexmo/update', [NexmoGatewayController::class, 'update'])      ->name('admin.nexmo.update');
+Route::post('/settingsconfiguration/nexmo/toggle', [NexmoGatewayController::class, 'toggleStatus'])->name('admin.nexmo.toggle');
+
+// ── MessageBird ───────────────────────────────────────────────────────────
+Route::post('/settingsconfiguration/messagebird/update', [MessagebirdGatewayController::class, 'update'])      ->name('admin.messagebird.update');
+Route::post('/settingsconfiguration/messagebird/toggle', [MessagebirdGatewayController::class, 'toggleStatus'])->name('admin.messagebird.toggle');
+
+
+Route::get('/mail-configuration', [MailConfigurationController::class, 'index'])->name('admin.mailconfiguration.index');
+Route::post('/mail-configuration/update', [MailConfigurationController::class, 'update'])->name('admin.mailconfiguration.update');
+Route::post('/mail-configuration/send-test', [MailConfigurationController::class, 'sendTestMail'])->name('admin.mailconfiguration.send-test');
 
 }); // end middleware group
