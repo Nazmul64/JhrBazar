@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\GeneralSettingController;
 use App\Http\Controllers\Admin\ProductControllerController;
+use App\Http\Controllers\Admin\PromocodeController;
 use App\Http\Controllers\Admin\SociallinkListController;
 use App\Http\Controllers\Admin\ThemecolorssettingController;
 use App\Http\Controllers\Admin\VerificatiootpsettingsController;
@@ -140,5 +141,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // ⚠️ toggle route অবশ্যই resource-এর আগে থাকতে হবে
     Route::post('banner/{id}/toggle', [BannerController::class, 'toggleStatus'])->name('admin.banner.toggle');
     Route::resource('banner', BannerController::class)->names('admin.banner');
-
+        // ── Promocode ────────────────────────────────────────────
+    // ⚠️ toggle route অবশ্যই resource-এর আগে থাকতে হবে
+Route::post('promocode/{id}/toggle', [PromocodeController::class, 'toggleStatus'])->name('admin.promocode.toggle');
+Route::resource('promocode', PromocodeController::class) ->names('admin.promocode');
 });

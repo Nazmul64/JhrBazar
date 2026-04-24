@@ -126,13 +126,16 @@
         </div>
 
         {{-- Promotion Management --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.flashsale.*') || request()->routeIs('admin.banner.*') ? 'active' : '' }}"
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.flashsale.*') || request()->routeIs('admin.banner.*') || request()->routeIs('admin.promocode.*') ? 'active' : '' }}"
              data-sub="promo">
             <i class="bi bi-gift"></i> Promotion Management
             <i class="bi bi-chevron-right arrow ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-promo">
-            <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> Coupons</a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.promocode.*') ? 'active' : '' }}"
+               href="{{ route('admin.promocode.index') }}">
+                <i class="bi bi-dot"></i> Coupons
+            </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.flashsale.*') ? 'active' : '' }}"
                href="{{ route('admin.flashsale.index') }}">
                 <i class="bi bi-dot"></i> Flash Sales
