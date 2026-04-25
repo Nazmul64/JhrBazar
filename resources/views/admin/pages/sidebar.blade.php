@@ -303,7 +303,7 @@
         </div>
 
         {{-- Site Settings --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.pixels.*') || request()->routeIs('admin.shippingcharge.*') ? 'active' : '' }}"
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.pixels.*') || request()->routeIs('admin.googletagmanager.*') || request()->routeIs('admin.shippingcharge.*') ? 'active' : '' }}"
              data-sub="site-settings">
             <i class="bi bi-sliders"></i> Site Settings
             <i class="bi bi-chevron-right arrow ms-auto"></i>
@@ -313,24 +313,28 @@
                href="{{ route('admin.pixels.index') }}">
                 <i class="bi bi-dot"></i> Pixels Manage
             </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.googletagmanager.*') ? 'active' : '' }}"
+               href="{{ route('admin.googletagmanager.index') }}">
+                <i class="bi bi-dot"></i> Google Tag Manager
+            </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.shippingcharge.*') ? 'active' : '' }}"
                href="{{ route('admin.shippingcharge.index') }}">
                 <i class="bi bi-dot"></i> Shipping Charge
             </a>
         </div>
 
-          {{-- Landing page Settings --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.landingpages.*') || request()->routeIs('admin.landingpages.*') ? 'active' : '' }}"
+        {{-- Landing Page Settings --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.landingpages.*') ? 'active' : '' }}"
              data-sub="landing-page-settings">
-            <i class="bi bi-sliders"></i> Landing Page Settings
+            <i class="bi bi-layout-text-window-reverse"></i> Landing Page Settings
             <i class="bi bi-chevron-right arrow ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-landing-page-settings">
-            <a class="nav-item-custom {{ request()->routeIs('admin.landingpages.*') ? 'active' : '' }}"
-               href="{{ route('admin.landingpages.index') }}">
+            <a class="nav-item-custom {{ request()->routeIs('admin.landingpages.create') ? 'active' : '' }}"
+               href="{{ route('admin.landingpages.create') }}">
                 <i class="bi bi-dot"></i> Create Landing Page
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.landingpages.*') ? 'active' : '' }}"
+            <a class="nav-item-custom {{ request()->routeIs('admin.landingpages.index') ? 'active' : '' }}"
                href="{{ route('admin.landingpages.index') }}">
                 <i class="bi bi-dot"></i> Campaign List
             </a>
@@ -345,8 +349,6 @@
             <i class="bi bi-chevron-right arrow ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-third-party">
-
-            {{-- Payment Gateways --}}
             <a class="nav-item-custom {{ request()->routeIs('admin.settings.gateways') ? 'active' : '' }}"
                href="{{ route('admin.settings.gateways') }}">
                 <i class="bi bi-dot"></i> Payment Gateways
@@ -387,8 +389,6 @@
                href="{{ route('admin.settings.gateways') }}#jazzcash">
                 <i class="bi bi-dot"></i> JazzCash
             </a>
-
-            {{-- Courier --}}
             <a class="nav-item-custom {{ request()->routeIs('admin.steadfast.*') ? 'active' : '' }}"
                href="{{ route('admin.settings.gateways') }}#steadfast">
                 <i class="bi bi-dot"></i> Steadfast Courier
@@ -397,8 +397,6 @@
                href="{{ route('admin.settings.gateways') }}#pathao">
                 <i class="bi bi-dot"></i> Pathao Courier
             </a>
-
-            {{-- BD Payment --}}
             <a class="nav-item-custom {{ request()->routeIs('admin.bkash-pay.*') ? 'active' : '' }}"
                href="{{ route('admin.settings.gateways') }}#bkash-pay">
                 <i class="bi bi-dot"></i> Bkash Payment
@@ -407,9 +405,7 @@
                href="{{ route('admin.settings.gateways') }}#shurjopay">
                 <i class="bi bi-dot"></i> Shurjopay
             </a>
-
-            {{-- SMS --}}
-            <a class="nav-item-custom {{ request()->routeIs('admin.sms.*') ? 'active' : '' }}"
+            <a class="nav-item-custom {{ request()->routeIs('admin.sms.*') && !request()->routeIs('admin.sms.configuration') ? 'active' : '' }}"
                href="{{ route('admin.settings.gateways') }}#sms">
                 <i class="bi bi-dot"></i> SMS Gateway
             </a>
@@ -417,8 +413,6 @@
                href="{{ route('admin.sms.configuration') }}">
                 <i class="bi bi-dot"></i> SMS Configuration Settings
             </a>
-
-            {{-- Mail --}}
             <a class="nav-item-custom {{ request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
                href="{{ route('admin.mailconfiguration.index') }}">
                 <i class="bi bi-dot"></i> Mail Configuration

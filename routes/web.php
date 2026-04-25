@@ -38,6 +38,7 @@ use App\Http\Controllers\Admin\QicardGatewayController;
 use App\Http\Controllers\Admin\JazzcashGatewayController;
 use App\Http\Controllers\Admin\SteadfastCourierController;
 use App\Http\Controllers\Admin\BkashPaymentController;
+use App\Http\Controllers\Admin\GoogleTagManagerController;
 use App\Http\Controllers\Admin\LandingPageController;
 use App\Http\Controllers\Admin\ShurjopayGatewayController;
 use App\Http\Controllers\Admin\PathaoCourierController;
@@ -341,5 +342,12 @@ Route::patch('shippingcharge/{shippingcharge}/toggle-status', [ShippingChargeCon
 */
 Route::resource('landingpages', LandingPageController::class)->names('admin.landingpages')->except(['show']);
 Route::patch('landingpages/{landingpage}/toggle-status', [LandingPageController::class, 'toggleStatus'])->name('admin.landingpages.toggle-status');
+/*
+|--------------------------------------------------------------------------
+| Google Tag Manager Settings
+|--------------------------------------------------------------------------
+*/
+Route::resource('googletagmanager', GoogleTagManagerController::class)->names('admin.googletagmanager')->except(['show']);
+Route::patch('googletagmanager/{googletagmanager}/toggle-status', [GoogleTagManagerController::class, 'toggleStatus'])->name('admin.googletagmanager.toggle-status');
 
 }); // end middleware group

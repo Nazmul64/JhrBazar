@@ -159,6 +159,32 @@ new Chart(donutCtx, {
     }
   }
 });
+
 </script>
+ {{-- ══════════════════════════════════════════
+         SCRIPTS
+    ══════════════════════════════════════════ --}}
+
+    {{-- ── jQuery 3.7.1 ── --}}
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+
+    {{-- ── Bootstrap 5.3.3 Bundle (Popper included) ── --}}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmFRFpHkBNn5dQ6VlmreC5rwv0L7" crossorigin="anonymous"></script>
+
+    {{-- ── Chart.js 4.4.3 ── --}}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+    {{-- ── SweetAlert2 ── --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+    {{-- ── Select2 ── --}}
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    {{-- ── Summernote ── --}}
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-lite.min.js"></script>
+
+    {{-- ── DataTables ── --}}
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
 </body>
 </html>
