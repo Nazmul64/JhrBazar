@@ -38,6 +38,7 @@ use App\Http\Controllers\Admin\QicardGatewayController;
 use App\Http\Controllers\Admin\JazzcashGatewayController;
 use App\Http\Controllers\Admin\SteadfastCourierController;
 use App\Http\Controllers\Admin\BkashPaymentController;
+use App\Http\Controllers\Admin\LandingPageController;
 use App\Http\Controllers\Admin\ShurjopayGatewayController;
 use App\Http\Controllers\Admin\PathaoCourierController;
 use App\Http\Controllers\Admin\SmsGatewayController;
@@ -332,5 +333,13 @@ Route::patch('pixels/{pixel}/toggle-status', [PixelController::class, 'toggleSta
 */
 Route::resource('shippingcharge',ShippingChargeController::class)->names('admin.shippingcharge')->except(['show']);
 Route::patch('shippingcharge/{shippingcharge}/toggle-status', [ShippingChargeController::class, 'toggleStatus'])->name('admin.shippingcharge.toggle-status');
+
+/*
+|--------------------------------------------------------------------------
+|Landing Page Settings
+|--------------------------------------------------------------------------
+*/
+Route::resource('landingpages', LandingPageController::class)->names('admin.landingpages')->except(['show']);
+Route::patch('landingpages/{landingpage}/toggle-status', [LandingPageController::class, 'toggleStatus'])->name('admin.landingpages.toggle-status');
 
 }); // end middleware group

@@ -319,6 +319,23 @@
             </a>
         </div>
 
+          {{-- Landing page Settings --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.landingpages.*') || request()->routeIs('admin.landingpages.*') ? 'active' : '' }}"
+             data-sub="landing-page-settings">
+            <i class="bi bi-sliders"></i> Landing Page Settings
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-landing-page-settings">
+            <a class="nav-item-custom {{ request()->routeIs('admin.landingpages.*') ? 'active' : '' }}"
+               href="{{ route('admin.landingpages.index') }}">
+                <i class="bi bi-dot"></i> Create Landing Page
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.landingpages.*') ? 'active' : '' }}"
+               href="{{ route('admin.landingpages.index') }}">
+                <i class="bi bi-dot"></i> Campaign List
+            </a>
+        </div>
+
         <a class="nav-item-custom" href="#"><i class="bi bi-file-code"></i> CMS</a>
 
         {{-- 3rd Party Configuration --}}
