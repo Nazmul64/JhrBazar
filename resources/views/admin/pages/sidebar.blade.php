@@ -18,6 +18,7 @@
             <i class="bi bi-grid-fill"></i> Dashboard
         </a>
 
+        {{-- Order Management --}}
         <a class="nav-item-custom {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}"
            href="#">
             <i class="bi bi-bag-check"></i> Order Management
@@ -55,6 +56,78 @@
             <i class="bi bi-chat-left-dots"></i> Conversations
             <span class="badge-count">9+</span>
         </a>
+
+        {{-- ══════════════ FRAUD ══════════════ --}}
+        <div class="nav-section-title">Fraud</div>
+
+        {{-- Fraud Dashboard --}}
+        <a class="nav-item-custom {{ request()->routeIs('admin.fraud.dashboard') ? 'active' : '' }}"
+           href="{{ route('admin.fraud.dashboard') }}">
+            <i class="bi bi-shield-exclamation"></i> Fraud Dashboard
+        </a>
+
+        {{-- Fraud Checks --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.fraud.index') || request()->routeIs('admin.fraud.create') || request()->routeIs('admin.fraud.edit') || request()->routeIs('admin.fraud.show') ? 'active' : '' }}"
+             data-sub="fraud-checks">
+            <i class="bi bi-search"></i> Fraud Checks
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-fraud-checks">
+            <a class="nav-item-custom {{ request()->routeIs('admin.fraud.index') ? 'active' : '' }}"
+               href="{{ route('admin.fraud.index') }}">
+                <i class="bi bi-dot"></i> All Checks
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.fraud.create') ? 'active' : '' }}"
+               href="{{ route('admin.fraud.create') }}">
+                <i class="bi bi-dot"></i> Add Check
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.fraud.export') }}">
+                <i class="bi bi-dot"></i> Export CSV
+            </a>
+        </div>
+
+        {{-- Fraud Rules --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.fraud.rules.*') ? 'active' : '' }}"
+             data-sub="fraud-rules">
+            <i class="bi bi-sliders2"></i> Fraud Rules
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-fraud-rules">
+            <a class="nav-item-custom {{ request()->routeIs('admin.fraud.rules.index') ? 'active' : '' }}"
+               href="{{ route('admin.fraud.rules.index') }}">
+                <i class="bi bi-dot"></i> All Rules
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.fraud.rules.create') ? 'active' : '' }}"
+               href="{{ route('admin.fraud.rules.create') }}">
+                <i class="bi bi-dot"></i> Add Rule
+            </a>
+        </div>
+
+        {{-- Fraud Alerts --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.fraud.alerts.*') ? 'active' : '' }}"
+             data-sub="fraud-alerts">
+            <i class="bi bi-bell-fill"></i> Fraud Alerts
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-fraud-alerts">
+            <a class="nav-item-custom {{ request()->routeIs('admin.fraud.alerts.index') ? 'active' : '' }}"
+               href="{{ route('admin.fraud.alerts.index') }}">
+                <i class="bi bi-dot"></i> All Alerts
+            </a>
+        </div>
+
+        {{-- Fraud Blacklist --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.fraud.blacklist.*') ? 'active' : '' }}"
+             data-sub="fraud-blacklist">
+            <i class="bi bi-ban"></i> Blacklist
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-fraud-blacklist">
+            <a class="nav-item-custom {{ request()->routeIs('admin.fraud.blacklist.index') ? 'active' : '' }}"
+               href="{{ route('admin.fraud.blacklist.index') }}">
+                <i class="bi bi-dot"></i> All Blacklists
+            </a>
+        </div>
 
         {{-- ══════════════ CATALOG ══════════════ --}}
         <div class="nav-section-title">Catalog</div>
@@ -303,7 +376,7 @@
         </div>
 
         {{-- Site Settings --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.pixels.*') || request()->routeIs('admin.googletagmanager.*') || request()->routeIs('admin.shippingcharge.*') ? 'active' : '' }}"
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.pixels.*') || request()->routeIs('admin.googletagmanager.*') || request()->routeIs('admin.shippingcharge.*') || request()->routeIs('admin.duplicateordersetting.*') || request()->routeIs('admin.Ipblockmanage.*') ? 'active' : '' }}"
              data-sub="site-settings">
             <i class="bi bi-sliders"></i> Site Settings
             <i class="bi bi-chevron-right arrow ms-auto"></i>
@@ -321,13 +394,13 @@
                href="{{ route('admin.shippingcharge.index') }}">
                 <i class="bi bi-dot"></i> Shipping Charge
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.duplicateordersetting.index') ? 'active' : '' }}"
+            <a class="nav-item-custom {{ request()->routeIs('admin.duplicateordersetting.*') ? 'active' : '' }}"
                href="{{ route('admin.duplicateordersetting.index') }}">
                 <i class="bi bi-dot"></i> Duplicate Order Setting
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.Ipblockmanage.index') ? 'active' : '' }}"
+            <a class="nav-item-custom {{ request()->routeIs('admin.Ipblockmanage.*') ? 'active' : '' }}"
                href="{{ route('admin.Ipblockmanage.index') }}">
-                <i class="bi bi-dot"></i> Ipblockmanage Order Setting
+                <i class="bi bi-dot"></i> IP Block Manage
             </a>
         </div>
 
@@ -346,7 +419,6 @@
                href="{{ route('admin.landingpages.index') }}">
                 <i class="bi bi-dot"></i> Campaign List
             </a>
-
         </div>
 
         <a class="nav-item-custom" href="#"><i class="bi bi-file-code"></i> CMS</a>
@@ -362,65 +434,51 @@
                href="{{ route('admin.settings.gateways') }}">
                 <i class="bi bi-dot"></i> Payment Gateways
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.stripe.*') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways') }}#stripe">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#stripe">
                 <i class="bi bi-dot"></i> Stripe
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.paypal.*') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways') }}#paypal">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paypal">
                 <i class="bi bi-dot"></i> PayPal
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.razorpay.*') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways') }}#razorpay">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#razorpay">
                 <i class="bi bi-dot"></i> Razorpay
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.paystack.*') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways') }}#paystack">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paystack">
                 <i class="bi bi-dot"></i> Paystack
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.aamarpay.*') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways') }}#aamarpay">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#aamarpay">
                 <i class="bi bi-dot"></i> AamarPay
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.bkash.*') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways') }}#bkash">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#bkash">
                 <i class="bi bi-dot"></i> BKash
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.paytabs.*') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways') }}#paytabs">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paytabs">
                 <i class="bi bi-dot"></i> PayTabs
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.qicard.*') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways') }}#qicard">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#qicard">
                 <i class="bi bi-dot"></i> QiCard
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.jazzcash.*') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways') }}#jazzcash">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#jazzcash">
                 <i class="bi bi-dot"></i> JazzCash
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.steadfast.*') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways') }}#steadfast">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#steadfast">
                 <i class="bi bi-dot"></i> Steadfast Courier
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.pathao.*') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways') }}#pathao">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#pathao">
                 <i class="bi bi-dot"></i> Pathao Courier
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.bkash-pay.*') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways') }}#bkash-pay">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#bkash-pay">
                 <i class="bi bi-dot"></i> Bkash Payment
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.shurjopay.*') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways') }}#shurjopay">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#shurjopay">
                 <i class="bi bi-dot"></i> Shurjopay
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.sms.*') && !request()->routeIs('admin.sms.configuration') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways') }}#sms">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#sms">
                 <i class="bi bi-dot"></i> SMS Gateway
             </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.sms.configuration') ? 'active' : '' }}"
                href="{{ route('admin.sms.configuration') }}">
-                <i class="bi bi-dot"></i> SMS Configuration Settings
+                <i class="bi bi-dot"></i> SMS Configuration
             </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
                href="{{ route('admin.mailconfiguration.index') }}">

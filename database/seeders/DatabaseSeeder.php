@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             PermissionSeeder::class,
             DuplicateordersettingSeeder::class,
+            FraudRuleSeeder::class,
+             // Add more seeders here as needed
         ]);
     }
 }
