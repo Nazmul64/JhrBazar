@@ -38,6 +38,7 @@ use App\Http\Controllers\Admin\QicardGatewayController;
 use App\Http\Controllers\Admin\JazzcashGatewayController;
 use App\Http\Controllers\Admin\SteadfastCourierController;
 use App\Http\Controllers\Admin\BkashPaymentController;
+use App\Http\Controllers\Admin\DuplicateordersettingController;
 use App\Http\Controllers\Admin\GoogleTagManagerController;
 use App\Http\Controllers\Admin\LandingPageController;
 use App\Http\Controllers\Admin\ShurjopayGatewayController;
@@ -50,6 +51,7 @@ use App\Http\Controllers\Admin\MessagebirdGatewayController;
 use App\Http\Controllers\Admin\MailConfigurationController;
 use App\Http\Controllers\Admin\PixelController;
 use App\Http\Controllers\Admin\ShippingChargeController;
+use App\Models\Duplicateordersetting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -350,4 +352,12 @@ Route::patch('landingpages/{landingpage}/toggle-status', [LandingPageController:
 Route::resource('googletagmanager', GoogleTagManagerController::class)->names('admin.googletagmanager')->except(['show']);
 Route::patch('googletagmanager/{googletagmanager}/toggle-status', [GoogleTagManagerController::class, 'toggleStatus'])->name('admin.googletagmanager.toggle-status');
 
+/*|--------------------------------------------------------------------------
+| Duplicateordersetting Settings
+|--------------------------------------------------------------------------
+*/
+// Resource routes (show বাদে)
+Route::resource('duplicateordersetting', DuplicateordersettingController::class)->names('admin.duplicateordersetting')->except(['show']);
+// Toggle status
+Route::patch('duplicateordersetting/{duplicateordersetting}/toggle-status', [DuplicateordersettingController::class, 'toggleStatus'])->name('admin.duplicateordersetting.toggleStatus');
 }); // end middleware group

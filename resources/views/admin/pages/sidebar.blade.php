@@ -321,6 +321,10 @@
                href="{{ route('admin.shippingcharge.index') }}">
                 <i class="bi bi-dot"></i> Shipping Charge
             </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.duplicateordersetting.index') ? 'active' : '' }}"
+               href="{{ route('admin.duplicateordersetting.index') }}">
+                <i class="bi bi-dot"></i> Duplicate Order Setting
+            </a>
         </div>
 
         {{-- Landing Page Settings --}}
@@ -338,6 +342,7 @@
                href="{{ route('admin.landingpages.index') }}">
                 <i class="bi bi-dot"></i> Campaign List
             </a>
+
         </div>
 
         <a class="nav-item-custom" href="#"><i class="bi bi-file-code"></i> CMS</a>
