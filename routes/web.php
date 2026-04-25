@@ -40,6 +40,7 @@ use App\Http\Controllers\Admin\SteadfastCourierController;
 use App\Http\Controllers\Admin\BkashPaymentController;
 use App\Http\Controllers\Admin\DuplicateordersettingController;
 use App\Http\Controllers\Admin\GoogleTagManagerController;
+use App\Http\Controllers\Admin\IpblockmanageController;
 use App\Http\Controllers\Admin\LandingPageController;
 use App\Http\Controllers\Admin\ShurjopayGatewayController;
 use App\Http\Controllers\Admin\PathaoCourierController;
@@ -360,4 +361,8 @@ Route::patch('googletagmanager/{googletagmanager}/toggle-status', [GoogleTagMana
 Route::resource('duplicateordersetting', DuplicateordersettingController::class)->names('admin.duplicateordersetting')->except(['show']);
 // Toggle status
 Route::patch('duplicateordersetting/{duplicateordersetting}/toggle-status', [DuplicateordersettingController::class, 'toggleStatus'])->name('admin.duplicateordersetting.toggleStatus');
+
+// Resource Ipblockmanage (show বাদে)
+Route::resource('Ipblockmanage', IpblockmanageController::class)->names('admin.Ipblockmanage')->except(['show', 'create']);
+Route::patch('Ipblockmanage/{Ipblockmanage}/toggle-status', [IpblockmanageController::class, 'toggleStatus'])->name('admin.Ipblockmanage.toggleStatus');
 }); // end middleware group

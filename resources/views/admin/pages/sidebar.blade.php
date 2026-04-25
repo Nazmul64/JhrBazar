@@ -325,6 +325,10 @@
                href="{{ route('admin.duplicateordersetting.index') }}">
                 <i class="bi bi-dot"></i> Duplicate Order Setting
             </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.Ipblockmanage.index') ? 'active' : '' }}"
+               href="{{ route('admin.Ipblockmanage.index') }}">
+                <i class="bi bi-dot"></i> Ipblockmanage Order Setting
+            </a>
         </div>
 
         {{-- Landing Page Settings --}}
