@@ -405,7 +405,8 @@
         </div>
 
         {{-- Landing Page Settings --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.landingpages.*') ? 'active' : '' }}"
+        {{-- ✅ admin.pages.* যোগ করা হয়েছে active check-এ --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.landingpages.*') || request()->routeIs('admin.pages.*') ? 'active' : '' }}"
              data-sub="landing-page-settings">
             <i class="bi bi-layout-text-window-reverse"></i> Landing Page Settings
             <i class="bi bi-chevron-right arrow ms-auto"></i>
@@ -418,6 +419,12 @@
             <a class="nav-item-custom {{ request()->routeIs('admin.landingpages.index') ? 'active' : '' }}"
                href="{{ route('admin.landingpages.index') }}">
                 <i class="bi bi-dot"></i> Campaign List
+            </a>
+
+            {{-- ✅ সঠিক route name: admin.pages.index --}}
+            <a class="nav-item-custom {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}"
+               href="{{ route('admin.pages.index') }}">
+                <i class="bi bi-dot"></i> Page Manage
             </a>
         </div>
 
@@ -434,48 +441,20 @@
                href="{{ route('admin.settings.gateways') }}">
                 <i class="bi bi-dot"></i> Payment Gateways
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#stripe">
-                <i class="bi bi-dot"></i> Stripe
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paypal">
-                <i class="bi bi-dot"></i> PayPal
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#razorpay">
-                <i class="bi bi-dot"></i> Razorpay
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paystack">
-                <i class="bi bi-dot"></i> Paystack
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#aamarpay">
-                <i class="bi bi-dot"></i> AamarPay
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#bkash">
-                <i class="bi bi-dot"></i> BKash
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paytabs">
-                <i class="bi bi-dot"></i> PayTabs
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#qicard">
-                <i class="bi bi-dot"></i> QiCard
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#jazzcash">
-                <i class="bi bi-dot"></i> JazzCash
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#steadfast">
-                <i class="bi bi-dot"></i> Steadfast Courier
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#pathao">
-                <i class="bi bi-dot"></i> Pathao Courier
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#bkash-pay">
-                <i class="bi bi-dot"></i> Bkash Payment
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#shurjopay">
-                <i class="bi bi-dot"></i> Shurjopay
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#sms">
-                <i class="bi bi-dot"></i> SMS Gateway
-            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#stripe"><i class="bi bi-dot"></i> Stripe</a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paypal"><i class="bi bi-dot"></i> PayPal</a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#razorpay"><i class="bi bi-dot"></i> Razorpay</a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paystack"><i class="bi bi-dot"></i> Paystack</a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#aamarpay"><i class="bi bi-dot"></i> AamarPay</a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#bkash"><i class="bi bi-dot"></i> BKash</a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paytabs"><i class="bi bi-dot"></i> PayTabs</a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#qicard"><i class="bi bi-dot"></i> QiCard</a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#jazzcash"><i class="bi bi-dot"></i> JazzCash</a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#steadfast"><i class="bi bi-dot"></i> Steadfast Courier</a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#pathao"><i class="bi bi-dot"></i> Pathao Courier</a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#bkash-pay"><i class="bi bi-dot"></i> Bkash Payment</a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#shurjopay"><i class="bi bi-dot"></i> Shurjopay</a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#sms"><i class="bi bi-dot"></i> SMS Gateway</a>
             <a class="nav-item-custom {{ request()->routeIs('admin.sms.configuration') ? 'active' : '' }}"
                href="{{ route('admin.sms.configuration') }}">
                 <i class="bi bi-dot"></i> SMS Configuration

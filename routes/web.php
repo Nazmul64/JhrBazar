@@ -57,6 +57,7 @@ use App\Http\Controllers\Admin\FraudCheckController;
 use App\Http\Controllers\Admin\FraudRuleController;
 use App\Http\Controllers\Admin\FraudAlertController;
 use App\Http\Controllers\Admin\FraudBlacklistController;
+use App\Http\Controllers\Admin\PageController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -151,7 +152,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('alltaxes/{alltaxes}/toggle', [AlltaxesController::class, 'toggleStatus'])->name('admin.alltaxes.toggle');
 
     // ── Theme Color Settings ──────────────────────────────────────────────────
-    // ⚠️ generate-palette must come BEFORE the resource to avoid {themecolorssettings} conflict
     Route::post('themecolorssettings/generate-palette', [ThemecolorssettingController::class, 'generatePalette'])->name('admin.themecolorssettings.generate-palette');
     Route::resource('themecolorssettings', ThemecolorssettingController::class)->names('admin.themecolorssettings');
     Route::post('themecolorssettings/{Themecolorssetting}/toggle', [ThemecolorssettingController::class, 'toggleStatus'])->name('admin.themecolorssettings.toggle');
@@ -161,7 +161,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('sociallinkList/{sociallinkList}/toggle', [SociallinkListController::class, 'toggleStatus'])->name('admin.sociallinkList.toggle');
 
     // ── Products ──────────────────────────────────────────────────────────────
-    // ⚠️ Custom routes must come BEFORE resource to avoid wildcard conflicts
     Route::get('products/subcategories/{categoryId}', [ProductControllerController::class, 'getSubCategories'])->name('products.subcategories');
     Route::post('products/{product}/toggle',          [ProductControllerController::class, 'toggleStatus'])    ->name('products.toggle');
     Route::get('products/{product}/barcode',          [ProductControllerController::class, 'barcode'])         ->name('products.barcode');
@@ -172,49 +171,32 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('flashsale/{flashsale}/toggle', [FlashsaleController::class, 'toggleStatus'])->name('admin.flashsale.toggle');
 
     // ── Banners ───────────────────────────────────────────────────────────────
-    // ⚠️ toggle must come BEFORE resource
     Route::post('banner/{id}/toggle', [BannerController::class, 'toggleStatus'])->name('admin.banner.toggle');
     Route::resource('banner', BannerController::class)->names('admin.banner');
 
     // ── Promo Codes ───────────────────────────────────────────────────────────
-    // ⚠️ toggle must come BEFORE resource
     Route::post('promocode/{id}/toggle', [PromocodeController::class, 'toggleStatus'])->name('admin.promocode.toggle');
     Route::resource('promocode', PromocodeController::class)->names('admin.promocode');
 
-    // ────────────────────────────────────────────────────────────────────────
-    //  Point of Sale (POS)
-    // ────────────────────────────────────────────────────────────────────────
+    // ── Point of Sale (POS) ───────────────────────────────────────────────────
     Route::prefix('pointofsalepos')->name('admin.pointofsalepos.')->group(function () {
-
-        Route::get('/', [PointOfSalePosController::class, 'index'])->name('index');
-
-        Route::get('invoice/{invoice}', [PointOfSalePosController::class, 'invoice'])->name('invoice');
-
-        Route::get('products', [PointOfSalePosController::class, 'getProducts'])->name('products');
-
-        Route::get('customers/search', [PointOfSalePosController::class, 'searchCustomers'])->name('customers.search');
-
-        Route::post('customers/store', [PointOfSalePosController::class, 'storeCustomer'])->name('customers.store');
-
-        Route::post('apply-coupon', [PointOfSalePosController::class, 'applyCoupon'])->name('apply.coupon');
-
-        Route::post('place-order', [PointOfSalePosController::class, 'placeOrder'])->name('place.order');
-
-        Route::post('draft', [PointOfSalePosController::class, 'draft'])->name('draft');
-
-        Route::get('sales',                    [PointOfSalePosController::class, 'salesIndex'])  ->name('sales.index');
-        Route::get('sales/{invoice}',          [PointOfSalePosController::class, 'salesShow'])   ->name('sales.show');
-        Route::patch('sales/{invoice}/status', [PointOfSalePosController::class, 'updateStatus'])->name('sales.status');
-
-        // ⚠️ static segments must come BEFORE wildcard segments
-        Route::get('draft-orders',              [PointOfSalePosController::class, 'draftIndex'])  ->name('draft.index');
-        Route::get('draft-orders/{draft}/load', [PointOfSalePosController::class, 'getDraft'])    ->name('draft.load');
-        Route::delete('draft-orders/{draft}',   [PointOfSalePosController::class, 'draftDestroy'])->name('draft.destroy');
-
-    }); // end pointofsalepos group
+        Route::get('/',                            [PointOfSalePosController::class, 'index'])          ->name('index');
+        Route::get('invoice/{invoice}',            [PointOfSalePosController::class, 'invoice'])        ->name('invoice');
+        Route::get('products',                     [PointOfSalePosController::class, 'getProducts'])    ->name('products');
+        Route::get('customers/search',             [PointOfSalePosController::class, 'searchCustomers'])->name('customers.search');
+        Route::post('customers/store',             [PointOfSalePosController::class, 'storeCustomer'])  ->name('customers.store');
+        Route::post('apply-coupon',                [PointOfSalePosController::class, 'applyCoupon'])    ->name('apply.coupon');
+        Route::post('place-order',                 [PointOfSalePosController::class, 'placeOrder'])     ->name('place.order');
+        Route::post('draft',                       [PointOfSalePosController::class, 'draft'])          ->name('draft');
+        Route::get('sales',                        [PointOfSalePosController::class, 'salesIndex'])     ->name('sales.index');
+        Route::get('sales/{invoice}',              [PointOfSalePosController::class, 'salesShow'])      ->name('sales.show');
+        Route::patch('sales/{invoice}/status',     [PointOfSalePosController::class, 'updateStatus'])   ->name('sales.status');
+        Route::get('draft-orders',                 [PointOfSalePosController::class, 'draftIndex'])     ->name('draft.index');
+        Route::get('draft-orders/{draft}/load',    [PointOfSalePosController::class, 'getDraft'])       ->name('draft.load');
+        Route::delete('draft-orders/{draft}',      [PointOfSalePosController::class, 'draftDestroy'])   ->name('draft.destroy');
+    });
 
     // ── Contact ───────────────────────────────────────────────────────────────
-    // ⚠️ toggle must come BEFORE resource
     Route::post('contact/{contact}/toggle', [ContactController::class, 'toggleStatus'])->name('admin.contact.toggle');
     Route::resource('contact', ContactController::class)->names('admin.contact')->except(['show']);
 
@@ -242,42 +224,32 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // ── Payment Gateways ──────────────────────────────────────────────────────
     Route::post('/settings/stripe/update',   [StripeGatewayController::class,   'update'])      ->name('admin.stripe.update');
     Route::post('/settings/stripe/toggle',   [StripeGatewayController::class,   'toggleStatus'])->name('admin.stripe.toggle');
-
     Route::post('/settings/paypal/update',   [PaypalGatewayController::class,   'update'])      ->name('admin.paypal.update');
     Route::post('/settings/paypal/toggle',   [PaypalGatewayController::class,   'toggleStatus'])->name('admin.paypal.toggle');
-
     Route::post('/settings/razorpay/update', [RazorpayGatewayController::class, 'update'])      ->name('admin.razorpay.update');
     Route::post('/settings/razorpay/toggle', [RazorpayGatewayController::class, 'toggleStatus'])->name('admin.razorpay.toggle');
-
     Route::post('/settings/paystack/update', [PaystackGatewayController::class, 'update'])      ->name('admin.paystack.update');
     Route::post('/settings/paystack/toggle', [PaystackGatewayController::class, 'toggleStatus'])->name('admin.paystack.toggle');
-
     Route::post('/settings/aamarpay/update', [AamarpayGatewayController::class, 'update'])      ->name('admin.aamarpay.update');
     Route::post('/settings/aamarpay/toggle', [AamarpayGatewayController::class, 'toggleStatus'])->name('admin.aamarpay.toggle');
-
     Route::post('/settings/bkash/update',    [BkashGatewayController::class,    'update'])      ->name('admin.bkash.update');
     Route::post('/settings/bkash/toggle',    [BkashGatewayController::class,    'toggleStatus'])->name('admin.bkash.toggle');
-
     Route::post('/settings/paytabs/update',  [PaytabsGatewayController::class,  'update'])      ->name('admin.paytabs.update');
     Route::post('/settings/paytabs/toggle',  [PaytabsGatewayController::class,  'toggleStatus'])->name('admin.paytabs.toggle');
-
     Route::post('/settings/qicard/update',   [QicardGatewayController::class,   'update'])      ->name('admin.qicard.update');
     Route::post('/settings/qicard/toggle',   [QicardGatewayController::class,   'toggleStatus'])->name('admin.qicard.toggle');
-
     Route::post('/settings/jazzcash/update', [JazzcashGatewayController::class, 'update'])      ->name('admin.jazzcash.update');
     Route::post('/settings/jazzcash/toggle', [JazzcashGatewayController::class, 'toggleStatus'])->name('admin.jazzcash.toggle');
 
     // ── Courier ───────────────────────────────────────────────────────────────
     Route::post('/settings/steadfast/update', [SteadfastCourierController::class, 'update'])      ->name('admin.steadfast.update');
     Route::post('/settings/steadfast/toggle', [SteadfastCourierController::class, 'toggleStatus'])->name('admin.steadfast.toggle');
-
     Route::post('/settings/pathao/update',    [PathaoCourierController::class,    'update'])      ->name('admin.pathao.update');
     Route::post('/settings/pathao/toggle',    [PathaoCourierController::class,    'toggleStatus'])->name('admin.pathao.toggle');
 
     // ── BD Payment ────────────────────────────────────────────────────────────
     Route::post('/settings/bkash-pay/update', [BkashPaymentController::class,     'update'])      ->name('admin.bkash-pay.update');
     Route::post('/settings/bkash-pay/toggle', [BkashPaymentController::class,     'toggleStatus'])->name('admin.bkash-pay.toggle');
-
     Route::post('/settings/shurjopay/update', [ShurjopayGatewayController::class, 'update'])      ->name('admin.shurjopay.update');
     Route::post('/settings/shurjopay/toggle', [ShurjopayGatewayController::class, 'toggleStatus'])->name('admin.shurjopay.toggle');
 
@@ -295,19 +267,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
         return view('admin.smsconfiguration.sms-configuration', $data);
     })->name('admin.sms.configuration');
 
-    // ── Twilio ────────────────────────────────────────────────────────────────
-    Route::post('/settingsconfiguration/twilio/update', [TwilioGatewayController::class, 'update'])      ->name('admin.twilio.update');
-    Route::post('/settingsconfiguration/twilio/toggle', [TwilioGatewayController::class, 'toggleStatus'])->name('admin.twilio.toggle');
-
-    // ── Telesign ──────────────────────────────────────────────────────────────
-    Route::post('/settingsconfiguration/telesign/update', [TelesignGatewayController::class, 'update'])      ->name('admin.telesign.update');
-    Route::post('/settingsconfiguration/telesign/toggle', [TelesignGatewayController::class, 'toggleStatus'])->name('admin.telesign.toggle');
-
-    // ── Nexmo ─────────────────────────────────────────────────────────────────
-    Route::post('/settingsconfiguration/nexmo/update', [NexmoGatewayController::class, 'update'])      ->name('admin.nexmo.update');
-    Route::post('/settingsconfiguration/nexmo/toggle', [NexmoGatewayController::class, 'toggleStatus'])->name('admin.nexmo.toggle');
-
-    // ── MessageBird ───────────────────────────────────────────────────────────
+    // ── Twilio / Telesign / Nexmo / MessageBird ───────────────────────────────
+    Route::post('/settingsconfiguration/twilio/update',      [TwilioGatewayController::class,      'update'])      ->name('admin.twilio.update');
+    Route::post('/settingsconfiguration/twilio/toggle',      [TwilioGatewayController::class,      'toggleStatus'])->name('admin.twilio.toggle');
+    Route::post('/settingsconfiguration/telesign/update',    [TelesignGatewayController::class,    'update'])      ->name('admin.telesign.update');
+    Route::post('/settingsconfiguration/telesign/toggle',    [TelesignGatewayController::class,    'toggleStatus'])->name('admin.telesign.toggle');
+    Route::post('/settingsconfiguration/nexmo/update',       [NexmoGatewayController::class,       'update'])      ->name('admin.nexmo.update');
+    Route::post('/settingsconfiguration/nexmo/toggle',       [NexmoGatewayController::class,       'toggleStatus'])->name('admin.nexmo.toggle');
     Route::post('/settingsconfiguration/messagebird/update', [MessagebirdGatewayController::class, 'update'])      ->name('admin.messagebird.update');
     Route::post('/settingsconfiguration/messagebird/toggle', [MessagebirdGatewayController::class, 'toggleStatus'])->name('admin.messagebird.toggle');
 
@@ -324,7 +290,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('shippingcharge', ShippingChargeController::class)->names('admin.shippingcharge')->except(['show']);
     Route::patch('shippingcharge/{shippingcharge}/toggle-status', [ShippingChargeController::class, 'toggleStatus'])->name('admin.shippingcharge.toggle-status');
 
-    // ── Landing Page Settings ─────────────────────────────────────────────────
+    // ── Landing Pages ─────────────────────────────────────────────────────────
     Route::resource('landingpages', LandingPageController::class)->names('admin.landingpages')->except(['show']);
     Route::patch('landingpages/{landingpage}/toggle-status', [LandingPageController::class, 'toggleStatus'])->name('admin.landingpages.toggle-status');
 
@@ -341,70 +307,59 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::patch('Ipblockmanage/{Ipblockmanage}/toggle-status', [IpblockmanageController::class, 'toggleStatus'])->name('admin.Ipblockmanage.toggleStatus');
 
     // ════════════════════════════════════════════════════════════════════════
-    //  Fraud Management
-    //  সব route name: admin.fraud.*
-    //  ✅ FIX: ->parameters() দিয়ে resource parameter নাম controller-এর
-    //          method signature-এর সাথে exact match করা হয়েছে।
-    //  ✅ FIX: Fraud Dashboard route টা group-এর ভেতরে নেওয়া হয়েছে।
+    //  ✅ Page Management  →  route names: admin.pages.index / .create / etc.
+    //     URL: /admin/pages  (outside the fraud group)
     // ════════════════════════════════════════════════════════════════════════
+    Route::resource('admin/pages', PageController::class)->names('admin.pages');
 
+    // ════════════════════════════════════════════════════════════════════════
+    //  Fraud Management
+    // ════════════════════════════════════════════════════════════════════════
     Route::prefix('admin/fraud')->name('admin.fraud.')->group(function () {
 
         // ── Fraud Dashboard ───────────────────────────────────────────────────
-        // admin/fraud/dashboard → admin.fraud.dashboard
         Route::get('dashboard', [FraudDashboardController::class, 'index'])->name('dashboard');
 
         // ── Fraud Checks ──────────────────────────────────────────────────────
-        // ⚠️ Static routes must come BEFORE the resource wildcard
         Route::post('checks/bulk-action', [FraudCheckController::class, 'bulkAction'])->name('bulk-action');
         Route::get('checks/export/csv',   [FraudCheckController::class, 'export'])    ->name('export');
-
-        // ✅ KEY FIX: ->parameters(['checks' => 'fraudCheck'])
-        //    এটা ছাড়া Laravel route parameter {check} বানায়,
-        //    কিন্তু controller-এ আছে FraudCheck $fraudCheck → mismatch → error।
-        //    এখন URI হবে: admin/fraud/checks/{fraudCheck}
         Route::resource('checks', FraudCheckController::class)
             ->parameters(['checks' => 'fraudCheck'])
             ->names([
-                'index'   => 'index',    // GET    admin/fraud/checks              → admin.fraud.index
-                'create'  => 'create',   // GET    admin/fraud/checks/create       → admin.fraud.create
-                'store'   => 'store',    // POST   admin/fraud/checks              → admin.fraud.store
-                'show'    => 'show',     // GET    admin/fraud/checks/{fraudCheck} → admin.fraud.show
-                'edit'    => 'edit',     // GET    admin/fraud/checks/{fraudCheck}/edit → admin.fraud.edit
-                'update'  => 'update',   // PUT    admin/fraud/checks/{fraudCheck} → admin.fraud.update
-                'destroy' => 'destroy',  // DELETE admin/fraud/checks/{fraudCheck} → admin.fraud.destroy
+                'index'   => 'index',
+                'create'  => 'create',
+                'store'   => 'store',
+                'show'    => 'show',
+                'edit'    => 'edit',
+                'update'  => 'update',
+                'destroy' => 'destroy',
             ]);
 
         // ── Fraud Rules ───────────────────────────────────────────────────────
-        // ✅ KEY FIX: ->parameters(['rules' => 'fraudRule'])
-        //    Controller-এ আছে FraudRule $fraudRule → এখন match হবে।
-        //    URI হবে: admin/fraud/rules/{fraudRule}
         Route::resource('rules', FraudRuleController::class)
             ->parameters(['rules' => 'fraudRule'])
             ->names([
-                'index'   => 'rules.index',    // GET    admin/fraud/rules              → admin.fraud.rules.index
-                'create'  => 'rules.create',   // GET    admin/fraud/rules/create       → admin.fraud.rules.create
-                'store'   => 'rules.store',    // POST   admin/fraud/rules              → admin.fraud.rules.store
-                'show'    => 'rules.show',     // GET    admin/fraud/rules/{fraudRule}  → admin.fraud.rules.show
-                'edit'    => 'rules.edit',     // GET    admin/fraud/rules/{fraudRule}/edit → admin.fraud.rules.edit
-                'update'  => 'rules.update',   // PUT    admin/fraud/rules/{fraudRule}  → admin.fraud.rules.update
-                'destroy' => 'rules.destroy',  // DELETE admin/fraud/rules/{fraudRule}  → admin.fraud.rules.destroy
+                'index'   => 'rules.index',
+                'create'  => 'rules.create',
+                'store'   => 'rules.store',
+                'show'    => 'rules.show',
+                'edit'    => 'rules.edit',
+                'update'  => 'rules.update',
+                'destroy' => 'rules.destroy',
             ]);
-
-        // ⚠️ toggle must come AFTER resource (uses same {fraudRule} wildcard — no conflict)
         Route::patch('rules/{fraudRule}/toggle', [FraudRuleController::class, 'toggle'])->name('rules.toggle');
 
         // ── Fraud Alerts ──────────────────────────────────────────────────────
-        Route::get('alerts',                          [FraudAlertController::class, 'index'])  ->name('alerts.index');
-        Route::get('alerts/{fraudAlert}',             [FraudAlertController::class, 'show'])   ->name('alerts.show');
-        Route::patch('alerts/{fraudAlert}/resolve',   [FraudAlertController::class, 'resolve'])->name('alerts.resolve');
-        Route::patch('alerts/{fraudAlert}/assign',    [FraudAlertController::class, 'assign']) ->name('alerts.assign');
+        Route::get('alerts',                        [FraudAlertController::class, 'index'])  ->name('alerts.index');
+        Route::get('alerts/{fraudAlert}',           [FraudAlertController::class, 'show'])   ->name('alerts.show');
+        Route::patch('alerts/{fraudAlert}/resolve', [FraudAlertController::class, 'resolve'])->name('alerts.resolve');
+        Route::patch('alerts/{fraudAlert}/assign',  [FraudAlertController::class, 'assign']) ->name('alerts.assign');
 
         // ── Fraud Blacklist ───────────────────────────────────────────────────
-        Route::get('blacklist',                             [FraudBlacklistController::class, 'index'])  ->name('blacklist.index');
-        Route::post('blacklist',                            [FraudBlacklistController::class, 'store'])  ->name('blacklist.store');
-        Route::patch('blacklist/{fraudBlacklist}/toggle',   [FraudBlacklistController::class, 'toggle']) ->name('blacklist.toggle');
-        Route::delete('blacklist/{fraudBlacklist}',         [FraudBlacklistController::class, 'destroy'])->name('blacklist.destroy');
+        Route::get('blacklist',                           [FraudBlacklistController::class, 'index'])  ->name('blacklist.index');
+        Route::post('blacklist',                          [FraudBlacklistController::class, 'store'])  ->name('blacklist.store');
+        Route::patch('blacklist/{fraudBlacklist}/toggle', [FraudBlacklistController::class, 'toggle']) ->name('blacklist.toggle');
+        Route::delete('blacklist/{fraudBlacklist}',       [FraudBlacklistController::class, 'destroy'])->name('blacklist.destroy');
 
     }); // end fraud group
 
