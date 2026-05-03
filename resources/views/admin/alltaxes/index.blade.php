@@ -49,7 +49,6 @@
                             <td class="tax-td fw-medium">{{ $tax->name }}</td>
                             <td class="tax-td">{{ rtrim(rtrim(number_format($tax->percentage, 2), '0'), '.') }}%</td>
                             <td class="tax-td text-center">
-                                {{-- Toggle Switch --}}
                                 <div class="form-check form-switch d-flex justify-content-center align-items-center m-0">
                                     <input class="form-check-input tax-toggle"
                                            type="checkbox"
@@ -62,13 +61,11 @@
                             </td>
                             <td class="tax-td text-center">
                                 <div class="d-flex justify-content-center gap-2">
-                                    {{-- Edit --}}
                                     <button class="tax-action-btn tax-edit-btn"
                                             title="Edit"
                                             onclick="openEditModal({{ $tax->id }}, '{{ addslashes($tax->name) }}', '{{ $tax->percentage }}')">
                                         <i class="fas fa-external-link-alt"></i>
                                     </button>
-                                    {{-- Delete --}}
                                     <button class="tax-action-btn tax-del-btn"
                                             title="Delete"
                                             onclick="deleteTax({{ $tax->id }})">
@@ -94,9 +91,7 @@
 
 </div>
 
-{{-- ════════════════════════════════════════
-     ADD NEW TAX MODAL
-════════════════════════════════════════ --}}
+{{-- ════ ADD MODAL ════ --}}
 <div class="modal fade" id="addTaxModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:500px;">
         <div class="modal-content border-0 rounded-3 shadow">
@@ -107,36 +102,25 @@
             <div class="modal-body px-4 py-3">
                 <div class="mb-3">
                     <label class="tax-label">Tax Name <span class="text-danger">*</span></label>
-                    <input type="text" id="add_name"
-                           class="form-control tax-input"
-                           placeholder="Tax Name">
+                    <input type="text" id="add_name" class="form-control tax-input" placeholder="Tax Name">
                     <div class="invalid-feedback" id="add_name_err"></div>
                 </div>
                 <div class="mb-2">
                     <label class="tax-label">Percentage(%) <span class="text-danger">*</span></label>
-                    <input type="number" id="add_percentage"
-                           class="form-control tax-input"
-                           placeholder="Percentage(%)"
-                           min="0" max="100" step="0.01">
+                    <input type="number" id="add_percentage" class="form-control tax-input"
+                           placeholder="Percentage(%)" min="0" max="100" step="0.01">
                     <div class="invalid-feedback" id="add_percentage_err"></div>
                 </div>
             </div>
             <div class="modal-footer border-0 px-4 pb-4 pt-2 gap-2">
-                <button type="button"
-                        class="btn-modal-close"
-                        data-bs-dismiss="modal">Close</button>
-                <button type="button"
-                        class="btn-modal-submit"
-                        id="addSubmitBtn"
-                        onclick="submitAddTax()">Submit</button>
+                <button type="button" class="btn-modal-close" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn-modal-submit" id="addSubmitBtn" onclick="submitAddTax()">Submit</button>
             </div>
         </div>
     </div>
 </div>
 
-{{-- ════════════════════════════════════════
-     UPDATE TAX MODAL
-════════════════════════════════════════ --}}
+{{-- ════ EDIT MODAL ════ --}}
 <div class="modal fade" id="editTaxModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:500px;">
         <div class="modal-content border-0 rounded-3 shadow">
@@ -148,52 +132,40 @@
                 <input type="hidden" id="edit_id">
                 <div class="mb-3">
                     <label class="tax-label">Tax Name <span class="text-danger">*</span></label>
-                    <input type="text" id="edit_name"
-                           class="form-control tax-input"
-                           placeholder="Tax Name">
+                    <input type="text" id="edit_name" class="form-control tax-input" placeholder="Tax Name">
                     <div class="invalid-feedback" id="edit_name_err"></div>
                 </div>
                 <div class="mb-2">
                     <label class="tax-label">Percentage(%) <span class="text-danger">*</span></label>
-                    <input type="number" id="edit_percentage"
-                           class="form-control tax-input"
-                           placeholder="Percentage(%)"
-                           min="0" max="100" step="0.01">
+                    <input type="number" id="edit_percentage" class="form-control tax-input"
+                           placeholder="Percentage(%)" min="0" max="100" step="0.01">
                     <div class="invalid-feedback" id="edit_percentage_err"></div>
                 </div>
             </div>
             <div class="modal-footer border-0 px-4 pb-4 pt-2 gap-2">
-                <button type="button"
-                        class="btn-modal-close"
-                        data-bs-dismiss="modal">Close</button>
-                <button type="button"
-                        class="btn-modal-submit"
-                        id="editSubmitBtn"
-                        onclick="submitEditTax()">Update</button>
+                <button type="button" class="btn-modal-close" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn-modal-submit" id="editSubmitBtn" onclick="submitEditTax()">Update</button>
             </div>
         </div>
     </div>
 </div>
 
-{{-- ── Toast Notification ── --}}
+{{-- ── Toast ── --}}
 <div id="taxToast"
      style="position:fixed; top:20px; right:20px; z-index:9999;
             background:#333; color:#fff; padding:12px 20px;
-            border-radius:8px; font-size:13px;
-            display:none; min-width:200px;
-            box-shadow:0 4px 15px rgba(0,0,0,.2);">
+            border-radius:8px; font-size:13px; display:none;
+            min-width:200px; box-shadow:0 4px 15px rgba(0,0,0,.2);
+            transition: opacity .4s;">
 </div>
 
 <style>
-/* Info Banner */
 .tax-info-banner {
     background: #e8f4fd;
     border: 1px solid #bee3f8;
     border-radius: 10px;
     padding: 16px 20px;
 }
-
-/* Add Button */
 .btn-add-tax {
     background: linear-gradient(135deg, #e91e63, #c2185b);
     color: #fff;
@@ -211,8 +183,6 @@
     transform: translateY(-1px);
     box-shadow: 0 5px 15px rgba(233,30,99,.4);
 }
-
-/* Table */
 .tax-th {
     font-size: 13px;
     font-weight: 600;
@@ -232,21 +202,10 @@
 }
 .tax-row:hover { background: #fafafa !important; }
 .tax-row:last-child { border-bottom: none !important; }
-
-/* Toggle Switch - pink */
-.tax-toggle {
-    accent-color: #e91e63;
-}
-.tax-toggle:checked {
-    background-color: #e91e63 !important;
-    border-color: #e91e63 !important;
-}
 .form-check-input:checked {
     background-color: #e91e63 !important;
     border-color: #e91e63 !important;
 }
-
-/* Action Buttons */
 .tax-action-btn {
     display: inline-flex;
     align-items: center;
@@ -264,8 +223,6 @@
 .tax-edit-btn:hover { background: rgba(59,130,246,.1); color: #1d4ed8; }
 .tax-del-btn { color: #e91e63; }
 .tax-del-btn:hover { background: rgba(233,30,99,.1); color: #c2185b; }
-
-/* Modal Inputs */
 .tax-label {
     display: block;
     font-size: 13px;
@@ -286,8 +243,6 @@
     box-shadow: 0 0 0 3px rgba(233,30,99,.1);
     outline: none;
 }
-
-/* Modal Buttons */
 .btn-modal-close {
     background: #6b7280;
     color: #fff;
@@ -300,7 +255,6 @@
     transition: all .2s;
 }
 .btn-modal-close:hover { background: #4b5563; }
-
 .btn-modal-submit {
     background: linear-gradient(135deg, #e91e63, #c2185b);
     color: #fff;
@@ -325,10 +279,12 @@
 </style>
 
 <script>
-const CSRF = '{{ csrf_token() }}';
-let taxCounter = {{ $taxes->count() }};
+const CSRF        = '{{ csrf_token() }}';
+// ✅ Laravel route() helper দিয়ে সঠিক base URL নাও
+const STORE_URL   = '{{ route("admin.alltaxes.store") }}';
+const BASE_URL    = '{{ url("admin/alltaxes") }}'; // /admin/alltaxes
 
-// ── Open Modals ─────────────────────────────────────
+// ── Open Modals ──────────────────────────────────────
 function openAddModal() {
     document.getElementById('add_name').value       = '';
     document.getElementById('add_percentage').value = '';
@@ -352,42 +308,46 @@ async function submitAddTax() {
     clearErrors(['add_name', 'add_percentage']);
     let valid = true;
 
-    if (!name) {
-        showFieldError('add_name', 'Tax name is required.');
-        valid = false;
-    }
-    if (!percentage || percentage < 0 || percentage > 100) {
-        showFieldError('add_percentage', 'Valid percentage (0-100) is required.');
+    if (!name) { showFieldError('add_name', 'Tax name is required.'); valid = false; }
+    if (percentage === '' || Number(percentage) < 0 || Number(percentage) > 100) {
+        showFieldError('add_percentage', 'Valid percentage (0–100) is required.');
         valid = false;
     }
     if (!valid) return;
 
     const btn = document.getElementById('addSubmitBtn');
-    btn.disabled = true;
+    btn.disabled    = true;
     btn.textContent = 'Saving...';
 
     try {
-        const res = await fetch('{{ route("admin.alltaxes.store") }}', {
+        const res = await fetch(STORE_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': CSRF,
-                'Accept': 'application/json',
+                'Accept'      : 'application/json',
             },
             body: JSON.stringify({ name, percentage }),
         });
 
         const data = await res.json();
 
-        if (data.success) {
+        if (res.ok && data.success) {
             bootstrap.Modal.getInstance(document.getElementById('addTaxModal')).hide();
             showToast('Tax added successfully!', 'success');
             setTimeout(() => location.reload(), 800);
         } else {
-            showToast('Something went wrong.', 'error');
+            // Laravel validation errors আসলে দেখাও
+            if (data.errors) {
+                if (data.errors.name)       showFieldError('add_name',       data.errors.name[0]);
+                if (data.errors.percentage) showFieldError('add_percentage', data.errors.percentage[0]);
+            } else {
+                showToast(data.message || 'Something went wrong.', 'error');
+            }
         }
     } catch (e) {
-        showToast('Request failed.', 'error');
+        showToast('Request failed. Check console.', 'error');
+        console.error(e);
     } finally {
         btn.disabled    = false;
         btn.textContent = 'Submit';
@@ -403,12 +363,9 @@ async function submitEditTax() {
     clearErrors(['edit_name', 'edit_percentage']);
     let valid = true;
 
-    if (!name) {
-        showFieldError('edit_name', 'Tax name is required.');
-        valid = false;
-    }
-    if (!percentage || percentage < 0 || percentage > 100) {
-        showFieldError('edit_percentage', 'Valid percentage (0-100) is required.');
+    if (!name) { showFieldError('edit_name', 'Tax name is required.'); valid = false; }
+    if (percentage === '' || Number(percentage) < 0 || Number(percentage) > 100) {
+        showFieldError('edit_percentage', 'Valid percentage (0–100) is required.');
         valid = false;
     }
     if (!valid) return;
@@ -418,27 +375,34 @@ async function submitEditTax() {
     btn.textContent = 'Updating...';
 
     try {
-        const res = await fetch(`/alltaxes/${id}`, {
+        // ✅ সঠিক URL: BASE_URL = /admin/alltaxes
+        const res = await fetch(`${BASE_URL}/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': CSRF,
-                'Accept': 'application/json',
+                'Accept'      : 'application/json',
             },
-            body: JSON.stringify({ name, percentage, _method: 'PUT' }),
+            body: JSON.stringify({ name, percentage }),
         });
 
         const data = await res.json();
 
-        if (data.success) {
+        if (res.ok && data.success) {
             bootstrap.Modal.getInstance(document.getElementById('editTaxModal')).hide();
             showToast('Tax updated successfully!', 'success');
             setTimeout(() => location.reload(), 800);
         } else {
-            showToast('Something went wrong.', 'error');
+            if (data.errors) {
+                if (data.errors.name)       showFieldError('edit_name',       data.errors.name[0]);
+                if (data.errors.percentage) showFieldError('edit_percentage', data.errors.percentage[0]);
+            } else {
+                showToast(data.message || 'Something went wrong.', 'error');
+            }
         }
     } catch (e) {
-        showToast('Request failed.', 'error');
+        showToast('Request failed. Check console.', 'error');
+        console.error(e);
     } finally {
         btn.disabled    = false;
         btn.textContent = 'Update';
@@ -450,24 +414,26 @@ async function deleteTax(id) {
     if (!confirm('Are you sure you want to delete this tax?')) return;
 
     try {
-        const res = await fetch(`/alltaxes/${id}`, {
+        // ✅ সঠিক URL
+        const res = await fetch(`${BASE_URL}/${id}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': CSRF,
-                'Accept': 'application/json',
+                'Accept'      : 'application/json',
             },
         });
 
         const data = await res.json();
 
-        if (data.success) {
+        if (res.ok && data.success) {
             document.getElementById(`tax-row-${id}`).remove();
             showToast('Tax deleted.', 'success');
         } else {
-            showToast('Delete failed.', 'error');
+            showToast(data.message || 'Delete failed.', 'error');
         }
     } catch (e) {
-        showToast('Request failed.', 'error');
+        showToast('Request failed. Check console.', 'error');
+        console.error(e);
     }
 }
 
@@ -479,26 +445,27 @@ document.addEventListener('DOMContentLoaded', function () {
             const cb = this;
 
             try {
-                const res = await fetch(`/alltaxes/${id}/toggle`, {
+                // ✅ সঠিক URL: /admin/alltaxes/{id}/toggle
+                const res = await fetch(`${BASE_URL}/${id}/toggle`, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': CSRF,
-                        'Accept': 'application/json',
+                        'Accept'      : 'application/json',
                     },
                 });
 
                 const data = await res.json();
 
-                if (data.success) {
+                if (res.ok && data.success) {
                     showToast('Status updated.', 'success');
                 } else {
-                    // revert on failure
-                    cb.checked = !cb.checked;
+                    cb.checked = !cb.checked; // revert
                     showToast('Update failed.', 'error');
                 }
             } catch (e) {
-                cb.checked = !cb.checked;
+                cb.checked = !cb.checked; // revert
                 showToast('Request failed.', 'error');
+                console.error(e);
             }
         });
     });
@@ -508,11 +475,8 @@ document.addEventListener('DOMContentLoaded', function () {
 function showFieldError(fieldId, msg) {
     const input = document.getElementById(fieldId);
     const err   = document.getElementById(fieldId + '_err');
-    input.classList.add('is-invalid');
-    if (err) {
-        err.textContent = msg;
-        err.style.display = 'block';
-    }
+    if (input) input.classList.add('is-invalid');
+    if (err)  { err.textContent = msg; err.style.display = 'block'; }
 }
 
 function clearErrors(fieldIds) {
@@ -520,19 +484,19 @@ function clearErrors(fieldIds) {
         const input = document.getElementById(id);
         const err   = document.getElementById(id + '_err');
         if (input) input.classList.remove('is-invalid');
-        if (err)   { err.textContent = ''; err.style.display = 'none'; }
+        if (err)  { err.textContent = ''; err.style.display = 'none'; }
     });
 }
 
 function showToast(msg, type = 'success') {
-    const toast = document.getElementById('taxToast');
-    toast.textContent        = msg;
-    toast.style.background   = type === 'success' ? '#16a34a' : '#dc2626';
-    toast.style.display      = 'block';
-    toast.style.opacity      = '1';
+    const toast          = document.getElementById('taxToast');
+    toast.textContent    = msg;
+    toast.style.background = type === 'success' ? '#16a34a' : '#dc2626';
+    toast.style.opacity  = '1';
+    toast.style.display  = 'block';
     setTimeout(() => {
-        toast.style.opacity  = '0';
-        setTimeout(() => toast.style.display = 'none', 400);
+        toast.style.opacity = '0';
+        setTimeout(() => { toast.style.display = 'none'; }, 400);
     }, 2500);
 }
 </script>

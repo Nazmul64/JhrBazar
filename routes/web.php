@@ -1,4 +1,14 @@
 <?php
+ 
+ // Frontend SPA Root Route
+ Route::get('/', function () {
+     return view('react-test');
+ });
+ 
+ // Frontend SPA Catch-all Route
+ Route::get('/{any}', function () {
+     return view('react-test');
+ })->where('any', '^(?!admin|api).*$');
 
 use App\Http\Controllers\Admin\Adminauthcontroller;
 use App\Http\Controllers\Admin\Admincontroller;
@@ -58,10 +68,22 @@ use App\Http\Controllers\Admin\FraudRuleController;
 use App\Http\Controllers\Admin\FraudAlertController;
 use App\Http\Controllers\Admin\FraudBlacklistController;
 use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\ShopController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Auth::routes();
+
+// Frontend SPA Root Route
+Route::get('/', function () {
+    return view('react-test');
+});
+
+// Frontend SPA Catch-all Route
+Route::get('/{any}', function () {
+    return view('react-test');
+})->where('any', '^(?!admin|api).*$');
 
 // ── Admin Auth (Public) ─────────────────────────────────────────────────────
 Route::get('admin/login',   [Adminauthcontroller::class, 'adminlogin'])        ->name('admin.login');
@@ -73,6 +95,18 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // ── Dashboard ────────────────────────────────────────────────────────────
     Route::get('admin/dashboard', [Admincontroller::class, 'dashboard'])->name('admin.dashboard');
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  ✅ PROFILE MANAGEMENT  (top-level — NOT inside any prefix group)
+    //  Route names: admin.profile.index / .create / .store / .edit / .update
+    // ════════════════════════════════════════════════════════════════════════
+    Route::prefix('admin/profile')->name('admin.profile.')->group(function () {
+        Route::get('/',        [ProfileController::class, 'index'])  ->name('index');
+        Route::get('/create',  [ProfileController::class, 'create']) ->name('create');
+        Route::post('/store',  [ProfileController::class, 'store'])  ->name('store');
+        Route::get('/edit',    [ProfileController::class, 'edit'])   ->name('edit');
+        Route::post('/update', [ProfileController::class, 'update']) ->name('update');
+    });
 
     // ── Customers ────────────────────────────────────────────────────────────
     Route::resource('admincustomers', CustomerController::class)->names('admin.customers');
@@ -180,20 +214,20 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // ── Point of Sale (POS) ───────────────────────────────────────────────────
     Route::prefix('pointofsalepos')->name('admin.pointofsalepos.')->group(function () {
-        Route::get('/',                            [PointOfSalePosController::class, 'index'])          ->name('index');
-        Route::get('invoice/{invoice}',            [PointOfSalePosController::class, 'invoice'])        ->name('invoice');
-        Route::get('products',                     [PointOfSalePosController::class, 'getProducts'])    ->name('products');
-        Route::get('customers/search',             [PointOfSalePosController::class, 'searchCustomers'])->name('customers.search');
-        Route::post('customers/store',             [PointOfSalePosController::class, 'storeCustomer'])  ->name('customers.store');
-        Route::post('apply-coupon',                [PointOfSalePosController::class, 'applyCoupon'])    ->name('apply.coupon');
-        Route::post('place-order',                 [PointOfSalePosController::class, 'placeOrder'])     ->name('place.order');
-        Route::post('draft',                       [PointOfSalePosController::class, 'draft'])          ->name('draft');
-        Route::get('sales',                        [PointOfSalePosController::class, 'salesIndex'])     ->name('sales.index');
-        Route::get('sales/{invoice}',              [PointOfSalePosController::class, 'salesShow'])      ->name('sales.show');
-        Route::patch('sales/{invoice}/status',     [PointOfSalePosController::class, 'updateStatus'])   ->name('sales.status');
-        Route::get('draft-orders',                 [PointOfSalePosController::class, 'draftIndex'])     ->name('draft.index');
-        Route::get('draft-orders/{draft}/load',    [PointOfSalePosController::class, 'getDraft'])       ->name('draft.load');
-        Route::delete('draft-orders/{draft}',      [PointOfSalePosController::class, 'draftDestroy'])   ->name('draft.destroy');
+        Route::get('/',                         [PointOfSalePosController::class, 'index'])          ->name('index');
+        Route::get('invoice/{invoice}',         [PointOfSalePosController::class, 'invoice'])        ->name('invoice');
+        Route::get('products',                  [PointOfSalePosController::class, 'getProducts'])    ->name('products');
+        Route::get('customers/search',          [PointOfSalePosController::class, 'searchCustomers'])->name('customers.search');
+        Route::post('customers/store',          [PointOfSalePosController::class, 'storeCustomer'])  ->name('customers.store');
+        Route::post('apply-coupon',             [PointOfSalePosController::class, 'applyCoupon'])    ->name('apply.coupon');
+        Route::post('place-order',              [PointOfSalePosController::class, 'placeOrder'])     ->name('place.order');
+        Route::post('draft',                    [PointOfSalePosController::class, 'draft'])          ->name('draft');
+        Route::get('sales',                     [PointOfSalePosController::class, 'salesIndex'])     ->name('sales.index');
+        Route::get('sales/{invoice}',           [PointOfSalePosController::class, 'salesShow'])      ->name('sales.show');
+        Route::patch('sales/{invoice}/status',  [PointOfSalePosController::class, 'updateStatus'])   ->name('sales.status');
+        Route::get('draft-orders',              [PointOfSalePosController::class, 'draftIndex'])     ->name('draft.index');
+        Route::get('draft-orders/{draft}/load', [PointOfSalePosController::class, 'getDraft'])       ->name('draft.load');
+        Route::delete('draft-orders/{draft}',   [PointOfSalePosController::class, 'draftDestroy'])   ->name('draft.destroy');
     });
 
     // ── Contact ───────────────────────────────────────────────────────────────
@@ -306,11 +340,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('Ipblockmanage', IpblockmanageController::class)->names('admin.Ipblockmanage')->except(['show', 'create']);
     Route::patch('Ipblockmanage/{Ipblockmanage}/toggle-status', [IpblockmanageController::class, 'toggleStatus'])->name('admin.Ipblockmanage.toggleStatus');
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  ✅ Page Management  →  route names: admin.pages.index / .create / etc.
-    //     URL: /admin/pages  (outside the fraud group)
-    // ════════════════════════════════════════════════════════════════════════
+    // ── Page Management ───────────────────────────────────────────────────────
     Route::resource('admin/pages', PageController::class)->names('admin.pages');
+
+    // ── Shop Management ───────────────────────────────────────────────────────
+    Route::resource('admin/shops', ShopController::class)->names('admin.shops')->except(['show']);
+    Route::patch('admin/shops/{shop}/toggle-status', [ShopController::class, 'toggleStatus'])->name('admin.shops.toggle-status');
 
     // ════════════════════════════════════════════════════════════════════════
     //  Fraud Management
@@ -363,4 +398,5 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     }); // end fraud group
 
-}); // end middleware group
+
+});

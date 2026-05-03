@@ -81,16 +81,16 @@
     </div>
 </div>
 
-@push('scripts')
+
 {{-- Summernote or TinyMCE Rich Text Editor --}}
 {{-- If using Summernote, include CDN in master layout and initialize below --}}
 <script>
-    // If you use Summernote:
-    // $('#description').summernote({ height: 200, placeholder: 'Enter Your Text Here' });
+     If you use Summernote:
+     $('#description').summernote({ height: 200, placeholder: 'Enter Your Text Here' });
 
-    // If you use TinyMCE:
-    // tinymce.init({ selector: '#description', height: 200 });
+     If you use TinyMCE:
+     tinymce.init({ selector: '#description', height: 200 });
 </script>
-@endpush
+
 
 @endsection

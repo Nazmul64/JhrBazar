@@ -1,4 +1,5 @@
 <?php
+
 // database/migrations/0001_01_01_000000_create_users_table.php
 
 use Illuminate\Database\Migrations\Migration;
@@ -14,12 +15,14 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('phone')->nullable();
+            $table->enum('gender', ['Male', 'Female', 'Other'])->nullable();
+            $table->string('profile_image')->nullable(); // stores: uploads/shops/profiles/xxx.jpg
             $table->enum('role', [
-                'user','admin','seller','customer',
-                'manager','employee','vendor',
-                'subadmin','super_admin','staff'
+                'user', 'admin', 'seller', 'customer',
+                'manager', 'employee', 'vendor',
+                'subadmin', 'super_admin', 'staff'
             ])->default('user');
-            // ❌ role_id এখানে নেই — আলাদা migration এ থাকবে
+            // role_id আলাদা migration এ আছে
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

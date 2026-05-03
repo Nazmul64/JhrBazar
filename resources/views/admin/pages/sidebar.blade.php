@@ -19,8 +19,7 @@
         </a>
 
         {{-- Order Management --}}
-        <a class="nav-item-custom {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}"
-           href="#">
+        <a class="nav-item-custom" href="#">
             <i class="bi bi-bag-check"></i> Order Management
         </a>
 
@@ -60,7 +59,6 @@
         {{-- ══════════════ FRAUD ══════════════ --}}
         <div class="nav-section-title">Fraud</div>
 
-        {{-- Fraud Dashboard --}}
         <a class="nav-item-custom {{ request()->routeIs('admin.fraud.dashboard') ? 'active' : '' }}"
            href="{{ route('admin.fraud.dashboard') }}">
             <i class="bi bi-shield-exclamation"></i> Fraud Dashboard
@@ -116,7 +114,7 @@
             </a>
         </div>
 
-        {{-- Fraud Blacklist --}}
+        {{-- Blacklist --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.fraud.blacklist.*') ? 'active' : '' }}"
              data-sub="fraud-blacklist">
             <i class="bi bi-ban"></i> Blacklist
@@ -199,17 +197,24 @@
             </a>
         </div>
 
-        {{-- ══════════════ COMMERCE ══════════════ --}}
-        <div class="nav-section-title">Commerce</div>
+        {{-- ══════════════ SHOP MANAGEMENT ══════════════ --}}
+        <div class="nav-section-title">Shop Management</div>
 
-        {{-- Purchase --}}
-        <div class="nav-item-custom has-sub" data-sub="purchase">
-            <i class="bi bi-cart3"></i> Purchase
+        {{-- Shops --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.shops.*') ? 'active' : '' }}"
+             data-sub="shop">
+            <i class="bi bi-shop"></i> Shop Management
             <i class="bi bi-chevron-right arrow ms-auto"></i>
         </div>
-        <div class="nav-submenu" id="sub-purchase">
-            <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> Purchase Orders</a>
-            <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> Suppliers</a>
+        <div class="nav-submenu" id="sub-shop">
+            <a class="nav-item-custom {{ request()->routeIs('admin.shops.index') ? 'active' : '' }}"
+               href="{{ route('admin.shops.index') }}">
+                <i class="bi bi-dot"></i> All Shops
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.shops.create') ? 'active' : '' }}"
+               href="{{ route('admin.shops.create') }}">
+                <i class="bi bi-dot"></i> Add Shop
+            </a>
         </div>
 
         {{-- Promotion Management --}}
@@ -233,8 +238,10 @@
             </a>
         </div>
 
-        <a class="nav-item-custom" href="#">
-            <i class="bi bi-bell"></i> Push Notification
+        {{-- ✅ Profile — সরাসরি admin.profile.index রুট ব্যবহার করা হচ্ছে --}}
+        <a class="nav-item-custom {{ request()->routeIs('admin.profile.*') ? 'active' : '' }}"
+           href="{{ route('admin.profile.index') }}">
+            <i class="bi bi-person-circle"></i> Profile
         </a>
 
         {{-- ══════════════ MANAGEMENT ══════════════ --}}
@@ -310,19 +317,9 @@
             </a>
         </div>
 
-        {{-- Shop Management --}}
-        <div class="nav-item-custom has-sub" data-sub="shop">
-            <i class="bi bi-shop"></i> Shop Management
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
-        </div>
-        <div class="nav-submenu" id="sub-shop">
-            <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> All Shops</a>
-        </div>
-
         {{-- ══════════════ SYSTEM ══════════════ --}}
         <div class="nav-section-title">System</div>
 
-        <a class="nav-item-custom" href="#"><i class="bi bi-person-circle"></i> My Profile</a>
         <a class="nav-item-custom" href="#"><i class="bi bi-box"></i> Shop Product Management</a>
         <a class="nav-item-custom" href="#"><i class="bi bi-journal-bookmark"></i> Subscription Management</a>
         <a class="nav-item-custom" href="#"><i class="bi bi-headset"></i> Support Management</a>
@@ -405,7 +402,6 @@
         </div>
 
         {{-- Landing Page Settings --}}
-        {{-- ✅ admin.pages.* যোগ করা হয়েছে active check-এ --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.landingpages.*') || request()->routeIs('admin.pages.*') ? 'active' : '' }}"
              data-sub="landing-page-settings">
             <i class="bi bi-layout-text-window-reverse"></i> Landing Page Settings
@@ -420,8 +416,6 @@
                href="{{ route('admin.landingpages.index') }}">
                 <i class="bi bi-dot"></i> Campaign List
             </a>
-
-            {{-- ✅ সঠিক route name: admin.pages.index --}}
             <a class="nav-item-custom {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}"
                href="{{ route('admin.pages.index') }}">
                 <i class="bi bi-dot"></i> Page Manage
@@ -441,20 +435,48 @@
                href="{{ route('admin.settings.gateways') }}">
                 <i class="bi bi-dot"></i> Payment Gateways
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#stripe"><i class="bi bi-dot"></i> Stripe</a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paypal"><i class="bi bi-dot"></i> PayPal</a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#razorpay"><i class="bi bi-dot"></i> Razorpay</a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paystack"><i class="bi bi-dot"></i> Paystack</a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#aamarpay"><i class="bi bi-dot"></i> AamarPay</a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#bkash"><i class="bi bi-dot"></i> BKash</a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paytabs"><i class="bi bi-dot"></i> PayTabs</a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#qicard"><i class="bi bi-dot"></i> QiCard</a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#jazzcash"><i class="bi bi-dot"></i> JazzCash</a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#steadfast"><i class="bi bi-dot"></i> Steadfast Courier</a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#pathao"><i class="bi bi-dot"></i> Pathao Courier</a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#bkash-pay"><i class="bi bi-dot"></i> Bkash Payment</a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#shurjopay"><i class="bi bi-dot"></i> Shurjopay</a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#sms"><i class="bi bi-dot"></i> SMS Gateway</a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#stripe">
+                <i class="bi bi-dot"></i> Stripe
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paypal">
+                <i class="bi bi-dot"></i> PayPal
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#razorpay">
+                <i class="bi bi-dot"></i> Razorpay
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paystack">
+                <i class="bi bi-dot"></i> Paystack
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#aamarpay">
+                <i class="bi bi-dot"></i> AamarPay
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#bkash">
+                <i class="bi bi-dot"></i> BKash
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paytabs">
+                <i class="bi bi-dot"></i> PayTabs
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#qicard">
+                <i class="bi bi-dot"></i> QiCard
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#jazzcash">
+                <i class="bi bi-dot"></i> JazzCash
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#steadfast">
+                <i class="bi bi-dot"></i> Steadfast Courier
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#pathao">
+                <i class="bi bi-dot"></i> Pathao Courier
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#bkash-pay">
+                <i class="bi bi-dot"></i> Bkash Payment
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#shurjopay">
+                <i class="bi bi-dot"></i> Shurjopay
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#sms">
+                <i class="bi bi-dot"></i> SMS Gateway
+            </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.sms.configuration') ? 'active' : '' }}"
                href="{{ route('admin.sms.configuration') }}">
                 <i class="bi bi-dot"></i> SMS Configuration
@@ -465,7 +487,6 @@
             </a>
         </div>
 
-        {{-- Contact Us --}}
         <a class="nav-item-custom {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}"
            href="{{ route('admin.contact.index') }}">
             <i class="bi bi-envelope"></i> Contact Us
