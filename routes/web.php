@@ -1,14 +1,14 @@
 <?php
- 
+
  // Frontend SPA Root Route
  Route::get('/', function () {
      return view('react-test');
  });
- 
+
  // Frontend SPA Catch-all Route
  Route::get('/{any}', function () {
      return view('react-test');
- })->where('any', '^(?!admin|api).*$');
+ })->where('any', '^(?!admin|api|employee|manager|customer|seller|register|login|logout|user-profile).*$');
 
 use App\Http\Controllers\Admin\Adminauthcontroller;
 use App\Http\Controllers\Admin\Admincontroller;
@@ -70,65 +70,92 @@ use App\Http\Controllers\Admin\FraudBlacklistController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\ShopController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Employee\EmployeeDashboardController;
+use App\Http\Controllers\Customer\CustomerDashboardController;
+use App\Http\Controllers\Seller\SellerDashboardController;
+use App\Http\Controllers\Seller\SellerAuthController;
+use App\Http\Controllers\Admin\SellerApprovalController;
+use App\Http\Controllers\Admin\BankController;
+use App\Http\Controllers\Manager\ManagerDashboardController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Auth::routes();
 
-// Frontend SPA Root Route
-Route::get('/', function () {
-    return view('react-test');
-});
 
-// Frontend SPA Catch-all Route
-Route::get('/{any}', function () {
-    return view('react-test');
-})->where('any', '^(?!admin|api).*$');
+use App\Http\Controllers\CustomAuthController;
 
 // ── Admin Auth (Public) ─────────────────────────────────────────────────────
 Route::get('admin/login',   [Adminauthcontroller::class, 'adminlogin'])        ->name('admin.login');
 Route::post('admin/login',  [Adminauthcontroller::class, 'admin_login_submit'])->name('admin.login.submit');
 Route::post('admin/logout', [Adminauthcontroller::class, 'admin_logout'])      ->name('admin.logout');
 
+// ── Custom User Registration ────────────────────────────────────────────────
+Route::get('register/customer', [CustomAuthController::class, 'showCustomerRegister'])->name('register.customer');
+Route::post('register/customer', [CustomAuthController::class, 'registerCustomer'])->name('register.customer.submit');
+Route::get('register/seller', [CustomAuthController::class, 'showSellerRegister'])->name('register.seller');
+Route::post('register/seller', [CustomAuthController::class, 'registerSeller'])->name('register.seller.submit');
+
+// ── Employee Login ──────────────────────────────────────────────────────────
+Route::get('employee/login',  [App\Http\Controllers\Employee\EmployeeAuthController::class, 'showLogin'])->name('employee.login');
+Route::post('employee/login', [App\Http\Controllers\Employee\EmployeeAuthController::class, 'login'])->name('employee.login.submit');
+Route::post('employee/logout', [App\Http\Controllers\Employee\EmployeeAuthController::class, 'logout'])->name('employee.logout');
+
+// ── Manager Login ───────────────────────────────────────────────────────────
+Route::get('manager/login',  [App\Http\Controllers\Manager\ManagerAuthController::class, 'showLogin'])->name('manager.login');
+Route::post('manager/login', [App\Http\Controllers\Manager\ManagerAuthController::class, 'login'])->name('manager.login.submit');
+Route::post('manager/logout', [App\Http\Controllers\Manager\ManagerAuthController::class, 'logout'])->name('manager.logout');
+
+// ── Seller Login ────────────────────────────────────────────────────────────
+Route::get('seller/login',  [App\Http\Controllers\Seller\SellerAuthController::class, 'showLogin'])->name('seller.login');
+Route::post('seller/login', [App\Http\Controllers\Seller\SellerAuthController::class, 'login'])->name('seller.login.submit');
+Route::post('seller/logout', [App\Http\Controllers\Seller\SellerAuthController::class, 'logout'])->name('seller.logout');
+
 // ── Admin Protected Routes ──────────────────────────────────────────────────
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
     // ── Dashboard ────────────────────────────────────────────────────────────
-    Route::get('admin/dashboard', [Admincontroller::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('dashboard', [Admincontroller::class, 'dashboard'])->name('admin.dashboard');
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  ✅ PROFILE MANAGEMENT  (top-level — NOT inside any prefix group)
-    //  Route names: admin.profile.index / .create / .store / .edit / .update
-    // ════════════════════════════════════════════════════════════════════════
-    Route::prefix('admin/profile')->name('admin.profile.')->group(function () {
-        Route::get('/',        [ProfileController::class, 'index'])  ->name('index');
-        Route::get('/create',  [ProfileController::class, 'create']) ->name('create');
-        Route::post('/store',  [ProfileController::class, 'store'])  ->name('store');
-        Route::get('/edit',    [ProfileController::class, 'edit'])   ->name('edit');
-        Route::post('/update', [ProfileController::class, 'update']) ->name('update');
-    });
+    // ── Customers ────────────────────────────────────────────────────────────
 
     // ── Customers ────────────────────────────────────────────────────────────
     Route::resource('admincustomers', CustomerController::class)->names('admin.customers');
-    Route::post('admin/customers/{id}/reset-password', [CustomerController::class, 'resetPassword'])->name('admin.customers.reset-password');
+    Route::post('customers/{id}/reset-password', [CustomerController::class, 'resetPassword'])->name('admin.customers.reset-password');
 
     // ── Permissions ──────────────────────────────────────────────────────────
     Route::resource('permission', PermissionController::class)->names('admin.permissions');
 
     // ── Roles ─────────────────────────────────────────────────────────────────
-    Route::get('admin/roles',                        [RoleController::class, 'index'])           ->name('admin.role.index');
-    Route::post('admin/roles',                       [RoleController::class, 'store'])           ->name('admin.role.store');
-    Route::post('admin/roles/{id}/update-name',      [RoleController::class, 'updateName'])      ->name('admin.role.updateName');
-    Route::post('admin/roles/{id}/sync-permissions', [RoleController::class, 'syncPermissions']) ->name('admin.role.syncPermissions');
-    Route::delete('admin/roles/{id}',                [RoleController::class, 'destroy'])         ->name('admin.role.destroy');
-    Route::get('admin/roles/{id}/permissions',       [RoleController::class, 'getPermissions'])  ->name('admin.role.permissions');
+    Route::middleware(['permission:employee.list'])->group(function () {
+        Route::get('roles',                        [RoleController::class, 'index'])           ->name('admin.role.index');
+        Route::post('roles',                       [RoleController::class, 'store'])           ->name('admin.role.store');
+        Route::post('roles/{id}/update-name',      [RoleController::class, 'updateName'])      ->name('admin.role.updateName');
+        Route::post('roles/{id}/sync-permissions', [RoleController::class, 'syncPermissions']) ->name('admin.role.syncPermissions');
+        Route::delete('roles/{id}',                [RoleController::class, 'destroy'])         ->name('admin.role.destroy');
+        Route::get('roles/{id}/permissions',       [RoleController::class, 'getPermissions'])  ->name('admin.role.permissions');
+    });
 
     // ── Employees ─────────────────────────────────────────────────────────────
-    Route::resource('admin/employee', EmployeeController::class)->names('admin.employees');
-    Route::get('admin/employee/{employee}/permission',      [EmployeeController::class, 'permission'])       ->name('admin.employees.permission');
-    Route::post('admin/employee/{employee}/permission',     [EmployeeController::class, 'updatePermission']) ->name('admin.employees.updatePermission');
-    Route::post('admin/employee/{employee}/toggle-status',  [EmployeeController::class, 'toggleStatus'])     ->name('admin.employees.toggleStatus');
-    Route::post('admin/employee/{employee}/reset-password', [EmployeeController::class, 'resetPassword'])    ->name('admin.employees.resetPassword');
+    Route::resource('employee', EmployeeController::class)->names('admin.employees');
+    Route::get('employee/{employee}/permission',      [EmployeeController::class, 'permission'])       ->name('admin.employees.permission');
+    Route::post('employee/{employee}/permission',     [EmployeeController::class, 'updatePermission']) ->name('admin.employees.updatePermission');
+    Route::post('employee/{employee}/toggle-status',  [EmployeeController::class, 'toggleStatus'])     ->name('admin.employees.toggleStatus');
+    Route::post('employee/{employee}/reset-password', [EmployeeController::class, 'resetPassword'])    ->name('admin.employees.resetPassword');
+
+    // ── Seller Approvals ──────────────────────────────────────────────────────
+    Route::get('seller-approvals', [SellerApprovalController::class, 'index'])->name('admin.sellers.approvals');
+    Route::post('seller-approvals/{id}/approve', [SellerApprovalController::class, 'approve'])->name('admin.sellers.approve');
+    Route::post('seller-approvals/{id}/reject',  [SellerApprovalController::class, 'reject'])->name('admin.sellers.reject');
+
+    // ── Bank Management ───────────────────────────────────────────────────────
+    Route::resource('banks', BankController::class)->names('admin.banks');
+
+    // ── Unified Users ─────────────────────────────────────────────────────────
+    Route::middleware(['permission:employee.list'])->group(function () {
+        Route::resource('users', UserController::class)->names('admin.users');
+    });
 
     // ── Suppliers ─────────────────────────────────────────────────────────────
     Route::resource('supplier', SupplierController::class)->names('admin.supplier');
@@ -341,16 +368,16 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::patch('Ipblockmanage/{Ipblockmanage}/toggle-status', [IpblockmanageController::class, 'toggleStatus'])->name('admin.Ipblockmanage.toggleStatus');
 
     // ── Page Management ───────────────────────────────────────────────────────
-    Route::resource('admin/pages', PageController::class)->names('admin.pages');
+    Route::resource('pages', PageController::class)->names('admin.pages');
 
     // ── Shop Management ───────────────────────────────────────────────────────
-    Route::resource('admin/shops', ShopController::class)->names('admin.shops')->except(['show']);
-    Route::patch('admin/shops/{shop}/toggle-status', [ShopController::class, 'toggleStatus'])->name('admin.shops.toggle-status');
+    Route::resource('shops', ShopController::class)->names('admin.shops')->except(['show']);
+    Route::patch('shops/{shop}/toggle-status', [ShopController::class, 'toggleStatus'])->name('admin.shops.toggle-status');
 
     // ════════════════════════════════════════════════════════════════════════
     //  Fraud Management
     // ════════════════════════════════════════════════════════════════════════
-    Route::prefix('admin/fraud')->name('admin.fraud.')->group(function () {
+    Route::prefix('fraud')->name('admin.fraud.')->group(function () {
 
         // ── Fraud Dashboard ───────────────────────────────────────────────────
         Route::get('dashboard', [FraudDashboardController::class, 'index'])->name('dashboard');
@@ -400,3 +427,37 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 
 });
+
+// ── Role-Based Dashboards ────────────────────────────────────────────────────
+Route::middleware(['auth'])->group(function () {
+    // Employee Dashboard
+    Route::middleware(['role:employee'])->prefix('employee')->name('employee.')->group(function () {
+        Route::get('/dashboard', [EmployeeDashboardController::class, 'index'])->name('dashboard');
+    });
+
+    // Customer Dashboard
+    Route::middleware(['role:customer'])->prefix('customer')->name('customer.')->group(function () {
+        Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
+    });
+
+    // Manager Dashboard
+    Route::middleware(['role:manager'])->prefix('manager')->name('manager.')->group(function () {
+        Route::get('/dashboard', [ManagerDashboardController::class, 'index'])->name('dashboard');
+    });
+
+    // Seller Dashboard
+    Route::middleware(['role:seller'])->prefix('seller')->name('seller.')->group(function () {
+        Route::get('/dashboard', [SellerDashboardController::class, 'index'])->name('dashboard');
+    });
+
+    // ── Shared Profile Management ─────────────────────────────────────────────
+    Route::prefix('user-profile')->name('admin.profile.')->group(function () {
+        Route::get('/',                 [ProfileController::class, 'index'])         ->name('index');
+        Route::get('/create',           [ProfileController::class, 'create'])        ->name('create');
+        Route::post('/store',           [ProfileController::class, 'store'])         ->name('store');
+        Route::get('/edit',             [ProfileController::class, 'edit'])          ->name('edit');
+        Route::post('/update',          [ProfileController::class, 'update'])        ->name('update');
+        Route::post('/change-password', [ProfileController::class, 'changePassword'])->name('change-password');
+    });
+});
+

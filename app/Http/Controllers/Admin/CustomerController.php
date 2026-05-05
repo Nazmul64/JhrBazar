@@ -24,7 +24,8 @@ class CustomerController extends Controller
     // ── Show create form ────────────────────────────────
     public function create()
     {
-        return view('admin.customer.create');
+        $roles = \App\Models\Role::where('user_type', \App\Models\Role::TYPE_CUSTOMER)->get();
+        return view('admin.customer.create', compact('roles'));
     }
 
     // ── Store new customer ──────────────────────────────
@@ -38,16 +39,17 @@ class CustomerController extends Controller
             'password'      => 'required|min:6|confirmed',
             'gender'        => 'nullable|in:male,female,other',
             'date_of_birth' => 'nullable|date',
-            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:10240',
+            'role_id'       => 'nullable|exists:roles,id',
         ]);
 
-        // 1. Handle profile image — save to public/uploads/customers
+        // 1. Handle profile image — save to public/uploads/rolephoto
         $imagePath = null;
         if ($request->hasFile('profile_image')) {
             $file      = $request->file('profile_image');
             $filename  = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads/customers'), $filename);
-            $imagePath = 'uploads/customers/' . $filename;
+            $file->move(public_path('uploads/rolephoto'), $filename);
+            $imagePath = 'uploads/rolephoto/' . $filename;
         }
 
         // 2. Create user account
@@ -57,6 +59,7 @@ class CustomerController extends Controller
             'phone'    => $request->phone,
             'password' => Hash::make($request->password),
             'role'     => 'customer',
+            'role_id'  => $request->role_id,
         ]);
 
         // 3. Create customer profile
@@ -77,7 +80,8 @@ class CustomerController extends Controller
     public function edit(string $id)
     {
         $customer = Customer::with('user')->findOrFail($id);
-        return view('admin.customer.edit', compact('customer'));
+        $roles    = \App\Models\Role::where('user_type', \App\Models\Role::TYPE_CUSTOMER)->get();
+        return view('admin.customer.edit', compact('customer', 'roles'));
     }
 
     // ── Update customer ─────────────────────────────────
@@ -92,7 +96,8 @@ class CustomerController extends Controller
             'email'         => 'required|email|unique:users,email,' . $customer->user_id,
             'gender'        => 'nullable|in:male,female,other',
             'date_of_birth' => 'nullable|date',
-            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:10240',
+            'role_id'       => 'nullable|exists:roles,id',
         ]);
 
         // Handle new profile image
@@ -107,15 +112,16 @@ class CustomerController extends Controller
             // Save new image
             $file      = $request->file('profile_image');
             $filename  = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads/customers'), $filename);
-            $imagePath = 'uploads/customers/' . $filename;
+            $file->move(public_path('uploads/rolephoto'), $filename);
+            $imagePath = 'uploads/rolephoto/' . $filename;
         }
 
         // Update users table
         $customer->user->update([
-            'name'  => $request->first_name . ' ' . $request->last_name,
-            'email' => $request->email,
-            'phone' => $request->phone,
+            'name'    => $request->first_name . ' ' . $request->last_name,
+            'email'   => $request->email,
+            'phone'   => $request->phone,
+            'role_id' => $request->role_id,
         ]);
 
         // Update customers table

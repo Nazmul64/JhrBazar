@@ -113,6 +113,24 @@ class PermissionSeeder extends Seeder
             ['group' => 'PurchaseReturn',       'name' => 'invoice.search',         'key' => 'purchase_return.invoice_search'],
             ['group' => 'PurchaseReturn',       'name' => 'Invoice',                'key' => 'purchase_return.invoice'],
             ['group' => 'PurchaseReturn',       'name' => 'invoice.add',            'key' => 'purchase_return.invoice_add'],
+
+            // Fraud
+            ['group' => 'Fraud',                'name' => 'list',                   'key' => 'fraud.list'],
+            ['group' => 'Fraud',                'name' => 'create',                 'key' => 'fraud.create'],
+            ['group' => 'Fraud',                'name' => 'edit',                   'key' => 'fraud.edit'],
+            ['group' => 'Fraud',                'name' => 'delete',                 'key' => 'fraud.delete'],
+
+            // Shop Management
+            ['group' => 'Shop',                 'name' => 'list',                   'key' => 'shop.list'],
+            ['group' => 'Shop',                 'name' => 'create',                 'key' => 'shop.create'],
+            ['group' => 'Shop',                 'name' => 'edit',                   'key' => 'shop.edit'],
+            ['group' => 'Shop',                 'name' => 'delete',                 'key' => 'shop.delete'],
+
+            // Banner
+            ['group' => 'Banner',               'name' => 'list',                   'key' => 'banner.list'],
+            ['group' => 'Banner',               'name' => 'create',                 'key' => 'banner.create'],
+            ['group' => 'Banner',               'name' => 'edit',                   'key' => 'banner.edit'],
+            ['group' => 'Banner',               'name' => 'delete',                 'key' => 'banner.delete'],
         ];
 
         foreach ($permissions as $permission) {

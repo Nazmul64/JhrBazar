@@ -19,6 +19,13 @@ class User extends Authenticatable
         'profile_image',
         'role',
         'role_id',
+        'status',
+        'last_name',
+        'national_id_card',
+        'bank_name',
+        'bank_branch',
+        'bank_account_number',
+        'bank_account_holder',
     ];
 
     protected $hidden = [
@@ -55,6 +62,35 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return in_array($this->role, [self::ROLE_ADMIN, self::ROLE_SUPER_ADMIN]);
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return $this->role === $role;
+    }
+
+    /**
+     * Check if the user has a specific permission.
+     * Permissions are retrieved via the user's role.
+     */
+    public function hasPermission(string $permission): bool
+    {
+        if ($this->isAdmin()) {
+            return true; // Admin/SuperAdmin has all permissions
+        }
+
+        $role = $this->roleModel;
+
+        // Fallback: If role_id is missing, try to find role by name string
+        if (!$role && $this->role) {
+            $role = Role::where('user_type', $this->role)->first();
+        }
+
+        if (!$role) {
+            return false;
+        }
+
+        return $role->permissions->contains('key', $permission);
     }
 
     // ── Profile image URL accessor ───────────────────────────────────────────

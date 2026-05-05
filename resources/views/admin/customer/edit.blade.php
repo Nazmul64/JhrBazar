@@ -72,6 +72,19 @@
         </div>
 
         <div style="margin-bottom:18px;">
+          <label class="form-label">Customer Role</label>
+          <select name="role_id" class="form-control @error('role_id') is-invalid @enderror">
+            <option value="">-- No Role (Default) --</option>
+            @foreach($roles as $role)
+              <option value="{{ $role->id }}" {{ old('role_id', $customer->user->role_id) == $role->id ? 'selected' : '' }}>
+                {{ $role->name }}
+              </option>
+            @endforeach
+          </select>
+          @error('role_id') <div class="error-text">{{ $message }}</div> @enderror
+        </div>
+
+        <div style="margin-bottom:18px;">
           <label class="form-label">Gender</label>
           <select name="gender" class="form-control">
             <option value="">-- Select --</option>

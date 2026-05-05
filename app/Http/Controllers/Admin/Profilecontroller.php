@@ -47,7 +47,14 @@ class ProfileController extends Controller
             $shop->avg_rating = $avgRating ?? 0;
         }
 
-        return view('admin.profile.index', compact(
+        $viewName = 'admin.profile.index';
+        if ($user->role === 'manager') {
+            $viewName = 'admin.profile.index_manager';
+        } elseif ($user->role === 'employee') {
+            $viewName = 'admin.profile.index_staff';
+        }
+
+        return view($viewName, compact(
             'user',
             'shop',
             'totalProducts',
@@ -154,7 +161,14 @@ class ProfileController extends Controller
         $shop        = DB::table('shops')->where('user_id', $user->id)->first();
         $bdDivisions = $this->bangladeshDivisions();
 
-        return view('admin.profile.edit', compact('user', 'shop', 'bdDivisions'));
+        $viewName = 'admin.profile.edit';
+        if ($user->role === 'manager') {
+            $viewName = 'admin.profile.edit_manager';
+        } elseif ($user->role === 'employee') {
+            $viewName = 'admin.profile.edit_staff';
+        }
+
+        return view($viewName, compact('user', 'shop', 'bdDivisions'));
     }
 
     /**
@@ -248,6 +262,31 @@ class ProfileController extends Controller
 
         return redirect()->route('admin.profile.index')
                          ->with('success', 'Profile updated successfully.');
+    }
+
+    /**
+     * Route: POST /admin/profile/change-password
+     */
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password'     => 'required|string|min:8|confirmed',
+        ]);
+
+        /** @var User $user */
+        $user = auth()->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->with('error', 'Current password does not match our records.');
+        }
+
+        DB::table('users')->where('id', $user->id)->update([
+            'password'   => Hash::make($request->new_password),
+            'updated_at' => now(),
+        ]);
+
+        return back()->with('success', 'Password changed successfully.');
     }
 
     // ─────────────────────────────────────────────────────────────────────────

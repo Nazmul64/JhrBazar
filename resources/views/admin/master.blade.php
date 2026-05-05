@@ -1,6 +1,15 @@
 
 @include('admin/pages/header')
-@include('admin/pages/sidebar')
+
+@if(auth()->user()->role === 'admin')
+    @include('admin/pages/sidebar')
+@elseif(auth()->user()->role === 'manager')
+    @include('admin/pages/sidebar_manager')
+@elseif(auth()->user()->role === 'seller')
+    @include('admin/pages/sidebar_seller')
+@else
+    @include('admin/pages/sidebar_staff')
+@endif
 
 <!-- ══════════════ HEADER ══════════════ -->
 @include('admin/pages/header2')

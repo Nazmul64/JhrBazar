@@ -1,41 +1,62 @@
 @extends('admin.master')
 @section('content')
+  <!-- ── WELCOME BANNER ── -->
+  <div class="row mb-4 anim anim-1">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 20px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white;">
+            <div class="card-body p-4 p-lg-5 d-flex align-items-center justify-content-between">
+                <div>
+                    <h2 class="fw-bold mb-2">Jhr Bazar Control Center</h2>
+                    <p class="opacity-75 mb-4">Welcome back, Admin! Monitor your marketplace performance and manage your business efficiently.</p>
+                    <div class="d-flex gap-3">
+                        <button class="btn btn-light rounded-pill px-4 fw-bold text-primary shadow-sm">View Analytics</button>
+                        <button class="btn btn-outline-light rounded-pill px-4 fw-bold">Recent Orders</button>
+                    </div>
+                </div>
+                <div class="d-none d-lg-block">
+                    <i class="bi bi-rocket-takeoff" style="font-size: 80px; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
   <!-- ── STAT CARDS ── -->
   <div class="row g-3 mb-4">
     <div class="col-6 col-xl-3 anim anim-1">
-      <div class="stat-card pink">
+      <div class="stat-card" style="border-left: 5px solid var(--pink); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
         <div>
           <div class="stat-label">Total Shops</div>
           <div class="stat-value">10</div>
         </div>
-        <div class="stat-icon"><i class="bi bi-shop-window"></i></div>
+        <div class="stat-icon" style="background: rgba(244, 63, 127, 0.1); color: var(--pink); border-radius: 12px;"><i class="bi bi-shop-window"></i></div>
       </div>
     </div>
     <div class="col-6 col-xl-3 anim anim-2">
-      <div class="stat-card blue">
+      <div class="stat-card" style="border-left: 5px solid var(--blue); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
         <div>
           <div class="stat-label">Total Products</div>
           <div class="stat-value">166</div>
         </div>
-        <div class="stat-icon"><i class="bi bi-box-seam-fill"></i></div>
+        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--blue); border-radius: 12px;"><i class="bi bi-box-seam-fill"></i></div>
       </div>
     </div>
     <div class="col-6 col-xl-3 anim anim-3">
-      <div class="stat-card red">
+      <div class="stat-card" style="border-left: 5px solid var(--red); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
         <div>
           <div class="stat-label">Total Orders</div>
           <div class="stat-value">109</div>
         </div>
-        <div class="stat-icon"><i class="bi bi-cart-check-fill"></i></div>
+        <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--red); border-radius: 12px;"><i class="bi bi-cart-check-fill"></i></div>
       </div>
     </div>
     <div class="col-6 col-xl-3 anim anim-4">
-      <div class="stat-card green">
+      <div class="stat-card" style="border-left: 5px solid var(--green); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
         <div>
           <div class="stat-label">Total Customers</div>
           <div class="stat-value">26</div>
         </div>
-        <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--green); border-radius: 12px;"><i class="bi bi-people-fill"></i></div>
       </div>
     </div>
   </div>

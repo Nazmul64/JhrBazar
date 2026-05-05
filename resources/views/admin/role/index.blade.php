@@ -7,70 +7,73 @@
 
   /* ── LEFT PANEL ── */
   .roles-panel {
-    width:400px; flex-shrink:0; background:#fff;
-    border-radius:12px 0 0 12px; padding:28px 24px;
-    border-right:1.5px solid #f0f0f0;
+    width:380px; flex-shrink:0; background:#fff;
+    border-radius:20px 0 0 20px; padding:32px 24px;
+    border-right:1.5px solid #f1f5f9;
   }
-  .roles-panel h5 { font-size:1.1rem; font-weight:700; color:#1a1a1a; margin-bottom:18px; }
-  .search-row { display:flex; gap:10px; margin-bottom:20px; }
+  .roles-panel h5 { font-size:1.15rem; font-weight:800; color:#1e293b; margin-bottom:20px; font-family:'Sora', sans-serif; }
+  .search-row { display:flex; gap:10px; margin-bottom:24px; }
   .search-wrap { flex:1; position:relative; }
   .search-wrap input {
-    width:100%; padding:9px 14px 9px 36px;
-    border:1.5px solid #e0e0e0; border-radius:8px;
-    font-size:.83rem; font-family:inherit; background:#fafafa; box-sizing:border-box;
+    width:100%; padding:11px 14px 11px 40px;
+    border:1.5px solid #e2e8f0; border-radius:12px;
+    font-size:.85rem; font-family:inherit; background:#f8fafc; box-sizing:border-box; transition: all 0.3s;
   }
-  .search-wrap input:focus { border-color:#e8194b; outline:none; }
-  .search-wrap .si { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:#bbb; }
+  .search-wrap input:focus { border-color:#6366f1; outline:none; background:#fff; box-shadow:0 0 0 4px rgba(99,102,241,0.1); }
+  .search-wrap .si { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:16px; }
   .btn-add-role {
-    background:linear-gradient(135deg,#e8194b,#b8002e); color:#fff;
-    border:none; border-radius:8px; padding:9px 16px; font-size:.83rem;
-    font-weight:600; cursor:pointer; white-space:nowrap;
-    display:inline-flex; align-items:center; gap:5px;
-    box-shadow:0 3px 10px rgba(232,25,75,.3);
+    background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff;
+    border:none; border-radius:12px; padding:10px 18px; font-size:.85rem;
+    font-weight:700; cursor:pointer; white-space:nowrap;
+    display:inline-flex; align-items:center; gap:6px;
+    box-shadow:0 4px 12px rgba(99,102,241,0.2);
   }
-  .role-list { display:flex; flex-direction:column; }
+  .role-list { display:flex; flex-direction:column; gap:8px; }
   .role-item {
     display:flex; justify-content:space-between; align-items:center;
-    padding:13px 14px; border-bottom:1px solid #f5f5f5;
-    cursor:pointer; transition:background .15s; border-radius:8px;
+    padding:14px 16px; border:1px solid transparent;
+    cursor:pointer; transition:all .2s; border-radius:14px;
   }
-  .role-item:hover { background:#fdf0f3; }
-  .role-item.active { background:#fde8ec; border-left:3px solid #e8194b; }
-  .role-name { font-size:.88rem; font-weight:500; color:#222; display:flex; align-items:center; gap:8px; }
-  .role-actions { display:flex; align-items:center; gap:6px; }
-  .no-action-badge { background:#333; color:#fff; font-size:.7rem; padding:3px 10px; border-radius:20px; font-weight:600; }
-  .shop-badge { background:#fde8ec; border:1px solid #f5b8c4; border-radius:6px; padding:2px 7px; font-size:.7rem; color:#e8194b; font-weight:600; }
-  .btn-icon { background:none; border:none; cursor:pointer; padding:3px 5px; font-size:.95rem; }
-  .btn-icon.edit { color:#5bc0de; } .btn-icon.edit:hover { color:#31a0c0; }
-  .btn-icon.del  { color:#e8194b; } .btn-icon.del:hover  { color:#b8002e; }
+  .role-item:hover { background:#f8fafc; border-color:#e2e8f0; }
+  .role-item.active { background:rgba(99,102,241,0.08); border-color:#6366f1; }
+  .role-name { font-size:.9rem; font-weight:600; color:#334155; display:flex; align-items:center; gap:10px; }
+  .role-actions { display:flex; align-items:center; gap:8px; }
+  .no-action-badge { background:#475569; color:#fff; font-size:.7rem; padding:4px 12px; border-radius:20px; font-weight:700; }
+  .shop-badge { background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.2); border-radius:8px; padding:2px 8px; font-size:.75rem; color:#6366f1; font-weight:700; }
+  .btn-icon { background:none; border:none; cursor:pointer; padding:4px 6px; font-size:1rem; border-radius:8px; transition:all 0.2s; }
+  .btn-icon.edit { color:#6366f1; } .btn-icon.edit:hover { background:rgba(99,102,241,0.1); }
+  .btn-icon.del  { color:#ef4444; } .btn-icon.del:hover  { background:rgba(239,68,68,0.1); }
 
   /* ── RIGHT PANEL ── */
   .perms-panel {
-    flex:1; background:#fff; border-radius:0 12px 12px 0;
-    padding:28px 28px 32px; overflow-y:auto; max-height:88vh;
+    flex:1; background:#fff; border-radius:0 20px 20px 0;
+    padding:32px 32px 40px; overflow-y:auto; max-height:88vh;
   }
-  .perms-panel h5 { font-size:1.1rem; font-weight:700; color:#1a1a1a; margin-bottom:16px; }
+  .perms-panel h5 { font-size:1.15rem; font-weight:800; color:#1e293b; margin-bottom:20px; font-family:'Sora', sans-serif; }
   .perms-top {
     display:flex; justify-content:space-between; align-items:center;
-    margin-bottom:18px; padding-bottom:14px; border-bottom:1.5px solid #f0f0f0;
+    margin-bottom:20px; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9;
   }
-  .selected-count { display:flex; align-items:center; gap:8px; font-size:.85rem; color:#555; }
-  .selected-count input[type=checkbox] { width:15px; height:15px; accent-color:#e8194b; }
-  .btn-clear { background:none; border:none; color:#e8194b; font-size:.83rem; font-weight:600; cursor:pointer; }
-  .section-heading { font-size:1rem; font-weight:700; color:#1a1a1a; background:#f4f4f4; padding:10px 16px; border-radius:8px; margin:0 0 16px; }
-  .perm-group { margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #f0f0f0; }
-  .perm-group-title { font-size:.85rem; font-weight:700; color:#1a1a1a; margin-bottom:10px; }
-  .perm-checks { display:flex; flex-wrap:wrap; gap:10px 24px; }
-  .perm-check { display:flex; align-items:center; gap:6px; font-size:.83rem; color:#444; cursor:pointer; }
-  .perm-check input[type=checkbox] { width:14px; height:14px; accent-color:#e8194b; cursor:pointer; }
+  .selected-count { display:flex; align-items:center; gap:10px; font-size:.88rem; color:#64748b; font-weight:600; }
+  .selected-count input[type=checkbox] { width:18px; height:18px; accent-color:#6366f1; border-radius:6px; cursor:pointer; }
+  .btn-clear { background:none; border:none; color:#ef4444; font-size:.85rem; font-weight:700; cursor:pointer; transition:opacity .2s; }
+  .btn-clear:hover { opacity:0.7; }
+  .section-heading { font-size:1rem; font-weight:800; color:#1e293b; background:#f1f5f9; padding:12px 20px; border-radius:12px; margin:0 0 20px; }
+  .perm-group { margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid #f1f5f9; }
+  .perm-group-title { font-size:.9rem; font-weight:700; color:#334155; margin-bottom:12px; }
+  .perm-checks { display:flex; flex-wrap:wrap; gap:12px 28px; }
+  .perm-check { display:flex; align-items:center; gap:8px; font-size:.85rem; color:#475569; cursor:pointer; font-weight:500; transition:color 0.2s; }
+  .perm-check:hover { color:#6366f1; }
+  .perm-check input[type=checkbox] { width:16px; height:16px; accent-color:#6366f1; cursor:pointer; }
   .btn-update {
-    background:linear-gradient(135deg,#e8194b,#b8002e); color:#fff;
-    border:none; border-radius:8px; padding:10px 26px; font-size:.88rem;
-    font-weight:600; cursor:pointer; margin-top:20px;
-    box-shadow:0 4px 14px rgba(232,25,75,.3);
-    display:none; align-items:center; gap:6px;
+    background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff;
+    border:none; border-radius:12px; padding:12px 32px; font-size:.9rem;
+    font-weight:700; cursor:pointer; margin-top:24px;
+    box-shadow:0 6px 16px rgba(99,102,241,0.25);
+    display:none; align-items:center; gap:8px; transition:transform 0.2s;
   }
-  .no-role-msg { color:#bbb; font-size:.85rem; text-align:center; padding:40px 0; }
+  .btn-update:active { transform:scale(0.98); }
+  .no-role-msg { color:#94a3b8; font-size:.9rem; text-align:center; padding:60px 0; font-weight:500; }
 
   /* Toast */
   .toast-msg {
@@ -87,20 +90,22 @@
   .alert-success { background:#e8f5e9; color:#2e7d32; border-radius:8px; padding:10px 16px; margin-bottom:16px; font-size:.85rem; }
 
   /* Modal */
-  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9998; align-items:center; justify-content:center; }
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(15,23,42,.6); z-index:9998; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
   .modal-overlay.active { display:flex; }
-  .modal-box { background:#fff; border-radius:14px; padding:32px 36px; width:100%; max-width:460px; box-shadow:0 12px 40px rgba(0,0,0,.15); }
-  .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
-  .modal-header h5 { font-size:1rem; font-weight:700; color:#1a1a1a; margin:0; }
-  .modal-close { background:none; border:none; font-size:1.4rem; cursor:pointer; color:#888; line-height:1; }
-  .modal-label { font-size:.8rem; font-weight:500; color:#444; margin-bottom:6px; display:block; }
-  .modal-input { width:100%; padding:11px 14px; border:1.5px solid #dde; border-radius:9px; font-size:.85rem; font-family:inherit; background:#fafafa; transition:border-color .2s; box-sizing:border-box; }
-  .modal-input:focus { border-color:#e8194b; outline:none; background:#fff; }
-  .modal-check-row { display:flex; align-items:center; gap:8px; margin-top:14px; font-size:.85rem; color:#444; }
-  .modal-check-row input { width:16px; height:16px; accent-color:#e8194b; }
-  .modal-footer { display:flex; justify-content:flex-end; gap:10px; margin-top:24px; }
-  .btn-close-modal { padding:9px 22px; border-radius:8px; border:1.5px solid #dde; background:#fff; font-size:.85rem; cursor:pointer; font-weight:500; color:#555; }
-  .btn-modal-submit { padding:9px 22px; border-radius:8px; border:none; background:linear-gradient(135deg,#e8194b,#b8002e); color:#fff; font-size:.85rem; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(232,25,75,.3); }
+  .modal-box { background:#fff; border-radius:24px; padding:40px; width:100%; max-width:480px; box-shadow:0 25px 50px -12px rgba(0,0,0,.25); }
+  .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; }
+  .modal-header h5 { font-size:1.15rem; font-weight:800; color:#1e293b; margin:0; font-family:'Sora', sans-serif; }
+  .modal-close { background:#f1f5f9; border:none; width:36px; height:36px; border-radius:50%; font-size:1.2rem; cursor:pointer; color:#64748b; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+  .modal-close:hover { background:#e2e8f0; color:#1e293b; }
+  .modal-label { font-size:.85rem; font-weight:700; color:#475569; margin-bottom:8px; display:block; }
+  .modal-input { width:100%; padding:12px 16px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:.9rem; font-family:inherit; background:#f8fafc; transition:all .3s; box-sizing:border-box; }
+  .modal-input:focus { border-color:#6366f1; outline:none; background:#fff; box-shadow:0 0 0 4px rgba(99,102,241,0.1); }
+  .modal-check-row { display:flex; align-items:center; gap:10px; margin-top:20px; font-size:.9rem; color:#475569; font-weight:600; }
+  .modal-check-row input { width:20px; height:20px; accent-color:#6366f1; cursor:pointer; }
+  .modal-footer { display:flex; justify-content:flex-end; gap:12px; margin-top:32px; }
+  .btn-close-modal { padding:10px 24px; border-radius:12px; border:1.5px solid #e2e8f0; background:#fff; font-size:.9rem; cursor:pointer; font-weight:700; color:#64748b; transition:all 0.2s; }
+  .btn-close-modal:hover { background:#f8fafc; }
+  .btn-modal-submit { padding:10px 28px; border-radius:12px; border:none; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; font-size:.9rem; font-weight:700; cursor:pointer; box-shadow:0 6px 16px rgba(99,102,241,0.25); }
 </style>
 
 {{-- Laravel session success --}}
@@ -148,10 +153,11 @@
           @if($role->applicable_for_shop)
             <span class="shop-badge"><i class="bi bi-shop"></i></span>
           @endif
+          <span class="badge bg-info text-dark" style="font-size: 0.7rem; text-transform: capitalize;">{{ $role->user_type }}</span>
         </span>
         <div class="role-actions" onclick="event.stopPropagation()">
           <button class="btn-icon edit" title="Edit"
-                  onclick="openEditModal({{ $role->id }}, '{{ addslashes($role->name) }}', {{ $role->applicable_for_shop ? 'true' : 'false' }})">
+                  onclick="openEditModal({{ $role->id }}, '{{ addslashes($role->name) }}', '{{ $role->user_type }}', {{ $role->applicable_for_shop ? 'true' : 'false' }})">
             <i class="bi bi-pencil-square"></i>
           </button>
           <form action="{{ route('admin.role.destroy', $role->id) }}" method="POST"
@@ -254,6 +260,14 @@
       @csrf
       <label class="modal-label">Role Name</label>
       <input type="text" name="name" class="modal-input" placeholder="Role Name" required/>
+
+      <label class="modal-label mt-3">User Type</label>
+      <select name="user_type" class="modal-input" required>
+        @foreach($userTypes as $type)
+          <option value="{{ $type }}">{{ ucfirst($type) }}</option>
+        @endforeach
+      </select>
+
       <div class="modal-check-row">
         <input type="checkbox" name="applicable_for_shop" value="1" id="createShopChk" checked/>
         <label for="createShopChk">Applicable For Shop</label>
@@ -277,6 +291,14 @@
       @csrf
       <label class="modal-label">Role Name</label>
       <input type="text" name="name" id="editRoleName" class="modal-input" placeholder="Role Name" required/>
+
+      <label class="modal-label mt-3">User Type</label>
+      <select name="user_type" id="editUserType" class="modal-input" required>
+        @foreach($userTypes as $type)
+          <option value="{{ $type }}">{{ ucfirst($type) }}</option>
+        @endforeach
+      </select>
+
       <div class="modal-check-row">
         <input type="checkbox" name="applicable_for_shop" value="1" id="editShopChk"/>
         <label for="editShopChk">Applicable For Shop</label>
@@ -397,8 +419,9 @@
     document.getElementById('createModal').classList.add('active');
   }
 
-  function openEditModal(id, name, shopApplicable) {
+  function openEditModal(id, name, userType, shopApplicable) {
     document.getElementById('editRoleName').value   = name;
+    document.getElementById('editUserType').value   = userType;
     document.getElementById('editShopChk').checked  = shopApplicable;
     document.getElementById('editForm').action      = BASE + '/' + id + '/update-name';
     document.getElementById('editModal').classList.add('active');

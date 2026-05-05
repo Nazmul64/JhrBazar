@@ -30,14 +30,20 @@ class Adminauthcontroller extends Controller
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
-            if (Auth::user()->role === 'admin') {
-                $request->session()->regenerate(); // ✅ prevent session fixation
-                return redirect()->route('admin.dashboard');
+            $user = Auth::user();
+            $role = $user->role;
+
+            if (in_array($role, ['admin', 'manager', 'employee'])) {
+                $request->session()->regenerate();
+                
+                if ($role === 'admin') return redirect()->route('admin.dashboard');
+                if ($role === 'manager') return redirect()->route('manager.dashboard');
+                if ($role === 'employee') return redirect()->route('employee.dashboard');
             }
 
-            // Logged in but not admin — kick them out
+            // Logged in but not authorized for this login page
             Auth::logout();
-            return back()->withErrors(['email' => 'You are not an admin.']);
+            return back()->withErrors(['email' => 'You do not have access to this area.']);
         }
 
         return back()->withErrors(['email' => 'Invalid email or password.']);

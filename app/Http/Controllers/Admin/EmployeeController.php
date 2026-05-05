@@ -18,7 +18,7 @@ class EmployeeController extends Controller
      */
     public function index()
     {
-        $employees = Employeecreate::with('roleModel')->latest()->get();
+        $employees = \App\Models\User::whereIn('role', ['employee', 'manager'])->with('roleModel')->latest()->get();
         return view('admin.employee.index', compact('employees'));
     }
 
@@ -27,7 +27,7 @@ class EmployeeController extends Controller
      */
     public function create()
     {
-        $roles = Role::all();
+        $roles = Role::whereIn('user_type', [Role::TYPE_ADMIN, Role::TYPE_MANAGER, Role::TYPE_EMPLOYEE])->get();
         return view('admin.employee.create', compact('roles'));
     }
 
@@ -41,9 +41,9 @@ class EmployeeController extends Controller
             'last_name'     => 'nullable|string|max:255',
             'phone'         => 'required|string|max:20',
             'gender'        => 'required|in:Male,Female,Other',
-            'email'         => 'required|email|unique:employees,email',
+            'email'         => 'required|email|unique:users,email',
             'password'      => ['required', 'confirmed', Password::min(6)],
-            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
             'role'          => 'required|string|max:100',
             'role_id'       => 'nullable|exists:roles,id',
         ]);
@@ -54,8 +54,18 @@ class EmployeeController extends Controller
         }
 
         $validated['password'] = Hash::make($validated['password']);
+        $validated['name'] = $validated['first_name'] . ' ' . ($validated['last_name'] ?? '');
 
-        $employee = Employeecreate::create($validated);
+        $employee = \App\Models\User::create([
+            'name'          => $validated['name'],
+            'email'         => $validated['email'],
+            'password'      => $validated['password'],
+            'phone'         => $validated['phone'],
+            'gender'        => $validated['gender'],
+            'profile_image' => $validated['profile_image'] ?? null,
+            'role'          => $validated['role'],
+            'role_id'       => $validated['role_id'],
+        ]);
 
         // Auto-assign role's default permissions
         if ($employee->role_id) {
@@ -73,9 +83,9 @@ class EmployeeController extends Controller
     /**
      * Show the form for editing employee details.
      */
-public function edit(Employeecreate $employee)
+public function edit(\App\Models\User $employee)
 {
-    $roles              = Role::all();
+    $roles              = Role::whereIn('user_type', [Role::TYPE_ADMIN, Role::TYPE_MANAGER, Role::TYPE_EMPLOYEE])->get();
     $groupedPermissions = Permission::groupedPermissions();
 
     return view('admin.employee.edit', compact('employee', 'roles', 'groupedPermissions'));
@@ -84,16 +94,16 @@ public function edit(Employeecreate $employee)
     /**
      * Update employee details.
      */
-    public function update(Request $request, Employeecreate $employee)
+    public function update(Request $request, \App\Models\User $employee)
     {
         $validated = $request->validate([
             'first_name'    => 'required|string|max:255',
             'last_name'     => 'nullable|string|max:255',
             'phone'         => 'required|string|max:20',
             'gender'        => 'required|in:Male,Female,Other',
-            'email'         => 'required|email|unique:employees,email,' . $employee->id,
+            'email'         => 'required|email|unique:users,email,' . $employee->id,
             'password'      => ['nullable', 'confirmed', Password::min(6)],
-            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
             'role'          => 'required|string|max:100',
             'role_id'       => 'nullable|exists:roles,id',
         ]);
@@ -111,7 +121,19 @@ public function edit(Employeecreate $employee)
             unset($validated['password']);
         }
 
-        $employee->update($validated);
+        $validated['name'] = $validated['first_name'] . ' ' . ($validated['last_name'] ?? '');
+        $employee->update([
+            'name'          => $validated['name'],
+            'email'         => $validated['email'],
+            'phone'         => $validated['phone'],
+            'gender'        => $validated['gender'],
+            'profile_image' => $validated['profile_image'] ?? $employee->profile_image,
+            'role'          => $validated['role'],
+            'role_id'       => $validated['role_id'],
+        ]);
+        if (isset($validated['password'])) {
+            $employee->update(['password' => $validated['password']]);
+        }
 
         return redirect()->route('admin.employees.index')
             ->with('success', 'Employee updated successfully.');
@@ -120,7 +142,7 @@ public function edit(Employeecreate $employee)
     /**
      * Delete an employee.
      */
-    public function destroy(Employeecreate $employee)
+    public function destroy(\App\Models\User $employee)
     {
         $this->deleteImage($employee->profile_image);
         $employee->delete();
@@ -134,7 +156,7 @@ public function edit(Employeecreate $employee)
     /**
      * Show permission assignment form for an employee.
      */
-    public function permission(Employeecreate $employee)
+    public function permission(\App\Models\User $employee)
     {
         $groupedPermissions  = Permission::groupedPermissions();
         $employeePermissions = $employee->permissions->pluck('id')->toArray();
@@ -149,7 +171,7 @@ public function edit(Employeecreate $employee)
     /**
      * Update employee permissions.
      */
-    public function updatePermission(Request $request, Employeecreate $employee)
+    public function updatePermission(Request $request, \App\Models\User $employee)
     {
         $request->validate([
             'permissions'   => 'nullable|array',
@@ -165,7 +187,7 @@ public function edit(Employeecreate $employee)
     /**
      * Toggle employee active/inactive status.
      */
-    public function toggleStatus(Employeecreate $employee)
+    public function toggleStatus(\App\Models\User $employee)
     {
         $employee->update(['is_active' => !$employee->is_active]);
 
@@ -176,7 +198,7 @@ public function edit(Employeecreate $employee)
     /**
      * Reset employee password.
      */
-    public function resetPassword(Request $request, Employeecreate $employee)
+    public function resetPassword(Request $request, \App\Models\User $employee)
     {
         $request->validate([
             'password' => ['required', 'confirmed', Password::min(6)],
@@ -195,7 +217,7 @@ public function edit(Employeecreate $employee)
      */
     private function uploadImage($file): string
     {
-        $uploadPath = public_path('uploads/employee');
+        $uploadPath = public_path('uploads/rolephoto');
 
         // Create folder if it doesn't exist
         if (!File::exists($uploadPath)) {
@@ -205,7 +227,7 @@ public function edit(Employeecreate $employee)
         $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
         $file->move($uploadPath, $fileName);
 
-        return 'uploads/employee/' . $fileName;
+        return 'uploads/rolephoto/' . $fileName;
     }
 
     /**

@@ -1,11 +1,64 @@
+<style>
+    #sidebar {
+        background: #ffffff !important;
+        box-shadow: 10px 0 40px rgba(0,0,0,0.03) !important;
+    }
+    .sidebar-brand {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+        margin: 15px !important;
+        border-radius: 15px !important;
+        padding: 20px !important;
+        border: none !important;
+        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3) !important;
+    }
+    .brand-icon {
+        background: rgba(255,255,255,0.2) !important;
+        backdrop-filter: blur(5px);
+        border-radius: 10px !important;
+    }
+    .brand-name {
+        color: white !important;
+        font-weight: 800 !important;
+        font-family: 'Sora', sans-serif !important;
+    }
+    .nav-item-custom {
+        margin: 4px 15px !important;
+        padding: 12px 18px !important;
+        border-radius: 12px !important;
+        transition: all 0.3s ease !important;
+        text-decoration: none !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    .nav-item-custom:hover {
+        background: #f8fafc !important;
+        color: #6366f1 !important;
+        transform: translateX(5px);
+    }
+    .nav-item-custom.active {
+        background: rgba(99, 102, 241, 0.08) !important;
+        color: #6366f1 !important;
+        font-weight: 700 !important;
+        border-left: 4px solid #6366f1 !important;
+    }
+    .nav-section-title {
+        padding: 20px 30px 10px !important;
+        font-size: 11px !important;
+        letter-spacing: 1.5px !important;
+        color: #94a3b8 !important;
+        text-transform: uppercase !important;
+        font-weight: 700 !important;
+    }
+</style>
+
 <div id="sidebar-overlay"></div>
 
 <aside id="sidebar">
 
     {{-- ── Brand ── --}}
-    <a class="sidebar-brand" href="{{ route('admin.dashboard') }}">
+    <a class="sidebar-brand" href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : (auth()->user()->role === 'employee' ? route('employee.dashboard') : '#') }}">
         <div class="brand-icon"><i class="bi bi-bag-heart-fill"></i></div>
-        <div class="brand-name">Jhr<br><span>Bazar</span></div>
+        <div class="brand-name">JHR<br><span>BAZAR</span></div>
     </a>
 
     <div class="sidebar-inner">
@@ -13,17 +66,20 @@
         {{-- ══════════════ MAIN ══════════════ --}}
         <div class="nav-section-title">Main</div>
 
-        <a class="nav-item-custom {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
-           href="{{ route('admin.dashboard') }}">
+        <a class="nav-item-custom {{ request()->routeIs('admin.dashboard') || request()->routeIs('employee.dashboard') ? 'active' : '' }}"
+           href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : route('employee.dashboard') }}">
             <i class="bi bi-grid-fill"></i> Dashboard
         </a>
 
         {{-- Order Management --}}
+        @if(auth()->user()->hasPermission('order.list'))
         <a class="nav-item-custom" href="#">
             <i class="bi bi-bag-check"></i> Order Management
         </a>
+        @endif
 
-        {{-- POS Management --}}
+        {{-- POS Management (Permission Based) --}}
+        @if(auth()->user()->hasPermission('pos.list'))
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.pointofsalepos.*') ? 'active' : '' }}"
              data-sub="pos">
             <i class="bi bi-display"></i> POS Management
@@ -46,24 +102,33 @@
                 <i class="bi bi-dot"></i> POS Sales Draft
             </a>
         </div>
+        @endif
 
+        @if(auth()->user()->hasPermission('return_order.list'))
         <a class="nav-item-custom" href="#">
             <i class="bi bi-arrow-return-left"></i> Refund Management
         </a>
+        @endif
 
+        @if(auth()->user()->hasPermission('order.list'))
         <a class="nav-item-custom" href="#">
             <i class="bi bi-chat-left-dots"></i> Conversations
             <span class="badge-count">9+</span>
         </a>
+        @endif
 
-        {{-- ══════════════ FRAUD ══════════════ --}}
+        {{-- ══════════════ FRAUD (Permission Based) ══════════════ --}}
+        @if(auth()->user()->hasPermission('order.list')) {{-- Using order.list as a proxy for fraud if fraud_access is missing --}}
         <div class="nav-section-title">Fraud</div>
 
         <a class="nav-item-custom {{ request()->routeIs('admin.fraud.dashboard') ? 'active' : '' }}"
            href="{{ route('admin.fraud.dashboard') }}">
             <i class="bi bi-shield-exclamation"></i> Fraud Dashboard
         </a>
+        @endif
 
+        {{-- Fraud Components (Protected) --}}
+        @if(auth()->user()->hasPermission('fraud.list'))
         {{-- Fraud Checks --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.fraud.index') || request()->routeIs('admin.fraud.create') || request()->routeIs('admin.fraud.edit') || request()->routeIs('admin.fraud.show') ? 'active' : '' }}"
              data-sub="fraud-checks">
@@ -126,7 +191,10 @@
                 <i class="bi bi-dot"></i> All Blacklists
             </a>
         </div>
+        @endif
 
+        {{-- Catalog Section (Protected) --}}
+        @if(auth()->user()->hasPermission('product.list'))
         {{-- ══════════════ CATALOG ══════════════ --}}
         <div class="nav-section-title">Catalog</div>
 
@@ -171,8 +239,10 @@
                 <i class="bi bi-dot"></i> Add Product
             </a>
         </div>
+        @endif
 
         {{-- Product Variant Management --}}
+        @if(auth()->user()->hasPermission('product.list'))
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.productbrands.*') || request()->routeIs('admin.colors.*') || request()->routeIs('admin.sizes.*') || request()->routeIs('admin.units.*') ? 'active' : '' }}"
              data-sub="variant">
             <i class="bi bi-layers"></i> Product Variant Management
@@ -196,10 +266,27 @@
                 <i class="bi bi-dot"></i> Unit
             </a>
         </div>
+        @endif
 
         {{-- ══════════════ SHOP MANAGEMENT ══════════════ --}}
         <div class="nav-section-title">Shop Management</div>
 
+        @if(auth()->user()->isAdmin())
+        <a class="nav-item-custom {{ request()->routeIs('admin.sellers.approvals') ? 'active' : '' }}"
+           href="{{ route('admin.sellers.approvals') }}">
+            <i class="bi bi-person-check"></i> Seller Approvals
+            @php $pendingCount = \App\Models\User::where('role', 'seller')->where('status', 'pending')->count(); @endphp
+            @if($pendingCount > 0)
+                <span class="badge bg-danger ms-auto rounded-pill" style="font-size: 10px;">{{ $pendingCount }}</span>
+            @endif
+        </a>
+        <a class="nav-item-custom {{ request()->routeIs('admin.banks.*') ? 'active' : '' }}"
+           href="{{ route('admin.banks.index') }}">
+            <i class="bi bi-bank"></i> BankInformation
+        </a>
+        @endif
+
+        @if(auth()->user()->hasPermission('product.list'))
         {{-- Shops --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.shops.*') ? 'active' : '' }}"
              data-sub="shop">
@@ -216,6 +303,7 @@
                 <i class="bi bi-dot"></i> Add Shop
             </a>
         </div>
+        @endif
 
         {{-- Promotion Management --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.flashsale.*') || request()->routeIs('admin.banner.*') || request()->routeIs('admin.promocode.*') ? 'active' : '' }}"
@@ -238,24 +326,18 @@
             </a>
         </div>
 
+        @if(auth()->user()->hasPermission('profile.list'))
         {{-- ✅ Profile — সরাসরি admin.profile.index রুট ব্যবহার করা হচ্ছে --}}
         <a class="nav-item-custom {{ request()->routeIs('admin.profile.*') ? 'active' : '' }}"
            href="{{ route('admin.profile.index') }}">
             <i class="bi bi-person-circle"></i> Profile
         </a>
+        @endif
 
+        {{-- Management Section (Protected) --}}
+        @if(auth()->user()->hasPermission('employee.list'))
         {{-- ══════════════ MANAGEMENT ══════════════ --}}
         <div class="nav-section-title">Management</div>
-
-        {{-- Blog Management --}}
-        <div class="nav-item-custom has-sub" data-sub="blog">
-            <i class="bi bi-pencil-square"></i> Blog Management
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
-        </div>
-        <div class="nav-submenu" id="sub-blog">
-            <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> All Posts</a>
-            <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> Add Post</a>
-        </div>
 
         {{-- Customer Management --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}"
@@ -267,6 +349,23 @@
             <a class="nav-item-custom {{ request()->routeIs('admin.customers.index') ? 'active' : '' }}"
                href="{{ route('admin.customers.index') }}">
                 <i class="bi bi-dot"></i> All Customers
+            </a>
+        </div>
+
+        {{-- Unified User Management --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
+             data-sub="all-users">
+            <i class="bi bi-people-fill"></i> User Management
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-all-users">
+            <a class="nav-item-custom {{ request()->routeIs('admin.users.index') ? 'active' : '' }}"
+               href="{{ route('admin.users.index') }}">
+                <i class="bi bi-list-stars"></i> Users List
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.users.create') ? 'active' : '' }}"
+               href="{{ route('admin.users.create') }}">
+                <i class="bi bi-person-plus-fill"></i> Add New User
             </a>
         </div>
 
@@ -316,7 +415,9 @@
                 <i class="bi bi-dot"></i> Add Supplier
             </a>
         </div>
+        @endif
 
+        @if(auth()->user()->isAdmin())
         {{-- ══════════════ SYSTEM ══════════════ --}}
         <div class="nav-section-title">System</div>
 
@@ -491,6 +592,7 @@
            href="{{ route('admin.contact.index') }}">
             <i class="bi bi-envelope"></i> Contact Us
         </a>
+        @endif
 
         {{-- Logout --}}
         <a class="nav-item-custom text-danger mt-2" href="#"

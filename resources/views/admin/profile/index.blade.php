@@ -244,7 +244,7 @@
             </div>
 
             {{-- Profile Photo Card --}}
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body text-center py-4">
                     <h6 class="fw-bold border-bottom pb-2 mb-3">
                         <i class="fas fa-id-card me-2 text-danger"></i> Profile Photo
@@ -260,6 +260,33 @@
                     <span class="badge bg-primary text-capitalize">
                         {{ str_replace('_', ' ', $user->role) }}
                     </span>
+                </div>
+            </div>
+
+            {{-- Change Password Card --}}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold border-bottom pb-2 mb-3">
+                        <i class="fas fa-lock me-2 text-danger"></i> Change Password
+                    </h6>
+                    <form action="{{ route('admin.profile.change-password') }}" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="small fw-bold mb-1">Current Password</label>
+                            <input type="password" name="current_password" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small fw-bold mb-1">New Password</label>
+                            <input type="password" name="new_password" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small fw-bold mb-1">Confirm New Password</label>
+                            <input type="password" name="new_password_confirmation" class="form-control form-control-sm" required>
+                        </div>
+                        <button type="submit" class="btn btn-danger btn-sm w-100 fw-bold">
+                            Update Password
+                        </button>
+                    </form>
                 </div>
             </div>
 

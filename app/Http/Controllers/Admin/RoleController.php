@@ -15,19 +15,22 @@ class RoleController extends Controller
     {
         $roles       = Role::withCount('permissions')->get();
         $permissions = Permission::all()->groupBy('group');
+        $userTypes   = Role::userTypes();
 
-        return view('admin.role.index', compact('roles', 'permissions'));
+        return view('admin.role.index', compact('roles', 'permissions', 'userTypes'));
     }
 
     // ── Create new role ──────────────────────────────────
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:100|unique:roles,name',
+            'name'      => 'required|string|max:100|unique:roles,name',
+            'user_type' => 'required|string|in:' . implode(',', Role::userTypes()),
         ]);
 
         Role::create([
             'name'                => $request->name,
+            'user_type'           => $request->user_type,
             'applicable_for_shop' => $request->boolean('applicable_for_shop', true),
         ]);
 
@@ -38,12 +41,14 @@ class RoleController extends Controller
     public function updateName(Request $request, string $id)
     {
         $request->validate([
-            'name' => 'required|string|max:100|unique:roles,name,' . $id,
+            'name'      => 'required|string|max:100|unique:roles,name,' . $id,
+            'user_type' => 'required|string|in:' . implode(',', Role::userTypes()),
         ]);
 
         $role = Role::findOrFail($id);
         $role->update([
             'name'                => $request->name,
+            'user_type'           => $request->user_type,
             'applicable_for_shop' => $request->boolean('applicable_for_shop', true),
         ]);
 
