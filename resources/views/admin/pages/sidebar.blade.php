@@ -424,7 +424,9 @@
         <a class="nav-item-custom" href="#"><i class="bi bi-box"></i> Shop Product Management</a>
         <a class="nav-item-custom" href="#"><i class="bi bi-journal-bookmark"></i> Subscription Management</a>
         <a class="nav-item-custom" href="#"><i class="bi bi-headset"></i> Support Management</a>
-        <a class="nav-item-custom" href="#"><i class="bi bi-wallet2"></i> Withdrawal Management</a>
+        <a class="nav-item-custom {{ request()->routeIs('admin.withdraws.*') ? 'active' : '' }}" href="{{ route('admin.withdraws.index') }}">
+            <i class="bi bi-wallet2"></i> Withdrawal Management
+        </a>
         <a class="nav-item-custom" href="#"><i class="bi bi-arrow-left-right"></i> Import / Export</a>
         <a class="nav-item-custom" href="#"><i class="bi bi-geo-alt"></i> Address</a>
         <a class="nav-item-custom" href="#"><i class="bi bi-translate"></i> Languages</a>

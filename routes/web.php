@@ -158,6 +158,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     // ── Bank Management ───────────────────────────────────────────────────────
     Route::resource('banks', BankController::class)->names('admin.banks');
 
+    // ── Withdraw Management ──────────────────────────────────────────────────
+    Route::prefix('withdraws')->name('admin.withdraws.')->group(function () {
+        Route::get('/',                 [App\Http\Controllers\Admin\WithdrawController::class, 'index'])->name('index');
+        Route::patch('/{withdraw}/status', [App\Http\Controllers\Admin\WithdrawController::class, 'updateStatus'])->name('status');
+        Route::get('/settings',         [App\Http\Controllers\Admin\WithdrawController::class, 'settings'])->name('settings');
+        Route::post('/settings',        [App\Http\Controllers\Admin\WithdrawController::class, 'updateSettings'])->name('settings.update');
+    });
+
     // ── Unified Users ─────────────────────────────────────────────────────────
     Route::middleware(['permission:employee.list'])->group(function () {
         Route::resource('users', UserController::class)->names('admin.users');
@@ -558,6 +566,26 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/drafts',        [App\Http\Controllers\Seller\SellerPosController::class, 'draftIndex'])->name('drafts');
             Route::get('/draft/{draft}', [App\Http\Controllers\Seller\SellerPosController::class, 'getDraft'])->name('draft.get');
             Route::get('/invoice/{id}',  [App\Http\Controllers\Seller\SellerPosController::class, 'printInvoice'])->name('invoice.print');
+        });
+
+        // Withdraw Management (Seller)
+        Route::prefix('withdraws')->name('withdraws.')->group(function () {
+            Route::get('/',          [App\Http\Controllers\Seller\SellerWithdrawController::class, 'index'])->name('index');
+            Route::post('/store',    [App\Http\Controllers\Seller\SellerWithdrawController::class, 'store'])->name('store');
+            Route::patch('/{withdraw}/cancel', [App\Http\Controllers\Seller\SellerWithdrawController::class, 'cancel'])->name('cancel');
+        });
+
+        // Import/Export Management (Seller)
+        Route::prefix('import-export')->name('import-export.')->group(function () {
+            Route::get('/product-export', [App\Http\Controllers\Seller\SellerImportExportController::class, 'productExportIndex'])->name('product-export');
+            Route::post('/product-export', [App\Http\Controllers\Seller\SellerImportExportController::class, 'productExport'])->name('product-export.submit');
+
+            Route::get('/product-import', [App\Http\Controllers\Seller\SellerImportExportController::class, 'productImportIndex'])->name('product-import');
+            Route::post('/product-import', [App\Http\Controllers\Seller\SellerImportExportController::class, 'productImport'])->name('product-import.submit');
+            Route::get('/product-template', [App\Http\Controllers\Seller\SellerImportExportController::class, 'downloadTemplate'])->name('product-template');
+
+            Route::get('/gallery-import', [App\Http\Controllers\Seller\SellerImportExportController::class, 'galleryImportIndex'])->name('gallery-import');
+            Route::post('/gallery-import', [App\Http\Controllers\Seller\SellerImportExportController::class, 'galleryImport'])->name('gallery-import.submit');
         });
     });
 

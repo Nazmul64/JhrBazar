@@ -263,13 +263,27 @@
             <i class="bi bi-shop"></i> My Shop
         </a>
 
-        <a class="nav-item-custom" href="#">
+        <a class="nav-item-custom {{ request()->routeIs('seller.withdraws.*') ? 'active' : '' }}" href="{{ route('seller.withdraws.index') }}">
             <i class="bi bi-wallet2"></i> Withdraws
         </a>
 
-        <div class="nav-item-custom has-sub" data-sub="import">
+        <div class="nav-item-custom has-sub {{ request()->routeIs('seller.import-export.*') ? 'active' : '' }}" data-sub="import">
             <i class="bi bi-download"></i> Import/Export
             <i class="bi bi-chevron-down ms-auto small"></i>
+        </div>
+        <div class="nav-submenu" id="sub-import">
+            <a class="nav-item-custom {{ request()->routeIs('seller.import-export.product-export') ? 'active' : '' }}" 
+               href="{{ route('seller.import-export.product-export') }}">
+                <i class="bi bi-dot"></i> Product Export
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.import-export.product-import') ? 'active' : '' }}" 
+               href="{{ route('seller.import-export.product-import') }}">
+                <i class="bi bi-dot"></i> Product Import
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.import-export.gallery-import') ? 'active' : '' }}" 
+               href="{{ route('seller.import-export.gallery-import') }}">
+                <i class="bi bi-dot"></i> Gallery Import
+            </a>
         </div>
 
     </div>{{-- /.sidebar-inner --}}
