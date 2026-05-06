@@ -10,6 +10,7 @@ class Supplier extends Model
     use HasFactory;
 
     protected $fillable = [
+        'seller_id',
         'user_id',
         'address',
         'profile_image',
@@ -21,6 +22,11 @@ class Supplier extends Model
     ];
 
     // ── Relationships ─────────────────────────
+
+    public function seller()
+    {
+        return $this->belongsTo(User::class, 'seller_id');
+    }
 
     public function user()
     {

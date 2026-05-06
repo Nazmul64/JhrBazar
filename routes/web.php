@@ -75,6 +75,12 @@ use App\Http\Controllers\Employee\EmployeeDashboardController;
 use App\Http\Controllers\Customer\CustomerDashboardController;
 use App\Http\Controllers\Seller\SellerDashboardController;
 use App\Http\Controllers\Seller\SellerAuthController;
+use App\Http\Controllers\Seller\SellerCategoryController;
+use App\Http\Controllers\Seller\SellerBrandController;
+use App\Http\Controllers\Seller\SellerColorController;
+use App\Http\Controllers\Seller\SellerSizeController;
+use App\Http\Controllers\Seller\SellerUnitController;
+use App\Http\Controllers\Seller\SellerSupplierController;
 use App\Http\Controllers\Admin\SellerApprovalController;
 use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Manager\ManagerDashboardController;
@@ -448,6 +454,28 @@ Route::middleware(['auth'])->group(function () {
     // Seller Dashboard
     Route::middleware(['role:seller'])->prefix('seller')->name('seller.')->group(function () {
         Route::get('/dashboard', [SellerDashboardController::class, 'index'])->name('dashboard');
+
+        // Category Management (Read Only)
+        Route::get('/categories', [SellerCategoryController::class, 'categories'])->name('categories.index');
+        Route::get('/sub-categories', [SellerCategoryController::class, 'subCategories'])->name('subcategories.index');
+        Route::get('/child-categories', [SellerCategoryController::class, 'childCategories'])->name('childcategories.index');
+
+        // Product Variant Management (Read Only)
+        Route::get('/brands', [SellerBrandController::class, 'index'])->name('brands.index');
+        Route::get('/colors', [SellerColorController::class, 'index'])->name('colors.index');
+        Route::get('/sizes',  [SellerSizeController::class, 'index'])->name('sizes.index');
+        Route::get('/units',  [SellerUnitController::class, 'index'])->name('units.index');
+
+        // Supplier Management
+        Route::get('/suppliers', [SellerSupplierController::class, 'index'])->name('supplier.index');
+        Route::get('/suppliers/create', [SellerSupplierController::class, 'create'])->name('supplier.create');
+        Route::post('/suppliers', [SellerSupplierController::class, 'store'])->name('supplier.store');
+        Route::get('/suppliers/{id}', [SellerSupplierController::class, 'show'])->name('supplier.show');
+        Route::get('/suppliers/{id}/edit', [SellerSupplierController::class, 'edit'])->name('supplier.edit');
+        Route::post('/suppliers/{id}', [SellerSupplierController::class, 'update'])->name('supplier.update');
+        Route::delete('/suppliers/{id}', [SellerSupplierController::class, 'destroy'])->name('supplier.destroy');
+        Route::post('/suppliers/{id}/toggle-status', [SellerSupplierController::class, 'toggleStatus'])->name('supplier.toggleStatus');
+        Route::post('/suppliers/{id}/pay', [SellerSupplierController::class, 'pay'])->name('supplier.pay');
     });
 
     // ── Shared Profile Management ─────────────────────────────────────────────
