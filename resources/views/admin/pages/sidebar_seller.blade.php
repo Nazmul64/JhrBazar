@@ -169,14 +169,43 @@
             <i class="bi bi-gift ms-auto small"></i>
         </a>
 
-        <div class="nav-item-custom has-sub" data-sub="promo">
+        {{-- Promotion Management --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('seller.flashsales.*') ? 'active' : '' }}" data-sub="promo">
             <i class="bi bi-megaphone"></i> Promotion Management
             <i class="bi bi-chevron-down ms-auto small"></i>
         </div>
+        <div class="nav-submenu" id="sub-promo">
+            <a class="nav-item-custom {{ request()->routeIs('seller.flashsales.index') || request()->routeIs('seller.flashsales.show') ? 'active' : '' }}"
+               href="{{ route('seller.flashsales.index') }}">
+                <i class="bi bi-dot"></i> Flash Deals
+            </a>
+        </div>
 
-        <div class="nav-item-custom has-sub" data-sub="employee">
+        {{-- Banner Management --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('seller.banners.*') ? 'active' : '' }}" data-sub="banner">
+            <i class="bi bi-images"></i> Banner Management
+            <i class="bi bi-chevron-down ms-auto small"></i>
+        </div>
+        <div class="nav-submenu" id="sub-banner">
+            <a class="nav-item-custom {{ request()->routeIs('seller.banners.index') ? 'active' : '' }}" href="{{ route('seller.banners.index') }}">
+                <i class="bi bi-dot"></i> All Banners
+            </a>
+        </div>
+
+        {{-- Employee Management --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('seller.employeeseller.*') ? 'active' : '' }}" data-sub="employee">
             <i class="bi bi-person-badge"></i> Employee Management
             <i class="bi bi-chevron-down ms-auto small"></i>
+        </div>
+        <div class="nav-submenu" id="sub-employee">
+            <a class="nav-item-custom {{ request()->routeIs('seller.employeeseller.index') ? 'active' : '' }}"
+               href="{{ route('seller.employeeseller.index') }}">
+                <i class="bi bi-dot"></i> List Of Employees
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.employeeseller.create') ? 'active' : '' }}"
+               href="{{ route('seller.employeeseller.create') }}">
+                <i class="bi bi-dot"></i> Add New Employee
+            </a>
         </div>
 
         {{-- Suppliers --}}

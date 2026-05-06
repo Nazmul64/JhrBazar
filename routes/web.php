@@ -476,6 +476,26 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/suppliers/{id}', [SellerSupplierController::class, 'destroy'])->name('supplier.destroy');
         Route::post('/suppliers/{id}/toggle-status', [SellerSupplierController::class, 'toggleStatus'])->name('supplier.toggleStatus');
         Route::post('/suppliers/{id}/pay', [SellerSupplierController::class, 'pay'])->name('supplier.pay');
+
+        // Employee Management for Seller
+        Route::get('/employees', [App\Http\Controllers\Seller\EmployeeSellerController::class, 'index'])->name('employeeseller.index');
+        Route::get('/employees/create', [App\Http\Controllers\Seller\EmployeeSellerController::class, 'create'])->name('employeeseller.create');
+        Route::post('/employees', [App\Http\Controllers\Seller\EmployeeSellerController::class, 'store'])->name('employeeseller.store');
+        Route::get('/employees/{id}/edit', [App\Http\Controllers\Seller\EmployeeSellerController::class, 'edit'])->name('employeeseller.edit');
+        Route::post('/employees/{id}', [App\Http\Controllers\Seller\EmployeeSellerController::class, 'update'])->name('employeeseller.update');
+        Route::get('/flash-sales', [App\Http\Controllers\Seller\SellerFlashSalesShowController::class, 'index'])
+            ->name('flashsales.index');
+        Route::get('/flash-sales/{id}', [App\Http\Controllers\Seller\SellerFlashSalesShowController::class, 'show'])
+            ->name('flashsales.show');
+        Route::delete('/employees/{id}', [App\Http\Controllers\Seller\EmployeeSellerController::class, 'destroy'])->name('employeeseller.destroy');
+
+        // Banner Management
+Route::get('/banners', [App\Http\Controllers\Seller\SellerBannerController::class, 'index'])->name('banners.index');
+Route::get('/banners/create', [App\Http\Controllers\Seller\SellerBannerController::class, 'create'])->name('banners.create');
+Route::post('/banners', [App\Http\Controllers\Seller\SellerBannerController::class, 'store'])->name('banners.store');
+Route::get('/banners/{id}/edit', [App\Http\Controllers\Seller\SellerBannerController::class, 'edit'])->name('banners.edit');
+Route::post('/banners/{id}', [App\Http\Controllers\Seller\SellerBannerController::class, 'update'])->name('banners.update');
+Route::delete('/banners/{id}', [App\Http\Controllers\Seller\SellerBannerController::class, 'destroy'])->name('banners.destroy');
     });
 
     // ── Shared Profile Management ─────────────────────────────────────────────
