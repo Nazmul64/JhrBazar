@@ -485,6 +485,28 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/employees/{id}', [App\Http\Controllers\Seller\EmployeeSellerController::class, 'update'])->name('employeeseller.update');
         Route::delete('/employees/{id}', [App\Http\Controllers\Seller\EmployeeSellerController::class, 'destroy'])->name('employeeseller.destroy');
 
+        // Product Management (Seller Product)
+        Route::get('/products', [App\Http\Controllers\Seller\SellerProductController::class, 'index'])->name('product.index');
+        Route::get('/products/create', [App\Http\Controllers\Seller\SellerProductController::class, 'create'])->name('product.create');
+        Route::post('/products', [App\Http\Controllers\Seller\SellerProductController::class, 'store'])->name('product.store');
+        Route::get('/products/{id}/edit', [App\Http\Controllers\Seller\SellerProductController::class, 'edit'])->name('product.edit');
+        Route::post('/products/{id}', [App\Http\Controllers\Seller\SellerProductController::class, 'update'])->name('product.update');
+        Route::delete('/products/{id}', [App\Http\Controllers\Seller\SellerProductController::class, 'destroy'])->name('product.destroy');
+        Route::post('/products/{id}/toggle', [App\Http\Controllers\Seller\SellerProductController::class, 'toggleStatus'])->name('product.toggle');
+        Route::get('/products/{id}/show', [App\Http\Controllers\Seller\SellerProductController::class, 'show'])->name('product.show');
+        Route::get('/products/{id}/barcode', [App\Http\Controllers\Seller\SellerProductController::class, 'barcode'])->name('product.barcode');
+
+        // Digital Product Management (Seller Digital Product)
+        Route::get('/digital-products', [App\Http\Controllers\Seller\SellerDigitalProductController::class, 'index'])->name('digital_product.index');
+        Route::get('/digital-products/create', [App\Http\Controllers\Seller\SellerDigitalProductController::class, 'create'])->name('digital_product.create');
+        Route::post('/digital-products', [App\Http\Controllers\Seller\SellerDigitalProductController::class, 'store'])->name('digital_product.store');
+        Route::get('/digital-products/{id}/edit', [App\Http\Controllers\Seller\SellerDigitalProductController::class, 'edit'])->name('digital_product.edit');
+        Route::post('/digital-products/{id}', [App\Http\Controllers\Seller\SellerDigitalProductController::class, 'update'])->name('digital_product.update');
+        Route::delete('/digital-products/{id}', [App\Http\Controllers\Seller\SellerDigitalProductController::class, 'destroy'])->name('digital_product.destroy');
+        Route::post('/digital-products/{id}/toggle', [App\Http\Controllers\Seller\SellerDigitalProductController::class, 'toggleStatus'])->name('digital_product.toggle');
+        Route::get('/digital-products/{id}/show', [App\Http\Controllers\Seller\SellerDigitalProductController::class, 'show'])->name('digital_product.show');
+        Route::get('/digital-products/{id}/barcode', [App\Http\Controllers\Seller\SellerDigitalProductController::class, 'barcode'])->name('digital_product.barcode');
+
         // Flash Sales (Read-Only)
         Route::get('/flash-sales', [App\Http\Controllers\Seller\SellerFlashSalesShowController::class, 'index'])->name('flashsales.index');
         Route::get('/flash-sales/{id}', [App\Http\Controllers\Seller\SellerFlashSalesShowController::class, 'show'])->name('flashsales.show');

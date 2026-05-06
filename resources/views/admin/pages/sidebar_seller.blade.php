@@ -134,9 +134,23 @@
         </div>
 
         {{-- Product Management --}}
-        <div class="nav-item-custom has-sub" data-sub="product">
+        <div class="nav-item-custom has-sub {{ request()->routeIs('seller.product.*') ? 'active' : '' }}" data-sub="product">
             <i class="bi bi-box-seam"></i> Product Management
             <i class="bi bi-chevron-down ms-auto small"></i>
+        </div>
+        <div class="nav-submenu" id="sub-product">
+            <a class="nav-item-custom {{ request()->routeIs('seller.product.index') ? 'active' : '' }}"
+               href="{{ route('seller.product.index') }}">
+                <i class="bi bi-dot"></i> All Product
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.product.create') ? 'active' : '' }}"
+               href="{{ route('seller.product.create') }}">
+                <i class="bi bi-dot"></i> Add Product
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.digital_product.create') ? 'active' : '' }}"
+               href="{{ route('seller.digital_product.create') }}">
+                <i class="bi bi-dot"></i> Add Digital Product
+            </a>
         </div>
 
         {{-- Product Variant --}}
