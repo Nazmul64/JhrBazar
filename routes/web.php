@@ -483,19 +483,29 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/employees', [App\Http\Controllers\Seller\EmployeeSellerController::class, 'store'])->name('employeeseller.store');
         Route::get('/employees/{id}/edit', [App\Http\Controllers\Seller\EmployeeSellerController::class, 'edit'])->name('employeeseller.edit');
         Route::post('/employees/{id}', [App\Http\Controllers\Seller\EmployeeSellerController::class, 'update'])->name('employeeseller.update');
-        Route::get('/flash-sales', [App\Http\Controllers\Seller\SellerFlashSalesShowController::class, 'index'])
-            ->name('flashsales.index');
-        Route::get('/flash-sales/{id}', [App\Http\Controllers\Seller\SellerFlashSalesShowController::class, 'show'])
-            ->name('flashsales.show');
         Route::delete('/employees/{id}', [App\Http\Controllers\Seller\EmployeeSellerController::class, 'destroy'])->name('employeeseller.destroy');
 
-        // Banner Management
-Route::get('/banners', [App\Http\Controllers\Seller\SellerBannerController::class, 'index'])->name('banners.index');
-Route::get('/banners/create', [App\Http\Controllers\Seller\SellerBannerController::class, 'create'])->name('banners.create');
-Route::post('/banners', [App\Http\Controllers\Seller\SellerBannerController::class, 'store'])->name('banners.store');
-Route::get('/banners/{id}/edit', [App\Http\Controllers\Seller\SellerBannerController::class, 'edit'])->name('banners.edit');
-Route::post('/banners/{id}', [App\Http\Controllers\Seller\SellerBannerController::class, 'update'])->name('banners.update');
-Route::delete('/banners/{id}', [App\Http\Controllers\Seller\SellerBannerController::class, 'destroy'])->name('banners.destroy');
+        // Flash Sales (Read-Only)
+        Route::get('/flash-sales', [App\Http\Controllers\Seller\SellerFlashSalesShowController::class, 'index'])->name('flashsales.index');
+        Route::get('/flash-sales/{id}', [App\Http\Controllers\Seller\SellerFlashSalesShowController::class, 'show'])->name('flashsales.show');
+
+        // Promo Code (Seller Voucher)
+        Route::get('/promo-codes', [App\Http\Controllers\Seller\SellerVoucherController::class, 'index'])->name('promocode.index');
+        Route::get('/promo-codes/create', [App\Http\Controllers\Seller\SellerVoucherController::class, 'create'])->name('promocode.create');
+        Route::post('/promo-codes', [App\Http\Controllers\Seller\SellerVoucherController::class, 'store'])->name('promocode.store');
+        Route::get('/promo-codes/{id}/edit', [App\Http\Controllers\Seller\SellerVoucherController::class, 'edit'])->name('promocode.edit');
+        Route::post('/promo-codes/{id}', [App\Http\Controllers\Seller\SellerVoucherController::class, 'update'])->name('promocode.update');
+        Route::delete('/promo-codes/{id}', [App\Http\Controllers\Seller\SellerVoucherController::class, 'destroy'])->name('promocode.destroy');
+        Route::post('/promo-codes/{id}/toggle', [App\Http\Controllers\Seller\SellerVoucherController::class, 'toggleStatus'])->name('promocode.toggle');
+
+        // Banner Setup (Seller Banner)
+        Route::get('/banners', [App\Http\Controllers\Seller\SellerBannerController::class, 'index'])->name('banner.index');
+        Route::get('/banners/create', [App\Http\Controllers\Seller\SellerBannerController::class, 'create'])->name('banner.create');
+        Route::post('/banners', [App\Http\Controllers\Seller\SellerBannerController::class, 'store'])->name('banner.store');
+        Route::get('/banners/{id}/edit', [App\Http\Controllers\Seller\SellerBannerController::class, 'edit'])->name('banner.edit');
+        Route::post('/banners/{id}', [App\Http\Controllers\Seller\SellerBannerController::class, 'update'])->name('banner.update');
+        Route::delete('/banners/{id}', [App\Http\Controllers\Seller\SellerBannerController::class, 'destroy'])->name('banner.destroy');
+        Route::post('/banners/{id}/toggle', [App\Http\Controllers\Seller\SellerBannerController::class, 'toggleStatus'])->name('banner.toggle');
     });
 
     // ── Shared Profile Management ─────────────────────────────────────────────

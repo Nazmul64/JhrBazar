@@ -5,87 +5,74 @@ namespace App\Http\Controllers\Seller;
 use App\Http\Controllers\Controller;
 use App\Models\SellerBanner;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 
 class SellerBannerController extends Controller
 {
-    // Helper: store uploaded image and return path
     private function saveFile($file): string
     {
-        $dir = public_path('uploads/sellerbanners');
+        $dir = public_path('uploads/sellerbanner');
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
         $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
         $file->move($dir, $filename);
-        return 'uploads/sellerbanners/' . $filename;
+        return 'uploads/sellerbanner/' . $filename;
     }
 
     private function deleteFile(?string $path): void
     {
         if (!$path) return;
         $full = public_path($path);
-        if (file_exists($full)) unlink($full);
+        if (file_exists($full)) {
+            unlink($full);
+        }
     }
 
-    // List all banners for the logged‑in seller
     public function index()
     {
-        $banners = SellerBanner::where('seller_id', auth()->id())->latest()->get();
-        return view('seller.banners.index', compact('banners'));
+        $banners = SellerBanner::where('seller_id', Auth::id())->latest()->get();
+        return view('seller.banner.index', compact('banners'));
     }
 
-    // Show the create form
     public function create()
     {
-        return view('seller.banners.create');
+        return view('seller.banner.create');
     }
 
-    // Store new banner
     public function store(Request $request)
     {
         $request->validate([
-            'title'      => 'required|string|max:255',
-            'image'      => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'link'       => 'nullable|url',
-            'start_date' => 'nullable|date',
-            'end_date'   => 'nullable|date|after_or_equal:start_date',
-            'is_active'  => 'sometimes|boolean',
+            'title' => 'required|string|max:255',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         $imagePath = $this->saveFile($request->file('image'));
 
         SellerBanner::create([
-            'seller_id'   => auth()->id(),
-            'title'       => $request->title,
-            'image'       => $imagePath,
-            'link'        => $request->link,
-            'start_date'  => $request->start_date,
-            'end_date'    => $request->end_date,
-            'is_active'   => $request->has('is_active') ? true : false,
+            'seller_id' => Auth::id(),
+            'title'     => $request->title,
+            'image'     => $imagePath,
+            'is_active' => true,
         ]);
 
-        return redirect()->route('seller.banners.index')
-            ->with('success', 'Banner created successfully.');
+        return redirect()->route('seller.banner.index')->with('success', 'Banner Created Successfully');
     }
 
-    // Show edit form
     public function edit($id)
     {
-        $banner = SellerBanner::where('seller_id', auth()->id())->findOrFail($id);
-        return view('seller.banners.edit', compact('banner'));
+        $banner = SellerBanner::where('seller_id', Auth::id())->findOrFail($id);
+        return view('seller.banner.edit', compact('banner'));
     }
 
-    // Update existing banner
     public function update(Request $request, $id)
     {
-        $banner = SellerBanner::where('seller_id', auth()->id())->findOrFail($id);
+        $banner = SellerBanner::where('seller_id', Auth::id())->findOrFail($id);
+
         $request->validate([
-            'title'      => 'required|string|max:255',
-            'image'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'link'       => 'nullable|url',
-            'start_date' => 'nullable|date',
-            'end_date'   => 'nullable|date|after_or_equal:start_date',
-            'is_active'  => 'sometimes|boolean',
+            'title' => 'required|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         $imagePath = $banner->image;
@@ -95,25 +82,27 @@ class SellerBannerController extends Controller
         }
 
         $banner->update([
-            'title'       => $request->title,
-            'image'       => $imagePath,
-            'link'        => $request->link,
-            'start_date'  => $request->start_date,
-            'end_date'    => $request->end_date,
-            'is_active'   => $request->has('is_active') ? true : false,
+            'title' => $request->title,
+            'image' => $imagePath,
         ]);
 
-        return redirect()->route('seller.banners.index')
-            ->with('success', 'Banner updated successfully.');
+        return redirect()->route('seller.banner.index')->with('success', 'Banner Updated Successfully');
     }
 
-    // Delete a banner
     public function destroy($id)
     {
-        $banner = SellerBanner::where('seller_id', auth()->id())->findOrFail($id);
+        $banner = SellerBanner::where('seller_id', Auth::id())->findOrFail($id);
         $this->deleteFile($banner->image);
         $banner->delete();
-        return redirect()->route('seller.banners.index')
-            ->with('success', 'Banner deleted successfully.');
+
+        return redirect()->back()->with('success', 'Banner Deleted Successfully');
+    }
+
+    public function toggleStatus($id)
+    {
+        $banner = SellerBanner::where('seller_id', Auth::id())->findOrFail($id);
+        $banner->update(['is_active' => !$banner->is_active]);
+
+        return redirect()->back()->with('success', 'Banner Status Updated');
     }
 }

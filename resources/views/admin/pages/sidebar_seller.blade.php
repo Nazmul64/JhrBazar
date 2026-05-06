@@ -170,7 +170,7 @@
         </a>
 
         {{-- Promotion Management --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('seller.flashsales.*') ? 'active' : '' }}" data-sub="promo">
+        <div class="nav-item-custom has-sub {{ request()->routeIs('seller.flashsales.*') || request()->routeIs('seller.promocode.*') || request()->routeIs('seller.banner.*') ? 'active' : '' }}" data-sub="promo">
             <i class="bi bi-megaphone"></i> Promotion Management
             <i class="bi bi-chevron-down ms-auto small"></i>
         </div>
@@ -179,16 +179,13 @@
                href="{{ route('seller.flashsales.index') }}">
                 <i class="bi bi-dot"></i> Flash Deals
             </a>
-        </div>
-
-        {{-- Banner Management --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('seller.banners.*') ? 'active' : '' }}" data-sub="banner">
-            <i class="bi bi-images"></i> Banner Management
-            <i class="bi bi-chevron-down ms-auto small"></i>
-        </div>
-        <div class="nav-submenu" id="sub-banner">
-            <a class="nav-item-custom {{ request()->routeIs('seller.banners.index') ? 'active' : '' }}" href="{{ route('seller.banners.index') }}">
-                <i class="bi bi-dot"></i> All Banners
+            <a class="nav-item-custom {{ request()->routeIs('seller.banner.*') ? 'active' : '' }}"
+               href="{{ route('seller.banner.index') }}">
+                <i class="bi bi-dot"></i> Banner Setup
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.promocode.*') ? 'active' : '' }}"
+               href="{{ route('seller.promocode.index') }}">
+                <i class="bi bi-dot"></i> Promo Code
             </a>
         </div>
 
