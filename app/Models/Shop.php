@@ -19,6 +19,11 @@ class Shop extends Model
         'latitude',
         'longitude',
         'status',
+        'opening_time',
+        'closing_time',
+        'estimated_delivery',
+        'order_prefix',
+        'min_order_amount',
     ];
 
     protected $casts = [

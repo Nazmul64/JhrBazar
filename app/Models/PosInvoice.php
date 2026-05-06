@@ -11,6 +11,7 @@ class PosInvoice extends Model
 
     protected $fillable = [
         'invoice_number',
+        'seller_id',
         'pointofsalepo_id',
         'customer_id',
         'items',
@@ -40,6 +41,11 @@ class PosInvoice extends Model
     ];
 
     // ── Relationships ──────────────────────────────────────────────────────
+
+    public function seller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'seller_id');
+    }
 
     public function order(): BelongsTo
     {

@@ -12,12 +12,14 @@ class Pointofsalepo extends Model
     protected $table = 'pointofsalepos';
 
     protected $fillable = [
+        'seller_id',
         'customer_id',
         'items',
         'sub_total',
         'discount',
         'tax_amount',
         'grand_total',
+        'delivery_charge',
         'payment_method',
         'coupon_code',
         'note',
@@ -25,14 +27,20 @@ class Pointofsalepo extends Model
     ];
 
     protected $casts = [
-        'items'        => 'array',
-        'sub_total'    => 'decimal:2',
-        'discount'     => 'decimal:2',
-        'tax_amount'   => 'decimal:2',
-        'grand_total'  => 'decimal:2',
+        'items'           => 'array',
+        'sub_total'       => 'decimal:2',
+        'discount'        => 'decimal:2',
+        'tax_amount'      => 'decimal:2',
+        'delivery_charge' => 'decimal:2',
+        'grand_total'     => 'decimal:2',
     ];
 
     // ── Relationships ──────────────────────────────────────────────────────
+
+    public function seller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'seller_id');
+    }
 
     public function customer(): BelongsTo
     {

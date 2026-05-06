@@ -96,9 +96,27 @@
         </div>
 
         {{-- POS Management --}}
-        <div class="nav-item-custom has-sub" data-sub="pos">
+        <div class="nav-item-custom has-sub {{ request()->routeIs('seller.pos.*') ? 'active' : '' }}" data-sub="pos">
             <i class="bi bi-display"></i> POS Management
             <i class="bi bi-chevron-down ms-auto small"></i>
+        </div>
+        <div class="nav-submenu" id="sub-pos">
+            <a class="nav-item-custom {{ request()->routeIs('seller.pos.index') ? 'active' : '' }}"
+               href="{{ route('seller.pos.index') }}">
+                <i class="bi bi-dot"></i> POS
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.customers.*') ? 'active' : '' }}" 
+               href="{{ route('seller.customers.index') }}">
+                <i class="bi bi-dot"></i> Manage Customers
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.pos.sales-history') ? 'active' : '' }}"
+               href="{{ route('seller.pos.sales-history') }}">
+                <i class="bi bi-dot"></i> POS Sales History
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.pos.drafts') ? 'active' : '' }}"
+               href="{{ route('seller.pos.drafts') }}">
+                <i class="bi bi-dot"></i> POS Draft
+            </a>
         </div>
 
         {{-- Refund Management --}}
@@ -146,6 +164,10 @@
             <a class="nav-item-custom {{ request()->routeIs('seller.product.create') ? 'active' : '' }}"
                href="{{ route('seller.product.create') }}">
                 <i class="bi bi-dot"></i> Add Product
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.digital_product.index') ? 'active' : '' }}"
+               href="{{ route('seller.digital_product.index') }}">
+                <i class="bi bi-dot"></i> All Digital Product
             </a>
             <a class="nav-item-custom {{ request()->routeIs('seller.digital_product.create') ? 'active' : '' }}"
                href="{{ route('seller.digital_product.create') }}">
@@ -236,7 +258,8 @@
             </a>
         </div>
 
-        <a class="nav-item-custom" href="#">
+        <a class="nav-item-custom {{ request()->routeIs('seller.shop.*') ? 'active' : '' }}" 
+           href="{{ route('seller.shop.index') }}">
             <i class="bi bi-shop"></i> My Shop
         </a>
 

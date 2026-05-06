@@ -528,6 +528,37 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/banners/{id}', [App\Http\Controllers\Seller\SellerBannerController::class, 'update'])->name('banner.update');
         Route::delete('/banners/{id}', [App\Http\Controllers\Seller\SellerBannerController::class, 'destroy'])->name('banner.destroy');
         Route::post('/banners/{id}/toggle', [App\Http\Controllers\Seller\SellerBannerController::class, 'toggleStatus'])->name('banner.toggle');
+
+        // My Shop (Seller)
+        Route::prefix('my-shop')->name('shop.')->group(function () {
+            Route::get('/',        [App\Http\Controllers\Seller\SellerShopController::class, 'index'])->name('index');
+            Route::get('/edit',    [App\Http\Controllers\Seller\SellerShopController::class, 'edit'])->name('edit');
+            Route::post('/update', [App\Http\Controllers\Seller\SellerShopController::class, 'update'])->name('update');
+        });
+
+        // Customer Management (Seller)
+        Route::prefix('customers')->name('customers.')->group(function () {
+            Route::get('/',          [App\Http\Controllers\Seller\SellerCustomerController::class, 'index'])->name('index');
+            Route::get('/create',    [App\Http\Controllers\Seller\SellerCustomerController::class, 'create'])->name('create');
+            Route::post('/store',    [App\Http\Controllers\Seller\SellerCustomerController::class, 'store'])->name('store');
+            Route::get('/edit/{id}', [App\Http\Controllers\Seller\SellerCustomerController::class, 'edit'])->name('edit');
+            Route::post('/update/{id}', [App\Http\Controllers\Seller\SellerCustomerController::class, 'update'])->name('update');
+            Route::delete('/destroy/{id}', [App\Http\Controllers\Seller\SellerCustomerController::class, 'destroy'])->name('destroy');
+        });
+
+        // POS Management (Seller POS)
+        Route::prefix('pos')->name('pos.')->group(function () {
+            Route::get('/',              [App\Http\Controllers\Seller\SellerPosController::class, 'index'])->name('index');
+            Route::get('/products',      [App\Http\Controllers\Seller\SellerPosController::class, 'getProducts'])->name('products');
+            Route::post('/customer',     [App\Http\Controllers\Seller\SellerPosController::class, 'storeCustomer'])->name('customer.store');
+            Route::post('/coupon',       [App\Http\Controllers\Seller\SellerPosController::class, 'applyCoupon'])->name('coupon.apply');
+            Route::post('/place-order',  [App\Http\Controllers\Seller\SellerPosController::class, 'placeOrder'])->name('place-order');
+            Route::post('/draft',        [App\Http\Controllers\Seller\SellerPosController::class, 'draft'])->name('draft');
+            Route::get('/sales-history', [App\Http\Controllers\Seller\SellerPosController::class, 'salesIndex'])->name('sales-history');
+            Route::get('/drafts',        [App\Http\Controllers\Seller\SellerPosController::class, 'draftIndex'])->name('drafts');
+            Route::get('/draft/{draft}', [App\Http\Controllers\Seller\SellerPosController::class, 'getDraft'])->name('draft.get');
+            Route::get('/invoice/{id}',  [App\Http\Controllers\Seller\SellerPosController::class, 'printInvoice'])->name('invoice.print');
+        });
     });
 
     // ── Shared Profile Management ─────────────────────────────────────────────
