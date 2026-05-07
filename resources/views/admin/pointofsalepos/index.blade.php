@@ -1037,7 +1037,10 @@ function renderProducts(products) {
             <img class="pc-img" src="${thumb}" alt="${escHtml(p.name)}"
                  onerror="this.src='/images/no-image.png'" loading="lazy">
             <div class="pc-info">
-                <div class="pc-name">${escHtml(p.name)}</div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="pc-name">${escHtml(p.name)}</div>
+                    ${p.is_digital ? `<span class="badge bg-primary rounded-pill" style="font-size: 9px; padding: 2px 6px;">DIGITAL</span>` : ''}
+                </div>
                 <div class="pc-price-row">
                     <span class="pc-price">${CURRENCY}${parseFloat(price).toFixed(2)}</span>
                     ${old ? `<span class="pc-old">${CURRENCY}${parseFloat(old).toFixed(2)}</span>` : ''}
@@ -1052,6 +1055,7 @@ function renderProducts(products) {
                 </div>
             </div>
         </div>`;
+
     }).join('');
 }
 
@@ -1146,8 +1150,12 @@ function renderCart() {
             <img class="ci-img" src="${thumb}" alt="${escHtml(p.name)}"
                  onerror="this.src='/images/no-image.png'">
             <div class="ci-body">
-                <div class="ci-name">${escHtml(p.name)}</div>
+                <div class="ci-name">
+                    ${escHtml(p.name)}
+                    ${p.is_digital ? `<span class="badge bg-primary ms-1" style="font-size: 8px;">DIGITAL</span>` : ''}
+                </div>
                 ${variant ? `<div class="ci-variant">${escHtml(variant)}</div>` : ''}
+
                 <div>
                     <span class="ci-price">${CURRENCY}${parseFloat(price).toFixed(2)}</span>
                     ${old ? `<span class="ci-old">${CURRENCY}${parseFloat(old).toFixed(2)}</span>` : ''}

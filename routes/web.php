@@ -241,6 +241,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('products/{product}/barcode',          [ProductControllerController::class, 'barcode'])         ->name('products.barcode');
     Route::resource('products', ProductControllerController::class)->names('products')->except(['show']);
 
+    // ── Digital Products (Admin) ──────────────────────────────────────────────
+    Route::get('admin-digital-products/subcategories/{categoryId}', [\App\Http\Controllers\Admin\DigitalProductController::class, 'getSubCategories'])->name('admin.digital_product.subcategories');
+    Route::post('admin-digital-products/{id}/toggle', [\App\Http\Controllers\Admin\DigitalProductController::class, 'toggleStatus'])->name('admin.digital_product.toggle');
+    Route::get('admin-digital-products/{id}/barcode', [\App\Http\Controllers\Admin\DigitalProductController::class, 'barcode'])->name('admin.digital_product.barcode');
+    Route::resource('admin-digital-products', \App\Http\Controllers\Admin\DigitalProductController::class)->names('admin.digital_product');
+
+
+
     // ── Flash Sales ───────────────────────────────────────────────────────────
     Route::resource('flashsale', FlashsaleController::class)->names('admin.flashsale');
     Route::post('flashsale/{flashsale}/toggle', [FlashsaleController::class, 'toggleStatus'])->name('admin.flashsale.toggle');

@@ -238,6 +238,11 @@
                href="{{ route('products.create') }}">
                 <i class="bi bi-dot"></i> Add Product
             </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.digital_product.*') ? 'active' : '' }}"
+               href="{{ route('admin.digital_product.index') }}">
+                <i class="bi bi-dot"></i> Digital Products
+            </a>
+
         </div>
         @endif
 

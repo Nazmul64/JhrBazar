@@ -44,38 +44,61 @@ class PointOfSalePosController extends Controller
     // ──────────────────────────────────────────────────────────────
     public function getProducts(Request $request): JsonResponse
     {
-        $query = Product::where('is_active', true)
-                        ->where('stock_quantity', '>', 0);
+        $search = trim($request->search);
+        $brandId = $request->brand_id;
+        $categoryId = $request->category_id;
 
-        if ($request->filled('search')) {
-            $s = trim($request->search);
-            $query->where(function ($q) use ($s) {
-                $q->where('name',    'like', "%{$s}%")
-                  ->orWhere('sku',     'like', "%{$s}%")
-                  ->orWhere('barcode', 'like', "%{$s}%");
-            });
-        }
-
-        if ($request->filled('brand_id')) {
-            $query->where('brand_id', $request->brand_id);
-        }
-
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
-
-        $products = $query
+        $regularQuery = DB::table('products')
             ->select([
                 'id', 'name', 'sku', 'barcode',
                 'selling_price', 'discount_price',
                 'stock_quantity', 'thumbnail',
                 'size', 'color', 'unit', 'short_description',
+                DB::raw('0 as is_digital')
             ])
+            ->where('is_active', true)
+            ->where('stock_quantity', '>', 0);
+
+        $digitalQuery = DB::table('digital_products')
+            ->select([
+                'id', 'name', 'sku', DB::raw('NULL as barcode'),
+                'selling_price', 'discount_price',
+                'stock_quantity', 'thumbnail',
+                DB::raw('NULL as size'), DB::raw('NULL as color'), DB::raw('NULL as unit'), 'short_description',
+                DB::raw('1 as is_digital')
+            ])
+            ->where('is_active', true)
+            ->where('stock_quantity', '>', 0);
+
+        if ($search) {
+            $regularQuery->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%")
+                  ->orWhere('barcode', 'like', "%{$search}%");
+            });
+            $digitalQuery->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%");
+            });
+        }
+
+        if ($brandId) {
+            $regularQuery->where('brand_id', $brandId);
+            $digitalQuery->where('brand_id', $brandId);
+        }
+
+        if ($categoryId) {
+            $regularQuery->where('category_id', $categoryId);
+            $digitalQuery->where('category_id', $categoryId);
+        }
+
+        $products = $regularQuery->unionAll($digitalQuery)
             ->orderBy('name')
             ->paginate(12);
 
         return response()->json($products);
     }
+
 
     // ──────────────────────────────────────────────────────────────
     //  AJAX — Store New Customer
