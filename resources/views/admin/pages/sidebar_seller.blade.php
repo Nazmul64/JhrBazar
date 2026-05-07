@@ -1,55 +1,107 @@
 <style>
     #sidebar {
         background: #ffffff !important;
-        width: 260px !important;
+        width: 280px !important;
+        border-right: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.02);
     }
     .sidebar-brand {
-        padding: 20px !important;
+        padding: 25px 24px !important;
         border-bottom: 1px solid #f1f5f9;
         margin-bottom: 10px !important;
-        background: none !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
     }
     .brand-name {
-        color: #334155 !important;
-        font-size: 1.2rem !important;
+        color: #0f172a !important;
+        font-size: 1.25rem !important;
+        letter-spacing: -0.5px;
     }
+    .sidebar-inner { 
+        height: calc(100% - 100px); 
+        overflow-y: auto;
+        padding: 10px 0 80px 0;
+    }
+    .sidebar-inner::-webkit-scrollbar { width: 4px; }
+    .sidebar-inner::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
     .nav-item-custom {
-        margin: 5px 15px !important;
-        padding: 10px 15px !important;
-        border-radius: 8px !important;
-        color: #64748b !important;
+        display: flex;
+        align-items: center;
+        margin: 4px 16px !important;
+        padding: 12px 16px !important;
+        border-radius: 12px !important;
+        color: #475569 !important;
         font-weight: 500 !important;
+        font-size: 14px !important;
+        text-decoration: none !important;
+        transition: all 0.2s ease;
         border: none !important;
+        cursor: pointer;
     }
     .nav-item-custom:hover {
         background: #f8fafc !important;
-        color: #ef4444 !important;
+        color: #e11d48 !important;
+    }
+    .nav-item-custom i:not(.ms-auto) {
+        font-size: 1.2rem !important;
+        margin-right: 12px !important;
+        color: #94a3b8;
     }
     .nav-item-custom.active {
-        background: #fff1f2 !important; /* Pinkish background */
-        color: #f43f5e !important;    /* Pinkish text */
-        border: none !important;
+        background: #fff1f2 !important;
+        color: #e11d48 !important;
+        font-weight: 600 !important;
     }
-    .nav-item-custom i {
-        font-size: 18px !important;
-        margin-right: 12px !important;
+    .nav-item-custom.active i:not(.ms-auto) {
+        color: #e11d48 !important;
     }
+
     .nav-submenu {
-        background: #fdfdfd !important;
-        margin-left: 20px !important;
-        display: none; /* Hidden by default */
+        display: none;
+        padding-left: 35px !important;
+        margin-bottom: 10px;
+        position: relative;
     }
     .nav-submenu.open {
-        display: block !important; /* Show when open */
+        display: block !important;
     }
+    
+    .nav-submenu .nav-item-custom {
+        margin: 2px 10px 2px 5px !important;
+        padding: 10px 15px !important;
+        font-size: 13px !important;
+        background: #f8fafc !important;
+        border-radius: 8px !important;
+        position: relative;
+    }
+    .nav-submenu::before {
+        content: '';
+        position: absolute;
+        left: 28px;
+        top: 0;
+        bottom: 20px;
+        width: 1px;
+        background: #e2e8f0;
+    }
+    .nav-submenu .nav-item-custom::before {
+        content: '';
+        position: absolute;
+        left: -12px;
+        top: 50%;
+        width: 12px;
+        height: 1px;
+        background: #e2e8f0;
+    }
+
     .nav-item-custom.has-sub .bi-chevron-down {
         transition: transform 0.3s ease;
+        font-size: 11px !important;
+        color: #94a3b8;
     }
     .nav-item-custom.has-sub.open .bi-chevron-down {
         transform: rotate(180deg);
     }
+
     .sidebar-footer {
         position: absolute;
         bottom: 0;
@@ -57,319 +109,232 @@
         padding: 15px 20px;
         border-top: 1px solid #f1f5f9;
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        justify-content: space-around;
         background: #fff;
+        z-index: 100;
     }
     .footer-icon {
         color: #64748b;
         font-size: 18px;
         cursor: pointer;
+        padding: 8px;
+        border-radius: 8px;
     }
-    .footer-icon:hover { color: #f43f5e; }
-    .sidebar-inner { height: calc(100% - 150px); overflow-y: auto; }
+    .footer-icon:hover { color: #e11d48; background: #fff1f2; }
 </style>
 
-<div id="sidebar-overlay"></div>
-
 <aside id="sidebar">
-
-    <div class="sidebar-brand">
+    <div class="sidebar-brand text-center">
         <div class="brand-name fw-bold">SELLER <span class="text-danger">PORTAL</span></div>
     </div>
 
     <div class="sidebar-inner">
-
-        <a class="nav-item-custom {{ request()->routeIs('seller.dashboard') ? 'active' : '' }}"
-           href="{{ route('seller.dashboard') }}">
-            <i class="bi bi-house-door-fill"></i> Dashboard
+        {{-- Dashboard --}}
+        <a class="nav-item-custom {{ request()->routeIs('seller.dashboard') ? 'active' : '' }}" href="{{ route('seller.dashboard') }}">
+            <i class="bi bi-grid-fill"></i> Dashboard
         </a>
 
         {{-- All Orders --}}
         <div class="nav-item-custom has-sub" data-sub="orders">
-            <i class="bi bi-cart3"></i> All Orders
-            <i class="bi bi-chevron-down ms-auto small"></i>
+            <i class="bi bi-cart-fill"></i> All Orders
+            <i class="bi bi-chevron-down ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-orders">
-            <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> Pending Orders</a>
-            <a class="nav-item-custom" href="#"><i class="bi bi-dot"></i> Confirmed Orders</a>
+            <a class="nav-item-custom" href="#">Pending Orders</a>
+            <a class="nav-item-custom" href="#">Confirmed Orders</a>
         </div>
 
         {{-- POS Management --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('seller.pos.*') ? 'active' : '' }}" data-sub="pos">
-            <i class="bi bi-display"></i> POS Management
-            <i class="bi bi-chevron-down ms-auto small"></i>
+            <i class="bi bi-pc-display-horizontal"></i> POS Management
+            <i class="bi bi-chevron-down ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-pos">
-            <a class="nav-item-custom {{ request()->routeIs('seller.pos.index') ? 'active' : '' }}"
-               href="{{ route('seller.pos.index') }}">
-                <i class="bi bi-dot"></i> POS
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.customers.*') ? 'active' : '' }}" 
-               href="{{ route('seller.customers.index') }}">
-                <i class="bi bi-dot"></i> Manage Customers
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.pos.sales-history') ? 'active' : '' }}"
-               href="{{ route('seller.pos.sales-history') }}">
-                <i class="bi bi-dot"></i> POS Sales History
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.pos.drafts') ? 'active' : '' }}"
-               href="{{ route('seller.pos.drafts') }}">
-                <i class="bi bi-dot"></i> POS Draft
-            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.pos.index') ? 'active' : '' }}" href="{{ route('seller.pos.index') }}">POS</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.customers.*') ? 'active' : '' }}" href="{{ route('seller.customers.index') }}">Manage Customers</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.pos.sales-history') ? 'active' : '' }}" href="{{ route('seller.pos.sales-history') }}">POS Sales History</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.pos.drafts') ? 'active' : '' }}" href="{{ route('seller.pos.drafts') }}">POS Draft</a>
         </div>
 
         {{-- Refund Management --}}
         <div class="nav-item-custom has-sub" data-sub="refund">
             <i class="bi bi-arrow-return-left"></i> Refund Management
-            <i class="bi bi-chevron-down ms-auto small"></i>
+            <i class="bi bi-chevron-down ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-refund">
+            <a class="nav-item-custom" href="#">Refund Requests</a>
         </div>
 
         {{-- Messages --}}
         <a class="nav-item-custom" href="#">
-            <i class="bi bi-chat-left-dots"></i> Messages
+            <i class="bi bi-chat-left-dots-fill"></i> Messages
         </a>
 
         {{-- Category Management --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('seller.categories.*') || request()->routeIs('seller.subcategories.*') || request()->routeIs('seller.childcategories.*') ? 'active' : '' }}" 
-             data-sub="category">
-            <i class="bi bi-grid-3x3-gap"></i> Category Management
-            <i class="bi bi-chevron-down ms-auto small"></i>
+        <div class="nav-item-custom has-sub {{ request()->routeIs('seller.categories.*') || request()->routeIs('seller.subcategories.*') ? 'active' : '' }}" data-sub="category">
+            <i class="bi bi-layers-fill"></i> Category Management
+            <i class="bi bi-chevron-down ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-category">
-            <a class="nav-item-custom {{ request()->routeIs('seller.categories.index') ? 'active' : '' }}" 
-               href="{{ route('seller.categories.index') }}">
-                <i class="bi bi-dot"></i> Category
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.subcategories.index') ? 'active' : '' }}" 
-               href="{{ route('seller.subcategories.index') }}">
-                <i class="bi bi-dot"></i> Sub Category
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.childcategories.index') ? 'active' : '' }}" 
-               href="{{ route('seller.childcategories.index') }}">
-                <i class="bi bi-dot"></i> Child Category
-            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.categories.index') ? 'active' : '' }}" href="{{ route('seller.categories.index') }}">Category</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.subcategories.index') ? 'active' : '' }}" href="{{ route('seller.subcategories.index') }}">Sub Category</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.childcategories.index') ? 'active' : '' }}" href="{{ route('seller.childcategories.index') }}">Child Category</a>
         </div>
 
         {{-- Product Management --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('seller.product.*') ? 'active' : '' }}" data-sub="product">
-            <i class="bi bi-box-seam"></i> Product Management
-            <i class="bi bi-chevron-down ms-auto small"></i>
+            <i class="bi bi-box-seam-fill"></i> Product Management
+            <i class="bi bi-chevron-down ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-product">
-            <a class="nav-item-custom {{ request()->routeIs('seller.product.index') ? 'active' : '' }}"
-               href="{{ route('seller.product.index') }}">
-                <i class="bi bi-dot"></i> All Product
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.product.create') ? 'active' : '' }}"
-               href="{{ route('seller.product.create') }}">
-                <i class="bi bi-dot"></i> Add Product
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.digital_product.index') ? 'active' : '' }}"
-               href="{{ route('seller.digital_product.index') }}">
-                <i class="bi bi-dot"></i> All Digital Product
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.digital_product.create') ? 'active' : '' }}"
-               href="{{ route('seller.digital_product.create') }}">
-                <i class="bi bi-dot"></i> Add Digital Product
-            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.product.index') ? 'active' : '' }}" href="{{ route('seller.product.index') }}">All Product</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.product.create') ? 'active' : '' }}" href="{{ route('seller.product.create') }}">Add Product</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.digital_product.index') ? 'active' : '' }}" href="{{ route('seller.digital_product.index') }}">All Digital Product</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.digital_product.create') ? 'active' : '' }}" href="{{ route('seller.digital_product.create') }}">Add Digital Product</a>
         </div>
 
         {{-- Product Variant --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('seller.brands.*') || request()->routeIs('seller.colors.*') || request()->routeIs('seller.sizes.*') || request()->routeIs('seller.units.*') ? 'active' : '' }}" 
-             data-sub="variant">
-            <i class="bi bi-layers"></i> Product Variant Management
-            <i class="bi bi-chevron-down ms-auto small"></i>
+        <div class="nav-item-custom has-sub {{ request()->routeIs('seller.brands.*') || request()->routeIs('seller.colors.*') || request()->routeIs('seller.sizes.*') || request()->routeIs('seller.units.*') ? 'active' : '' }}" data-sub="variant">
+            <i class="bi bi-tags-fill"></i> Product Variant
+            <i class="bi bi-chevron-down ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-variant">
-            <a class="nav-item-custom {{ request()->routeIs('seller.brands.index') ? 'active' : '' }}" 
-               href="{{ route('seller.brands.index') }}">
-                <i class="bi bi-dot"></i> Brand
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.colors.index') ? 'active' : '' }}" 
-               href="{{ route('seller.colors.index') }}">
-                <i class="bi bi-dot"></i> Color
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.sizes.index') ? 'active' : '' }}" 
-               href="{{ route('seller.sizes.index') }}">
-                <i class="bi bi-dot"></i> Size
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.units.index') ? 'active' : '' }}" 
-               href="{{ route('seller.units.index') }}">
-                <i class="bi bi-dot"></i> Unit
-            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.brands.index') ? 'active' : '' }}" href="{{ route('seller.brands.index') }}">Brand</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.colors.index') ? 'active' : '' }}" href="{{ route('seller.colors.index') }}">Color</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.sizes.index') ? 'active' : '' }}" href="{{ route('seller.sizes.index') }}">Size</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.units.index') ? 'active' : '' }}" href="{{ route('seller.units.index') }}">Unit</a>
         </div>
 
-        <a class="nav-item-custom" href="#">
-            <i class="bi bi-journal-text"></i> Purchase
-            <i class="bi bi-gift ms-auto small"></i>
-        </a>
+        {{-- Purchase Management --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('seller.purchase.*') ? 'active' : '' }}" data-sub="purchase">
+            <i class="bi bi-bag-check-fill"></i> 
+            <span class="me-auto ms-2">Purchase</span>
+            <i class="bi bi-gift text-primary me-2"></i>
+            <i class="bi bi-chevron-down"></i>
+        </div>
+        <div class="nav-submenu" id="sub-purchase">
+            <a class="nav-item-custom {{ request()->routeIs('seller.purchase.stock-report') ? 'active' : '' }}" href="{{ route('seller.purchase.stock-report') }}">Stock Report</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.purchase.create') ? 'active' : '' }}" href="{{ route('seller.purchase.create') }}">Add New Purchase</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.purchase.index') ? 'active' : '' }}" href="{{ route('seller.purchase.index') }}">Purchase Invoices</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.purchase.summary') ? 'active' : '' }}" href="{{ route('seller.purchase.summary') }}">Purchase Summary</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.purchase.returns') ? 'active' : '' }}" href="{{ route('seller.purchase.returns') }}">Purchase Returns</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.purchase.return-create') ? 'active' : '' }}" href="{{ route('seller.purchase.return-create') }}">Add Purchase Return</a>
+        </div>
 
         {{-- Promotion Management --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('seller.flashsales.*') || request()->routeIs('seller.promocode.*') || request()->routeIs('seller.banner.*') ? 'active' : '' }}" data-sub="promo">
-            <i class="bi bi-megaphone"></i> Promotion Management
-            <i class="bi bi-chevron-down ms-auto small"></i>
+            <i class="bi bi-megaphone-fill"></i> Promotion Management
+            <i class="bi bi-chevron-down ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-promo">
-            <a class="nav-item-custom {{ request()->routeIs('seller.flashsales.index') || request()->routeIs('seller.flashsales.show') ? 'active' : '' }}"
-               href="{{ route('seller.flashsales.index') }}">
-                <i class="bi bi-dot"></i> Flash Deals
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.banner.*') ? 'active' : '' }}"
-               href="{{ route('seller.banner.index') }}">
-                <i class="bi bi-dot"></i> Banner Setup
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.promocode.*') ? 'active' : '' }}"
-               href="{{ route('seller.promocode.index') }}">
-                <i class="bi bi-dot"></i> Promo Code
-            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.flashsales.*') ? 'active' : '' }}" href="{{ route('seller.flashsales.index') }}">Flash Deals</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.banner.*') ? 'active' : '' }}" href="{{ route('seller.banner.index') }}">Banner Setup</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.promocode.*') ? 'active' : '' }}" href="{{ route('seller.promocode.index') }}">Promo Code</a>
         </div>
 
         {{-- Employee Management --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('seller.employeeseller.*') ? 'active' : '' }}" data-sub="employee">
-            <i class="bi bi-person-badge"></i> Employee Management
-            <i class="bi bi-chevron-down ms-auto small"></i>
+            <i class="bi bi-people-fill"></i> Employee Management
+            <i class="bi bi-chevron-down ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-employee">
-            <a class="nav-item-custom {{ request()->routeIs('seller.employeeseller.index') ? 'active' : '' }}"
-               href="{{ route('seller.employeeseller.index') }}">
-                <i class="bi bi-dot"></i> List Of Employees
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.employeeseller.create') ? 'active' : '' }}"
-               href="{{ route('seller.employeeseller.create') }}">
-                <i class="bi bi-dot"></i> Add New Employee
-            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.employeeseller.index') ? 'active' : '' }}" href="{{ route('seller.employeeseller.index') }}">List Of Employees</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.employeeseller.create') ? 'active' : '' }}" href="{{ route('seller.employeeseller.create') }}">Add New Employee</a>
         </div>
 
         {{-- Suppliers --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('seller.supplier.*') ? 'active' : '' }}" data-sub="suppliers">
-            <i class="bi bi-box"></i> Suppliers
-            <i class="bi bi-gift ms-auto small text-danger me-2"></i>
-            <i class="bi bi-chevron-down small"></i>
+            <i class="bi bi-truck"></i> Suppliers
+            <i class="bi bi-chevron-down ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-suppliers">
-            <a class="nav-item-custom {{ request()->routeIs('seller.supplier.index') ? 'active' : '' }}" 
-               href="{{ route('seller.supplier.index') }}">
-                List Of Suppliers
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.supplier.create') ? 'active' : '' }}" 
-               href="{{ route('seller.supplier.create') }}">
-                Add New Supplier
-            </a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.supplier.index') ? 'active' : '' }}" href="{{ route('seller.supplier.index') }}">List Of Suppliers</a>
+            <a class="nav-item-custom {{ request()->routeIs('seller.supplier.create') ? 'active' : '' }}" href="{{ route('seller.supplier.create') }}">Add New Supplier</a>
         </div>
 
-        <a class="nav-item-custom {{ request()->routeIs('seller.shop.*') ? 'active' : '' }}" 
-           href="{{ route('seller.shop.index') }}">
-            <i class="bi bi-shop"></i> My Shop
+        {{-- My Shop --}}
+        <a class="nav-item-custom {{ request()->routeIs('seller.shop.*') ? 'active' : '' }}" href="{{ route('seller.shop.index') }}">
+            <i class="bi bi-shop-fill"></i> My Shop
         </a>
 
+        {{-- Customer Management --}}
+        <div class="nav-item-custom has-sub {{ request()->routeIs('seller.customers.*') && !request()->routeIs('seller.pos.*') ? 'active' : '' }}" data-sub="customers">
+            <i class="bi bi-person-heart"></i> Customer Management
+            <i class="bi bi-chevron-down ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-customers">
+            <a class="nav-item-custom" href="{{ route('seller.customers.index') }}">List Of Customers</a>
+            <a class="nav-item-custom" href="{{ route('seller.customers.create') }}">Add New Customer</a>
+        </div>
+
+        {{-- Withdraws --}}
         <a class="nav-item-custom {{ request()->routeIs('seller.withdraws.*') ? 'active' : '' }}" href="{{ route('seller.withdraws.index') }}">
-            <i class="bi bi-wallet2"></i> Withdraws
+            <i class="bi bi-wallet-fill"></i> Withdraws
         </a>
 
+        {{-- Import/Export --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('seller.import-export.*') ? 'active' : '' }}" data-sub="import">
-            <i class="bi bi-download"></i> Import/Export
-            <i class="bi bi-chevron-down ms-auto small"></i>
+            <i class="bi bi-file-earmark-arrow-up-fill"></i> Import/Export
+            <i class="bi bi-chevron-down ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-import">
-            <a class="nav-item-custom {{ request()->routeIs('seller.import-export.product-export') ? 'active' : '' }}" 
-               href="{{ route('seller.import-export.product-export') }}">
-                <i class="bi bi-dot"></i> Product Export
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.import-export.product-import') ? 'active' : '' }}" 
-               href="{{ route('seller.import-export.product-import') }}">
-                <i class="bi bi-dot"></i> Product Import
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('seller.import-export.gallery-import') ? 'active' : '' }}" 
-               href="{{ route('seller.import-export.gallery-import') }}">
-                <i class="bi bi-dot"></i> Gallery Import
-            </a>
+            <a class="nav-item-custom" href="{{ route('seller.import-export.product-export') }}">Product Export</a>
+            <a class="nav-item-custom" href="{{ route('seller.import-export.product-import') }}">Product Import</a>
+            <a class="nav-item-custom" href="{{ route('seller.import-export.gallery-import') }}">Gallery Import</a>
         </div>
 
-    </div>{{-- /.sidebar-inner --}}
+    </div>
 
     <div class="sidebar-footer">
         <i class="bi bi-fullscreen footer-icon"></i>
         <i class="bi bi-person-circle footer-icon"></i>
         <i class="bi bi-box-arrow-right footer-icon text-danger" onclick="document.getElementById('logout-form').submit();"></i>
-        <span class="small text-muted">4.2.5</span>
     </div>
-
-    <form id="logout-form" action="{{ route('seller.logout') }}" method="POST" style="display:none;">
-        @csrf
-    </form>
+    <form id="logout-form" action="{{ route('seller.logout') }}" method="POST" style="display:none;">@csrf</form>
 </aside>
 
-{{-- ══ JavaScript ══ --}}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     'use strict';
 
-    /* ── Submenu toggle ── */
     document.querySelectorAll('.nav-item-custom.has-sub').forEach(function (trigger) {
         trigger.addEventListener('click', function (e) {
-            e.preventDefault(); // Prevent default if it's an <a> tag
+            e.preventDefault();
             var key     = this.dataset.sub;
             var submenu = document.getElementById('sub-' + key);
             if (!submenu) return;
 
             var isOpen = submenu.classList.contains('open');
 
-            /* Close every open submenu */
+            // Accordion: Close others
             document.querySelectorAll('.nav-submenu.open').forEach(function (el) {
-                el.classList.remove('open');
-            });
-            document.querySelectorAll('.nav-item-custom.has-sub.open').forEach(function (el) {
-                el.classList.remove('open');
+                if (el !== submenu) {
+                    el.classList.remove('open');
+                    var otherTrigger = document.querySelector('.nav-item-custom.has-sub.open[data-sub="' + el.id.replace('sub-', '') + '"]');
+                    if (otherTrigger) otherTrigger.classList.remove('open');
+                }
             });
 
-            /* Open the clicked one (if it was closed) */
-            if (!isOpen) {
+            if (isOpen) {
+                submenu.classList.remove('open');
+                this.classList.remove('open');
+            } else {
                 submenu.classList.add('open');
                 this.classList.add('open');
             }
         });
     });
 
-    /* ── Auto-open submenu when a child link is active ── */
-    document.querySelectorAll('.nav-submenu .nav-item-custom.active').forEach(function (activeLink) {
-        var submenu = activeLink.closest('.nav-submenu');
-        if (!submenu) return;
-        submenu.classList.add('open');
-        var trigger = submenu.previousElementSibling;
-        while (trigger && !trigger.classList.contains('has-sub')) {
-            trigger = trigger.previousElementSibling;
-        }
-        if (trigger) trigger.classList.add('open');
-    });
-
-    /* ── Auto-open submenu when parent trigger has active class ── */
-    document.querySelectorAll('.nav-item-custom.has-sub.active').forEach(function (trigger) {
-        var key     = trigger.dataset.sub;
-        var submenu = document.getElementById('sub-' + key);
+    // Auto-open active path
+    const activeChild = document.querySelector('.nav-submenu .nav-item-custom.active');
+    if (activeChild) {
+        const submenu = activeChild.closest('.nav-submenu');
         if (submenu) {
             submenu.classList.add('open');
-            trigger.classList.add('open');
+            const key = submenu.id.replace('sub-', '');
+            const trigger = document.querySelector('.nav-item-custom.has-sub[data-sub="' + key + '"]');
+            if (trigger) trigger.classList.add('open');
         }
-    });
-
-    /* ── Mobile: overlay closes sidebar ── */
-    var overlay = document.getElementById('sidebar-overlay');
-    var sidebar = document.getElementById('sidebar');
-
-    if (overlay && sidebar) {
-        overlay.addEventListener('click', function () {
-            sidebar.classList.remove('show');
-            overlay.classList.remove('show');
-        });
     }
-
-    /* ── Mobile toggle (called from topbar hamburger button) ── */
-    window.sidebarToggle = function () {
-        if (!sidebar || !overlay) return;
-        var open = sidebar.classList.toggle('show');
-        overlay.classList.toggle('show', open);
-    };
-
 });
 </script>

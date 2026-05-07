@@ -587,6 +587,19 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/gallery-import', [App\Http\Controllers\Seller\SellerImportExportController::class, 'galleryImportIndex'])->name('gallery-import');
             Route::post('/gallery-import', [App\Http\Controllers\Seller\SellerImportExportController::class, 'galleryImport'])->name('gallery-import.submit');
         });
+
+        // Purchase Management (Seller)
+        Route::prefix('purchase')->name('purchase.')->group(function () {
+            Route::get('/stock-report',      [App\Http\Controllers\Seller\SellerPurchaseController::class, 'stockReport'])->name('stock-report');
+            Route::get('/invoices',          [App\Http\Controllers\Seller\SellerPurchaseController::class, 'index'])->name('index');
+            Route::get('/create',            [App\Http\Controllers\Seller\SellerPurchaseController::class, 'create'])->name('create');
+            Route::post('/store',            [App\Http\Controllers\Seller\SellerPurchaseController::class, 'store'])->name('store');
+            Route::get('/summary',           [App\Http\Controllers\Seller\SellerPurchaseController::class, 'summary'])->name('summary');
+            Route::get('/returns',           [App\Http\Controllers\Seller\SellerPurchaseController::class, 'returns'])->name('returns');
+            Route::get('/return-create',     [App\Http\Controllers\Seller\SellerPurchaseController::class, 'returnCreate'])->name('return-create');
+            Route::post('/return-store',     [App\Http\Controllers\Seller\SellerPurchaseController::class, 'returnStore'])->name('return-store');
+            Route::get('/details/{id}',      [App\Http\Controllers\Seller\SellerPurchaseController::class, 'getPurchaseDetails'])->name('details');
+        });
     });
 
     // ── Shared Profile Management ─────────────────────────────────────────────
