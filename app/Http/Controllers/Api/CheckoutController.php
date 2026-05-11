@@ -25,6 +25,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Models\GenaralSetting;
+use App\Mail\OrderPlacedNotification;
+use Illuminate\Support\Facades\Mail;
+
 
 class CheckoutController extends Controller
 {
@@ -233,9 +237,11 @@ class CheckoutController extends Controller
 
                 $grandTotal = ($subTotal + $orderShipping) - $orderDiscount;
 
+                $customerId = auth('sanctum')->check() ? auth('sanctum')->id() : null;
+
                 $order = Pointofsalepo::create([
                     'seller_id'      => $sellerId ?: null,
-                    'customer_id'    => null,
+                    'customer_id'    => $customerId,
                     'items'          => $items,
                     'sub_total'      => $subTotal,
                     'discount'       => $orderDiscount,
@@ -251,11 +257,11 @@ class CheckoutController extends Controller
                 ]);
 
                 // 3. Create Invoice for the order
-                PosInvoice::create([
+                $invoice = PosInvoice::create([
                     'invoice_number'  => PosInvoice::generateInvoiceNumber(),
                     'seller_id'       => $sellerId ?: null,
                     'pointofsalepo_id'=> $order->id,
-                    'customer_id'     => null,
+                    'customer_id'     => $customerId,
                     'items'           => $items,
                     'sub_total'       => $subTotal,
                     'discount'        => $orderDiscount,
@@ -267,6 +273,16 @@ class CheckoutController extends Controller
                 ]);
 
                 $orders[] = $order;
+
+                // Send Email Notification to Admin
+                try {
+                    $setting = GenaralSetting::first();
+                    if ($setting && $setting->email_address) {
+                        Mail::to($setting->email_address)->send(new OrderPlacedNotification($order, $invoice));
+                    }
+                } catch (\Exception $e) {
+                    \Log::error("Failed to send order notification email: " . $e->getMessage());
+                }
             }
 
             DB::commit();
@@ -398,17 +414,20 @@ class CheckoutController extends Controller
     private function getDefaultLogo($key)
     {
         $logos = [
-            'stripe'    => 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/512px-Stripe_Logo%2C_revised_2016.svg.png',
-            'paypal'    => 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/PayPal.svg/512px-PayPal.svg.png',
-            'razorpay'  => 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Razorpay_logo.svg/512px-Razorpay_logo.svg.png',
-            'paystack'  => 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Paystack_Logo.png/512px-Paystack_Logo.png',
-            'aamarpay'  => 'https://pbs.twimg.com/profile_images/1018803445831901184/m-vJq1fC_400x400.jpg',
-            'bkash'     => 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/BKash_Logo.svg/512px-BKash_Logo.svg.png',
-            'paytabs'   => 'https://pbs.twimg.com/profile_images/1138722216125747200/V6_yv-R-_400x400.png',
-            'qicard'    => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_Nf_9q_v_x_v_x_v_x_v_x_v_x_v_x_v_x_v_x', // Placeholder
-            'jazzcash'  => 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Jazz_Cash_Logo.png/512px-Jazz_Cash_Logo.png',
-            'shurjopay' => 'https://pbs.twimg.com/profile_images/1281861783866380288/1L3-C0oD_400x400.jpg',
+            'stripe'    => 'https://www.vectorlogo.zone/logos/stripe/stripe-ar21.png',
+            'paypal'    => 'https://www.vectorlogo.zone/logos/paypal/paypal-ar21.png',
+            'razorpay'  => 'https://www.vectorlogo.zone/logos/razorpay/razorpay-ar21.png',
+            'paystack'  => 'https://www.vectorlogo.zone/logos/paystack/paystack-ar21.png',
+            'aamarpay'  => 'https://aamarpay.com/images/logo.png',
+            'bkash'     => 'https://raw.githubusercontent.com/Nazmul64/JhrBazar/main/public/assets/bkash_logo.png', // Fallback to a known path if online is unstable
+            'paytabs'   => 'https://site.paytabs.com/wp-content/uploads/2021/05/PayTabs-Logo.png',
+            'qicard'    => 'https://www.qicard.net/wp-content/uploads/2021/04/Qi-Card-Logo.png',
+            'jazzcash'  => 'https://www.vectorlogo.zone/logos/jazzcash/jazzcash-ar21.png',
+            'shurjopay' => 'https://shurjopay.com.bd/logo/shurjopay-logo.png',
         ];
+        
+        // Manual override for bkash if the above fails
+        if ($key === 'bkash') return 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/BKash_Logo.svg/512px-BKash_Logo.svg.png';
 
         return $logos[$key] ?? null;
     }

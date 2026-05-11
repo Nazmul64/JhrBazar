@@ -9,7 +9,9 @@ use App\Models\SubCategory;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+
 
 class DigitalProductController extends Controller
 {
@@ -79,10 +81,13 @@ class DigitalProductController extends Controller
             'meta_title'            => $request->meta_title,
             'meta_description'      => $request->meta_description,
             'meta_keywords'         => $request->meta_keywords,
+            'is_shipping_charge'    => $request->has('is_shipping_charge'),
             'is_active'             => true,
         ]);
 
+        Cache::forget('homepage_data_v2');
         return redirect()->route('admin.digital_product.index')->with('success', 'Digital Product Created Successfully');
+
     }
 
     public function edit($id)
@@ -157,9 +162,12 @@ class DigitalProductController extends Controller
             'meta_title'            => $request->meta_title,
             'meta_description'      => $request->meta_description,
             'meta_keywords'         => $request->meta_keywords,
+            'is_shipping_charge'    => $request->has('is_shipping_charge'),
         ]);
 
+        Cache::forget('homepage_data_v2');
         return redirect()->route('admin.digital_product.index')->with('success', 'Digital Product Updated Successfully');
+
     }
 
     public function destroy($id)
@@ -170,14 +178,18 @@ class DigitalProductController extends Controller
         $this->deleteFile($product->digital_file);
         if($product->video_type === 'upload') $this->deleteFile($product->video);
         $product->delete();
+        Cache::forget('homepage_data_v2');
         return redirect()->back()->with('success', 'Product Deleted Successfully');
+
     }
 
     public function toggleStatus($id)
     {
         $product = DigitalProduct::findOrFail($id);
         $product->update(['is_active' => !$product->is_active]);
+        Cache::forget('homepage_data_v2');
         return redirect()->back()->with('success', 'Status Updated');
+
     }
 
     public function getSubCategories($categoryId)

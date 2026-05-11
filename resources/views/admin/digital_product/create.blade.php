@@ -133,6 +133,22 @@
                     </div>
                 </div>
 
+                {{-- Shipping Options --}}
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title">Shipping Options</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_shipping_charge" id="is_shipping_charge" value="1" {{ old('is_shipping_charge', 1) ? 'checked' : '' }}>
+                            <label class="form-check-label fw-bold" for="is_shipping_charge">
+                                Enable Shipping & Delivery Info
+                            </label>
+                            <p class="text-muted small mb-0">If checked, shipping charge and delivery area info will be visible on the product page.</p>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Price Information --}}
                 <div class="card">
                     <div class="card-header">

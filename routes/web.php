@@ -242,6 +242,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::resource('sociallinkList', SociallinkListController::class)->names('admin.sociallinkList')->except(['create', 'store', 'show', 'destroy']);
     Route::post('sociallinkList/{sociallinkList}/toggle', [SociallinkListController::class, 'toggleStatus'])->name('admin.sociallinkList.toggle');
 
+    // ── Membership Logos ──────────────────────────────────────────────────────
+    Route::resource('membership_logos', \App\Http\Controllers\Admin\MembershipLogoController::class)->names('admin.membership_logos')->except(['create', 'show', 'edit', 'update']);
+    Route::post('membership_logos/{membershipLogo}/toggle', [\App\Http\Controllers\Admin\MembershipLogoController::class, 'toggleStatus'])->name('admin.membership_logos.toggle');
+
     // ── Products ──────────────────────────────────────────────────────────────
     Route::get('products/subcategories/{categoryId}', [ProductControllerController::class, 'getSubCategories'])->name('products.subcategories');
     Route::post('products/{product}/toggle',          [ProductControllerController::class, 'toggleStatus'])    ->name('products.toggle');

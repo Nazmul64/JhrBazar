@@ -11,15 +11,16 @@ import { useSettings } from '../context/SettingsContext';
 const Home = () => {
     const { settings } = useSettings();
     const mainColor = settings?.primary_color || '#001fcc';
-    const [popularProducts, setPopularProducts]       = useState([]);
-    const [newArrivals, setNewArrivals]               = useState([]);
+    const [popularProducts, setPopularProducts] = useState([]);
+    const [newArrivals, setNewArrivals] = useState([]);
     const [justForYouProducts, setJustForYouProducts] = useState([]);
-    const [digitalProducts, setDigitalProducts]       = useState([]);
-    const [bestDeals, setBestDeals]                   = useState([]);
-    const [allProducts, setAllProducts]               = useState([]);
-    const [banners, setBanners]                       = useState([]);
-    const [categories, setCategories]                 = useState([]);
-    const [loading, setLoading]                       = useState(true);
+    const [digitalProducts, setDigitalProducts] = useState([]);
+    const [bestDeals, setBestDeals] = useState([]);
+    const [allProducts, setAllProducts] = useState([]);
+    const [banners, setBanners] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [recentReviews, setRecentReviews] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -35,7 +36,8 @@ const Home = () => {
                     setAllProducts(data.allProducts);
                     setBanners(data.banners);
                     setCategories(data.categories);
-                    
+                    setRecentReviews(data.recentReviews || []);
+
                     // Force set CSS variables immediately to fix colors and logo
                     const root = document.documentElement;
                     if (data.settings) {
@@ -44,7 +46,7 @@ const Home = () => {
                         if (s.primary_color) root.style.setProperty('--primary-color', s.primary_color);
                         if (s.button_color) root.style.setProperty('--button-color', s.button_color);
                         else if (s.primary_color) root.style.setProperty('--button-color', s.primary_color);
-                        
+
                         if (s.top_header_color) root.style.setProperty('--top-header-color', s.top_header_color);
                         if (s.header_color) root.style.setProperty('--header-color', s.header_color);
                     }
@@ -65,13 +67,13 @@ const Home = () => {
 
     const renderProductGrid = (products, colClass = null) => {
         let finalColClass = colClass;
-        
+
         if (!colClass) {
             let mobileCol = 6;
             if (settings?.products_per_row_mobile) {
                 mobileCol = Math.max(1, Math.floor(12 / parseInt(settings.products_per_row_mobile)));
             }
-            
+
             let desktopCol = 2;
             let customDesktopClass = '';
             if (settings?.products_per_row_desktop) {
@@ -99,22 +101,9 @@ const Home = () => {
 
     return (
         <MasterLayout>
+            {/* Hero and Categories */}
             <HeroSection banners={banners} categories={categories} loading={loading} />
             <Categories categories={categories} loading={loading} />
-
-            {/* ===== All Products (always shows if any product exists) ===== */}
-            {!loading && allProducts.length > 0 && (
-                <section className="container mb-5">
-                    <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-                        <div className="d-flex align-items-center gap-2">
-                            <h4 className="fw-bold mb-0" style={{ color: '#333' }}>সকল পণ্য</h4>
-                            <span className="badge rounded-pill text-white" style={{ backgroundColor: mainColor, fontSize: '10px' }}>ALL PRODUCTS</span>
-                        </div>
-                        <Link to="/products-all/all" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>সব দেখুন →</Link>
-                    </div>
-                    {renderProductGrid(allProducts)}
-                </section>
-            )}
 
             {/* ===== Popular Products ===== */}
             {!loading && popularProducts.length > 0 && (
@@ -169,6 +158,40 @@ const Home = () => {
             {/* ===== Top Rated Shops ===== */}
             {!loading && <TopRatedShops />}
 
+            {/* ===== Customer Reviews ===== */}
+            {!loading && recentReviews.length > 0 && (
+                <section className="container mb-5 mt-5">
+                    <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                        <div className="d-flex align-items-center gap-2">
+                            <h4 className="fw-bold mb-0" style={{ color: '#333' }}>কাস্টমার রিভিউ</h4>
+                            <span className="badge rounded-pill text-white" style={{ backgroundColor: mainColor, fontSize: '10px' }}>REVIEWS</span>
+                        </div>
+                    </div>
+                    <div className="row g-3">
+                        {recentReviews.map(review => (
+                            <div key={review.id} className="col-md-4">
+                                <div className="card h-100 border-0 shadow-sm p-4" style={{ borderRadius: '15px' }}>
+                                    <div className="d-flex align-items-center gap-3 mb-3">
+                                        <div className="rounded-circle bg-light d-flex align-items-center justify-content-center text-primary fw-bold" style={{ width: '45px', height: '45px' }}>
+                                            {review.user?.name?.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <h6 className="fw-bold mb-0">{review.user?.name}</h6>
+                                            <div className="text-warning small">
+                                                {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="text-muted small mb-0" style={{ fontStyle: 'italic' }}>
+                                        "{review.comment?.substring(0, 120)}{review.comment?.length > 120 ? '...' : ''}"
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
             {/* ===== Just For You ===== */}
             {!loading && justForYouProducts.length > 0 && (
                 <section className="container mb-5">
@@ -178,24 +201,38 @@ const Home = () => {
                     </div>
                     <>
                         {renderProductGrid(justForYouProducts, 'col-6 col-md-4 col-lg-3')}
-                            <div className="text-center mt-5">
-                                <Link to="/products-all/just-for-you" style={{
-                                    padding: '12px 50px',
-                                    backgroundColor: '#fff',
-                                    color: mainColor,
-                                    border: `1.5px solid ${mainColor}`,
-                                    borderRadius: '30px',
-                                    fontWeight: 'bold',
-                                    transition: 'all 0.3s',
-                                    fontSize: '14px',
-                                    boxShadow: '0 4px 15px rgba(87, 181, 0, 0.1)',
-                                    display: 'inline-block',
-                                    textDecoration: 'none'
-                                }} className="load-more-btn">
-                                    Load More Products
-                                </Link>
-                            </div>
-                        </>
+                        <div className="text-center mt-5">
+                            <Link to="/products-all/just-for-you" style={{
+                                padding: '12px 50px',
+                                backgroundColor: '#fff',
+                                color: mainColor,
+                                border: `1.5px solid ${mainColor}`,
+                                borderRadius: '30px',
+                                fontWeight: 'bold',
+                                transition: 'all 0.3s',
+                                fontSize: '14px',
+                                boxShadow: '0 4px 15px rgba(87, 181, 0, 0.1)',
+                                display: 'inline-block',
+                                textDecoration: 'none'
+                            }} className="load-more-btn">
+                                Load More Products
+                            </Link>
+                        </div>
+                    </>
+                </section>
+            )}
+
+            {/* ===== All Products (Moved to Bottom) ===== */}
+            {!loading && allProducts.length > 0 && (
+                <section className="container mb-5 mt-5">
+                    <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                        <div className="d-flex align-items-center gap-2">
+                            <h4 className="fw-bold mb-0" style={{ color: '#333' }}>সকল পণ্য</h4>
+                            <span className="badge rounded-pill text-white" style={{ backgroundColor: mainColor, fontSize: '10px' }}>ALL PRODUCTS</span>
+                        </div>
+                        <Link to="/products-all/all" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>সব দেখুন →</Link>
+                    </div>
+                    {renderProductGrid(allProducts)}
                 </section>
             )}
 

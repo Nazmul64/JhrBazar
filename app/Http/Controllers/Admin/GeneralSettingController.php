@@ -33,22 +33,25 @@ class GeneralSettingController extends Controller
             'footer_text'           => 'nullable|string|max:500',
             'footer_logo'           => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
             'footer_qr'             => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:1024',
+            'membership_logo_3'     => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:1024',
+            'payment_methods_logo'  => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
         ]);
 
-        $data = $request->except(['_token', 'logo', 'favicon', 'app_logo', 'footer_logo', 'footer_qr']);
+        $data = $request->except(['_token', 'logo', 'favicon', 'app_logo', 'footer_logo', 'footer_qr', 'membership_logo_1', 'membership_logo_2', 'membership_logo_3', 'payment_methods_logo']);
 
         $data['show_download_app']   = $request->has('show_download_app') ? 1 : 0;
         $data['show_footer_section'] = $request->has('show_footer_section') ? 1 : 0;
         $data['top_rated_shops_status'] = $request->has('top_rated_shops_status') ? 1 : 0;
         $data['show_product_stats'] = $request->has('show_product_stats') ? 1 : 0;
         $data['show_marquee'] = $request->has('show_marquee') ? 1 : 0;
+        $data['show_membership_section'] = $request->has('show_membership_section') ? 1 : 0;
 
         $uploadPath = public_path('uploads/generalsetting');
         if (!file_exists($uploadPath)) {
             mkdir($uploadPath, 0777, true);
         }
 
-        $imageFields = ['logo', 'favicon', 'app_logo', 'footer_logo', 'footer_qr'];
+        $imageFields = ['logo', 'favicon', 'app_logo', 'footer_logo', 'footer_qr', 'membership_logo_1', 'membership_logo_2', 'membership_logo_3', 'payment_methods_logo'];
         foreach ($imageFields as $field) {
             if ($request->hasFile($field)) {
                 $file     = $request->file($field);
@@ -59,6 +62,13 @@ class GeneralSettingController extends Controller
         }
 
         GenaralSetting::create($data);
+
+        // Clear cache
+        \Illuminate\Support\Facades\Cache::forget('homepage_data');
+        \Illuminate\Support\Facades\Cache::forget('homepage_data_v2');
+        \Illuminate\Support\Facades\Cache::forget('footer_data_v2');
+        \Illuminate\Support\Facades\Cache::forget('general_settings_with_cats');
+
 
         return redirect()->route('admin.generalsettings.index')
             ->with('success', 'Settings saved successfully!');
@@ -89,24 +99,27 @@ class GeneralSettingController extends Controller
             'footer_text'           => 'nullable|string|max:500',
             'footer_logo'           => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
             'footer_qr'             => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:1024',
+            'membership_logo_3'     => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:1024',
+            'payment_methods_logo'  => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
         ]);
 
         $setting = GenaralSetting::findOrFail($id);
 
-        $data = $request->except(['_token', '_method', 'logo', 'favicon', 'app_logo', 'footer_logo', 'footer_qr']);
+        $data = $request->except(['_token', '_method', 'logo', 'favicon', 'app_logo', 'footer_logo', 'footer_qr', 'membership_logo_1', 'membership_logo_2', 'membership_logo_3', 'payment_methods_logo']);
 
         $data['show_download_app']   = $request->has('show_download_app') ? 1 : 0;
         $data['show_footer_section'] = $request->has('show_footer_section') ? 1 : 0;
         $data['top_rated_shops_status'] = $request->has('top_rated_shops_status') ? 1 : 0;
         $data['show_product_stats'] = $request->has('show_product_stats') ? 1 : 0;
         $data['show_marquee'] = $request->has('show_marquee') ? 1 : 0;
+        $data['show_membership_section'] = $request->has('show_membership_section') ? 1 : 0;
 
         $uploadPath = public_path('uploads/generalsetting');
         if (!file_exists($uploadPath)) {
             mkdir($uploadPath, 0777, true);
         }
 
-        $imageFields = ['logo', 'favicon', 'app_logo', 'footer_logo', 'footer_qr'];
+        $imageFields = ['logo', 'favicon', 'app_logo', 'footer_logo', 'footer_qr', 'membership_logo_1', 'membership_logo_2', 'membership_logo_3', 'payment_methods_logo'];
         foreach ($imageFields as $field) {
             if ($request->hasFile($field)) {
                 if ($setting->$field && file_exists(public_path($setting->$field))) {
@@ -120,6 +133,13 @@ class GeneralSettingController extends Controller
         }
 
         $setting->update($data);
+
+        // Clear cache
+        \Illuminate\Support\Facades\Cache::forget('homepage_data');
+        \Illuminate\Support\Facades\Cache::forget('homepage_data_v2');
+        \Illuminate\Support\Facades\Cache::forget('footer_data_v2');
+        \Illuminate\Support\Facades\Cache::forget('general_settings_with_cats');
+
 
         return redirect()->route('admin.generalsettings.index')
             ->with('success', 'Settings updated successfully!');
@@ -161,6 +181,7 @@ class GeneralSettingController extends Controller
             'category_behavior'   => 'slider',
             'sidebar_behavior'    => 'fixed',
             'loader_status'       => 1,
+            'show_membership_section' => 1,
         ];
         $setting->update($defaults);
         return redirect()->route('admin.generalsettings.index')
@@ -172,7 +193,7 @@ class GeneralSettingController extends Controller
         $setting = GenaralSetting::findOrFail($id);
         $field   = $request->field;
 
-        if (in_array($field, ['show_download_app', 'show_footer_section', 'top_rated_shops_status', 'show_product_stats', 'show_marquee'])) {
+        if (in_array($field, ['show_download_app', 'show_footer_section', 'top_rated_shops_status', 'show_product_stats', 'show_marquee', 'show_membership_section'])) {
             $setting->$field = !$setting->$field;
             $setting->save();
             return response()->json(['success' => true, 'status' => $setting->$field]);

@@ -91,6 +91,18 @@
                             <input type="file" name="digital_file">
                         </div>
                     </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Shipping Options</label>
+                        <div class="p-3 border rounded-3 bg-light">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_shipping_charge" id="is_shipping_charge" value="1" {{ old('is_shipping_charge', $product->is_shipping_charge) ? 'checked' : '' }} style="width: 35px; height: 18px; cursor: pointer;">
+                                <label class="form-check-label fw-bold ms-2" for="is_shipping_charge" style="cursor: pointer;">Enable Shipping & Delivery Info</label>
+                                <p class="text-muted small mb-0 mt-1">If checked, shipping charge and delivery area info will be visible on the product page.</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">License Keys</label>
                         <div id="license_keys_container">

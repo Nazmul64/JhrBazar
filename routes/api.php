@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\FrontendApiController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CustomerDashboardController;
+use App\Http\Controllers\Api\ReviewController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -14,6 +16,17 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // Customer Dashboard Routes
+    Route::get('/customer/dashboard', [CustomerDashboardController::class, 'index']);
+    Route::get('/customer/orders', [CustomerDashboardController::class, 'orders']);
+    Route::get('/customer/wishlist', [CustomerDashboardController::class, 'wishlist']);
+    Route::post('/customer/update-profile', [CustomerDashboardController::class, 'updateProfile']);
+    Route::post('/customer/update-password', [CustomerDashboardController::class, 'updatePassword']);
+
+    // Review Routes
+    Route::post('/reviews', [ReviewController::class, 'store']);
+    Route::get('/reviews/{product_id}/{product_type}', [ReviewController::class, 'fetch']);
 });
 
 Route::get('/home-data', [FrontendApiController::class, 'getHomeData']);
@@ -39,6 +52,8 @@ Route::get('/products/category/{id}', [FrontendApiController::class, 'getProduct
 Route::get('/products/subcategory/{id}', [FrontendApiController::class, 'getProductsBySubCategory']);
 Route::get('/product/{type}/{id}/related', [FrontendApiController::class, 'getRelatedProducts']);
 Route::get('/product/{type}/{id}', [FrontendApiController::class, 'getProductDetails']);
+Route::get('/product/{type}/{id}/reviews', [App\Http\Controllers\Api\ReviewController::class, 'getProductReviews']);
+Route::get('/recent-reviews', [App\Http\Controllers\Api\ReviewController::class, 'getRecentReviews']);
 // Wishlist Routes
 Route::get('/wishlist', [App\Http\Controllers\Api\WishlistController::class, 'index']);
 Route::post('/wishlist/toggle', [App\Http\Controllers\Api\WishlistController::class, 'toggle']);

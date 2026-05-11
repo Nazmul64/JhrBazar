@@ -12,12 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('genaral_settings', function (Blueprint $table) {
-            if (!Schema::hasColumn('genaral_settings', 'products_per_row_desktop')) {
-                $table->integer('products_per_row_desktop')->default(6)->after('product_img_height_mobile');
-            }
-            if (!Schema::hasColumn('genaral_settings', 'products_per_row_mobile')) {
-                $table->integer('products_per_row_mobile')->default(2)->after('products_per_row_desktop');
-            }
+            $table->string('membership_logo_1')->nullable();
+            $table->string('membership_logo_2')->nullable();
+            $table->string('membership_logo_3')->nullable();
+            $table->boolean('show_membership_section')->default(1);
         });
     }
 
@@ -27,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('genaral_settings', function (Blueprint $table) {
-            $table->dropColumn(['products_per_row_desktop', 'products_per_row_mobile']);
+            $table->dropColumn(['membership_logo_1', 'membership_logo_2', 'membership_logo_3', 'show_membership_section']);
         });
     }
 };

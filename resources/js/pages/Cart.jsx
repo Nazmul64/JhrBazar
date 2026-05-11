@@ -129,10 +129,7 @@ const Cart = () => {
                                         <span>সাব-টোটাল</span>
                                         <span className="fw-bold text-dark">৳{Number(cartTotal).toLocaleString()}</span>
                                     </div>
-                                    <div className="d-flex justify-content-between mb-4 pb-3 border-bottom text-muted">
-                                        <span>শিপিং</span>
-                                        <span className="text-success fw-bold">ফ্রি</span>
-                                    </div>
+
                                     <div className="d-flex justify-content-between mb-4">
                                         <h4 className="fw-bold mb-0">সর্বমোট</h4>
                                         <h4 className="fw-bold mb-0" style={{ color: mainColor }}>৳{Number(total).toLocaleString()}</h4>

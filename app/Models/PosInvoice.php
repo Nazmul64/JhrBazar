@@ -59,25 +59,11 @@ class PosInvoice extends Model
 
     // ── Static Helpers ─────────────────────────────────────────────────────
 
-    /**
-     * Generate the next sequential invoice number.
-     * Format: RC000001, RC000002, …
-     */
     public static function generateInvoiceNumber(): string
     {
-        $datePart = date('ymd'); // 240511
-        $randomPart = strtoupper(\Illuminate\Support\Str::random(4));
-        
-        $last = static::whereDate('created_at', today())->latest('id')->first();
-        $sequence = $last ? ((int)substr($last->invoice_number, -4) + 1) : 1;
-        $sequencePart = str_pad($sequence, 4, '0', STR_PAD_LEFT);
-
-        $number = 'JB-' . $datePart . '-' . $randomPart . '-' . $sequencePart;
-
-        while (static::where('invoice_number', $number)->exists()) {
-            $randomPart = strtoupper(\Illuminate\Support\Str::random(4));
-            $number = 'JB-' . $datePart . '-' . $randomPart . '-' . $sequencePart;
-        }
+        do {
+            $number = str_pad(mt_rand(100000, 999999), 6, '0', STR_PAD_LEFT);
+        } while (static::where('invoice_number', $number)->exists());
 
         return $number;
     }

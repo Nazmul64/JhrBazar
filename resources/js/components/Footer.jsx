@@ -6,7 +6,8 @@ const Footer = () => {
     const [footerData, setFooterData] = useState({
         product_categories: [],
         page_categories: [],
-        settings: null
+        settings: null,
+        social_links: []
     });
 
     useEffect(() => {
@@ -18,6 +19,19 @@ const Footer = () => {
             })
             .catch(err => console.error("Error fetching footer data", err));
     }, []);
+
+    const getIconClass = (name) => {
+        const platform = name.toLowerCase();
+        if (platform.includes('facebook')) return 'fab fa-facebook-f';
+        if (platform.includes('twitter') || platform.includes('x')) return 'fab fa-twitter';
+        if (platform.includes('instagram')) return 'fab fa-instagram';
+        if (platform.includes('linkedin')) return 'fab fa-linkedin-in';
+        if (platform.includes('youtube')) return 'fab fa-youtube';
+        if (platform.includes('whatsapp')) return 'fab fa-whatsapp';
+        if (platform.includes('telegram')) return 'fab fa-telegram-plane';
+        if (platform.includes('google')) return 'fab fa-google-plus-g';
+        return 'fas fa-link';
+    };
 
     const socialIconStyle = {
         width: '32px',
@@ -76,9 +90,27 @@ const Footer = () => {
                         </div>
 
                         <div className="d-flex gap-2 mb-4">
-                            <a href="#" style={socialIconStyle} className="social-icon-hover"><i className="fab fa-facebook-f"></i></a>
-                            <a href="#" style={socialIconStyle} className="social-icon-hover"><i className="fab fa-twitter"></i></a>
-                            <a href="#" style={socialIconStyle} className="social-icon-hover"><i className="fab fa-instagram"></i></a>
+                            {footerData.social_links && footerData.social_links.length > 0 ? (
+                                footerData.social_links.map((social) => (
+                                    <a 
+                                        key={social.id} 
+                                        href={social.link || '#'} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        style={socialIconStyle} 
+                                        className="social-icon-hover"
+                                        title={social.name}
+                                    >
+                                        <i className={getIconClass(social.name)}></i>
+                                    </a>
+                                ))
+                            ) : (
+                                <>
+                                    <a href="#" style={socialIconStyle} className="social-icon-hover"><i className="fab fa-facebook-f"></i></a>
+                                    <a href="#" style={socialIconStyle} className="social-icon-hover"><i className="fab fa-twitter"></i></a>
+                                    <a href="#" style={socialIconStyle} className="social-icon-hover"><i className="fab fa-instagram"></i></a>
+                                </>
+                            )}
                         </div>
 
                         {footerData.settings?.show_download_app == 1 && (
@@ -117,25 +149,54 @@ const Footer = () => {
                     ))}
                 </div>
 
-                <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: '30px', marginTop: '50px' }}>
+                {/* Membership Section */}
+                {footerData.settings?.show_membership_section && (
+                    <div className="row mb-5 py-4 border-top border-bottom align-items-center">
+                        <div className="col-lg-5 text-center text-lg-start mb-4 mb-lg-0">
+                            <p className="mb-3 fw-bold text-muted small text-uppercase">We Are a Member of</p>
+                            <div className="d-flex gap-4 justify-content-center justify-content-lg-start align-items-center flex-wrap">
+                                {footerData.membership_logos && footerData.membership_logos.length > 0 ? (
+                                    footerData.membership_logos.map((logo) => (
+                                        <img 
+                                            key={logo.id} 
+                                            src={logo.image} 
+                                            alt={logo.name || "Member"} 
+                                            style={{ height: '40px', maxWidth: '120px', objectFit: 'contain' }} 
+                                        />
+                                    ))
+                                ) : (
+                                    <div className="text-muted small">Update membership logos in admin panel</div>
+                                )}
+                            </div>
+                        </div>
+                        <div className="col-lg-7 text-center text-lg-end">
+                             <div className="d-flex align-items-center justify-content-center justify-content-lg-end gap-3 flex-wrap">
+                                <span style={{ fontSize: '13px', color: '#333', fontWeight: 'bold' }}>Pay With</span>
+                                <div className="d-flex gap-1 flex-wrap justify-content-center">
+                                    {footerData.settings?.payment_methods_logo ? (
+                                        <img 
+                                            src={footerData.settings.payment_methods_logo} 
+                                            alt="Payment Methods" 
+                                            style={{ maxHeight: '45px', width: 'auto', maxWidth: '100%' }} 
+                                        />
+                                    ) : (
+                                        <div className="text-muted small">Upload payment banner in admin</div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div style={{ borderTop: '0px solid #f0f0f0', paddingTop: '10px' }}>
                     <div className="row align-items-center">
                         <div className="col-md-6 text-center text-md-start">
                             <p className="mb-0" style={{ fontSize: '13px', color: '#999' }}>
-                                Copyright © 2026 GhorerBazar
+                                Copyright © 2026 {footerData.settings?.website_name || "JhrBazar"}
                             </p>
                         </div>
                         <div className="col-md-6 text-center text-md-end mt-4 mt-md-0">
-                            <div className="d-flex align-items-center justify-content-center justify-content-md-end gap-3 flex-wrap">
-                                <span style={{ fontSize: '13px', color: '#333', fontWeight: 'bold' }}>Pay With</span>
-                                <div className="d-flex gap-1 flex-wrap justify-content-center">
-                                    <img src="https://ghorerbazar.com/wp-content/uploads/2021/04/bkash.png" alt="bkash" style={{ height: '28px', border: '1px solid #eee', borderRadius: '4px' }} />
-                                    <img src="https://ghorerbazar.com/wp-content/uploads/2021/04/nagad.png" alt="nagad" style={{ height: '28px', border: '1px solid #eee', borderRadius: '4px' }} />
-                                    <img src="https://ghorerbazar.com/wp-content/uploads/2021/04/rocket.png" alt="rocket" style={{ height: '28px', border: '1px solid #eee', borderRadius: '4px' }} />
-                                    <img src="https://ghorerbazar.com/wp-content/uploads/2021/04/visa.png" alt="visa" style={{ height: '28px', border: '1px solid #eee', borderRadius: '4px' }} />
-                                    <img src="https://ghorerbazar.com/wp-content/uploads/2021/04/mastercard.png" alt="mastercard" style={{ height: '28px', border: '1px solid #eee', borderRadius: '4px' }} />
-                                    <img src="https://ghorerbazar.com/wp-content/uploads/2021/04/dbbl.png" alt="dbbl" style={{ height: '28px', border: '1px solid #eee', borderRadius: '4px' }} />
-                                </div>
-                            </div>
+                            {/* Verification / Security Logos could go here */}
                         </div>
                     </div>
                 </div>

@@ -15,7 +15,7 @@ class SellerDigitalProduct extends Model
         'buying_price', 'selling_price', 'discount_price', 'stock_quantity', 
         'thumbnail', 'additional_thumbnails', 'digital_file', 'license_keys',
         'video_type', 'video', 'meta_title', 'meta_description', 'meta_keywords', 'is_active',
-        'cash_on_delivery', 'online_payment'
+        'cash_on_delivery', 'online_payment', 'is_shipping_charge'
     ];
 
     protected $casts = [
@@ -24,6 +24,7 @@ class SellerDigitalProduct extends Model
         'is_active'             => 'boolean',
         'cash_on_delivery'      => 'boolean',
         'online_payment'        => 'boolean',
+        'is_shipping_charge'    => 'boolean',
     ];
 
     public function category()

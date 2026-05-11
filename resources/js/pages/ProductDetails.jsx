@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import MasterLayout from '../layouts/MasterLayout';
 import ProductCard from '../components/ProductCard';
 import axios from 'axios';
@@ -17,6 +17,7 @@ const ProductDetails = () => {
     const [activeTab, setActiveTab] = useState('about');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '' });
+    const [reviews, setReviews] = useState([]);
     const [relatedProducts, setRelatedProducts] = useState([]);
     const { addToCart } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
@@ -29,6 +30,12 @@ const ProductDetails = () => {
                 const res = await axios.get(`/api/product/${type}/${id}`);
                 if (res.data.success) {
                     setProduct(res.data.data);
+
+                    // Fetch reviews
+                    const reviewsRes = await axios.get(`/api/product/${type}/${id}/reviews`);
+                    if (reviewsRes.data.success) {
+                        setReviews(reviewsRes.data.data);
+                    }
 
                     // Fetch related products
                     const relatedRes = await axios.get(`/api/product/${type}/${id}/related`);
@@ -138,7 +145,7 @@ const ProductDetails = () => {
 
                 <div className="row g-4">
                     {/* Left: Gallery & Main Info */}
-                    <div className="col-lg-9">
+                    <div className={product.is_shipping_charge ? "col-lg-8" : "col-lg-12"}>
                         <div className="row g-4">
                             {/* Product Images with Zoom */}
                             <div className="col-md-5">
@@ -163,6 +170,26 @@ const ProductDetails = () => {
                                         alt={product.name}
                                         style={{ width: '100%', height: 'auto', objectFit: 'cover', display: 'block' }}
                                     />
+                                    {/* Floating Wishlist Button */}
+                                    <div
+                                        className="position-absolute cursor-pointer d-flex align-items-center justify-content-center shadow-sm hover-wishlist"
+                                        onClick={() => toggleWishlist(product)}
+                                        title={isInWishlist(product.id, type) ? "উইশলিস্ট থেকে সরান" : "উইশলিস্টে যোগ করুন"}
+                                        style={{
+                                            top: '15px',
+                                            right: '15px',
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '50%',
+                                            backgroundColor: '#fff',
+                                            zIndex: 10,
+                                            transition: 'all 0.3s',
+                                            color: isInWishlist(product.id, type) ? '#ff4d4d' : '#666',
+                                            fontSize: '22px'
+                                        }}
+                                    >
+                                        {isInWishlist(product.id, type) ? '❤️' : '🤍'}
+                                    </div>
                                 </div>
                                 {/* Thumbnail Slider */}
                                 <div className="d-flex gap-2 mt-3 overflow-auto pb-2" style={{ scrollbarWidth: 'thin' }}>
@@ -220,24 +247,13 @@ const ProductDetails = () => {
                                 <p className="text-muted mb-4" style={{ fontSize: '13px', lineHeight: '1.6' }}>{product.short_description}</p>
 
                                 <div className="d-flex align-items-center gap-3 mb-4">
-                                    <div className="text-warning small">★★★★★ <span className="text-muted">(০ রিভিউ)</span></div>
+                                    <div className="text-warning small">
+                                        {'★'.repeat(Math.round(product.avg_rating || 0))}{'☆'.repeat(5 - Math.round(product.avg_rating || 0))}
+                                        <span className="text-muted ms-1">({product.review_count || 0} রিভিউ)</span>
+                                    </div>
                                     <div className="text-muted small">| <span className="text-dark fw-bold">০</span> টি বিক্রিত</div>
                                     <div className="ms-auto d-flex gap-3 align-items-center">
-                                        <div className="text-muted small cursor-pointer hover-share" title="শেয়ার করুন">🔗 <span className="d-none d-sm-inline">শেয়ার</span></div>
-                                        <div
-                                            className="d-flex align-items-center gap-1 cursor-pointer hover-wishlist"
-                                            onClick={() => toggleWishlist(product)}
-                                            title={isInWishlist(product.id, type) ? "উইশলিস্ট থেকে সরান" : "উইশলিস্টে যোগ করুন"}
-                                            style={{
-                                                color: isInWishlist(product.id, type) ? '#ff4d4d' : '#666',
-                                                transition: 'all 0.3s'
-                                            }}
-                                        >
-                                            <span style={{ fontSize: '20px' }}>{isInWishlist(product.id, type) ? '❤️' : '🤍'}</span>
-                                            <span className="small fw-bold d-none d-sm-inline">
-                                                {isInWishlist(product.id, type) ? 'উইশলিস্টে আছে' : 'উইশলিস্ট'}
-                                            </span>
-                                        </div>
+
                                     </div>
                                 </div>
 
@@ -351,7 +367,7 @@ const ProductDetails = () => {
                                         className={`nav-link border-0 p-0 pb-2 ${activeTab === 'reviews' ? 'active border-bottom border-3 fw-bold' : 'text-muted'}`}
                                         style={{ borderColor: activeTab === 'reviews' ? `${mainColor} !important` : 'transparent', color: activeTab === 'reviews' ? '#333' : '', fontSize: '14px' }}
                                     >
-                                        রিভিউ (১২০)
+                                        রিভিউ ({product.review_count || 0})
                                     </button>
                                 </li>
                             </ul>
@@ -362,66 +378,88 @@ const ProductDetails = () => {
 
                                 {activeTab === 'reviews' && (
                                     <div>
-                                        {!isLoggedIn ? (
-                                            <div className="text-center py-5">
-                                                <div className="mb-3 text-muted" style={{ fontSize: '40px' }}>🔒</div>
-                                                <h5 className="fw-bold text-dark mb-2">লগইন প্রয়োজন</h5>
-                                                <p className="text-muted mb-4">রিভিউ দেখতে এবং লিখতে আপনাকে অবশ্যই লগইন করতে হবে।</p>
-                                                <button
-                                                    onClick={() => setIsLoggedIn(true)}
-                                                    className="btn text-white px-4 py-2"
-                                                    style={{ backgroundColor: mainColor, borderRadius: '8px', fontWeight: 'bold' }}
-                                                >
-                                                    লগইন করুন
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                <h6 className="fw-bold text-dark mb-3">একটি রিভিউ লিখুন</h6>
-                                                <div className="mb-3">
-                                                    <label className="fw-bold mb-2 d-block">আপনার রেটিং</label>
-                                                    <div className="d-flex gap-1" style={{ fontSize: '20px', color: '#ffc107', cursor: 'pointer' }}>
-                                                        <span>★</span><span>★</span><span>★</span><span>★</span><span className="text-muted">★</span>
-                                                    </div>
+                                        <div className="mb-5">
+                                            {reviews.length > 0 ? (
+                                                <div className="d-flex flex-column gap-4">
+                                                    {reviews.map(review => (
+                                                        <div key={review.id} className="pb-3 border-bottom">
+                                                            <div className="d-flex justify-content-between mb-2">
+                                                                <h6 className="fw-bold text-dark mb-0">{review.user?.name}</h6>
+                                                                <span className="text-muted small">{new Date(review.created_at).toLocaleDateString()}</span>
+                                                            </div>
+                                                            <div className="text-warning small mb-2">
+                                                                {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+                                                            </div>
+                                                            <p className="mb-0 text-dark">{review.comment}</p>
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                                <div className="mb-3">
-                                                    <label className="fw-bold mb-2">আপনার মন্তব্য</label>
-                                                    <textarea className="form-control" rows="4" placeholder="আপনার অভিজ্ঞতা লিখুন..."></textarea>
-                                                </div>
-                                                <button className="btn text-white fw-bold px-4 py-2" style={{ backgroundColor: mainColor, borderRadius: '8px' }}>
-                                                    রিভিউ জমা দিন
-                                                </button>
-                                            </div>
-                                        )}
+                                            ) : (
+                                                <div className="text-center py-4 text-muted">এই প্রোডাক্টে এখনো কোনো রিভিউ নেই।</div>
+                                            )}
+                                        </div>
+                                        
+                                        <div className="alert alert-info py-2" style={{ borderRadius: '10px' }}>
+                                            রিভিউ দিতে আপনার <Link to="/customer/dashboard" className="fw-bold">ড্যাশবোর্ড</Link> থেকে কেনা প্রোডাক্টের ওপর রিভিউ অপশনটি ব্যবহার করুন।
+                                        </div>
                                     </div>
                                 )}
                             </div>
                         </div>
                     </div>
 
-                    {/* Right Sidebar */}
-                    <div className="col-lg-3">
-                        {/* Delivery Info */}
-                        <div className="card border-0 shadow-sm mb-3" style={{ borderRadius: '12px', backgroundColor: '#f8f9fa' }}>
-                            <div className="card-body p-3">
-                                <div className="d-flex align-items-center gap-3 mb-3 pb-2 border-bottom">
-                                    <div style={{ fontSize: '18px' }}>🚚</div>
-                                    <div>
-                                        <div className="small text-muted" style={{ fontSize: '11px' }}>ডেলিভারি চার্জ</div>
-                                        <div className="fw-bold small">৳০.০০</div>
+                    {/* Right: Delivery & Sidebar Info (Conditional) */}
+                    {product.is_shipping_charge && (
+                        <div className="col-lg-4">
+                            <div className="bg-white p-4 rounded shadow-sm border h-100">
+                                <h5 className="fw-bold mb-4 pb-2 border-bottom">ডেলিভারি তথ্য</h5>
+                                
+                                <div className="d-flex flex-column gap-4">
+                                    <div className="d-flex gap-3">
+                                        <div className="fs-3 text-muted">📍</div>
+                                        <div>
+                                            <div className="fw-bold small mb-1">ডেলিভারি এলাকা</div>
+                                            <div className="text-muted small">সারা বাংলাদেশ ডেলিভারি করা হয়।</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="d-flex align-items-center gap-3">
-                                    <div style={{ fontSize: '18px' }}>🕒</div>
-                                    <div>
-                                        <div className="small text-muted" style={{ fontSize: '11px' }}>সম্ভাব্য ডেলিভারি</div>
-                                        <div className="fw-bold small">৩-৭ দিন</div>
+
+                                    <div className="d-flex gap-3">
+                                        <div className="fs-3 text-muted">🚚</div>
+                                        <div>
+                                            <div className="fw-bold small mb-1">শিপিং চার্জ</div>
+                                            <div className="d-flex flex-column gap-1">
+                                                <div className="text-muted small">ঢাকার ভিতরে: <span className="text-dark fw-bold">$৬০.০০</span></div>
+                                                <div className="text-muted small">ঢাকার বাইরে: <span className="text-dark fw-bold">$১২০.০০</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="d-flex gap-3">
+                                        <div className="fs-3 text-muted">⏱️</div>
+                                        <div>
+                                            <div className="fw-bold small mb-1">ডেলিভারি সময়</div>
+                                            <div className="text-muted small">২-৫ কার্যদিবসের মধ্যে।</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="d-flex gap-3">
+                                        <div className="fs-3 text-muted">🛡️</div>
+                                        <div>
+                                            <div className="fw-bold small mb-1">গ্যারান্টি</div>
+                                            <div className="text-muted small">১০০% অরিজিনাল প্রোডাক্ট।</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="mt-2 pt-3 border-top">
+                                        <div className="p-3 rounded" style={{ backgroundColor: '#f0fdf4' }}>
+                                            <div className="fw-bold small text-success mb-1">পেমেন্ট মেথড</div>
+                                            <div className="text-muted small" style={{ fontSize: '11px' }}>ক্যাশ অন ডেলিভারি এবং অনলাইন পেমেন্ট এভেইলেবল।</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                    </div>
+                    )}
                 </div>
 
                 {/* Related Products */}

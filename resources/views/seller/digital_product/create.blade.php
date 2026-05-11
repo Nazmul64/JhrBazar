@@ -176,6 +176,24 @@
                 </div>
             </div>
 
+            {{-- Shipping Options --}}
+            <div class="col-12">
+                <div class="form-card">
+                    <div class="form-title">Shipping Options</div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="d-flex align-items-center gap-3 p-3 border rounded-3 cursor-pointer">
+                                <input type="checkbox" name="is_shipping_charge" value="1" {{ old('is_shipping_charge', 1) ? 'checked' : '' }} style="width:20px;height:20px;accent-color:var(--brand);">
+                                <div>
+                                    <div class="fw-bold" style="font-size:14px;">Enable Shipping & Delivery Info</div>
+                                    <small class="text-muted">If checked, shipping charge and delivery area info will be visible on the product page.</small>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {{-- Images --}}
             <div class="col-12">
                 <div class="form-card">

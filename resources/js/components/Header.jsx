@@ -252,7 +252,7 @@ const Header = () => {
                             <div className="col-8 col-lg-5 d-flex justify-content-end align-items-center gap-3 gap-md-4">
                                 <Link to={localStorage.getItem('auth_token') ? "/customer/dashboard" : "/customer/login"} className="text-decoration-none text-dark d-flex flex-column align-items-center hover-primary">
                                     <div style={{ fontSize: '22px' }}>👤</div>
-                                    <span style={{ fontSize: '10px', fontWeight: 'bold' }}>{localStorage.getItem('auth_token') ? "আমার প্রোফাইল" : "লগইন"}</span>
+                                    <span style={{ fontSize: '10px', fontWeight: 'bold' }}>{localStorage.getItem('auth_token') ? "ড্যাশবোর্ড" : "লগইন"}</span>
                                 </Link>
                                 <Link to="/wishlist" className="text-decoration-none text-dark d-flex flex-column align-items-center hover-primary">
                                     <div style={{ fontSize: '22px', position: 'relative' }}>
@@ -353,6 +353,11 @@ const Header = () => {
                             <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">আমার কার্ট</Link>
                             <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">আমার উইশলিস্ট</Link>
                             <Link to="/order-tracking" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">অর্ডার ট্র্যাক</Link>
+                            {localStorage.getItem('auth_token') ? (
+                                <Link to="/customer/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">ড্যাশবোর্ড</Link>
+                            ) : (
+                                <Link to="/customer/login" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">লগইন / রেজিস্টার</Link>
+                            )}
                             <Link to="/customer/login" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">সেলার হন</Link>
                         </div>
                     </div>

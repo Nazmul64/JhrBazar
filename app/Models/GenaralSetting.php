@@ -60,6 +60,11 @@ class GenaralSetting extends Model
         'button_color',
         'button_hover_color',
         'loader_status',
+        'membership_logo_1',
+        'membership_logo_2',
+        'membership_logo_3',
+        'show_membership_section',
+        'payment_methods_logo',
     ];
 
     protected $casts = [
@@ -69,5 +74,6 @@ class GenaralSetting extends Model
         'show_product_stats' => 'boolean',
         'show_marquee' => 'boolean',
         'loader_status' => 'boolean',
+        'show_membership_section' => 'boolean',
     ];
 }

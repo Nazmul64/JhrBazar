@@ -12,6 +12,8 @@ use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Cache;
+
 
 class ProductControllerController extends Controller
 {
@@ -160,10 +162,14 @@ class ProductControllerController extends Controller
             'is_popular'        => $request->has('is_popular'),
             'cash_on_delivery'  => $request->has('cash_on_delivery'),
             'online_payment'    => $request->has('online_payment'),
+            'is_shipping_charge' => $request->has('is_shipping_charge'),
             'is_active'         => true,
         ]);
 
+        Cache::forget('homepage_data_v2');
+
         return redirect()->route('products.index')
+
             ->with('success', 'Product created successfully.');
     }
 
@@ -292,9 +298,13 @@ class ProductControllerController extends Controller
             'is_popular'        => $request->has('is_popular'),
             'cash_on_delivery'  => $request->has('cash_on_delivery'),
             'online_payment'    => $request->has('online_payment'),
+            'is_shipping_charge' => $request->has('is_shipping_charge'),
         ]);
 
+        Cache::forget('homepage_data_v2');
+
         return redirect()->route('products.index')
+
             ->with('success', 'Product updated successfully.');
     }
 
@@ -317,7 +327,10 @@ class ProductControllerController extends Controller
 
         $product->delete();
 
+        Cache::forget('homepage_data_v2');
+
         return redirect()->route('products.index')
+
             ->with('success', 'Product deleted successfully.');
     }
 
@@ -327,7 +340,9 @@ class ProductControllerController extends Controller
     public function toggleStatus(Product $product)
     {
         $product->update(['is_active' => !$product->is_active]);
+        Cache::forget('homepage_data_v2');
         return redirect()->back()->with('success', 'Product status updated.');
+
     }
 
     // ──────────────────────────────────────────────────────────────

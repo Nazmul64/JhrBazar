@@ -16,7 +16,7 @@ class SellerProduct extends Model
         'meta_title', 'meta_description', 'meta_keywords',
         'is_active',
         'is_new_arrival', 'is_best_seller', 'is_hot_product', 'is_flash_sale', 'is_just_for_you', 'is_popular',
-        'cash_on_delivery', 'online_payment',
+        'cash_on_delivery', 'online_payment', 'is_shipping_charge',
     ];
 
     protected $casts = [
@@ -29,6 +29,7 @@ class SellerProduct extends Model
         'is_popular'     => 'boolean',
         'cash_on_delivery'=> 'boolean',
         'online_payment'  => 'boolean',
+        'is_shipping_charge' => 'boolean',
         'buying_price'   => 'decimal:2',
         'selling_price'  => 'decimal:2',
         'discount_price' => 'decimal:2',

@@ -401,6 +401,20 @@
         </div>
     </div>
 
+    {{-- ════ SHIPPING OPTIONS ════ --}}
+    <div class="section-card">
+        <p class="section-head"><i class="bi bi-truck"></i> Shipping Options</p>
+        <div class="section-body">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="checkbox" name="is_shipping_charge" value="1" {{ old('is_shipping_charge', $product->is_shipping_charge) ? 'checked' : '' }} style="width:20px;height:20px;accent-color:var(--brand);">
+                <div>
+                    <span style="font-size:14px; font-weight:700; color:var(--dark); display:block;">Enable Shipping & Delivery Info</span>
+                    <span style="font-size:11px; color:var(--muted);">If checked, shipping charge and delivery area info will be visible on the product page.</span>
+                </div>
+            </label>
+        </div>
+    </div>
+
     {{-- ════ PRICE ════ --}}
     <div class="section-card">
         <p class="section-head"><i class="bi bi-currency-dollar"></i> Price Information</p>

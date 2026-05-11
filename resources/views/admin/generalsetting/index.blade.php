@@ -878,7 +878,63 @@
                 </select>
             </div>
         </div>
+    {{-- =============================================
+         SECTION 9 – Membership & Payment Section
+    ============================================= --}}
+    <div class="gs-section">
+        <div class="gs-section-title">
+            <div class="title-left">
+                <span class="title-icon">🏅</span>
+                <span>Membership & Payment Banner</span>
+            </div>
+        </div>
+
+        <div class="gs-row">
+            {{-- Membership Management --}}
+            <div class="gs-col">
+                <label class="gs-label">Membership & Trust Logos</label>
+                <div style="padding: 24px; border: 2px dashed #e91e8c; border-radius: 12px; text-align: center; background: #fff5f9;">
+                    <div style="font-size: 24px; color: #e91e8c; margin-bottom: 10px;"><i class="fas fa-certificate"></i></div>
+                    <p class="small fw-bold mb-3">Manage your dynamic trust logos (e-CAB, BASIS, SSL etc.)</p>
+                    <a href="{{ route('admin.membership_logos.index') }}" class="btn-save" style="float: none; display: inline-block;">Manage All Logos</a>
+                </div>
+                <div style="margin-top:15px; background: #f8f9fa; padding: 10px; border-radius: 8px;">
+                    <label class="toggle-switch" style="vertical-align: middle;">
+                        <input type="checkbox" name="show_membership_section" id="toggle_membership"
+                               {{ old('show_membership_section', $setting->show_membership_section ?? 1) ? 'checked' : '' }}
+                               onchange="ajaxToggle(this, '{{ $setting ? route('admin.generalsettings.toggle', $setting->id) : '#' }}', 'show_membership_section')">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span style="font-size:13px;font-weight:600;color:#333; margin-left:10px;">Show this section on Website Footer</span>
+                </div>
+            </div>
+
+            {{-- Payment Banner --}}
+            <div class="gs-col">
+                <label class="gs-label">Main Payment Methods Logo</label>
+                <div class="img-preview-box" style="min-height:120px; border: 2px solid #eee; background: #fafafa;">
+                    @if(!empty($setting->payment_methods_logo))
+                        <img src="{{ asset($setting->payment_methods_logo) }}" alt="Payment Banner" id="preview_payment" style="max-height: 100px;">
+                    @else
+                        <img src="" alt="" id="preview_payment" style="display:none; max-height: 100px;">
+                        <div id="placeholder_payment" class="text-muted small">
+                            <i class="fas fa-credit-card fa-2x mb-2"></i><br>
+                            Upload One Combined Logo
+                        </div>
+                    @endif
+                </div>
+                <p class="img-sub-label">This single logo appears at the bottom of the checkout/footer.</p>
+                <div class="gs-file-wrap">
+                    <label for="payment_methods_logo">Upload Logo</label>
+                    <span class="file-name" id="name_payment">No file selected</span>
+                    <input type="file" id="payment_methods_logo" name="payment_methods_logo" accept="image/*"
+                           onchange="previewImage(this,'preview_payment','name_payment','placeholder_payment')">
+                </div>
+            </div>
+        </div>
     </div>
+    </div>
+
 
     {{-- ===== Save Button ===== --}}
         <div class="reset-buttons" style="overflow:hidden; padding-bottom:30px;">

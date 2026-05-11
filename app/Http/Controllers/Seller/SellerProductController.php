@@ -12,6 +12,8 @@ use App\Models\Unit;
 use App\Models\Size;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+
 
 class SellerProductController extends Controller
 {
@@ -124,10 +126,13 @@ class SellerProductController extends Controller
             'is_popular'        => $request->has('is_popular'),
             'cash_on_delivery'  => $request->has('cash_on_delivery'),
             'online_payment'    => $request->has('online_payment'),
+            'is_shipping_charge' => $request->has('is_shipping_charge'),
             'is_active'         => true,
         ]);
 
+        Cache::forget('homepage_data_v2');
         return redirect()->route('seller.product.index')->with('success', 'Product Created Successfully');
+
     }
 
     public function edit($id)
@@ -233,9 +238,12 @@ class SellerProductController extends Controller
             'is_popular'        => $request->has('is_popular'),
             'cash_on_delivery'  => $request->has('cash_on_delivery'),
             'online_payment'    => $request->has('online_payment'),
+            'is_shipping_charge' => $request->has('is_shipping_charge'),
         ]);
 
+        Cache::forget('homepage_data_v2');
         return redirect()->route('seller.product.index')->with('success', 'Product Updated Successfully');
+
     }
 
     public function destroy($id)
@@ -245,7 +253,9 @@ class SellerProductController extends Controller
         $this->deleteFile($product->additional_thumbnail);
         $product->delete();
 
+        Cache::forget('homepage_data_v2');
         return redirect()->back()->with('success', 'Product Deleted Successfully');
+
     }
 
     public function toggleStatus($id)
@@ -253,7 +263,9 @@ class SellerProductController extends Controller
         $product = SellerProduct::where('seller_id', Auth::id())->findOrFail($id);
         $product->update(['is_active' => !$product->is_active]);
 
+        Cache::forget('homepage_data_v2');
         return redirect()->back()->with('success', 'Product Status Updated');
+
     }
 
     public function show($id)

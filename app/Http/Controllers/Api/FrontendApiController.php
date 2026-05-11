@@ -11,6 +11,7 @@ use App\Models\DigitalProduct;
 use App\Models\SellerDigitalProduct;
 use App\Models\Shop;
 use App\Models\GenaralSetting;
+use App\Models\SociallinkList;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -21,78 +22,72 @@ class FrontendApiController extends Controller
      */
     public function getHomeData()
     {
-        // Increased cache time to 5 minutes for performance
-        return Cache::remember('homepage_data', 300, function () {
-            $settings = GenaralSetting::first();
-            if ($settings) {
-                $settings->logo = $settings->logo ? (str_starts_with($settings->logo, 'http') ? $settings->logo : '/' . ltrim($settings->logo, '/')) : null;
-                $settings->favicon = $settings->favicon ? (str_starts_with($settings->favicon, 'http') ? $settings->favicon : '/' . ltrim($settings->favicon, '/')) : null;
-                $settings->footer_logo = $settings->footer_logo ? (str_starts_with($settings->footer_logo, 'http') ? $settings->footer_logo : '/' . ltrim($settings->footer_logo, '/')) : null;
-                $settings->app_logo = $settings->app_logo ? (str_starts_with($settings->app_logo, 'http') ? $settings->app_logo : '/' . ltrim($settings->app_logo, '/')) : null;
-            }
+        $settings = GenaralSetting::first();
+        
+        if ($settings) {
+            $settings->logo = $settings->logo ? (str_starts_with($settings->logo, 'http') ? $settings->logo : '/' . ltrim($settings->logo, '/')) : null;
+            $settings->footer_logo = $settings->footer_logo ? (str_starts_with($settings->footer_logo, 'http') ? $settings->footer_logo : '/' . ltrim($settings->footer_logo, '/')) : null;
+        }
 
-            $banners = Banner::where('is_active', 1)->latest()->get()->map(fn($b) => [
-                'id' => $b->id,
-                'image' => $b->image ? (str_starts_with($b->image, 'http') ? $b->image : '/' . ltrim($b->image, '/')) : '/placeholder.jpg',
-                'for_own_shop' => (bool) $b->for_own_shop,
+        $banners = Banner::where('is_active', 1)->latest()->get()->map(fn($b) => [
+            'id' => $b->id,
+            'image' => $b->image ? (str_starts_with($b->image, 'http') ? $b->image : '/' . ltrim($b->image, '/')) : '/placeholder.jpg',
+            'for_own_shop' => (bool) $b->for_own_shop,
+        ]);
+
+        $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('name', 'asc')])
+            ->where('is_active', 1)
+            ->orderBy('name', 'asc')
+            ->get()
+            ->map(function($cat) {
+                $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : '/placeholder.jpg';
+                return $cat;
+            });
+
+        $productColumns = ['id', 'name', 'thumbnail', 'selling_price', 'discount_price', 'is_active', 'created_at', 'seller_id'];
+        
+        $popular = $this->getCombinedProducts('is_popular', 10, $productColumns);
+        $newArrivals = $this->getCombinedProducts('is_new_arrival', 10, $productColumns);
+        $justForYou = $this->getCombinedProducts('is_just_for_you', 12, $productColumns);
+        $bestDeals = $this->getCombinedProducts('is_best_seller', 6, $productColumns);
+        
+        $digitalAdmin = DigitalProduct::where('is_active', 1)->latest()->limit(6)->get()->map(fn($p) => $this->mapProduct($p, 'digital_admin'));
+        $digitalSeller = SellerDigitalProduct::where('is_active', 1)->latest()->limit(6)->get()->map(fn($p) => $this->mapProduct($p, 'digital_seller'));
+        $digital = $digitalAdmin->concat($digitalSeller)->sortByDesc('created_at')->take(6)->values();
+
+        $topShops = Shop::whereHas('user', fn($q) => $q->where('status', 'active'))
+            ->withCount(['sellerProducts as item_count' => fn($q) => $q->where('is_active', 1)])
+            ->latest()->limit(8)->get()
+            ->map(fn($shop) => [
+                'id'          => $shop->id,
+                'seller_id'   => $shop->user_id,
+                'name'        => $shop->name,
+                'logo'        => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : '/' . ltrim($shop->logo, '/')) : '/assets/admin/images/default-avatar.png',
+                'banner'      => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : '/' . ltrim($shop->banner, '/')) : '/placeholder.jpg',
+                'item_count'  => $shop->item_count,
+                'rating'      => '5.0',
+                'description' => $shop->description,
             ]);
 
-            $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('name', 'asc')])
-                ->where('is_active', 1)
-                ->orderBy('name', 'asc')
-                ->get()
-                ->map(function($cat) {
-                    $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : '/placeholder.jpg';
-                    return $cat;
-                });
+        $allProducts = $this->getCombinedProducts(null, 20, $productColumns);
+        $recentReviews = \App\Models\Review::with('user:id,name')->where('status', 1)->latest()->take(6)->get();
 
-            // Fetch products for different sections with limited columns
-            $productColumns = ['id', 'name', 'thumbnail', 'selling_price', 'discount_price', 'is_active', 'created_at', 'cash_on_delivery', 'online_payment', 'seller_id'];
-            
-            $popular = $this->getCombinedProducts('is_popular', 10, $productColumns);
-            $newArrivals = $this->getCombinedProducts('is_new_arrival', 10, $productColumns);
-            $justForYou = $this->getCombinedProducts('is_just_for_you', 12, $productColumns);
-            $bestDeals = $this->getCombinedProducts('discount_price', 6, $productColumns, '>');
-            
-            $digitalAdmin = DigitalProduct::where('is_active', 1)->latest()->limit(6)->get()->map(fn($p) => $this->mapProduct($p, 'digital_admin'));
-            $digitalSeller = SellerDigitalProduct::where('is_active', 1)->latest()->limit(6)->get()->map(fn($p) => $this->mapProduct($p, 'digital_seller'));
-            $digital = $digitalAdmin->concat($digitalSeller)->sortByDesc('created_at')->take(6)->values();
-
-            $allProducts = $this->getCombinedProducts(null, 20, $productColumns);
-
-            // Optimized Top Shops (Fixing N+1)
-            $topShops = Shop::whereHas('user', fn($q) => $q->where('status', 'active'))
-                ->withCount(['sellerProducts as item_count' => fn($q) => $q->where('is_active', 1)])
-                ->latest()
-                ->limit(8)
-                ->get()
-                ->map(fn($shop) => [
-                    'id'          => $shop->id,
-                    'seller_id'   => $shop->user_id,
-                    'name'        => $shop->name,
-                    'logo'        => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : '/' . ltrim($shop->logo, '/')) : '/assets/admin/images/default-avatar.png',
-                    'banner'      => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : '/' . ltrim($shop->banner, '/')) : '/placeholder.jpg',
-                    'item_count'  => $shop->item_count,
-                    'rating'      => '5.0',
-                    'description' => $shop->description,
-                ]);
-
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'settings'             => $settings,
-                    'banners'              => $banners,
-                    'categories'           => $categories,
-                    'popularProducts'      => $popular,
-                    'newArrivals'          => $newArrivals,
-                    'justForYouProducts'   => $justForYou,
-                    'digitalProducts'      => $digital,
-                    'bestDeals'            => $bestDeals,
-                    'allProducts'          => $allProducts,
-                    'topShops'             => $topShops,
-                ]
-            ]);
-        });
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'settings'             => $settings,
+                'banners'              => $banners,
+                'categories'           => $categories,
+                'popularProducts'      => $popular,
+                'newArrivals'          => $newArrivals,
+                'justForYouProducts'   => $justForYou,
+                'digitalProducts'      => $digital,
+                'bestDeals'            => $bestDeals,
+                'topShops'             => $topShops,
+                'allProducts'          => $allProducts,
+                'recentReviews'        => $recentReviews,
+            ]
+        ]);
     }
 
     /**
@@ -100,31 +95,34 @@ class FrontendApiController extends Controller
      */
     private function getCombinedProducts($field, $limit, $columns, $operator = '=')
     {
-        // Use a more efficient way to fetch combined products
         $adminColumns = array_filter($columns, fn($c) => $c !== 'seller_id');
         $adminColumns[] = 'rating';
         
-        $adminProducts = Product::where('is_active', 1)
-            ->select($adminColumns)
-            ->when($field, function($q) use ($field, $operator) {
+        // Featured flags to exclude from "All Products" if no specific field is provided
+        $featuredFlags = ['is_new_arrival', 'is_popular', 'is_best_seller', 'is_just_for_you', 'is_hot_product', 'is_flash_sale'];
+
+        $adminQuery = Product::where('is_active', 1)->select($adminColumns);
+        $sellerQuery = SellerProduct::where('is_active', 1)->select($columns);
+
+        if ($field) {
+            $adminQuery->when($field, function($q) use ($field, $operator) {
                 if ($operator === '>') return $q->where($field, $operator, 0);
                 return $q->where($field, 1);
-            })
-            ->latest()
-            ->limit($limit)
-            ->get()
-            ->map(fn($p) => $this->mapProduct($p, 'admin'));
+            });
+            $sellerQuery->when($field, function($q) use ($field, $operator) {
+                if ($operator === '>') return $q->where($field, $operator, 0);
+                return $q->where($field, 1);
+            });
+        } else {
+            // This is for "All Products" section - EXCLUDE featured products to avoid duplicates on home
+            foreach ($featuredFlags as $flag) {
+                $adminQuery->where($flag, 0);
+                $sellerQuery->where($flag, 0);
+            }
+        }
         
-        $sellerProducts = SellerProduct::where('is_active', 1)
-            ->select($columns)
-            ->when($field, function($q) use ($field, $operator) {
-                if ($operator === '>') return $q->where($field, $operator, 0);
-                return $q->where($field, 1);
-            })
-            ->latest()
-            ->limit($limit)
-            ->get()
-            ->map(fn($p) => $this->mapProduct($p, 'seller'));
+        $adminProducts = $adminQuery->latest()->limit($limit)->get()->map(fn($p) => $this->mapProduct($p, 'admin'));
+        $sellerProducts = $sellerQuery->latest()->limit($limit)->get()->map(fn($p) => $this->mapProduct($p, 'seller'));
 
         return $adminProducts->concat($sellerProducts)->sortByDesc('created_at')->take($limit)->values();
     }
@@ -134,7 +132,7 @@ class FrontendApiController extends Controller
      */
     public function getSettings()
     {
-        $data = Cache::remember('general_settings_with_cats', 300, function() {
+        $data = Cache::remember('general_settings_with_cats', 10, function() {
             $s = GenaralSetting::first();
             if ($s) {
                 $s->logo = $s->logo ? (str_starts_with($s->logo, 'http') ? $s->logo : '/' . ltrim($s->logo, '/')) : null;
@@ -154,14 +152,16 @@ class FrontendApiController extends Controller
 
             return [
                 'settings'   => $s,
-                'categories' => $categories
+                'categories' => $categories,
+                'social_links' => SociallinkList::where('is_active', 1)->get()
             ];
         });
 
         return response()->json([
             'success' => true,
             'data'    => $data['settings'],
-            'categories' => $data['categories']
+            'categories' => $data['categories'],
+            'social_links' => $data['social_links']
         ]);
     }
 
@@ -434,9 +434,19 @@ class FrontendApiController extends Controller
             return response()->json(['success' => false, 'message' => 'Product not found'], 404);
         }
 
+        $reviews = \App\Models\Review::where('product_id', $id)
+            ->where('product_type', $type)
+            ->where('status', 1);
+        
+        $avgRating = $reviews->avg('rating') ?: 0;
+        $reviewCount = $reviews->count();
+
         return response()->json([
             'success' => true,
-            'data'    => $this->mapProductDetails($product, $type)
+            'data'    => array_merge($this->mapProductDetails($product, $type), [
+                'avg_rating'   => round($avgRating, 1),
+                'review_count' => $reviewCount
+            ])
         ]);
     }
 
@@ -467,6 +477,7 @@ class FrontendApiController extends Controller
             'video_type'        => $product->video_type,
             'cash_on_delivery'  => (bool) $product->cash_on_delivery,
             'online_payment'    => (bool) $product->online_payment,
+            'is_shipping_charge'=> (bool) $product->is_shipping_charge,
         ];
     }
 
@@ -713,29 +724,33 @@ class FrontendApiController extends Controller
      */
     public function getFooterData()
     {
-        $productCategories = Category::where('is_active', 1)
-            ->orderBy('name', 'asc')
-            ->take(12)
-            ->get();
+        $productCategories = Category::where('is_active', 1)->select('id', 'name')->orderBy('name', 'asc')->get();
 
         $pageCategories = \App\Models\PageCategory::with(['pages' => function($q) {
-                $q->where('status', 1)->orderBy('name', 'asc');
+                $q->where('status', 1)->select('id', 'page_category_id', 'name')->orderBy('name', 'asc');
             }])
-            ->where('status', 1)
-            ->orderBy('name', 'asc')
-            ->get();
+            ->where('status', 1)->select('id', 'name')->orderBy('name', 'asc')->get();
 
         $settings = GenaralSetting::first();
         if ($settings) {
             $settings->logo = $settings->logo ? (str_starts_with($settings->logo, 'http') ? $settings->logo : '/' . ltrim($settings->logo, '/')) : null;
             $settings->footer_logo = $settings->footer_logo ? (str_starts_with($settings->footer_logo, 'http') ? $settings->footer_logo : '/' . ltrim($settings->footer_logo, '/')) : null;
+            $settings->payment_methods_logo = $settings->payment_methods_logo ? (str_starts_with($settings->payment_methods_logo, 'http') ? $settings->payment_methods_logo : '/' . ltrim($settings->payment_methods_logo, '/')) : null;
+            $settings->footer_qr = $settings->footer_qr ? (str_starts_with($settings->footer_qr, 'http') ? $settings->footer_qr : '/' . ltrim($settings->footer_qr, '/')) : null;
         }
+
+        $membershipLogos = \App\Models\MembershipLogo::where('is_active', 1)->select('id', 'image', 'name')->get()->map(function($logo) {
+            $logo->image = $logo->image ? (str_starts_with($logo->image, 'http') ? $logo->image : '/' . ltrim($logo->image, '/')) : null;
+            return $logo;
+        });
 
         return response()->json([
             'success'            => true,
             'product_categories' => $productCategories,
             'page_categories'    => $pageCategories,
-            'settings'           => $settings
+            'settings'           => $settings,
+            'social_links'       => SociallinkList::where('is_active', 1)->select('id', 'name', 'link', 'icon')->get(),
+            'membership_logos'   => $membershipLogos
         ]);
     }
 
@@ -776,8 +791,8 @@ class FrontendApiController extends Controller
             'oldPrice'            => $originalPrice,
             'discount'            => $discountPercentage,
             'discount_percentage' => $discountPercentage, 
-            'rating'              => $product->rating ?? '0.0',
-            'reviews'             => 0,
+            'rating'              => round(\App\Models\Review::where('product_id', $product->id)->where('product_type', $type)->where('status', 1)->avg('rating') ?: 0, 1),
+            'reviews'             => \App\Models\Review::where('product_id', $product->id)->where('product_type', $type)->where('status', 1)->count(),
             'sold'                => 0,
             'cash_on_delivery'    => (bool) ($product->cash_on_delivery ?? false),
             'online_payment'      => (bool) ($product->online_payment ?? true),

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('genaral_settings', function (Blueprint $table) {
-            $table->boolean('show_top_rated_shops')->default(false)->after('show_digital_products');
+            $table->boolean('show_top_rated_shops')->default(false);
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('genaral_settings', function (Blueprint $table) {
-            //
+            $table->dropColumn('show_top_rated_shops');
         });
     }
 };

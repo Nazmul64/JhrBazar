@@ -9,6 +9,7 @@ export const SettingsProvider = ({ children }) => {
     const [settings, setSettings] = useState(null);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [initialFetch, setInitialFetch] = useState(true);
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -19,7 +20,6 @@ export const SettingsProvider = ({ children }) => {
                     setSettings(data);
                     setCategories(res.data.categories || []);
 
-                    // Inject dynamic CSS variables to the root
                     const root = document.documentElement;
                     if (data.primary_color) {
                         root.style.setProperty('--main-color', data.primary_color);
@@ -38,12 +38,14 @@ export const SettingsProvider = ({ children }) => {
                     if (data.category_img_width) root.style.setProperty('--category-img-width', data.category_img_width);
 
                     if (data.category_shape) {
-                        let radius = '12px'; // default rounded
+                        let radius = '12px';
                         if (data.category_shape === 'circle') radius = '50%';
                         if (data.category_shape === 'square') radius = '0px';
                         root.style.setProperty('--category-border-radius', radius);
                     }
-                    if (data.website_title) document.title = data.website_title;
+                    if (data.website_title || data.website_name) {
+                        document.title = data.website_title || data.website_name;
+                    }
                     if (data.favicon) {
                         let link = document.querySelector("link[rel~='icon']");
                         if (!link) {
@@ -51,21 +53,67 @@ export const SettingsProvider = ({ children }) => {
                             link.rel = 'icon';
                             document.getElementsByTagName('head')[0].appendChild(link);
                         }
-                        link.href = data.favicon;
+                        link.href = data.favicon + '?v=' + new Date().getTime();
                     }
                 }
             } catch (error) {
                 console.error("Error fetching settings:", error);
             } finally {
-                setLoading(false);
+                setInitialFetch(false);
             }
         };
         fetchSettings();
     }, []);
 
+    useEffect(() => {
+        if (!initialFetch) {
+            if (settings?.loader_status == 1) {
+                // Keep loading for 0.8s to show the smooth loader as requested
+                setTimeout(() => setLoading(false), 800);
+            } else {
+                setLoading(false);
+            }
+        }
+    }, [initialFetch, settings]);
+
     return (
         <SettingsContext.Provider value={{ settings, categories, loading }}>
-            {/* Show a very minimal loader or just render children. Better to render children and let components handle loading if needed to prevent blank screens */}
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+                
+                :root {
+                    --main-font: ${settings?.font_family ? "'" + settings.font_family + "', " : ""} 'Inter', 'Outfit', 'Poppins', 'Hind Siliguri', sans-serif;
+                }
+
+                * {
+                    font-family: var(--main-font) !important;
+                }
+
+                .custom-loader-wrapper {
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                    background: #fff; display: flex; justify-content: center; align-items: center;
+                    z-index: 99999999;
+                }
+
+                .custom-loader {
+                    width: 55px; height: 55px;
+                    border: 5px solid #f3f3f3;
+                    border-top: 5px solid ${settings?.primary_color || '#c21a4e'};
+                    border-radius: 50%;
+                    animation: spin 0.8s linear infinite;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `}</style>
+
+            {loading && (
+                <div className="custom-loader-wrapper">
+                    <div className="custom-loader"></div>
+                </div>
+            )}
+            
             {children}
         </SettingsContext.Provider>
     );

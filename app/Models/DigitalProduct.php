@@ -17,6 +17,7 @@ class DigitalProduct extends Model
         'is_active'             => 'boolean',
         'cash_on_delivery'      => 'boolean',
         'online_payment'        => 'boolean',
+        'is_shipping_charge'    => 'boolean',
     ];
 
     public function category()

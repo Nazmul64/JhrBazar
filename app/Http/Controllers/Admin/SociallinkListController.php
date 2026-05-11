@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SociallinkList;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+
 
 class SociallinkListController extends Controller
 {
@@ -65,7 +67,10 @@ class SociallinkListController extends Controller
             'link' => $request->link ?: null,
         ]);
 
+        Cache::forget('footer_data_v2');
+        Cache::forget('homepage_data_v2');
         return redirect()->route('admin.sociallinkList.index')
+
             ->with('success', $sociallinkList->name . ' link updated successfully.');
     }
 
@@ -83,6 +88,9 @@ class SociallinkListController extends Controller
     public function toggleStatus(SociallinkList $sociallinkList)
     {
         $sociallinkList->update(['is_active' => !$sociallinkList->is_active]);
+        Cache::forget('footer_data_v2');
+        Cache::forget('homepage_data_v2');
         return redirect()->back()->with('success', 'Status updated.');
+
     }
 }

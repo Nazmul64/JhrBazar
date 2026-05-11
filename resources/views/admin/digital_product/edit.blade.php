@@ -190,6 +190,20 @@
                     </div>
                 </div>
 
+                <!-- Shipping Options -->
+                <div class="card mb-4">
+                    <div class="card-header"><h5 class="card-title">Shipping Options</h5></div>
+                    <div class="card-body">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_shipping_charge" id="is_shipping_charge" value="1" {{ old('is_shipping_charge', $product->is_shipping_charge) ? 'checked' : '' }}>
+                            <label class="form-check-label fw-bold" for="is_shipping_charge">
+                                Enable Shipping & Delivery Info
+                            </label>
+                            <p class="text-muted small mb-0">If checked, shipping charge and delivery area info will be visible on the product page.</p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- License Keys -->
                 <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">

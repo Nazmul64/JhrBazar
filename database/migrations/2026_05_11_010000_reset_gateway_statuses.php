@@ -33,18 +33,23 @@ return new class extends Migration
         ];
 
         foreach ($gatewayTables as $table) {
-            if (Schema::hasTable($table)) {
-                if (Schema::hasColumn($table, 'status')) {
-                    DB::table($table)->update(['status' => false]);
-                    // For SMS gateways, reset other flags too
-                    if ($table === 'sms_gateways') {
-                        DB::table($table)->update([
-                            'order_confirm' => false,
-                            'forgot_password' => false,
-                        ]);
-                    }
-                } elseif (Schema::hasColumn($table, 'is_active')) {
+            $updateData = ['status' => false];
+            
+            // For SMS gateways, reset other flags too
+            if ($table === 'sms_gateways') {
+                $updateData['order_confirm'] = false;
+                $updateData['forgot_password'] = false;
+            }
+            
+            try {
+                // Try updating with 'status' column
+                DB::table($table)->update($updateData);
+            } catch (\Exception $e) {
+                try {
+                    // Fallback for tables that might use 'is_active' instead of 'status'
                     DB::table($table)->update(['is_active' => false]);
+                } catch (\Exception $e2) {
+                    // Ignore if table or columns don't exist
                 }
             }
         }

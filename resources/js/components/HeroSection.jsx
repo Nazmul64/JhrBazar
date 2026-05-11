@@ -23,7 +23,7 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
             setSlides(mainBanners.length > 0 ? mainBanners : initialBanners.slice(0, 1));
         }
         if (initialCategories) {
-            setCategories(initialCategories.slice(0, 10));
+            setCategories(initialCategories);
         }
     }, [initialBanners, initialCategories]);
 

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+
 
 class BannerController extends Controller
 {
@@ -64,7 +66,10 @@ class BannerController extends Controller
             'is_active'    => true,
         ]);
 
+        Cache::forget('homepage_data_v2');
+        Cache::forget('banners_list');
         return redirect()->route('admin.banner.index')
+
             ->with('success', 'Banner created successfully.');
     }
 
@@ -99,7 +104,10 @@ class BannerController extends Controller
             'for_own_shop' => $request->boolean('for_own_shop'),
         ]);
 
+        Cache::forget('homepage_data_v2');
+        Cache::forget('banners_list');
         return redirect()->route('admin.banner.index')
+
             ->with('success', 'Banner updated successfully.');
     }
 
@@ -112,7 +120,10 @@ class BannerController extends Controller
         $this->deleteFile($banner->image);
         $banner->delete();
 
+        Cache::forget('homepage_data_v2');
+        Cache::forget('banners_list');
         return redirect()->route('admin.banner.index')
+
             ->with('success', 'Banner deleted successfully.');
     }
 
@@ -124,7 +135,10 @@ class BannerController extends Controller
         $banner = Banner::findOrFail($id);
         $banner->update(['is_active' => !$banner->is_active]);
 
+        Cache::forget('homepage_data_v2');
+        Cache::forget('banners_list');
         return redirect()->back()
+
             ->with('success', 'Banner status updated.');
     }
 }
