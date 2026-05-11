@@ -39,6 +39,9 @@ class GeneralSettingController extends Controller
 
         $data['show_download_app']   = $request->has('show_download_app') ? 1 : 0;
         $data['show_footer_section'] = $request->has('show_footer_section') ? 1 : 0;
+        $data['top_rated_shops_status'] = $request->has('top_rated_shops_status') ? 1 : 0;
+        $data['show_product_stats'] = $request->has('show_product_stats') ? 1 : 0;
+        $data['show_marquee'] = $request->has('show_marquee') ? 1 : 0;
 
         $uploadPath = public_path('uploads/generalsetting');
         if (!file_exists($uploadPath)) {
@@ -94,6 +97,9 @@ class GeneralSettingController extends Controller
 
         $data['show_download_app']   = $request->has('show_download_app') ? 1 : 0;
         $data['show_footer_section'] = $request->has('show_footer_section') ? 1 : 0;
+        $data['top_rated_shops_status'] = $request->has('top_rated_shops_status') ? 1 : 0;
+        $data['show_product_stats'] = $request->has('show_product_stats') ? 1 : 0;
+        $data['show_marquee'] = $request->has('show_marquee') ? 1 : 0;
 
         $uploadPath = public_path('uploads/generalsetting');
         if (!file_exists($uploadPath)) {
@@ -119,25 +125,62 @@ class GeneralSettingController extends Controller
             ->with('success', 'Settings updated successfully!');
     }
 
+
+    public function reset(Request $request, string $id)
+    {
+        // Reset the general settings to default values
+        $setting = GenaralSetting::findOrFail($id);
+        // Define default values for all relevant columns
+        $defaults = [
+            'primary_color'       => '#001fcc',
+            'top_header_color'    => '#001fcc',
+            'header_color'        => '#ffffff',
+            'footer_color'        => '#ffffff',
+            'footer_text_color'   => '#333333',
+            'font_family'         => 'Arial, sans-serif',
+            'font_size'           => '14px',
+            'product_title_size_desktop' => '14px',
+            'product_title_size_mobile'  => '12px',
+            'product_price_size'         => '15px',
+            'product_old_price_size'     => '12px',
+            'layout_style'        => 'container',
+            'button_color'        => '#001fcc',
+            'button_hover_color'  => '#0018a8',
+            'show_download_app'   => 1,
+            'show_footer_section' => 1,
+            'top_rated_shops_status' => 1,
+            'show_product_stats'  => 1,
+            'show_marquee'        => 1,
+            'slider_height'       => '400px',
+            'slider_height_mobile' => '200px',
+            'product_img_height_desktop' => '200px',
+            'product_img_height_mobile'  => '150px',
+            'category_img_width'  => '80px',
+            'category_img_height' => '80px',
+            'category_shape'      => 'rounded',
+            'category_behavior'   => 'slider',
+            'sidebar_behavior'    => 'fixed',
+            'loader_status'       => 1,
+        ];
+        $setting->update($defaults);
+        return redirect()->route('admin.generalsettings.index')
+            ->with('success', 'Settings have been reset to defaults.');
+    }
+
     public function toggleStatus(Request $request, string $id)
     {
         $setting = GenaralSetting::findOrFail($id);
-        $field   = $request->input('field');
+        $field   = $request->field;
 
-        $allowedFields = ['show_download_app', 'show_footer_section'];
-
-        if (!in_array($field, $allowedFields)) {
-            return response()->json(['error' => 'Invalid field'], 422);
+        if (in_array($field, ['show_download_app', 'show_footer_section', 'top_rated_shops_status', 'show_product_stats', 'show_marquee'])) {
+            $setting->$field = !$setting->$field;
+            $setting->save();
+            return response()->json(['success' => true, 'status' => $setting->$field]);
         }
 
-        $setting->$field = !$setting->$field;
-        $setting->save();
-
-        return response()->json([
-            'success' => true,
-            'status'  => $setting->$field,
-        ]);
+        return response()->json(['success' => false, 'message' => 'Invalid field']);
     }
+
 
     public function destroy(string $id)
     {

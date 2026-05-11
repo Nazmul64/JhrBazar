@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('api_key')->nullable();
             $table->string('secret_key')->nullable();
             $table->string('url')->default('https://portal.steadfast.com.bd/api/v1/create_order');
-            $table->boolean('status')->default(true);
+            $table->boolean('status')->default(false);
             $table->timestamps();
         });
     }

@@ -22,7 +22,8 @@ class PageController extends Controller
      */
     public function create()
     {
-        return view('admin.pagescreate.create');
+        $categories = \App\Models\PageCategory::where('status', 1)->get();
+        return view('admin.pagescreate.create', compact('categories'));
     }
 
     /**
@@ -31,17 +32,19 @@ class PageController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'        => 'required|string|max:255',
-            'title'       => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'status'      => 'nullable',
+            'page_category_id' => 'nullable|exists:page_categories,id',
+            'name'             => 'required|string|max:255',
+            'title'            => 'required|string|max:255',
+            'description'      => 'nullable|string',
+            'status'           => 'nullable',
         ]);
 
         Page::create([
-            'name'        => $request->name,
-            'title'       => $request->title,
-            'description' => $request->description,
-            'status'      => $request->has('status') ? 1 : 0,
+            'page_category_id' => $request->page_category_id,
+            'name'             => $request->name,
+            'title'            => $request->title,
+            'description'      => $request->description,
+            'status'           => $request->has('status') ? 1 : 0,
         ]);
 
         return redirect()->route('admin.pages.index')
@@ -61,7 +64,8 @@ class PageController extends Controller
      */
     public function edit(Page $page)
     {
-        return view('admin.pagescreate.edit', compact('page'));
+        $categories = \App\Models\PageCategory::where('status', 1)->get();
+        return view('admin.pagescreate.edit', compact('page', 'categories'));
     }
 
     /**
@@ -70,17 +74,19 @@ class PageController extends Controller
     public function update(Request $request, Page $page)
     {
         $request->validate([
-            'name'        => 'required|string|max:255',
-            'title'       => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'status'      => 'nullable',
+            'page_category_id' => 'nullable|exists:page_categories,id',
+            'name'             => 'required|string|max:255',
+            'title'            => 'required|string|max:255',
+            'description'      => 'nullable|string',
+            'status'           => 'nullable',
         ]);
 
         $page->update([
-            'name'        => $request->name,
-            'title'       => $request->title,
-            'description' => $request->description,
-            'status'      => $request->has('status') ? 1 : 0,
+            'page_category_id' => $request->page_category_id,
+            'name'             => $request->name,
+            'title'            => $request->title,
+            'description'      => $request->description,
+            'status'           => $request->has('status') ? 1 : 0,
         ]);
 
         return redirect()->route('admin.pages.index')

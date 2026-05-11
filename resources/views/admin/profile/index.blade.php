@@ -157,6 +157,14 @@
                                     <td>{{ $shop->address ?? '—' }}</td>
                                 </tr>
                                 <tr>
+                                    <td class="text-muted">Division</td>
+                                    <td>{{ $shop->division ?? '—' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">District</td>
+                                    <td>{{ $shop->district ?? '—' }}</td>
+                                </tr>
+                                <tr>
                                     <td class="text-muted">Estimated Delivery</td>
                                     <td>{{ $shop->estimated_delivery }} {{ Str::plural('day', $shop->estimated_delivery) }}</td>
                                 </tr>
@@ -170,12 +178,12 @@
                                 </tr>
                                 <tr>
                                     <td class="text-muted">Min. Order Amount</td>
-                                    <td>{{ number_format($shop->minimum_order_amount, 2) }}</td>
+                                    <td>{{ number_format($shop->min_order_amount, 2) }}</td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted">Order ID Prefix</td>
                                     <td>
-                                        <span class="badge bg-secondary">{{ $shop->order_id_prefix }}</span>
+                                        <span class="badge bg-secondary">{{ $shop->order_prefix }}</span>
                                     </td>
                                 </tr>
                                 @if($shop->latitude && $shop->longitude)

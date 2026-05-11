@@ -10,29 +10,63 @@ import Products from './pages/Products';
 import BestDeal from './pages/BestDeal';
 import Contact from './pages/Contact';
 import Blogs from './pages/Blogs';
+import CategoryProducts from './pages/CategoryProducts';
+import AllProducts from './pages/AllProducts';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Terms from './pages/Terms';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import SearchResults from './pages/SearchResults';
+import PageView from './pages/PageView';
+import OrderSuccess from './pages/OrderSuccess';
+import OrderTracking from './pages/OrderTracking';
+import UserDashboard from './pages/UserDashboard';
+import { CartProvider } from './context/CartContext';
+import { SettingsProvider } from './context/SettingsContext';
+import { WishlistProvider } from './context/WishlistContext';
+import { Toaster } from 'react-hot-toast';
 
 const MainApp = () => {
     return (
-        <Router>
-            <Routes>
-                {/* Main Routes */}
-                <Route path="/" element={<Home />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/best-deal" element={<BestDeal />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/blogs" element={<Blogs />} />
-                <Route path="/shop-details" element={<ShopDetails />} />
-                <Route path="/product-details" element={<ProductDetails />} />
+        <SettingsProvider>
+            <WishlistProvider>
+                <CartProvider>
+                    <Router>
+                        <Toaster position="top-right" reverseOrder={false} />
+                        <Routes>
+                            {/* Main Routes */}
+                            <Route path="/" element={<Home />} />
+                            <Route path="/products" element={<Products />} />
+                            <Route path="/best-deal" element={<BestDeal />} />
+                            <Route path="/contact" element={<Contact />} />
+                            <Route path="/blogs" element={<Blogs />} />
+                            <Route path="/customer/login" element={<Login />} />
+                            <Route path="/customer/register" element={<Register />} />
+                            <Route path="/terms" element={<Terms />} />
+                            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                            <Route path="/category/:id" element={<CategoryProducts />} />
+                            <Route path="/subcategory/:id" element={<CategoryProducts />} />
+                            <Route path="/products-all/:type" element={<AllProducts />} />
+                            <Route path="/shop/:id" element={<ShopDetails />} />
+                            <Route path="/product-details/:type/:id" element={<ProductDetails />} />
+                            <Route path="/search" element={<SearchResults />} />
+                            <Route path="/page/:id" element={<PageView />} />
 
-                {/* Shopping Routes */}
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/wishlist" element={<Wishlist />} />
+                            {/* Shopping Routes */}
+                            <Route path="/cart" element={<Cart />} />
+                            <Route path="/checkout" element={<Checkout />} />
+                            <Route path="/order-success" element={<OrderSuccess />} />
+                            <Route path="/order-tracking" element={<OrderTracking />} />
+                            <Route path="/customer/dashboard" element={<UserDashboard />} />
+                            <Route path="/wishlist" element={<Wishlist />} />
 
-                {/* Catch-all Route */}
-                <Route path="*" element={<Home />} />
-            </Routes>
-        </Router>
+                            {/* Catch-all Route */}
+                            <Route path="*" element={<Home />} />
+                        </Routes>
+                    </Router>
+                </CartProvider>
+            </WishlistProvider>
+        </SettingsProvider>
     );
 };
 

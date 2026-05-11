@@ -1,109 +1,124 @@
-import React, { useState } from 'react';
-
-const categoriesData = [
-    { 
-        id: 1, name: 'Software License', image: 'https://demo.readyecommerce.app/public/assets/front-end/img/category/1.png', 
-        sub: [
-            { id: 11, name: 'Antivirus', child: ['Avast', 'Kaspersky', 'Norton Premium', 'ESET NOD32'] },
-            { id: 12, name: 'Operating System', child: ['Windows 11 Pro', 'Windows 10 Home', 'Server 2022'] },
-            { id: 13, name: 'Design Tools', child: ['Adobe Photoshop', 'Illustrator', 'CorelDraw'] }
-        ] 
-    },
-    { 
-        id: 2, name: 'Pets & Supplies', image: 'https://demo.readyecommerce.app/public/assets/front-end/img/category/2.png', 
-        sub: [
-            { id: 21, name: 'Pet Food', child: ['Royal Canin', 'Drools', 'Whiskas', 'Pedigree'] },
-            { id: 22, name: 'Pet Grooming', child: ['Shampoo', 'Brushes', 'Nail Clippers'] },
-            { id: 23, name: 'Pet Health', child: ['Vitamins', 'Tick & Flea', 'Supplements'] }
-        ] 
-    },
-    { 
-        id: 3, name: 'Electronics & Gadgets', image: 'https://demo.readyecommerce.app/public/assets/front-end/img/category/7.png', 
-        sub: [
-            { id: 31, name: 'Smartphones', child: ['iPhone', 'Samsung Galaxy', 'Google Pixel'] },
-            { id: 32, name: 'Laptops', child: ['MacBook Pro', 'Dell XPS', 'HP Spectre'] },
-            { id: 33, name: 'Accessories', child: ['AirPods', 'Smart Watches', 'Power Banks'] }
-        ] 
-    },
-    { id: 4, name: 'Groceries', image: 'https://demo.readyecommerce.app/public/assets/front-end/img/category/4.png', sub: [] },
-    { id: 5, name: 'Fashion & Cloth', image: 'https://demo.readyecommerce.app/public/assets/front-end/img/category/8.png', sub: [] },
-    { id: 6, name: 'Home Appliances', image: 'https://demo.readyecommerce.app/public/assets/front-end/img/category/10.png', sub: [] },
-];
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const CategoryDropdown = ({ isOpen }) => {
-    const [activeCatId, setActiveCatId] = useState(categoriesData[0].id);
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await axios.get('/api/categories');
+                if (res.data.success) {
+                    setCategories(res.data.data);
+                }
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        if (isOpen) {
+            fetchCategories();
+        }
+    }, [isOpen]);
+
+    const [activeCatId, setActiveCatId] = useState(null);
+    const activeCategory = categories.find(c => c.id === activeCatId);
 
     if (!isOpen) return null;
 
-    const activeCategory = categoriesData.find(c => c.id === activeCatId) || categoriesData[0];
-
     return (
-        <div style={{
-            position: 'absolute', top: '100%', left: 0, width: '900px',
-            backgroundColor: '#fff', boxShadow: '0 15px 50px rgba(0,0,0,0.15)',
-            zIndex: 9999, display: 'flex', borderRadius: '0 0 10px 10px',
-            overflow: 'hidden', border: '1px solid #eee'
-        }}>
-            {/* Left Sidebar: Categories List */}
-            <div style={{ width: '250px', backgroundColor: '#f9f9f9', borderRight: '1px solid #eee' }}>
-                {categoriesData.map(cat => (
-                    <div 
-                        key={cat.id}
-                        onMouseEnter={() => setActiveCatId(cat.id)}
-                        style={{
-                            padding: '12px 20px', cursor: 'pointer',
-                            backgroundColor: activeCatId === cat.id ? '#fff' : 'transparent',
-                            color: activeCatId === cat.id ? '#57b500' : '#333',
-                            fontWeight: activeCatId === cat.id ? 'bold' : 'normal',
-                            borderLeft: activeCatId === cat.id ? '4px solid #57b500' : '4px solid transparent',
-                            display: 'flex', alignItems: 'center', gap: '10px',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        <img src={cat.image} alt="" style={{ width: '20px' }} />
-                        <span style={{ fontSize: '14px' }}>{cat.name}</span>
-                        {cat.sub.length > 0 && <span style={{ marginLeft: 'auto', fontSize: '10px' }}>▶</span>}
-                    </div>
-                ))}
-            </div>
+        <div 
+            onMouseLeave={() => setActiveCatId(null)}
+            style={{
+                position: 'absolute', top: '100%', left: 0, width: '250px',
+                backgroundColor: '#fff', boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+                zIndex: 11000, borderRadius: '0 0 10px 10px',
+                overflow: 'visible', border: '1px solid #eee',
+                padding: '10px 0'
+            }}
+        >
+            {loading ? (
+                <div className="p-4 text-center">
+                    <div className="spinner-border spinner-border-sm text-success"></div>
+                </div>
+            ) : (
+                categories.length > 0 ? (
+                    <>
+                        {categories.map(cat => (
+                            <div 
+                                key={cat.id}
+                                onMouseEnter={() => setActiveCatId(cat.id)}
+                                style={{ position: 'relative' }}
+                            >
+                                <Link 
+                                    to={`/category/${cat.id}`}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
+                                        padding: '10px 20px',
+                                        textDecoration: 'none',
+                                        color: activeCatId === cat.id ? 'var(--button-color, #57b500)' : '#333',
+                                        fontSize: '14px',
+                                        transition: 'all 0.2s',
+                                        backgroundColor: activeCatId === cat.id ? '#f8f9fa' : 'transparent',
+                                        borderLeft: activeCatId === cat.id ? '3px solid var(--button-color, #57b500)' : '3px solid transparent'
+                                    }}
+                                    className="category-dropdown-item"
+                                >
+                                    <img 
+                                        src={cat.thumbnail ? (cat.thumbnail.startsWith('http') ? cat.thumbnail : '/' + cat.thumbnail) : '/placeholder.jpg'} 
+                                        alt="" 
+                                        style={{ width: '20px', height: '20px', objectFit: 'contain' }} 
+                                    />
+                                    <span style={{ flexGrow: 1 }}>{cat.name}</span>
+                                    {cat.subCategories?.length > 0 && <span style={{ fontSize: '10px' }}>▶</span>}
+                                </Link>
+                            </div>
+                        ))}
 
-            {/* Right Panel: Sub & Child Categories with Images */}
-            <div style={{ flexGrow: 1, padding: '25px', backgroundColor: '#fff', minHeight: '400px' }}>
-                <h5 style={{ fontWeight: 'bold', marginBottom: '20px', color: '#333', borderBottom: '1px solid #f0f0f0', paddingBottom: '10px' }}>
-                    {activeCategory.name}
-                </h5>
-                
-                {activeCategory.sub.length > 0 ? (
-                    <div className="row g-4">
-                        {activeCategory.sub.map(sub => (
-                            <div key={sub.id} className="col-md-4">
-                                <div style={{ fontWeight: 'bold', color: '#57b500', fontSize: '15px', marginBottom: '10px' }}>
-                                    {sub.name}
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    {sub.child.map((child, idx) => (
-                                        <div 
-                                            key={idx} 
-                                            style={{ 
-                                                fontSize: '13px', color: '#666', cursor: 'pointer',
-                                                padding: '2px 0'
-                                            }}
-                                            className="child-category-hover"
+                        {/* Subcategories Side Panel */}
+                        {activeCatId && activeCategory?.subCategories?.length > 0 && (
+                            <div style={{
+                                position: 'absolute', top: '-1px', left: '100%', width: '250px',
+                                backgroundColor: '#fff', boxShadow: '15px 10px 30px rgba(0,0,0,0.1)',
+                                border: '1px solid #eee', borderRadius: '0 10px 10px 0',
+                                padding: '20px', minHeight: '100%', zIndex: 11001
+                            }}>
+                                <h6 className="fw-bold mb-3 border-bottom pb-2" style={{ color: 'var(--button-color, #57b500)', fontSize: '14px' }}>
+                                    {activeCategory.name}
+                                </h6>
+                                <div className="d-flex flex-column gap-2">
+                                    {activeCategory.subCategories.map(sub => (
+                                        <Link 
+                                            key={sub.id} 
+                                            to={`/subcategory/${sub.id}`} 
+                                            className="text-decoration-none text-muted"
+                                            style={{ fontSize: '13px', transition: 'color 0.2s' }}
+                                            onMouseEnter={(e) => e.target.style.color = 'var(--button-color, #57b500)'}
+                                            onMouseLeave={(e) => e.target.style.color = 'inherit'}
                                         >
-                                            {child}
-                                        </div>
+                                            {sub.name}
+                                        </Link>
                                     ))}
                                 </div>
                             </div>
-                        ))}
-                    </div>
+                        )}
+                    </>
                 ) : (
-                    <div style={{ textAlign: 'center', padding: '50px', color: '#999' }}>
-                         <img src={activeCategory.image} style={{ width: '80px', opacity: 0.5, marginBottom: '10px' }} />
-                         <p>Explore our {activeCategory.name} collection</p>
-                    </div>
-                )}
-            </div>
+                    <div className="p-3 text-center text-muted small">No categories found</div>
+                )
+            )}
+            <style>{`
+                .category-dropdown-item:hover {
+                    background-color: #f8f9fa;
+                    color: var(--button-color, #57b500) !important;
+                    border-left: 3px solid var(--button-color, #57b500);
+                }
+            `}</style>
         </div>
     );
 };

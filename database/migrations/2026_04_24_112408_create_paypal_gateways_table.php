@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('client_secret')->nullable();
             $table->string('title')->default('PayPal');
             $table->string('logo')->nullable();
-            $table->boolean('status')->default(true);
+            $table->boolean('status')->default(false);
             $table->timestamps();
         });
     }

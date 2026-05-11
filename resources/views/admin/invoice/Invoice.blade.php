@@ -571,16 +571,20 @@
                     <td>{{ $index + 1 }}.</td>
                     <td>
                         <div class="item-cell">
-                            @if(!empty($item['thumbnail']))
+                            @php
+                                $thumb = $item['thumbnail'] ?? $item['image'] ?? '';
+                                $name = $item['name'] ?? $item['title'] ?? 'Product';
+                            @endphp
+                            @if(!empty($thumb))
                                 <img class="item-img"
-                                     src="{{ asset($item['thumbnail']) }}"
-                                     alt="{{ $item['name'] }}"
+                                     src="{{ asset($thumb) }}"
+                                     alt="{{ $name }}"
                                      onerror="this.outerHTML='<div class=\'item-img-ph\'>📦</div>'">
                             @else
                                 <div class="item-img-ph">📦</div>
                             @endif
                             <div>
-                                <div class="item-name">{{ $item['name'] }}</div>
+                                <div class="item-name">{{ $name }}</div>
                                 @if($barcodeDisplay)
                                     <div class="bc-badge">
                                         <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">

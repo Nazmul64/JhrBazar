@@ -125,9 +125,14 @@ select.filter-input{appearance:none;background-image:url("data:image/svg+xml,%3C
             <i class="bi bi-layout-text-window-reverse" style="color:var(--accent);margin-right:6px;"></i>
             Landing Pages
         </h2>
-        <a href="{{ route('admin.landingpages.create') }}" class="btn-add-new">
-            <i class="bi bi-plus-circle"></i> Add New
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{{ route('admin.page_categories.index') }}" class="btn-add-new" style="background: linear-gradient(135deg,#4361ee,#2563eb);">
+                <i class="bi bi-folder"></i> Page Categories
+            </a>
+            <a href="{{ route('admin.landingpages.create') }}" class="btn-add-new">
+                <i class="bi bi-plus-circle"></i> Add New
+            </a>
+        </div>
     </div>
 
     @if(session('success'))

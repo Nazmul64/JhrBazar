@@ -235,9 +235,13 @@
                     <tr>
                         <td>
                             <div class="product-meta">
-                                <img src="{{ isset($item['thumbnail']) ? asset($item['thumbnail']) : asset('images/no-image.png') }}" class="product-img">
+                                @php
+                                    $thumb = $item['thumbnail'] ?? $item['image'] ?? '';
+                                    $name = $item['name'] ?? $item['title'] ?? 'Product';
+                                @endphp
+                                <img src="{{ !empty($thumb) ? asset($thumb) : asset('images/no-image.png') }}" class="product-img">
                                 <div>
-                                    <div class="product-name">{{ $item['name'] }}</div>
+                                    <div class="product-name">{{ $name }}</div>
                                     <div class="type-badge {{ $item['product_type'] === 'digital' ? 'type-digital' : 'type-normal' }}">
                                         {{ $item['product_type'] === 'digital' ? 'Digital Product' : 'Regular Product' }}
                                     </div>

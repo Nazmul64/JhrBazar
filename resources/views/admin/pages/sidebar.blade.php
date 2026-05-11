@@ -23,31 +23,133 @@
     }
     .nav-item-custom {
         margin: 4px 15px !important;
-        padding: 12px 18px !important;
-        border-radius: 12px !important;
-        transition: all 0.3s ease !important;
+        padding: 10px 18px !important;
+        border-radius: 10px !important;
+        transition: all 0.2s ease !important;
         text-decoration: none !important;
         display: flex !important;
         align-items: center !important;
+        color: #64748b !important;
+        font-size: 14px !important;
+        cursor: pointer !important;
+    }
+    .nav-item-custom i:not(.arrow) {
+        font-size: 18px !important;
+        margin-right: 12px !important;
     }
     .nav-item-custom:hover {
         background: #f8fafc !important;
-        color: #6366f1 !important;
-        transform: translateX(5px);
+        color: #e91e63 !important;
     }
     .nav-item-custom.active {
-        background: rgba(99, 102, 241, 0.08) !important;
-        color: #6366f1 !important;
+        background: #fff0f3 !important;
+        color: #e91e63 !important;
         font-weight: 700 !important;
-        border-left: 4px solid #6366f1 !important;
+    }
+    .nav-submenu .nav-item-custom.active {
+        border-left: 3px solid #e91e63 !important;
+        border-radius: 0 10px 10px 0 !important;
     }
     .nav-section-title {
-        padding: 20px 30px 10px !important;
-        font-size: 11px !important;
-        letter-spacing: 1.5px !important;
-        color: #94a3b8 !important;
+        padding: 25px 30px 10px !important;
+        font-size: 10px !important;
+        letter-spacing: 2px !important;
+        color: #cbd5e1 !important;
         text-transform: uppercase !important;
-        font-weight: 700 !important;
+        font-weight: 800 !important;
+    }
+
+    /* Submenu Tree Style */
+    .nav-submenu {
+        display: none;
+        padding-left: 25px !important;
+        position: relative;
+    }
+    .nav-submenu.open {
+        display: block;
+    }
+    .nav-submenu::before {
+        content: '';
+        position: absolute;
+        left: 32px;
+        top: 0;
+        bottom: 20px;
+        width: 1.5px;
+        background: #e2e8f0;
+    }
+    .nav-submenu .nav-item-custom {
+        margin: 2px 15px 2px 0 !important;
+        padding: 8px 15px !important;
+        background: #f8fafc !important;
+        position: relative;
+        font-size: 13px !important;
+    }
+    .nav-submenu .nav-item-custom::before {
+        content: '';
+        position: absolute;
+        left: -18px;
+        top: 50%;
+        width: 15px;
+        height: 1.5px;
+        background: #e2e8f0;
+        border-radius: 0 0 0 5px;
+    }
+    .nav-item-custom.has-sub.open .arrow {
+        transform: rotate(90deg) !important;
+    }
+    .arrow {
+        transition: transform 0.3s !important;
+        font-size: 12px !important;
+    }
+
+    /* ── Orders Hub Custom Styles ── */
+    .orders-hub-icon {
+        background: #3b82f6 !important;
+        color: white !important;
+        width: 30px !important;
+        height: 30px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 8px !important;
+        margin-right: 12px !important;
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3) !important;
+    }
+    .nav-item-custom.has-sub.open .orders-hub-icon {
+        background: #2563eb !important;
+    }
+    .nav-submenu-orders {
+        position: relative;
+        margin-left: 30px !important;
+        padding-left: 0 !important;
+        border-left: 1px solid #e2e8f0 !important;
+    }
+    .nav-submenu-orders .nav-item-custom {
+        margin: 2px 10px 2px 0 !important;
+        padding: 8px 15px !important;
+        font-size: 13px !important;
+        background: transparent !important;
+    }
+    .nav-submenu-orders .nav-item-custom::before {
+        content: '';
+        display: inline-block;
+        width: 12px;
+        height: 1px;
+        background: #e2e8f0;
+        margin-right: 10px;
+        vertical-align: middle;
+    }
+    .nav-submenu-orders .nav-item-custom:hover {
+        color: #3b82f6 !important;
+        transform: translateX(3px) !important;
+    }
+    .nav-submenu-orders .nav-item-custom i {
+        font-size: 14px !important;
+        margin-right: 8px !important;
+        color: #94a3b8 !important;
+    }
+    .nav-submenu-orders .nav-item-custom:hover i {
+        color: #3b82f6 !important;
     }
 </style>
 
@@ -71,11 +173,44 @@
             <i class="bi bi-grid-fill"></i> Dashboard
         </a>
 
-        {{-- Order Management --}}
+        {{-- ══════════════ ORDERS HUB ══════════════ --}}
         @if(auth()->user()->hasPermission('order.list'))
-        <a class="nav-item-custom" href="#">
-            <i class="bi bi-bag-check"></i> Order Management
-        </a>
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}" data-sub="orders-hub">
+            <div class="orders-hub-icon">
+                <i class="bi bi-bag-fill" style="margin-right: 0 !important; color: white !important;"></i>
+            </div>
+            <span style="font-weight: 600;">Orders Hub</span>
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu nav-submenu-orders" id="sub-orders-hub">
+            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'all') }}">
+                <i class="bi bi-basket"></i> All Orders
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'pending') }}">
+                <i class="bi bi-hourglass-split"></i> Pending
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'processing') }}">
+                <i class="bi bi-arrow-repeat"></i> Processing
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'shipped') }}">
+                <i class="bi bi-truck"></i> Shipped
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'delivered') }}">
+                <i class="bi bi-check-circle"></i> Delivered
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'cancelled') }}">
+                <i class="bi bi-x-circle"></i> Cancelled
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.pointofsalepos.index') }}">
+                <i class="bi bi-plus-lg"></i> Create Order
+            </a>
+            <a class="nav-item-custom" href="#">
+                <i class="bi bi-person-gear"></i> Staff Assignments
+            </a>
+            <a class="nav-item-custom" href="#">
+                <i class="bi bi-clock-history"></i> Activity History
+            </a>
+        </div>
         @endif
 
         {{-- POS Management (Permission Based) --}}
@@ -524,6 +659,10 @@
                href="{{ route('admin.landingpages.index') }}">
                 <i class="bi bi-dot"></i> Campaign List
             </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.page_categories.*') ? 'active' : '' }}"
+               href="{{ route('admin.page_categories.index') }}">
+                <i class="bi bi-dot"></i> Page Categories
+            </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}"
                href="{{ route('admin.pages.index') }}">
                 <i class="bi bi-dot"></i> Page Manage
@@ -627,16 +766,11 @@
 
             var isOpen = submenu.classList.contains('open');
 
-            /* Close every open submenu */
-            document.querySelectorAll('.nav-submenu.open').forEach(function (el) {
-                el.classList.remove('open');
-            });
-            document.querySelectorAll('.nav-item-custom.has-sub.open').forEach(function (el) {
-                el.classList.remove('open');
-            });
-
-            /* Open the clicked one (if it was closed) */
-            if (!isOpen) {
+            /* Toggle the clicked one without closing others */
+            if (isOpen) {
+                submenu.classList.remove('open');
+                this.classList.remove('open');
+            } else {
                 submenu.classList.add('open');
                 this.classList.add('open');
             }

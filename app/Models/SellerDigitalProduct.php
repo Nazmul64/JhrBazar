@@ -14,13 +14,16 @@ class SellerDigitalProduct extends Model
         'category_id', 'sub_category_id', 'brand_id', 'sku', 
         'buying_price', 'selling_price', 'discount_price', 'stock_quantity', 
         'thumbnail', 'additional_thumbnails', 'digital_file', 'license_keys',
-        'video_type', 'video', 'meta_title', 'meta_description', 'meta_keywords', 'is_active'
+        'video_type', 'video', 'meta_title', 'meta_description', 'meta_keywords', 'is_active',
+        'cash_on_delivery', 'online_payment'
     ];
 
     protected $casts = [
         'additional_thumbnails' => 'array',
         'license_keys'          => 'array',
         'is_active'             => 'boolean',
+        'cash_on_delivery'      => 'boolean',
+        'online_payment'        => 'boolean',
     ];
 
     public function category()

@@ -1,0 +1,192 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useLocation } from 'react-router-dom';
+import MasterLayout from '../layouts/MasterLayout';
+import ProductCard from '../components/ProductCard';
+import axios from 'axios';
+
+const CategoryProducts = () => {
+    const { id } = useParams();
+    const location = useLocation();
+    const isSubCategory = location.pathname.includes('subcategory');
+    const mainColor = '#57b500';
+
+    const [categories, setCategories] = useState([]);
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [activeCategoryName, setActiveCategoryName] = useState("");
+    const [priceRange, setPriceRange] = useState(5000);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                // Fetch Categories for Sidebar
+                const catRes = await axios.get('/api/categories');
+                if (catRes.data.success) {
+                    setCategories(catRes.data.data);
+                }
+
+                // Fetch current category/subcategory name
+                const nameEndpoint = isSubCategory
+                    ? `/api/subcategory/${id}/name`
+                    : `/api/category/${id}/name`;
+
+                const nameRes = await axios.get(nameEndpoint);
+                if (nameRes.data.success) {
+                    setActiveCategoryName(nameRes.data.name);
+                }
+
+                // Fetch Products
+                const endpoint = isSubCategory
+                    ? `/api/products/subcategory/${id}`
+                    : `/api/products/category/${id}`;
+
+                const prodRes = await axios.get(endpoint);
+                if (prodRes.data.success) {
+                    setProducts(prodRes.data.data);
+                }
+            } catch (error) {
+                console.error("Error fetching category data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+        window.scrollTo(0, 0);
+    }, [id, isSubCategory]);
+
+    return (
+        <MasterLayout>
+            {/* Page Header */}
+            <div className="bg-light py-4 mb-4 border-bottom">
+                <div className="container">
+                    <h2 className="fw-bold mb-1 text-dark">{activeCategoryName || (isSubCategory ? 'Sub-Category' : 'Category')}</h2>
+                    <nav aria-label="breadcrumb">
+                        <ol className="breadcrumb mb-0 small">
+                            <li className="breadcrumb-item"><Link to="/" className="text-decoration-none text-muted">Home</Link></li>
+                            <li className="breadcrumb-item active" aria-current="page">{activeCategoryName}</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+
+            <div className="container pb-5">
+                <div className="row g-4">
+                    {/* Left Sidebar Filter */}
+                    <div className="col-lg-3">
+                        <div className="card border-0 shadow-sm rounded-3 mb-4">
+                            <div className="card-header bg-white border-bottom fw-bold py-3">
+                                📑 All Categories
+                            </div>
+                            <div className="card-body p-0">
+                                <ul className="list-group list-group-flush border-0">
+                                    {categories.map(cat => (
+                                        <li key={cat.id} className="list-group-item border-0 p-0">
+                                            <Link
+                                                to={`/category/${cat.id}`}
+                                                className={`d-flex justify-content-between align-items-center p-3 text-decoration-none ${id == cat.id && !isSubCategory ? 'bg-light text-success fw-bold' : 'text-dark'}`}
+                                                style={{ transition: 'all 0.2s' }}
+                                            >
+                                                <span>{cat.name}</span>
+                                                <i className={`fas fa-chevron-right small`}></i>
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+
+                        {/* Price Filter */}
+                        <div className="card border-0 shadow-sm rounded-3 mb-4">
+                            <div className="card-header bg-white border-bottom fw-bold py-3">
+                                💰 Filter by Price
+                            </div>
+                            <div className="card-body">
+                                <input
+                                    type="range"
+                                    className="form-range"
+                                    min="0" max="10000"
+                                    value={priceRange}
+                                    onChange={(e) => setPriceRange(e.target.value)}
+                                    style={{ accentColor: mainColor }}
+                                />
+                                <div className="d-flex justify-content-between small text-muted mt-2">
+                                    <span>$0</span>
+                                    <span className="fw-bold text-dark">${priceRange}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Product Grid */}
+                    <div className="col-lg-9">
+                        {loading ? (
+                            <div className="text-center py-5">
+                                <div className="spinner-border text-success" role="status">
+                                    <span className="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                {/* Top Bar */}
+                                <div className="bg-white p-3 shadow-sm rounded-3 mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                                    <div className="text-muted small">
+                                        Showing <span className="fw-bold text-dark">{products.length}</span> results
+                                    </div>
+                                    <div className="d-flex align-items-center gap-2 small">
+                                        <span className="text-muted">Sort by:</span>
+                                        <select className="form-select form-select-sm border-0 bg-light fw-bold" style={{ width: '130px', boxShadow: 'none' }}>
+                                            <option>Latest</option>
+                                            <option>Price: Low to High</option>
+                                            <option>Price: High to Low</option>
+                                            <option>Top Rated</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Products */}
+                                <div className="row g-3 g-md-4">
+                                    {products.length > 0 ? (
+                                        products.map(product => (
+                                            <div key={product.uid} className="col-6 col-md-4 col-xl-4">
+                                                <ProductCard product={product} />
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="col-12 text-center py-5 text-muted">
+                                            No products found in this category.
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Pagination (Placeholder) */}
+                                {products.length > 0 && (
+                                    <div className="d-flex justify-content-center mt-5">
+                                        <nav>
+                                            <ul className="pagination gap-2">
+                                                <li className="page-item disabled"><span className="page-link rounded-3 border-0 bg-light text-muted">Prev</span></li>
+                                                <li className="page-item"><button className="page-link rounded-3 border-0 active" style={{ backgroundColor: mainColor, color: '#fff' }}>1</button></li>
+                                                <li className="page-item"><button className="page-link rounded-3 border-0 bg-light text-dark">Next</button></li>
+                                            </ul>
+                                        </nav>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            <style>{`
+                .page-link { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; transition: all 0.2s; }
+                .page-link:hover { background-color: #f8f9fa; }
+                .page-item.disabled .page-link { width: auto; padding: 0 15px; }
+                .page-item .page-link:not(.active):contains("Next") { width: auto; padding: 0 15px; }
+                .page-item .page-link:not(.active):contains("Prev") { width: auto; padding: 0 15px; }
+            `}</style>
+        </MasterLayout>
+    );
+};
+
+export default CategoryProducts;

@@ -8,6 +8,7 @@ use App\Models\Shop;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
@@ -37,14 +38,24 @@ class ProfileController extends Controller
 
         if ($shop) {
             $totalProducts = DB::table('products')->where('shop_id', $shop->id)->count();
-            $totalOrders   = DB::table('orders')->where('shop_id', $shop->id)->count();
-            $totalReviews  = DB::table('reviews')->where('shop_id', $shop->id)->count();
+            
+            // Check if tables exist to prevent SQL errors if they are missing
+            $totalOrders   = Schema::hasTable('orders') 
+                ? DB::table('orders')->where('shop_id', $shop->id)->count() 
+                : 0;
+            
+            $totalReviews  = Schema::hasTable('reviews') 
+                ? DB::table('reviews')->where('shop_id', $shop->id)->count() 
+                : 0;
 
-            // Attach avg_rating to shop object
-            $avgRating = DB::table('reviews')
-                ->where('shop_id', $shop->id)
-                ->avg('rating');
-            $shop->avg_rating = $avgRating ?? 0;
+            if (Schema::hasTable('reviews')) {
+                $avgRating = DB::table('reviews')
+                    ->where('shop_id', $shop->id)
+                    ->avg('rating');
+                $shop->avg_rating = $avgRating ?? 0;
+            } else {
+                $shop->avg_rating = 0;
+            }
         }
 
         $viewName = 'admin.profile.index';
@@ -52,6 +63,8 @@ class ProfileController extends Controller
             $viewName = 'admin.profile.index_manager';
         } elseif ($user->role === 'employee') {
             $viewName = 'admin.profile.index_staff';
+        } elseif ($user->role === 'seller') {
+            $viewName = 'seller.profile.index';
         }
 
         return view($viewName, compact(
@@ -128,11 +141,11 @@ class ProfileController extends Controller
                 'address'              => $validated['address']              ?? null,
                 'division'             => $validated['division']             ?? null,
                 'district'             => $validated['district']             ?? null,
-                'minimum_order_amount' => $validated['minimum_order_amount'] ?? 0,
+                'min_order_amount'     => $validated['minimum_order_amount'] ?? 0,
                 'opening_time'         => $validated['opening_time']         ?? null,
                 'closing_time'         => $validated['closing_time']         ?? null,
                 'estimated_delivery'   => $validated['estimated_delivery']   ?? 3,
-                'order_id_prefix'      => $validated['order_id_prefix'],
+                'order_prefix'         => $validated['order_id_prefix'],
                 'description'          => $validated['description']          ?? null,
                 'logo'                 => $this->uploadFile($request, 'logo',   'logos'),
                 'banner'               => $this->uploadFile($request, 'banner', 'banners'),
@@ -166,6 +179,8 @@ class ProfileController extends Controller
             $viewName = 'admin.profile.edit_manager';
         } elseif ($user->role === 'employee') {
             $viewName = 'admin.profile.edit_staff';
+        } elseif ($user->role === 'seller') {
+            $viewName = 'seller.profile.edit';
         }
 
         return view($viewName, compact('user', 'shop', 'bdDivisions'));
@@ -230,11 +245,11 @@ class ProfileController extends Controller
                 'address'              => $validated['address']              ?? null,
                 'division'             => $validated['division']             ?? null,
                 'district'             => $validated['district']             ?? null,
-                'minimum_order_amount' => $validated['minimum_order_amount'] ?? 0,
+                'min_order_amount'     => $validated['minimum_order_amount'] ?? 0,
                 'opening_time'         => $validated['opening_time']         ?? null,
                 'closing_time'         => $validated['closing_time']         ?? null,
                 'estimated_delivery'   => $validated['estimated_delivery']   ?? 3,
-                'order_id_prefix'      => $validated['order_id_prefix'],
+                'order_prefix'         => $validated['order_id_prefix'],
                 'description'          => $validated['description']          ?? null,
                 'latitude'             => $validated['latitude']             ?? null,
                 'longitude'            => $validated['longitude']            ?? null,
@@ -260,7 +275,9 @@ class ProfileController extends Controller
             }
         });
 
-        return redirect()->route('admin.profile.index')
+        $routeName = $user->role === 'seller' ? 'seller.profile.index' : 'admin.profile.index';
+
+        return redirect()->route($routeName)
                          ->with('success', 'Profile updated successfully.');
     }
 

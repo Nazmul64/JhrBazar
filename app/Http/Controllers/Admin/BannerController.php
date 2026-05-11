@@ -53,14 +53,12 @@ class BannerController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
             'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         $imagePath = $this->saveFile($request->file('image'));
 
         Banner::create([
-            'title'        => $request->title,
             'image'        => $imagePath,
             'for_own_shop' => $request->boolean('for_own_shop'),
             'is_active'    => true,
@@ -87,7 +85,6 @@ class BannerController extends Controller
         $banner = Banner::findOrFail($id);
 
         $request->validate([
-            'title' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
@@ -98,7 +95,6 @@ class BannerController extends Controller
         }
 
         $banner->update([
-            'title'        => $request->title,
             'image'        => $imagePath,
             'for_own_shop' => $request->boolean('for_own_shop'),
         ]);

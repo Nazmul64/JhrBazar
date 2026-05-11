@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('merchant_email')->nullable();
             $table->string('title')->default('Paystack');
             $table->string('logo')->nullable();
-            $table->boolean('status')->default(true);
+            $table->boolean('status')->default(false);
             $table->timestamps();
         });
     }

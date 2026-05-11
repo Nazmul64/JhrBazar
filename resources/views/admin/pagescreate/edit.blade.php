@@ -29,6 +29,24 @@
                 @csrf
                 @method('PUT')
 
+                <!-- Category selection -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label for="page_category_id" class="form-label fw-semibold">Page Category</label>
+                        <select name="page_category_id" id="page_category_id" class="form-select @error('page_category_id') is-invalid @enderror">
+                            <option value="">Select Category (Optional)</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}" {{ old('page_category_id', $page->page_category_id) == $cat->id ? 'selected' : '' }}>
+                                    {{ $cat->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('page_category_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
                 <!-- Name & Title Row -->
                 <div class="row mb-3">
                     <div class="col-md-6">

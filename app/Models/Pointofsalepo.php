@@ -14,6 +14,7 @@ class Pointofsalepo extends Model
     protected $fillable = [
         'seller_id',
         'customer_id',
+        'staff_id',
         'items',
         'sub_total',
         'discount',
@@ -21,9 +22,16 @@ class Pointofsalepo extends Model
         'grand_total',
         'delivery_charge',
         'payment_method',
+        'payment_status',
         'coupon_code',
         'note',
         'status',
+        'ip_address',
+        'phone',
+        'courier_name',
+        'courier_status',
+        'steadfast_order_id',
+        'pathao_consignment_id',
     ];
 
     protected $casts = [
@@ -45,6 +53,16 @@ class Pointofsalepo extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function staff(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'staff_id');
+    }
+
+    public function sellerStaff(): BelongsTo
+    {
+        return $this->belongsTo(EmployeeSeller::class, 'staff_id');
     }
 
     public function invoice(): HasOne
@@ -114,5 +132,17 @@ class Pointofsalepo extends Model
             'mobile' => 'Mobile Payment',
             default  => 'Cash Payment',
         };
+    }
+
+    /** Resolve staff name from either User or EmployeeSeller */
+    public function getAssignedStaffNameAttribute(): string
+    {
+        if (!$this->staff_id) return 'Not Assigned';
+        
+        if ($this->seller_id) {
+            return $this->sellerStaff ? $this->sellerStaff->name : 'Staff #' . $this->staff_id;
+        }
+        
+        return $this->staff ? $this->staff->name : 'Staff #' . $this->staff_id;
     }
 }

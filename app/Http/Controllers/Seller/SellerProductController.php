@@ -63,8 +63,8 @@ class SellerProductController extends Controller
             'category_id' => 'required|integer',
             'buying_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
-            'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,webp,svg|max:10240',
+            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:10240',
         ];
 
         if ($request->video_type === 'upload') {
@@ -116,6 +116,14 @@ class SellerProductController extends Controller
             'meta_title'        => $request->meta_title,
             'meta_description'  => $request->meta_description,
             'meta_keywords'     => $request->meta_keywords,
+            'is_new_arrival'    => $request->has('is_new_arrival'),
+            'is_best_seller'    => $request->has('is_best_seller'),
+            'is_hot_product'    => $request->has('is_hot_product'),
+            'is_flash_sale'     => $request->has('is_flash_sale'),
+            'is_just_for_you'   => $request->has('is_just_for_you'),
+            'is_popular'        => $request->has('is_popular'),
+            'cash_on_delivery'  => $request->has('cash_on_delivery'),
+            'online_payment'    => $request->has('online_payment'),
             'is_active'         => true,
         ]);
 
@@ -145,8 +153,8 @@ class SellerProductController extends Controller
             'category_id' => 'required|integer',
             'buying_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:10240',
+            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:10240',
         ];
 
         if ($request->video_type === 'upload') {
@@ -217,6 +225,14 @@ class SellerProductController extends Controller
             'meta_title'        => $request->meta_title,
             'meta_description'  => $request->meta_description,
             'meta_keywords'     => $request->meta_keywords,
+            'is_new_arrival'    => $request->has('is_new_arrival'),
+            'is_best_seller'    => $request->has('is_best_seller'),
+            'is_hot_product'    => $request->has('is_hot_product'),
+            'is_flash_sale'     => $request->has('is_flash_sale'),
+            'is_just_for_you'   => $request->has('is_just_for_you'),
+            'is_popular'        => $request->has('is_popular'),
+            'cash_on_delivery'  => $request->has('cash_on_delivery'),
+            'online_payment'    => $request->has('online_payment'),
         ]);
 
         return redirect()->route('seller.product.index')->with('success', 'Product Updated Successfully');

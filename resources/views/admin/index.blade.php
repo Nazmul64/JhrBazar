@@ -27,7 +27,7 @@
       <div class="stat-card" style="border-left: 5px solid var(--pink); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
         <div>
           <div class="stat-label">Total Shops</div>
-          <div class="stat-value">10</div>
+          <div class="stat-value">{{ $totalSellers }}</div>
         </div>
         <div class="stat-icon" style="background: rgba(244, 63, 127, 0.1); color: var(--pink); border-radius: 12px;"><i class="bi bi-shop-window"></i></div>
       </div>
@@ -36,7 +36,7 @@
       <div class="stat-card" style="border-left: 5px solid var(--blue); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
         <div>
           <div class="stat-label">Total Products</div>
-          <div class="stat-value">166</div>
+          <div class="stat-value">{{ $totalProducts }}</div>
         </div>
         <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--blue); border-radius: 12px;"><i class="bi bi-box-seam-fill"></i></div>
       </div>
@@ -45,7 +45,7 @@
       <div class="stat-card" style="border-left: 5px solid var(--red); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
         <div>
           <div class="stat-label">Total Orders</div>
-          <div class="stat-value">109</div>
+          <div class="stat-value">{{ $totalOrders }}</div>
         </div>
         <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--red); border-radius: 12px;"><i class="bi bi-cart-check-fill"></i></div>
       </div>
@@ -54,7 +54,7 @@
       <div class="stat-card" style="border-left: 5px solid var(--green); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
         <div>
           <div class="stat-label">Total Customers</div>
-          <div class="stat-value">26</div>
+          <div class="stat-value">{{ $totalCustomers }}</div>
         </div>
         <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--green); border-radius: 12px;"><i class="bi bi-people-fill"></i></div>
       </div>
@@ -68,43 +68,43 @@
       <div class="col-6 col-sm-4 col-md-3 col-lg-auto flex-grow-1">
         <div class="order-mini">
           <div class="label"><i class="bi bi-clock text-warning"></i> Pending</div>
-          <div class="value" style="color:var(--orange)">87</div>
+          <div class="value" style="color:var(--orange)">{{ $pendingCount }}</div>
         </div>
       </div>
       <div class="col-6 col-sm-4 col-md-3 col-lg-auto flex-grow-1">
         <div class="order-mini">
           <div class="label"><i class="bi bi-check2-circle text-primary"></i> Confirm</div>
-          <div class="value" style="color:var(--blue)">4</div>
+          <div class="value" style="color:var(--blue)">{{ $confirmedCount }}</div>
         </div>
       </div>
       <div class="col-6 col-sm-4 col-md-3 col-lg-auto flex-grow-1">
         <div class="order-mini">
           <div class="label"><i class="bi bi-gear text-info"></i> Processing</div>
-          <div class="value" style="color:#0ea5e9">0</div>
+          <div class="value" style="color:#0ea5e9">{{ $processingCount }}</div>
         </div>
       </div>
       <div class="col-6 col-sm-4 col-md-3 col-lg-auto flex-grow-1">
         <div class="order-mini">
           <div class="label"><i class="bi bi-bag-check text-purple"></i> Pickup</div>
-          <div class="value" style="color:var(--purple)">1</div>
+          <div class="value" style="color:var(--purple)">{{ $pickupCount }}</div>
         </div>
       </div>
       <div class="col-6 col-sm-4 col-md-3 col-lg-auto flex-grow-1">
         <div class="order-mini">
           <div class="label"><i class="bi bi-truck text-secondary"></i> On The Way</div>
-          <div class="value" style="color:var(--muted)">0</div>
+          <div class="value" style="color:var(--muted)">{{ $onthewayCount }}</div>
         </div>
       </div>
       <div class="col-6 col-sm-4 col-md-3 col-lg-auto flex-grow-1">
         <div class="order-mini">
           <div class="label"><i class="bi bi-check-circle-fill text-success"></i> Delivered</div>
-          <div class="value" style="color:var(--green)">13</div>
+          <div class="value" style="color:var(--green)">{{ $deliveredCount }}</div>
         </div>
       </div>
       <div class="col-6 col-sm-4 col-md-3 col-lg-auto flex-grow-1">
         <div class="order-mini">
           <div class="label"><i class="bi bi-x-circle text-danger"></i> Cancelled</div>
-          <div class="value" style="color:var(--red)">4</div>
+          <div class="value" style="color:var(--red)">{{ $cancelledCount }}</div>
         </div>
       </div>
     </div>

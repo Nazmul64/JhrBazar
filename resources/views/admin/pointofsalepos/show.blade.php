@@ -384,16 +384,20 @@ function posShowFmt($num, $cur) {
                                     <td>{{ $index + 1 }}</td>
                                     <td>
                                         <div class="prod-cell">
-                                            @if(!empty($item['thumbnail']))
+                                            @php
+                                                $thumb = $item['thumbnail'] ?? $item['image'] ?? '';
+                                                $name = $item['name'] ?? $item['title'] ?? 'Product';
+                                            @endphp
+                                            @if(!empty($thumb))
                                                 <img class="prod-img"
-                                                     src="{{ asset($item['thumbnail']) }}"
-                                                     alt="{{ $item['name'] }}"
+                                                     src="{{ asset($thumb) }}"
+                                                     alt="{{ $name }}"
                                                      onerror="this.outerHTML='<div class=\'prod-img-ph\'>📦</div>'">
                                             @else
                                                 <div class="prod-img-ph">📦</div>
                                             @endif
                                             <div>
-                                                <div class="prod-name">{{ $item['name'] }}</div>
+                                                <div class="prod-name">{{ $name }}</div>
                                                 @if($bcDisplay)
                                                     <div class="prod-sku">{{ $bcDisplay }}</div>
                                                 @endif
@@ -579,6 +583,10 @@ function posShowFmt($num, $cur) {
                 <div class="addr-item">
                     <span class="addr-label">Date</span>
                     <span class="addr-value">{{ $invoice->created_at->format('d M Y') }}</span>
+                </div>
+                <div class="addr-item">
+                    <span class="addr-label">Assigned Staff</span>
+                    <span class="addr-value" style="color:var(--blue);font-weight:600;">{{ $invoice->order->assigned_staff_name ?? 'Not Assigned' }}</span>
                 </div>
                 <div class="addr-item">
                     <span class="addr-label">Items</span>

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('server_key')->nullable();
             $table->string('title')->default('PayTabs');
             $table->string('logo')->nullable();
-            $table->boolean('status')->default(true);
+            $table->boolean('status')->default(false);
             $table->timestamps();
         });
     }

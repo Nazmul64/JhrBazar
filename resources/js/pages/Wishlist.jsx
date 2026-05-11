@@ -1,86 +1,156 @@
 import React from 'react';
 import MasterLayout from '../layouts/MasterLayout';
-import ProductCard from '../components/ProductCard';
-
-const wishlistItems = [
-    { 
-        id: 1, title: "iPhone 15 Pro Max - 256GB Titanium Blue", 
-        price: 1199.00, oldPrice: 1299.00, discount: 8, sold: 150, rating: '4.9', reviews: 45,
-        image: "https://images.unsplash.com/photo-1696446701796-da61225697cc?q=80&w=500&auto=format&fit=crop" 
-    },
-    { 
-        id: 2, title: "Sony WH-1000XM5 Wireless Noise Canceling Headphones", 
-        price: 348.00, oldPrice: 399.00, discount: 12, sold: 320, rating: '4.8', reviews: 120,
-        image: "https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?q=80&w=500&auto=format&fit=crop" 
-    },
-    { 
-        id: 3, title: "Rolex Submariner Date Luxury Watch - Oystersteel", 
-        price: 12500.00, discount: 0, sold: 12, rating: '5.0', reviews: 5,
-        image: "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?q=80&w=500&auto=format&fit=crop" 
-    }
-];
+import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
+import { Link } from 'react-router-dom';
 
 const Wishlist = () => {
+    const { wishlist, loading, toggleWishlist } = useWishlist();
+    const { addToCart } = useCart();
     const mainColor = '#57b500';
+
+    const handleRemove = (product) => {
+        toggleWishlist(product);
+    };
+
+    const handleAddToCart = (product) => {
+        addToCart(product, 1);
+        handleRemove(product); // This will remove it from the wishlist
+    };
 
     return (
         <MasterLayout>
             <div className="container py-5">
                 {/* Header Section */}
-                <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
-                    <div>
-                        <h2 className="fw-bold mb-1">My Wishlist</h2>
-                        <p className="text-muted mb-0">Manage your favorite products and buy them anytime.</p>
-                    </div>
-                    <div className="d-flex gap-2">
-                        <span className="badge bg-light text-dark border p-2 px-3 rounded-pill fw-bold" style={{ fontSize: '13px' }}>
-                            {wishlistItems.length} ITEMS SAVED
-                        </span>
-                        <button className="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold">Clear All</button>
-                    </div>
+                <div className="mb-5">
+                    <h2 className="fw-bold mb-1" style={{ color: '#1a1a1a', fontSize: '32px' }}>উইশলিস্ট</h2>
+                    <nav aria-label="breadcrumb">
+                        <ol className="breadcrumb small mb-0">
+                            <li className="breadcrumb-item"><Link to="/" className="text-decoration-none text-muted">হোম</Link></li>
+                            <li className="breadcrumb-item"><span className="text-muted">পেজ</span></li>
+                            <li className="breadcrumb-item active text-muted" aria-current="page">উইশলিস্ট</li>
+                        </ol>
+                    </nav>
                 </div>
 
-                {/* Wishlist Grid */}
-                {wishlistItems.length > 0 ? (
-                    <div className="row g-2 g-md-4">
-                        {wishlistItems.map(product => (
-                            <div key={product.id} className="col-6 col-md-4 col-lg-3 col-xl-2">
-                                <ProductCard product={product} />
-                            </div>
-                        ))}
+                {loading ? (
+                    <div className="text-center py-5">
+                        <div className="spinner-border text-success" role="status"></div>
                     </div>
                 ) : (
-                    <div className="text-center py-5 my-5">
-                        <div style={{ fontSize: '80px', animation: 'bounce 2s infinite' }}>🤍</div>
-                        <h3 className="fw-bold mt-4">Your Wishlist is Empty</h3>
-                        <p className="text-muted mb-4">Seems like you haven't added any favorites yet.</p>
-                        <a href="/" className="btn btn-lg text-white px-5 rounded-pill shadow-sm" style={{ backgroundColor: mainColor }}>
-                            Browse Products
-                        </a>
-                    </div>
-                )}
-
-                {/* Recommendation Section (Optional but Professional) */}
-                <div className="mt-5 pt-5">
-                    <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-                        <h4 className="fw-bold mb-0">Recommended For You</h4>
-                        <a href="/" className="text-decoration-none" style={{ color: mainColor, fontWeight: 'bold', fontSize: '14px' }}>See More →</a>
-                    </div>
-                    <div className="row g-2 g-md-4">
-                        {/* Placeholder for recommendations */}
-                        {[1, 2, 3, 4, 5, 6].map(i => (
-                            <div key={i} className="col-6 col-md-4 col-lg-2 opacity-50">
-                                <div className="bg-light rounded" style={{ height: '250px' }}></div>
+                    wishlist.length > 0 ? (
+                        <div className="card border-0 shadow-sm overflow-hidden" style={{ borderRadius: '15px', border: '1px solid #f0f0f0' }}>
+                            <div className="table-responsive">
+                                <table className="table align-middle mb-0">
+                                    <thead className="bg-light">
+                                        <tr>
+                                            <th className="ps-4 py-3 text-muted fw-bold" style={{ fontSize: '14px', width: '40%' }}>পণ্য</th>
+                                            <th className="py-3 text-muted fw-bold text-center" style={{ fontSize: '14px' }}>মূল্য</th>
+                                            <th className="py-3 text-muted fw-bold text-center" style={{ fontSize: '14px' }}>স্টক স্ট্যাটাস</th>
+                                            <th className="pe-4 py-3 text-muted fw-bold text-end" style={{ fontSize: '14px' }}>মুছে ফেলুন</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {wishlist.map(product => (
+                                            <tr key={product.uid} className="wishlist-row">
+                                                <td className="ps-4 py-4">
+                                                    <div className="d-flex align-items-center gap-3">
+                                                        <Link to={`/product-details/${product.product_type}/${product.id}`}>
+                                                            <div className="rounded-3 border overflow-hidden" style={{ width: '80px', height: '80px' }}>
+                                                                <img 
+                                                                    src={product.image} 
+                                                                    alt={product.title} 
+                                                                    className="w-100 h-100" 
+                                                                    style={{ objectFit: 'cover' }} 
+                                                                />
+                                                            </div>
+                                                        </Link>
+                                                        <div>
+                                                            <Link 
+                                                                to={`/product-details/${product.product_type}/${product.id}`} 
+                                                                className="text-decoration-none fw-bold text-dark hover-primary-text d-block mb-1"
+                                                                style={{ fontSize: '15px' }}
+                                                            >
+                                                                {product.title}
+                                                            </Link>
+                                                            <div className="d-flex flex-wrap gap-2">
+                                                                {product.brand && <span className="text-muted small"><strong>ব্র্যান্ড:</strong> {product.brand}</span>}
+                                                                {product.size && <span className="text-muted small"><strong>সাইজ:</strong> {product.size}</span>}
+                                                                {product.color && <span className="text-muted small"><strong>কালার:</strong> {product.color}</span>}
+                                                                {product.unit && <span className="text-muted small"><strong>ইউনিট:</strong> {product.unit}</span>}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="py-4 text-center">
+                                                    <span className="fw-bold" style={{ fontSize: '16px' }}>৳{Number(product.price).toLocaleString()}</span>
+                                                </td>
+                                                <td className="py-4 text-center">
+                                                    <span 
+                                                        className="badge rounded-pill px-3 py-2" 
+                                                        style={{ 
+                                                            backgroundColor: product.stock > 0 ? '#198754' : '#6c757d', 
+                                                            fontSize: '11px' 
+                                                        }}
+                                                    >
+                                                        <i className={`fas ${product.stock > 0 ? 'fa-check' : 'fa-times'} me-1`}></i> 
+                                                        {product.stock > 0 ? 'স্টকে আছে' : 'স্টক শেষ'}
+                                                    </span>
+                                                </td>
+                                                <td className="pe-4 py-4 text-end">
+                                                    <div className="d-flex align-items-center justify-content-end gap-3">
+                                                        <button 
+                                                            onClick={() => handleAddToCart(product)}
+                                                            className="btn text-white fw-bold px-4 py-2 d-flex align-items-center gap-2"
+                                                            style={{ 
+                                                                backgroundColor: '#e31e24', 
+                                                                borderRadius: '8px', 
+                                                                fontSize: '13px',
+                                                                transition: 'all 0.3s'
+                                                            }}
+                                                        >
+                                                            🛒 কার্টে যোগ করুন
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleRemove(product)}
+                                                            className="btn border-0 p-0 text-muted hover-danger"
+                                                            title="Remove Item"
+                                                            style={{ fontSize: '18px', transition: 'all 0.2s' }}
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
-                        ))}
-                    </div>
-                </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-5 bg-white rounded shadow-sm border">
+                            <div style={{ fontSize: '80px', marginBottom: '20px', opacity: 0.2 }}>🛒</div>
+                            <h4 className="fw-bold text-dark">আপনার উইশ লিস্ট খালি</h4>
+                            <p className="text-muted mb-4 px-3">পছন্দের পণ্যগুলো এখানে জমা করে রাখতে পারেন এবং পরে এক ক্লিকেই কার্টে যোগ করতে পারেন।</p>
+                            <Link to="/" className="btn text-white px-5 py-3" style={{ backgroundColor: mainColor, borderRadius: '30px', fontWeight: 'bold', fontSize: '15px' }}>
+                                কেনাকাটা চালিয়ে যান
+                            </Link>
+                        </div>
+                    )
+                )}
             </div>
-
             <style>{`
-                @keyframes bounce {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-15px); }
+                .wishlist-row { transition: all 0.2s; }
+                .wishlist-row:hover { background-color: #fcfcfc; }
+                .hover-primary-text:hover { color: ${mainColor} !important; }
+                .hover-danger:hover { color: #e31e24 !important; transform: scale(1.2); }
+                .btn:active { transform: scale(0.95); }
+                
+                @media (max-width: 768px) {
+                    .table thead { display: none; }
+                    .table tbody tr { display: block; border-bottom: 1px solid #eee; padding: 15px 0; }
+                    .table td { display: block; text-align: left !important; padding: 5px 20px !important; border: none; }
+                    .table td:last-child { text-align: right !important; }
                 }
             `}</style>
         </MasterLayout>

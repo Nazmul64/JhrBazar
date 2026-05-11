@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('integrity_salt')->nullable();
             $table->string('title')->default('JazzCash');
             $table->string('logo')->nullable();
-            $table->boolean('status')->default(true);
+            $table->boolean('status')->default(false);
             $table->timestamps();
         });
     }

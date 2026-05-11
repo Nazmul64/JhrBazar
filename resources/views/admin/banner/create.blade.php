@@ -140,17 +140,7 @@
 
     <div class="form-card">
 
-        {{-- Title --}}
-        <div class="fg">
-            <label for="title">Title</label>
-            <input type="text" id="title" name="title"
-                   value="{{ old('title') }}"
-                   placeholder="Enter Short Title"
-                   autocomplete="off">
-            @error('title')
-                <div class="err"><i class="bi bi-exclamation-circle"></i> {{ $message }}</div>
-            @enderror
-        </div>
+
 
         {{-- Banner preview (4:1) --}}
         <div class="banner-preview-box" id="previewBox">

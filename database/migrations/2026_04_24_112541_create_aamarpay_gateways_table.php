@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('signature_key')->nullable();
             $table->string('title')->default('aamarPay');
             $table->string('logo')->nullable();
-            $table->boolean('status')->default(true);
+            $table->boolean('status')->default(false);
             $table->timestamps();
         });
     }

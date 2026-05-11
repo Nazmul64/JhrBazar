@@ -477,6 +477,28 @@
 
 
     {{-- =============================================
+         SECTION 5 – Top Rated Shops Setting
+    ============================================= --}}
+    <div class="gs-section">
+        <div class="gs-section-title">
+            <div class="title-left">
+                <span class="title-icon">🏪</span>
+                <span>Top Rated Shops Section</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:13px;font-weight:600;color:#333;">Show/Hide Top Rated Shops on Home Page</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="top_rated_shops_status" id="toggle_top_rated_shops"
+                           {{ old('top_rated_shops_status', $setting->top_rated_shops_status ?? 1) ? 'checked' : '' }}
+                           onchange="ajaxToggle(this, '{{ $setting ? route('admin.generalsettings.toggle', $setting->id) : '#' }}', 'top_rated_shops_status')">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>{{-- /section 5 --}}
+
+
+    {{-- =============================================
          SECTION 4 – Footer Section Info
     ============================================= --}}
     <div class="gs-section">
@@ -560,19 +582,337 @@
         </div>
     </div>{{-- /section 4 --}}
 
+    {{-- =============================================
+         SECTION 5 – Appearance & Typography
+    ============================================= --}}
+    <div class="gs-section">
+        <div class="gs-section-title">
+            <div class="title-left">
+                <span class="title-icon">🎨</span>
+                <span>Appearance & Typography</span>
+            </div>
+        </div>
 
-    {{-- ===== Save Button ===== --}}
-    <div style="overflow:hidden; padding-bottom:30px;">
-        <button type="submit" class="btn-save">Save And Update</button>
+        <div class="gs-row" style="margin-bottom:22px;">
+            <div class="gs-col">
+                <label class="gs-label">Primary Color (Buttons, Highlights)</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="color" value="{{ old('primary_color', $setting->primary_color ?? '#57b500') }}" oninput="this.nextElementSibling.value=this.value" style="height:40px;width:50px;border:none;border-radius:4px;cursor:pointer;">
+                    <input type="text" name="primary_color" class="gs-input" value="{{ old('primary_color', $setting->primary_color ?? '#57b500') }}" oninput="this.previousElementSibling.value=this.value" style="flex:1;">
+                </div>
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Top Header Color</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="color" value="{{ old('top_header_color', $setting->top_header_color ?? '#57b500') }}" oninput="this.nextElementSibling.value=this.value" style="height:40px;width:50px;border:none;border-radius:4px;cursor:pointer;">
+                    <input type="text" name="top_header_color" class="gs-input" value="{{ old('top_header_color', $setting->top_header_color ?? '#57b500') }}" oninput="this.previousElementSibling.value=this.value" style="flex:1;">
+                </div>
+            </div>
+        </div>
+
+        <div class="gs-row" style="margin-bottom:22px;">
+            <div class="gs-col">
+                <label class="gs-label">Main Header Color</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="color" value="{{ old('header_color', $setting->header_color ?? '#ffffff') }}" oninput="this.nextElementSibling.value=this.value" style="height:40px;width:50px;border:none;border-radius:4px;cursor:pointer;">
+                    <input type="text" name="header_color" class="gs-input" value="{{ old('header_color', $setting->header_color ?? '#ffffff') }}" oninput="this.previousElementSibling.value=this.value" style="flex:1;">
+                </div>
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Footer Background Color</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="color" value="{{ old('footer_color', $setting->footer_color ?? '#ffffff') }}" oninput="this.nextElementSibling.value=this.value" style="height:40px;width:50px;border:none;border-radius:4px;cursor:pointer;">
+                    <input type="text" name="footer_color" class="gs-input" value="{{ old('footer_color', $setting->footer_color ?? '#ffffff') }}" oninput="this.previousElementSibling.value=this.value" style="flex:1;">
+                </div>
+            </div>
+        </div>
+        <div class="gs-row" style="margin-bottom:22px;">
+            <div class="gs-col">
+                <label class="gs-label">Button Background Color</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="color" value="{{ old('button_color', $setting->button_color ?? '#57b500') }}" oninput="this.nextElementSibling.value=this.value" style="height:40px;width:50px;border:none;border-radius:4px;cursor:pointer;">
+                    <input type="text" name="button_color" class="gs-input" value="{{ old('button_color', $setting->button_color ?? '#57b500') }}" oninput="this.previousElementSibling.value=this.value" style="flex:1;">
+                </div>
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Button Hover Color</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="color" value="{{ old('button_hover_color', $setting->button_hover_color ?? '#4a9a00') }}" oninput="this.nextElementSibling.value=this.value" style="height:40px;width:50px;border:none;border-radius:4px;cursor:pointer;">
+                    <input type="text" name="button_hover_color" class="gs-input" value="{{ old('button_hover_color', $setting->button_hover_color ?? '#4a9a00') }}" oninput="this.previousElementSibling.value=this.value" style="flex:1;">
+                </div>
+            </div>
+        </div>
+
+        <div class="gs-row" style="margin-bottom:22px;">
+            <div class="gs-col">
+                <label class="gs-label">Footer Text Color</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="color" value="{{ old('footer_text_color', $setting->footer_text_color ?? '#ffffff') }}" oninput="this.nextElementSibling.value=this.value" style="height:40px;width:50px;border:none;border-radius:4px;cursor:pointer;">
+                    <input type="text" name="footer_text_color" class="gs-input" value="{{ old('footer_text_color', $setting->footer_text_color ?? '#ffffff') }}" oninput="this.previousElementSibling.value=this.value" style="flex:1;">
+                </div>
+            </div>
+            <div class="gs-col">
+                {{-- Placeholder --}}
+            </div>
+        </div>
+
+        <div class="gs-row">
+            <div class="gs-col">
+                <label class="gs-label">Font Family</label>
+                <select name="font_family" class="gs-input">
+                    @php $currentFont = old('font_family', $setting->font_family ?? 'Arial, sans-serif'); @endphp
+                    <option value="Arial, sans-serif" {{ $currentFont == 'Arial, sans-serif' ? 'selected' : '' }}>Arial</option>
+                    <option value="'Poppins', sans-serif" {{ $currentFont == "'Poppins', sans-serif" ? 'selected' : '' }}>Poppins</option>
+                    <option value="'Roboto', sans-serif" {{ $currentFont == "'Roboto', sans-serif" ? 'selected' : '' }}>Roboto</option>
+                    <option value="'Open Sans', sans-serif" {{ $currentFont == "'Open Sans', sans-serif" ? 'selected' : '' }}>Open Sans</option>
+                </select>
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Base Font Size</label>
+                <input type="text" name="font_size" class="gs-input" placeholder="e.g. 14px or 1rem" value="{{ old('font_size', $setting->font_size ?? '14px') }}">
+            </div>
+        </div>
+
+        <div class="gs-row" style="margin-top: 22px;">
+            <div class="gs-col">
+                <label class="gs-label">Product Title Size (Desktop)</label>
+                <input type="text" name="product_title_size_desktop" class="gs-input" placeholder="e.g. 14px" value="{{ old('product_title_size_desktop', $setting->product_title_size_desktop ?? '14px') }}">
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Product Title Size (Mobile)</label>
+                <input type="text" name="product_title_size_mobile" class="gs-input" placeholder="e.g. 12px" value="{{ old('product_title_size_mobile', $setting->product_title_size_mobile ?? '12px') }}">
+            </div>
+        </div>
+
+        <div class="gs-row" style="margin-top: 22px;">
+            <div class="gs-col">
+                <label class="gs-label">Current Price Size</label>
+                <input type="text" name="product_price_size" class="gs-input" placeholder="e.g. 15px" value="{{ old('product_price_size', $setting->product_price_size ?? '15px') }}">
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Old Price Size</label>
+                <input type="text" name="product_old_price_size" class="gs-input" placeholder="e.g. 12px" value="{{ old('product_old_price_size', $setting->product_old_price_size ?? '12px') }}">
+            </div>
+        </div>
     </div>
 
+    {{-- =============================================
+         SECTION 6 – Layout & Product Grid
+    ============================================= --}}
+    <div class="gs-section">
+        <div class="gs-section-title">
+            <div class="title-left">
+                <span class="title-icon">📐</span>
+                <span>Layout & Product Grid Settings</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:13px;font-weight:600;color:#333;">Show/Hide Product Stats (Badges/Rating/Sold)</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="show_product_stats" id="toggle_product_stats"
+                           {{ old('show_product_stats', $setting->show_product_stats ?? 1) ? 'checked' : '' }}
+                           onchange="ajaxToggle(this, '{{ $setting ? route('admin.generalsettings.toggle', $setting->id) : '#' }}', 'show_product_stats')">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="gs-row" style="margin-bottom:22px;">
+            <div class="gs-col">
+                <label class="gs-label">Global Layout Style</label>
+                <select name="layout_style" class="gs-input">
+                    @php $currentLayout = old('layout_style', $setting->layout_style ?? 'container'); @endphp
+                    <option value="container" {{ $currentLayout == 'container' ? 'selected' : '' }}>Container (Centered)</option>
+                    <option value="fluid" {{ $currentLayout == 'fluid' ? 'selected' : '' }}>Full Width (Fluid)</option>
+                </select>
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Product Card Width</label>
+                <input type="text" name="product_card_width" class="gs-input" placeholder="e.g. 100% or 200px" value="{{ old('product_card_width', $setting->product_card_width ?? '100%') }}">
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Product Card Height</label>
+                <input type="text" name="product_card_height" class="gs-input" placeholder="e.g. auto or 350px" value="{{ old('product_card_height', $setting->product_card_height ?? 'auto') }}">
+            </div>
+        </div>
+
+        <div class="gs-row">
+            <div class="gs-col">
+                <label class="gs-label">Products Per Row (Mobile)</label>
+                <select name="products_per_row_mobile" class="gs-input">
+                    @php $currentMobileGrid = old('products_per_row_mobile', $setting->products_per_row_mobile ?? 2); @endphp
+                    <option value="1" {{ $currentMobileGrid == 1 ? 'selected' : '' }}>1 Product</option>
+                    <option value="2" {{ $currentMobileGrid == 2 ? 'selected' : '' }}>2 Products</option>
+                    <option value="3" {{ $currentMobileGrid == 3 ? 'selected' : '' }}>3 Products</option>
+                </select>
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Products Per Row (Large Devices)</label>
+                <select name="products_per_row_desktop" class="gs-input">
+                    @php $currentDesktopGrid = old('products_per_row_desktop', $setting->products_per_row_desktop ?? 6); @endphp
+                    <option value="2" {{ $currentDesktopGrid == 2 ? 'selected' : '' }}>2 Products</option>
+                    <option value="3" {{ $currentDesktopGrid == 3 ? 'selected' : '' }}>3 Products</option>
+                    <option value="4" {{ $currentDesktopGrid == 4 ? 'selected' : '' }}>4 Products</option>
+                    <option value="5" {{ $currentDesktopGrid == 5 ? 'selected' : '' }}>5 Products</option>
+                    <option value="6" {{ $currentDesktopGrid == 6 ? 'selected' : '' }}>6 Products</option>
+                    <option value="8" {{ $currentDesktopGrid == 8 ? 'selected' : '' }}>8 Products</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    {{-- =============================================
+         SECTION 7 – Offer Marquee
+    ============================================= --}}
+    <div class="gs-section">
+        <div class="gs-section-title">
+            <div class="title-left">
+                <span class="title-icon">📢</span>
+                <span>Offer Marquee</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:13px;font-weight:600;color:#333;">Show/Hide Marquee on Home Page</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="show_marquee" id="toggle_marquee"
+                           {{ old('show_marquee', $setting->show_marquee ?? 0) ? 'checked' : '' }}
+                           onchange="ajaxToggle(this, '{{ $setting ? route('admin.generalsettings.toggle', $setting->id) : '#' }}', 'show_marquee')">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="gs-row">
+            <div class="gs-col" style="flex: 1 1 100%;">
+                <label class="gs-label">Marquee Text (Scrolling Offer Text)</label>
+                <textarea name="marquee_text" class="gs-input" rows="2" placeholder="e.g. 🔥 Flash Sale! Get 50% Off on all electronics today! 🔥">{{ old('marquee_text', $setting->marquee_text ?? '') }}</textarea>
+            </div>
+        </div>
+    </div>
+
+    {{-- =============================================
+         SECTION 8 – Slider & Category Dimensions
+    ============================================= --}}
+    <div class="gs-section">
+        <div class="gs-section-title">
+            <div class="title-left">
+                <span class="title-icon">🖼️</span>
+                <span>Slider & Category Settings</span>
+            </div>
+        </div>
+
+        <div class="gs-row">
+            <div class="gs-col">
+                <label class="gs-label">Main Slider Height (Desktop)</label>
+                <input type="text" name="slider_height" class="gs-input" value="{{ old('slider_height', $setting->slider_height ?? '420px') }}" placeholder="e.g. 400px or auto">
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Main Slider Height (Mobile)</label>
+                <input type="text" name="slider_height_mobile" class="gs-input" value="{{ old('slider_height_mobile', $setting->slider_height_mobile ?? '200px') }}" placeholder="e.g. 200px">
+            </div>
+        </div>
+
+        <div class="gs-row" style="margin-top: 20px;">
+            <div class="gs-col">
+                <label class="gs-label">Product Image Height (Desktop)</label>
+                <input type="text" name="product_img_height_desktop" class="gs-input" value="{{ old('product_img_height_desktop', $setting->product_img_height_desktop ?? '200px') }}" placeholder="e.g. 200px">
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Product Image Height (Mobile)</label>
+                <input type="text" name="product_img_height_mobile" class="gs-input" value="{{ old('product_img_height_mobile', $setting->product_img_height_mobile ?? '150px') }}" placeholder="e.g. 150px">
+            </div>
+        </div>
+
+        <div class="gs-row" style="margin-top: 20px;">
+            <div class="gs-col">
+                <label class="gs-label">Category Image Width</label>
+                <input type="text" name="category_img_width" class="gs-input" value="{{ old('category_img_width', $setting->category_img_width ?? '100%') }}" placeholder="e.g. 100% or 120px">
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Category Image Height</label>
+                <input type="text" name="category_img_height" class="gs-input" value="{{ old('category_img_height', $setting->category_img_height ?? '100px') }}" placeholder="e.g. 100px or 120px">
+            </div>
+        </div>
+
+        <div class="gs-row" style="margin-top: 20px;">
+            <div class="gs-col">
+                <label class="gs-label">Products per row (Desktop)</label>
+                <input type="number" name="products_per_row_desktop" class="gs-input" value="{{ old('products_per_row_desktop', $setting->products_per_row_desktop ?? 6) }}" placeholder="e.g. 4, 5, 6">
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Products per row (Mobile)</label>
+                <input type="number" name="products_per_row_mobile" class="gs-input" value="{{ old('products_per_row_mobile', $setting->products_per_row_mobile ?? 2) }}" placeholder="e.g. 1, 2">
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Category Menu Behavior (Homepage Sidebar)</label>
+                <select name="sidebar_behavior" class="gs-input">
+                    @php $currentSidebarBehavior = old('sidebar_behavior', $setting->sidebar_behavior ?? 'fixed'); @endphp
+                    <option value="fixed" {{ $currentSidebarBehavior == 'fixed' ? 'selected' : '' }}>Fixed (Always Open on Home)</option>
+                    <option value="hover" {{ $currentSidebarBehavior == 'hover' ? 'selected' : '' }}>Dropdown (Hover/Click to Open)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="gs-row" style="margin-top: 20px;">
+            <div class="gs-col">
+                <label class="gs-label">Category Image Shape</label>
+                <select name="category_shape" class="gs-input">
+                    @php $currentShape = old('category_shape', $setting->category_shape ?? 'rounded'); @endphp
+                    <option value="square" {{ $currentShape == 'square' ? 'selected' : '' }}>Square (No Radius)</option>
+                    <option value="rounded" {{ $currentShape == 'rounded' ? 'selected' : '' }}>Rounded (Soft Corners)</option>
+                    <option value="circle" {{ $currentShape == 'circle' ? 'selected' : '' }}>Circle (50% Radius)</option>
+                </select>
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Category Component Behavior</label>
+                <select name="category_behavior" class="gs-input">
+                    @php $currentBehavior = old('category_behavior', $setting->category_behavior ?? 'slider'); @endphp
+                    <option value="slider" {{ $currentBehavior == 'slider' ? 'selected' : '' }}>Horizontal Slider (Grab & Scroll)</option>
+                    <option value="grid" {{ $currentBehavior == 'grid' ? 'selected' : '' }}>Fixed Grid (Multi-line layout)</option>
+                </select>
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Home Page Loader Status</label>
+                <select name="loader_status" class="gs-input">
+                    @php $currentLoader = old('loader_status', $setting->loader_status ?? 1); @endphp
+                    <option value="1" {{ $currentLoader == 1 ? 'selected' : '' }}>ON (Show Loading Indicator)</option>
+                    <option value="0" {{ $currentLoader == 0 ? 'selected' : '' }}>OFF (Direct Load)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    {{-- ===== Save Button ===== --}}
+        <div class="reset-buttons" style="overflow:hidden; padding-bottom:30px;">
+            <button type="reset" class="reset-btn" style="margin-right:10px;">Reset Form</button>
+            
+            <button type="button" class="reset-btn" style="margin-right:10px; background-color: #f39c12;" 
+                onclick="submitResetForm()">
+                Reset to Defaults
+            </button>
+            
+            <button type="submit" class="btn-save">Save And Update</button>
+        </div>
     </form>
+
+    @if($setting)
+    <form id="reset-to-defaults-form" action="{{ route('admin.generalsettings.reset', $setting->id) }}" method="POST" style="display:none;">
+        @csrf
+    </form>
+    @endif
 
 </div>{{-- /gs-page-wrapper --}}
 
-
-
 <script>
+    function submitResetForm() {
+        if(confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')) {
+            const form = document.getElementById('reset-to-defaults-form');
+            if (form) {
+                form.submit();
+            } else {
+                alert('No settings found to reset.');
+            }
+        }
+    }
+
     /* ---- Image Preview ---- */
     function previewImage(input, previewId, nameId, placeholderId) {
         const preview     = document.getElementById(previewId);
@@ -619,4 +959,27 @@
         alert('Update script executed successfully!');
     }
 </script>
+@push('styles')
+    <style>
+        .reset-buttons .reset-btn {
+            all: unset;
+            cursor: pointer;
+            padding: 8px 16px;
+            background: #f5f5f5;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            color: #333;
+            font-weight: 500;
+            transition: background 0.3s, border-color 0.3s;
+        }
+        .reset-buttons .reset-btn:hover {
+            background: #e0e0e0;
+            border-color: #999;
+        }
+        .reset-buttons .reset-btn:active {
+            background: #d4d4d4;
+        }
+    </style>
+@endpush
+
 @endsection

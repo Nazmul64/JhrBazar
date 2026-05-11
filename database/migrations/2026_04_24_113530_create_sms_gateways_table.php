@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string('url')->default('https://msg.elitbuzz-bd.com/smsapi');
             $table->string('api_key')->nullable();
             $table->string('sender_id')->nullable();
-            $table->boolean('status')->default(true);
-            $table->boolean('order_confirm')->default(true);
-            $table->boolean('forgot_password')->default(true);
+            $table->boolean('status')->default(false);
+            $table->boolean('order_confirm')->default(false);
+            $table->boolean('forgot_password')->default(false);
             $table->boolean('password_generator')->default(false);
             $table->timestamps();
         });

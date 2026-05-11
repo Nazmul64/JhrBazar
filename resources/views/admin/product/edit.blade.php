@@ -344,6 +344,63 @@
         </div>
     </div>
 
+    {{-- ════ PLACEMENT SECTIONS ════ --}}
+    <div class="section-card">
+        <p class="section-head"><i class="bi bi-star"></i> Frontend Placement Options</p>
+        <div class="section-body">
+            <div style="display:flex; flex-wrap:wrap; gap:20px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" name="is_new_arrival" value="1" {{ old('is_new_arrival', $product->is_new_arrival) ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
+                    <span style="font-size:13.5px; font-weight:600; color:var(--dark);">New Arrival</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" name="is_best_seller" value="1" {{ old('is_best_seller', $product->is_best_seller) ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
+                    <span style="font-size:13.5px; font-weight:600; color:var(--dark);">Best Seller</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" name="is_hot_product" value="1" {{ old('is_hot_product', $product->is_hot_product) ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
+                    <span style="font-size:13.5px; font-weight:600; color:var(--dark);">Hot Product</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" name="is_flash_sale" value="1" {{ old('is_flash_sale', $product->is_flash_sale) ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
+                    <span style="font-size:13.5px; font-weight:600; color:var(--dark);">Flash Sale</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" name="is_just_for_you" value="1" {{ old('is_just_for_you', $product->is_just_for_you) ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
+                    <span style="font-size:13.5px; font-weight:600; color:var(--dark);">Just For You</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" name="is_popular" value="1" {{ old('is_popular', $product->is_popular) ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
+                    <span style="font-size:13.5px; font-weight:600; color:var(--dark);">Popular Product</span>
+                </label>
+            </div>
+            <p class="field-hint" style="margin-top:12px;margin-left:0;">Toggle where this product will be displayed on the storefront home page.</p>
+        </div>
+    </div>
+
+    {{-- ════ PAYMENT OPTIONS ════ --}}
+    <div class="section-card">
+        <p class="section-head"><i class="bi bi-credit-card"></i> Payment Options</p>
+        <div class="section-body">
+            <div style="display:flex; flex-wrap:wrap; gap:30px;">
+                <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <input type="checkbox" name="cash_on_delivery" value="1" {{ old('cash_on_delivery', $product->cash_on_delivery) ? 'checked' : '' }} style="width:20px;height:20px;accent-color:#22c55e;">
+                    <div>
+                        <span style="font-size:14px; font-weight:700; color:var(--dark); display:block;">Cash on Delivery</span>
+                        <span style="font-size:11px; color:var(--muted);">Allow customers to pay when they receive the product.</span>
+                    </div>
+                </label>
+                <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <input type="checkbox" name="online_payment" value="1" {{ old('online_payment', $product->online_payment) ? 'checked' : '' }} style="width:20px;height:20px;accent-color:#3b82f6;">
+                    <div>
+                        <span style="font-size:14px; font-weight:700; color:var(--dark); display:block;">Online Payment</span>
+                        <span style="font-size:11px; color:var(--muted);">Allow customers to pay via bKash, Nagad, or Cards.</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+    </div>
+
     {{-- ════ PRICE ════ --}}
     <div class="section-card">
         <p class="section-head"><i class="bi bi-currency-dollar"></i> Price Information</p>
@@ -429,9 +486,9 @@
                             </div>
                         </div>
                         <input type="file" id="thumbnailInput" name="thumbnail"
-                               accept="image/jpg,image/jpeg,image/png,image/webp"
+                               accept="image/*"
                                style="display:none;" onchange="previewThumbnail(this)">
-                        <p class="img-hint">jpg, jpeg, png, webp · Max 2 MB</p>
+                        <p class="img-hint">jpg, jpeg, png, webp, svg, gif · Max 10 MB</p>
                         @error('thumbnail')
                             <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ $message }}</div>
                         @enderror
@@ -475,10 +532,10 @@
                     <span>Click to add more gallery images &nbsp;·&nbsp;
                         <strong>Hold Ctrl / Cmd for multiple</strong>
                     </span>
-                    <br><small style="font-size:12px;color:#b0b7c3;">jpg, jpeg, png, webp · Max 2 MB each</small>
+                    <br><small style="font-size:12px;color:#b0b7c3;">jpg, jpeg, png, webp, svg, gif · Max 10 MB each</small>
                 </div>
                 <input type="file" id="galleryInput" name="gallery_images[]"
-                       accept="image/jpg,image/jpeg,image/png,image/webp"
+                       accept="image/*"
                        multiple style="display:none;"
                        onchange="previewNewGallery(this)">
                 <div class="gallery-grid" id="newGallery" style="margin-top:14px;"></div>

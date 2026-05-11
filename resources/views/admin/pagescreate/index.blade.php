@@ -43,6 +43,7 @@
                     <thead class="table-light">
                         <tr>
                             <th style="width:60px">SL <span class="text-muted">↕</span></th>
+                            <th>Category <span class="text-muted">↕</span></th>
                             <th>Name <span class="text-muted">↕</span></th>
                             <th>Title <span class="text-muted">↕</span></th>
                             <th>Status <span class="text-muted">↕</span></th>
@@ -53,6 +54,13 @@
                         @forelse($pages as $index => $page)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
+                                <td>
+                                    @if($page->category)
+                                        <span class="badge bg-info text-dark">{{ $page->category->name }}</span>
+                                    @else
+                                        <span class="text-muted">No Category</span>
+                                    @endif
+                                </td>
                                 <td>{{ $page->name }}</td>
                                 <td>{{ $page->title }}</td>
                                 <td>

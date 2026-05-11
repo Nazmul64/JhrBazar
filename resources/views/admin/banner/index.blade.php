@@ -137,7 +137,6 @@
             <thead>
                 <tr>
                     <th>Thumbnail</th>
-                    <th>Title</th>
                     <th>Status</th>
                     <th style="text-align:right;">Action</th>
                 </tr>
@@ -148,13 +147,13 @@
                     <td>
                         @if($banner->image)
                             <img src="{{ asset($banner->image) }}"
-                                 class="bn-thumb" alt="{{ $banner->title }}"
+                                 class="bn-thumb" alt="Banner"
                                  onerror="this.style.display='none'">
                         @else
                             <div class="bn-thumb-ph"><i class="bi bi-image"></i></div>
                         @endif
                     </td>
-                    <td style="font-weight:600; min-width:180px;">{{ $banner->title }}</td>
+
                     <td>
                         <form action="{{ route('admin.banner.toggle', $banner->id) }}" method="POST">
                             @csrf
@@ -172,7 +171,7 @@
                                 <i class="bi bi-pencil-square"></i>
                             </a>
                             <button type="button" class="btn-act btn-act-del" title="Delete"
-                                    onclick="openDel({{ $banner->id }}, '{{ addslashes($banner->title) }}')">
+                                    onclick="openDel({{ $banner->id }}, 'Banner')">
                                 <i class="bi bi-trash3"></i>
                             </button>
                         </div>
@@ -180,7 +179,7 @@
                 </tr>
                 @empty
                 <tr class="empty-row">
-                    <td colspan="4">
+                    <td colspan="3">
                         <i class="bi bi-image" style="font-size:36px;color:#d1d5db;display:block;margin-bottom:8px;"></i>
                         No banners found. Click "Add Banner" to create one.
                     </td>

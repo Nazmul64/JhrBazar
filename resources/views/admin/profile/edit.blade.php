@@ -268,7 +268,7 @@
                             <input type="number"
                                    name="minimum_order_amount" id="minimum_order_amount"
                                    class="form-control @error('minimum_order_amount') is-invalid @enderror"
-                                   value="{{ old('minimum_order_amount', $shop->minimum_order_amount ?? 0) }}"
+                                   value="{{ old('minimum_order_amount', $shop->min_order_amount ?? 0) }}"
                                    min="0" step="0.01" placeholder="0.00">
                             @error('minimum_order_amount')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -373,7 +373,7 @@
                         <input type="text"
                                name="order_id_prefix" id="order_id_prefix"
                                class="form-control @error('order_id_prefix') is-invalid @enderror"
-                               value="{{ old('order_id_prefix', $shop->order_id_prefix ?? 'RC') }}"
+                               value="{{ old('order_id_prefix', $shop->order_prefix ?? 'RC') }}"
                                placeholder="RC" maxlength="10" required>
                         <small class="text-muted">e.g. RC-000001</small>
                         @error('order_id_prefix')

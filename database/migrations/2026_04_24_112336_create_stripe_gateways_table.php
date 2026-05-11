@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('published_key')->nullable();
             $table->string('title')->default('Stripe');
             $table->string('logo')->nullable();
-            $table->boolean('status')->default(true);
+            $table->boolean('status')->default(false);
             $table->timestamps();
         });
     }

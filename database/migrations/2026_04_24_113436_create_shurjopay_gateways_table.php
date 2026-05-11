@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('return_url')->nullable();
             $table->string('base_url')->default('https://sandbox.shurjopayment.com');
             $table->string('password')->nullable();
-            $table->boolean('status')->default(true);
+            $table->boolean('status')->default(false);
             $table->timestamps();
         });
     }

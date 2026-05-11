@@ -13,8 +13,10 @@ class DigitalProduct extends Model
 
     protected $casts = [
         'additional_thumbnails' => 'array',
-        'license_keys' => 'array',
-        'is_active' => 'boolean',
+        'license_keys'          => 'array',
+        'is_active'             => 'boolean',
+        'cash_on_delivery'      => 'boolean',
+        'online_payment'        => 'boolean',
     ];
 
     public function category()

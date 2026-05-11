@@ -1,208 +1,440 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MasterLayout from '../layouts/MasterLayout';
+import { useCart } from '../context/CartContext';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-hot-toast';
 
 const Checkout = () => {
+    const navigate = useNavigate();
     const mainColor = '#57b500';
-    const [paymentMethod, setPaymentMethod] = useState('cod');
+    const { cartItems, cartTotal, clearCart } = useCart();
+    const [loading, setLoading] = useState(false);
+    const [shippingCharges, setShippingCharges] = useState([]);
+    const [availableGateways, setAvailableGateways] = useState([]);
+    const [selectedShipping, setSelectedShipping] = useState(null);
+    
+    const [couponCode, setCouponCode] = useState('');
+    const [couponDiscount, setCouponDiscount] = useState(0);
+    const [couponApplied, setCouponApplied] = useState(false);
+    const [applyingCoupon, setApplyingCoupon] = useState(false);
 
-    const paymentGateways = [
-        { id: 'bkash', name: 'bKash', logo: 'https://www.logo.wine/a/logo/BKash/BKash-Logo.wine.svg' },
-        { id: 'nagad', name: 'Nagad', logo: 'https://download.logo.wine/logo/Nagad/Nagad-Logo.wine.png' },
-        { id: 'visa', name: 'Visa', logo: 'https://www.logo.wine/a/logo/Visa_Inc./Visa_Inc.-Logo.wine.svg' },
-        { id: 'mastercard', name: 'Mastercard', logo: 'https://www.logo.wine/a/logo/Mastercard/Mastercard-Logo.wine.svg' },
-        { id: 'paypal', name: 'PayPal', logo: 'https://www.logo.wine/a/logo/PayPal/PayPal-Logo.wine.svg' },
-        { id: 'stripe', name: 'Stripe', logo: 'https://www.logo.wine/a/logo/Stripe_(company)/Stripe_(company)-Logo.wine.svg' }
-    ];
+    const [formData, setFormData] = useState({
+        name: '',
+        phone: '',
+        email: '',
+        address: '',
+        shipping_id: '',
+        payment_method: 'cod',
+        online_gateway: ''
+    });
+
+    useEffect(() => {
+        const fetchShipping = async () => {
+            try {
+                const res = await axios.get('/api/shipping-charges');
+                if (res.data.success) {
+                    setShippingCharges(res.data.data);
+                    // Set first one as default if exists
+                    if (res.data.data.length > 0) {
+                        const first = res.data.data[0];
+                        setFormData(prev => ({ ...prev, shipping_id: first.id }));
+                        setSelectedShipping(first);
+                    }
+                }
+            } catch (err) {
+                console.error("Error fetching shipping charges", err);
+            }
+        };
+
+        const fetchGateways = async () => {
+            try {
+                const res = await axios.get('/api/payment-gateways');
+                if (res.data.success) {
+                    setAvailableGateways(res.data.data);
+                    // No default gateway selection here to force user choice if multiple
+                }
+            } catch (err) {
+                console.error("Error fetching gateways", err);
+            }
+        };
+
+        fetchShipping();
+        fetchGateways();
+    }, []);
+
+    useEffect(() => {
+        const canCOD = cartItems.every(item => item.cash_on_delivery ?? true);
+        const canOnline = cartItems.every(item => item.online_payment ?? true);
+
+        if (formData.payment_method === 'cod' && !canCOD && canOnline) {
+            setFormData(prev => ({ ...prev, payment_method: 'online' }));
+        } else if (formData.payment_method === 'online' && !canOnline && canCOD) {
+            setFormData(prev => ({ ...prev, payment_method: 'cod', online_gateway: '' }));
+        }
+    }, [cartItems]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+
+        if (name === 'shipping_id') {
+            const selected = shippingCharges.find(s => s.id == value);
+            setSelectedShipping(selected);
+        }
+    };
+
+    const handleApplyCoupon = async () => {
+        if (!couponCode) {
+            toast.error("Please enter a coupon code");
+            return;
+        }
+        setApplyingCoupon(true);
+        try {
+            const res = await axios.post('/api/apply-coupon', {
+                coupon_code: couponCode,
+                subtotal: cartTotal
+            });
+            if (res.data.success) {
+                setCouponDiscount(res.data.discount);
+                setCouponApplied(true);
+                toast.success(res.data.message);
+            } else {
+                toast.error(res.data.message);
+            }
+        } catch (err) {
+            toast.error("Invalid coupon code");
+        } finally {
+            setApplyingCoupon(false);
+        }
+    };
+
+    const shippingAmount = selectedShipping ? Number(selectedShipping.charge) : 0;
+    const finalTotal = (cartTotal + shippingAmount) - couponDiscount;
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (cartItems.length === 0) {
+            toast.error("Your cart is empty!");
+            return;
+        }
+
+        if (formData.payment_method === 'online' && !formData.online_gateway) {
+            toast.error("Please select a payment gateway!");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const res = await axios.post('/api/place-order', {
+                ...formData,
+                city: selectedShipping ? selectedShipping.area_name : 'N/A',
+                items: cartItems,
+                shipping_charge: shippingAmount,
+                discount: couponDiscount,
+                coupon_code: couponApplied ? couponCode : null,
+            });
+
+            if (res.data.success) {
+                clearCart();
+                navigate('/order-success', { state: { orders: res.data.orders } });
+            } else {
+                toast.error(res.data.message || "Failed to place order");
+            }
+        } catch (error) {
+            console.error("Order error", error);
+            const msg = error.response?.data?.message || "Something went wrong. Please try again.";
+            toast.error(msg);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (cartItems.length === 0) {
+        return (
+            <MasterLayout>
+                <div className="container py-5 text-center">
+                    <div style={{ fontSize: '60px', marginBottom: '20px' }}>🛒</div>
+                    <h3>আপনার কার্ট খালি</h3>
+                    <p className="text-muted">অর্ডার করার জন্য প্রথমে কার্টে পণ্য যোগ করুন।</p>
+                    <Link to="/" className="btn text-white px-5 py-2 mt-3" style={{ backgroundColor: mainColor, borderRadius: '30px' }}>
+                        কেনাকাটা চালিয়ে যান
+                    </Link>
+                </div>
+            </MasterLayout>
+        );
+    }
 
     return (
         <MasterLayout>
-            <div className="container py-5">
-                {/* Breadcrumbs */}
-                <nav className="mb-4">
-                    <ol className="breadcrumb small" style={{ fontSize: '12px' }}>
-                        <li className="breadcrumb-item"><a href="/" className="text-decoration-none text-muted">Home</a></li>
-                        <li className="breadcrumb-item active text-dark fw-bold">Checkout</li>
-                    </ol>
-                </nav>
-
-                <h3 className="fw-bold mb-5" style={{ letterSpacing: '-1px' }}>Checkout</h3>
-
-                <div className="row g-5">
-                    {/* Left: Form Sections */}
-                    <div className="col-lg-8">
-                        {/* Shipping Address Section - With Visible Borders */}
-                        <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '25px', border: '1px solid #eee' }}>
-                            <div className="card-body p-4 p-md-5">
-                                <div className="d-flex align-items-center gap-2 mb-5">
-                                    <div style={{ width: '12px', height: '28px', backgroundColor: mainColor, borderRadius: '6px' }}></div>
-                                    <h5 className="fw-bold mb-0" style={{ color: '#333' }}>Shipping Address</h5>
-                                </div>
-                                
-                                <div className="row g-4">
-                                    {/* Full Name */}
-                                    <div className="col-md-6">
-                                        <label className="form-label small fw-bold text-muted mb-2">FULL NAME</label>
-                                        <div className="position-relative">
-                                            <span className="position-absolute top-50 start-0 translate-middle-y ps-3 text-muted" style={{ fontSize: '18px' }}>👤</span>
-                                            <input type="text" className="form-control custom-input py-3 ps-5 border" placeholder="e.g. John Doe" style={{ borderRadius: '15px', fontSize: '14px', borderColor: '#e0e0e0', backgroundColor: '#fff' }} />
-                                        </div>
-                                    </div>
-
-                                    {/* Email Address */}
-                                    <div className="col-md-6">
-                                        <label className="form-label small fw-bold text-muted mb-2">EMAIL ADDRESS</label>
-                                        <div className="position-relative">
-                                            <span className="position-absolute top-50 start-0 translate-middle-y ps-3 text-muted" style={{ fontSize: '18px' }}>📧</span>
-                                            <input type="email" className="form-control custom-input py-3 ps-5 border" placeholder="john@example.com" style={{ borderRadius: '15px', fontSize: '14px', borderColor: '#e0e0e0', backgroundColor: '#fff' }} />
-                                        </div>
-                                    </div>
-
-                                    {/* Phone Number */}
-                                    <div className="col-md-6">
-                                        <label className="form-label small fw-bold text-muted mb-2">PHONE NUMBER</label>
-                                        <div className="position-relative">
-                                            <span className="position-absolute top-50 start-0 translate-middle-y ps-3 text-muted" style={{ fontSize: '18px' }}>📞</span>
-                                            <input type="text" className="form-control custom-input py-3 ps-5 border" placeholder="+880 1XXX XXXXXX" style={{ borderRadius: '15px', fontSize: '14px', borderColor: '#e0e0e0', backgroundColor: '#fff' }} />
-                                        </div>
-                                    </div>
-
-                                    {/* Area / City */}
-                                    <div className="col-md-6">
-                                        <label className="form-label small fw-bold text-muted mb-2">AREA / CITY</label>
-                                        <div className="position-relative">
-                                            <span className="position-absolute top-50 start-0 translate-middle-y ps-3 text-muted" style={{ fontSize: '18px' }}>📍</span>
-                                            <select className="form-select custom-input py-3 ps-5 border" style={{ borderRadius: '15px', fontSize: '14px', appearance: 'none', borderColor: '#e0e0e0', backgroundColor: '#fff' }}>
-                                                <option>Dhaka, Bangladesh</option>
-                                                <option>Chittagong</option>
-                                                <option>Sylhet</option>
-                                                <option>Rajshahi</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Live Google Map */}
-                                    <div className="col-12 mt-5">
-                                        <div className="d-flex justify-content-between align-items-center mb-3">
-                                            <label className="form-label small fw-bold text-muted mb-0">SELECT LOCATION ON MAP</label>
-                                            <span className="badge bg-white text-success border border-success-subtle px-3 py-2 rounded-pill small">LIVE MAP</span>
-                                        </div>
-                                        <div style={{ height: '380px', borderRadius: '25px', overflow: 'hidden', border: '1px solid #ddd' }} className="shadow-sm">
-                                            <iframe 
-                                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d116833.8318788484!2d90.33728801977114!3d23.780887457121653!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8b087026b81%3A0x8fa563bbdd5904c2!2sDhaka!5e0!3m2!1sen!2sbd!4v1714750000000!5m2!1sen!2sbd" 
-                                                width="100%" 
-                                                height="100%" 
-                                                style={{ border: 0 }} 
-                                                allowFullScreen="" 
-                                                loading="lazy" 
-                                            ></iframe>
-                                        </div>
-                                    </div>
-
-                                    <div className="col-12 mt-4">
-                                        <label className="form-label small fw-bold text-muted mb-2">DETAILED ADDRESS LINE</label>
-                                        <div className="position-relative">
-                                            <span className="position-absolute top-50 start-0 translate-middle-y ps-3 text-muted" style={{ fontSize: '18px' }}>🏠</span>
-                                            <input type="text" className="form-control custom-input py-3 ps-5 border" placeholder="House #, Street #, Area Name..." style={{ borderRadius: '15px', fontSize: '14px', borderColor: '#e0e0e0', backgroundColor: '#fff' }} />
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="col-12 mt-4">
-                                        <label className="form-label small fw-bold text-muted d-block mb-3">ADDRESS TAG</label>
-                                        <div className="d-flex gap-3">
-                                            {['HOME', 'OFFICE', 'OTHER'].map(tag => (
-                                                <button key={tag} className={`btn px-5 py-2 fw-bold small transition-all ${tag === 'HOME' ? 'btn-success text-white shadow-sm' : 'btn-light text-muted border'}`} style={{ backgroundColor: tag === 'HOME' ? mainColor : '#fff', borderRadius: '30px', border: tag === 'HOME' ? 'none' : '1px solid #ddd' }}>
-                                                    {tag}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Payment Method Section */}
-                        <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '25px', border: '1px solid #eee' }}>
-                            <div className="card-body p-4 p-md-5">
+            <div className="bg-light min-vh-100 py-4 py-md-5">
+                <div className="container">
+                    <div className="row g-4">
+                        {/* Shipping Information */}
+                        <div className="col-lg-7">
+                            <div className="card border-0 shadow-sm p-4 p-md-5" style={{ borderRadius: '20px' }}>
                                 <div className="d-flex align-items-center gap-2 mb-4">
-                                    <div style={{ width: '12px', height: '28px', backgroundColor: mainColor, borderRadius: '6px' }}></div>
-                                    <h5 className="fw-bold mb-0">Payment Method</h5>
-                                </div>
-                                
-                                <div className="row g-4">
-                                    <div className="col-md-6">
-                                        <div 
-                                            onClick={() => setPaymentMethod('cod')}
-                                            className="p-4 rounded-4 text-center cursor-pointer transition-all border"
-                                            style={{ 
-                                                border: `2px solid ${paymentMethod === 'cod' ? mainColor : '#eee'}`,
-                                                backgroundColor: paymentMethod === 'cod' ? '#f0fff0' : '#fff'
-                                            }}
-                                        >
-                                            <div style={{ fontSize: '32px', marginBottom: '10px' }}>💵</div>
-                                            <div className="fw-bold">Cash On Delivery</div>
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <div 
-                                            onClick={() => setPaymentMethod('card')}
-                                            className="p-4 rounded-4 text-center cursor-pointer transition-all border"
-                                            style={{ 
-                                                border: `2px solid ${paymentMethod === 'card' ? mainColor : '#eee'}`,
-                                                backgroundColor: paymentMethod === 'card' ? '#f0fff0' : '#fff'
-                                            }}
-                                        >
-                                            <div style={{ fontSize: '32px', marginBottom: '10px' }}>💳</div>
-                                            <div className="fw-bold">Online Payment</div>
-                                        </div>
-                                    </div>
+                                    <div style={{ width: '4px', height: '24px', backgroundColor: mainColor, borderRadius: '2px' }}></div>
+                                    <h4 className="fw-bold m-0">শিপিং তথ্য</h4>
                                 </div>
 
-                                {paymentMethod === 'card' && (
-                                    <div className="mt-5 animate-fade-in">
-                                        <p className="text-muted fw-bold small mb-4">SECURE PAYMENT GATEWAYS</p>
+                                <form onSubmit={handleSubmit}>
+                                    <div className="row g-3">
+                                        <div className="col-12">
+                                            <label className="form-label small fw-bold text-muted uppercase">আপনার নাম</label>
+                                            <div className="input-group border rounded-3 p-1 bg-light shadow-sm">
+                                                <span className="input-group-text bg-transparent border-0"><i className="far fa-user text-muted"></i></span>
+                                                <input 
+                                                    type="text" name="name" required className="form-control bg-transparent border-0" 
+                                                    placeholder="আপনার পূর্ণ নাম লিখুন" value={formData.name} onChange={handleChange}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="col-md-6">
+                                            <label className="form-label small fw-bold text-muted uppercase">মোবাইল নম্বর</label>
+                                            <div className="input-group border rounded-3 p-1 bg-light shadow-sm">
+                                                <span className="input-group-text bg-transparent border-0"><i className="fas fa-phone-alt text-muted"></i></span>
+                                                <input 
+                                                    type="tel" name="phone" required className="form-control bg-transparent border-0" 
+                                                    placeholder="০১৮XXXXXXXX" value={formData.phone} onChange={handleChange}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="col-md-6">
+                                            <label className="form-label small fw-bold text-muted uppercase">ইমেইল (ঐচ্ছিক)</label>
+                                            <div className="input-group border rounded-3 p-1 bg-light shadow-sm">
+                                                <span className="input-group-text bg-transparent border-0"><i className="far fa-envelope text-muted"></i></span>
+                                                <input 
+                                                    type="email" name="email" className="form-control bg-transparent border-0" 
+                                                    placeholder="আপনার ইমেইল ঠিকানা" value={formData.email} onChange={handleChange}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="col-12">
+                                            <label className="form-label small fw-bold text-muted uppercase">এলাকা নির্বাচন করুন (ডেলিভারির জন্য)</label>
+                                            <div className="input-group border rounded-3 p-1 bg-light shadow-sm">
+                                                <span className="input-group-text bg-transparent border-0"><i className="fas fa-truck text-muted"></i></span>
+                                                <select name="shipping_id" required className="form-select bg-transparent border-0" value={formData.shipping_id} onChange={handleChange}>
+                                                    {shippingCharges.map(charge => (
+                                                        <option key={charge.id} value={charge.id}>{charge.area_name} (৳{Number(charge.charge).toLocaleString()})</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="col-12">
+                                            <label className="form-label small fw-bold text-muted uppercase">বিস্তারিত ঠিকানা</label>
+                                            <textarea 
+                                                name="address" required rows="2" className="form-control border bg-light p-3 shadow-sm" 
+                                                placeholder="বাসা নম্বর, রোড নম্বর এবং এলাকা লিখুন..." style={{ borderRadius: '12px' }}
+                                                value={formData.address} onChange={handleChange}
+                                            ></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-5">
+                                        <div className="d-flex align-items-center gap-2 mb-4">
+                                            <div style={{ width: '4px', height: '24px', backgroundColor: mainColor, borderRadius: '2px' }}></div>
+                                            <h4 className="fw-bold m-0">পেমেন্ট পদ্ধতি</h4>
+                                        </div>
+                                        
                                         <div className="row g-3">
-                                            {paymentGateways.map(gate => (
-                                                <div key={gate.id} className="col-4 col-md-3 col-lg-2">
-                                                    <div className="gateway-card text-center shadow-sm p-3 bg-white border border-light-subtle rounded-3 d-flex align-items-center justify-content-center" style={{ height: '70px', transition: 'all 0.3s' }}>
-                                                        <img src={gate.logo} alt={gate.name} style={{ maxWidth: '100%', maxHeight: '35px', objectFit: 'contain' }} />
+                                            {/* COD Option */}
+                                            {cartItems.every(item => item.cash_on_delivery ?? true) ? (
+                                                <div className="col-md-6">
+                                                    <label className={`card border p-3 h-100 transition-all ${formData.payment_method === 'cod' ? 'border-success bg-light' : ''}`} style={{ borderRadius: '15px', cursor: 'pointer' }}>
+                                                        <div className="d-flex align-items-center gap-3">
+                                                            <input 
+                                                                type="radio" name="payment_method" value="cod" 
+                                                                checked={formData.payment_method === 'cod'} onChange={handleChange}
+                                                                className="form-check-input mt-0" 
+                                                            />
+                                                            <div>
+                                                                <div className="fw-bold">ক্যাশ অন ডেলিভারি</div>
+                                                                <div className="small text-muted">পণ্য বুঝে পেয়ে টাকা দিন</div>
+                                                            </div>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            ) : (
+                                                <div className="col-md-6">
+                                                    <div className="card border p-3 h-100 bg-light opacity-75" style={{ borderRadius: '15px', borderStyle: 'dashed' }}>
+                                                        <div className="d-flex align-items-center gap-3">
+                                                            <div className="text-muted"><i className="fas fa-ban"></i></div>
+                                                            <div>
+                                                                <div className="fw-bold text-muted">ক্যাশ অন ডেলিভারি</div>
+                                                                <div className="small text-danger" style={{fontSize: '10px'}}>কার্টের কিছু পণ্যের জন্য এটি প্রযোজ্য নয়</div>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            ))}
+                                            )}
+
+                                            {/* Online Payment Option */}
+                                            {cartItems.every(item => item.online_payment ?? true) ? (
+                                                <div className="col-md-6">
+                                                    <label className={`card border p-3 h-100 transition-all ${formData.payment_method === 'online' ? 'border-success bg-light' : ''}`} style={{ borderRadius: '15px', cursor: 'pointer' }}>
+                                                        <div className="d-flex align-items-center gap-3">
+                                                            <input 
+                                                                type="radio" name="payment_method" value="online" 
+                                                                checked={formData.payment_method === 'online'} onChange={handleChange}
+                                                                className="form-check-input mt-0" 
+                                                            />
+                                                            <div>
+                                                                <div className="fw-bold">অনলাইন পেমেন্ট</div>
+                                                                <div className="small text-muted">বিকাশ, নগদ বা কার্ডের মাধ্যমে পেমেন্ট করুন</div>
+                                                            </div>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            ) : (
+                                                <div className="col-md-6">
+                                                    <div className="card border p-3 h-100 bg-light opacity-75" style={{ borderRadius: '15px', borderStyle: 'dashed' }}>
+                                                        <div className="d-flex align-items-center gap-3">
+                                                            <div className="text-muted"><i className="fas fa-ban"></i></div>
+                                                            <div>
+                                                                <div className="fw-bold text-muted">অনলাইন পেমেন্ট</div>
+                                                                <div className="small text-danger" style={{fontSize: '10px'}}>কার্টের কিছু পণ্যের জন্য এটি প্রযোজ্য নয়</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
+
+                                        {formData.payment_method === 'online' && (
+                                            <div className="mt-4 p-3 border rounded-4 bg-light shadow-inner animation-slide-down">
+                                                <div className="small fw-bold text-muted mb-3 uppercase">পেমেন্ট গেটওয়ে নির্বাচন করুন</div>
+                                                <div className="d-flex flex-wrap gap-2">
+                                                    {availableGateways.map(gateway => (
+                                                        <label key={gateway.key} className={`gateway-box ${formData.online_gateway === gateway.key ? 'active' : ''}`}>
+                                                            <input 
+                                                                type="radio" name="online_gateway" value={gateway.key} 
+                                                                checked={formData.online_gateway === gateway.key} onChange={handleChange}
+                                                                className="d-none" 
+                                                            />
+                                                            <div className="gateway-content">
+                                                                {gateway.logo ? (
+                                                                    <img src={gateway.logo} alt={gateway.title} style={{ height: '30px' }} />
+                                                                ) : (
+                                                                    <span className="fw-bold small">{gateway.title}</span>
+                                                                )}
+                                                            </div>
+                                                        </label>
+                                                    ))}
+                                                    {availableGateways.length === 0 && (
+                                                        <div className="text-danger small">কোনো অনলাইন পেমেন্ট গেটওয়ে সচল নেই।</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
+
+                                    <button 
+                                        type="submit" disabled={loading}
+                                        className="btn btn-lg w-100 text-white fw-bold py-3 mt-5 shadow confirm-btn"
+                                        style={{ backgroundColor: mainColor, borderRadius: '15px' }}
+                                    >
+                                        {loading ? (
+                                            <span className="spinner-border spinner-border-sm me-2"></span>
+                                        ) : (
+                                            <i className="fas fa-shopping-bag me-2"></i>
+                                        )}
+                                        {formData.payment_method === 'online' ? 'পেমেন্ট করুন এবং অর্ডার কনফার্ম করুন' : 'অর্ডার কনফার্ম করুন'}
+                                    </button>
+                                </form>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Right: Order Summary Sidebar */}
-                    <div className="col-lg-4">
-                        <div className="card border-0 shadow-sm sticky-top" style={{ borderRadius: '30px', top: '100px', border: '1px solid #eee' }}>
-                            <div className="card-body p-4 p-md-5">
-                                <h5 className="fw-bold mb-4">Order Summary</h5>
-                                <div className="d-flex flex-column gap-3 border-bottom pb-4 mb-4">
-                                    <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Subtotal</span>
-                                        <span className="fw-bold">$121.00</span>
+                        {/* Order Summary */}
+                        <div className="col-lg-5">
+                            <div className="card border-0 shadow-sm sticky-top" style={{ borderRadius: '20px', top: '100px' }}>
+                                <div className="card-body p-4">
+                                    <h5 className="fw-bold mb-4">অর্ডার সারসংক্ষেপ</h5>
+                                    
+                                    <div className="order-items-list mb-4 overflow-auto" style={{ maxHeight: '300px' }}>
+                                        {cartItems.map(item => (
+                                            <div key={item.uid} className="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom border-light">
+                                                <div className="rounded border overflow-hidden position-relative" style={{ width: '50px', height: '50px', flexShrink: 0 }}>
+                                                    <img src={item.image} alt={item.title} className="w-100 h-100 object-fit-cover" />
+                                                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark border border-light" style={{ fontSize: '10px' }}>
+                                                        {item.qty}
+                                                    </span>
+                                                </div>
+                                                <div className="flex-grow-1">
+                                                    <div className="fw-bold small text-dark text-truncate" style={{ maxWidth: '180px' }}>{item.title}</div>
+                                                    <div className="text-muted small">৳{Number(item.price).toLocaleString()}</div>
+                                                    {(item.color || item.size) && (
+                                                        <div className="text-muted small mt-1" style={{ fontSize: '10px' }}>
+                                                            {item.color && <span className="me-2">কালার: {item.color}</span>}
+                                                            {item.size && <span>সাইজ: {item.size}</span>}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="fw-bold small">
+                                                    ৳{Number(item.price * item.qty).toLocaleString()}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                    <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Shipping</span>
-                                        <span className="text-success fw-bold">FREE</span>
+
+                                    {/* Coupon Section */}
+                                    <div className="mb-4">
+                                        <label className="form-label small fw-bold text-muted uppercase">কুপন আছে?</label>
+                                        <div className="input-group">
+                                            <input 
+                                                type="text" className="form-control border shadow-none" 
+                                                placeholder="Enter code" value={couponCode} 
+                                                disabled={couponApplied}
+                                                onChange={(e) => setCouponCode(e.target.value)} 
+                                            />
+                                            <button 
+                                                className="btn btn-dark fw-bold px-3" 
+                                                type="button" 
+                                                disabled={couponApplied || applyingCoupon}
+                                                onClick={handleApplyCoupon}
+                                            >
+                                                {applyingCoupon ? <span className="spinner-border spinner-border-sm"></span> : 'ব্যবহার করুন'}
+                                            </button>
+                                        </div>
+                                        {couponApplied && (
+                                            <div className="mt-2 small text-success fw-bold d-flex justify-content-between">
+                                                <span>কুপন ব্যবহার করা হয়েছে!</span>
+                                                <span className="cursor-pointer text-danger" onClick={() => {setCouponApplied(false); setCouponDiscount(0); setCouponCode('')}}>সরিয়ে ফেলুন</span>
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Taxes & VAT</span>
-                                        <span className="fw-bold">$6.05</span>
+
+                                    <div className="bg-light p-3 rounded-4 mb-4 border">
+                                        <div className="d-flex justify-content-between mb-2">
+                                            <span className="text-muted small">Subtotal</span>
+                                            <span className="fw-bold small text-dark">৳{Number(cartTotal).toLocaleString()}</span>
+                                        </div>
+                                        <div className="d-flex justify-content-between mb-2">
+                                            <span className="text-muted small">Shipping Charge ({selectedShipping?.area_name})</span>
+                                            <span className="fw-bold small text-dark">৳{Number(shippingAmount).toLocaleString()}</span>
+                                        </div>
+                                        {couponDiscount > 0 && (
+                                            <div className="d-flex justify-content-between mb-2 text-danger">
+                                                <span className="small">ডিসকাউন্ট</span>
+                                                <span className="fw-bold small">- ৳{Number(couponDiscount).toLocaleString()}</span>
+                                            </div>
+                                        )}
+                                        <div className="d-flex justify-content-between pt-2 border-top mt-2">
+                                            <span className="fw-bold">মোট টাকার পরিমাণ</span>
+                                            <span className="fw-bold h4 mb-0" style={{ color: mainColor }}>৳{Number(finalTotal).toLocaleString()}</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="d-flex justify-content-between align-items-center mb-5">
-                                    <h4 className="fw-bold mb-0">Total</h4>
-                                    <h4 className="fw-bold mb-0" style={{ color: mainColor }}>$127.05</h4>
-                                </div>
-                                <button className="btn btn-lg w-100 text-white fw-bold py-3 shadow-lg confirm-btn" style={{ backgroundColor: mainColor, borderRadius: '20px', fontSize: '18px', transition: 'all 0.3s' }}>
-                                    Confirm Order
-                                </button>
-                                <div className="text-center mt-4">
-                                    <span className="text-muted small">🔒 Secure SSL Encryption</span>
+
+                                    <div className="text-center">
+                                        <div className="small text-muted mb-2"><i className="fas fa-shield-alt me-1 text-success"></i> ১০০% নিরাপদ চেকআউট</div>
+                                        <p className="text-muted px-3" style={{ fontSize: '11px' }}>
+                                            আপনার তথ্য আমাদের কাছে নিরাপদ। কোনো সমস্যার জন্য সরাসরি কল করুন আমাদের সাপোর্টে।
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -210,14 +442,20 @@ const Checkout = () => {
                 </div>
             </div>
             <style>{`
-                .custom-input { transition: all 0.3s ease; }
-                .custom-input:focus { border: 1px solid ${mainColor} !important; box-shadow: 0 0 0 0.25rem rgba(87, 181, 0, 0.1) !important; outline: none; }
-                .gateway-card:hover { transform: translateY(-5px); border-color: ${mainColor} !important; box-shadow: 0 8px 20px rgba(0,0,0,0.05) !important; }
-                .confirm-btn:hover { background-color: #4a9a00 !important; transform: scale(1.02); }
+                .form-control:focus, .form-select:focus {
+                    box-shadow: none;
+                    background-color: #fff !important;
+                    border-color: ${mainColor} !important;
+                }
+                .transition-all { transition: all 0.3s; }
+                .uppercase { text-transform: uppercase; letter-spacing: 0.5px; }
+                .object-fit-cover { object-fit: cover; }
+                .gateway-box {
+                    border: 2px solid #eee; border-radius: 10px; padding: 5px 10px; background: #fff; cursor: pointer; transition: all 0.2s;
+                }
+                .gateway-box.active { border-color: ${mainColor}; background: #f0fff4; }
                 .cursor-pointer { cursor: pointer; }
-                .transition-all { transition: all 0.3s ease; }
-                .animate-fade-in { animation: fadeIn 0.5s ease; }
-                @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+                .confirm-btn:hover { background-color: #4a9a00 !important; transform: translateY(-2px); }
             `}</style>
         </MasterLayout>
     );

@@ -148,6 +148,67 @@
             </div>
         </div>
 
+        {{-- Frontend Placement Options --}}
+        <div class="form-card">
+            <div class="form-title">Frontend Placement Options</div>
+            <div class="row g-4">
+                <div class="col-md-12">
+                    <div style="display:flex; flex-wrap:wrap; gap:20px;">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="checkbox" name="is_new_arrival" value="1" {{ old('is_new_arrival') ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
+                            <span style="font-size:14px; font-weight:600; color:var(--dark);">New Arrival</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="checkbox" name="is_best_seller" value="1" {{ old('is_best_seller') ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
+                            <span style="font-size:14px; font-weight:600; color:var(--dark);">Best Seller</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="checkbox" name="is_hot_product" value="1" {{ old('is_hot_product') ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
+                            <span style="font-size:14px; font-weight:600; color:var(--dark);">Hot Product</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="checkbox" name="is_flash_sale" value="1" {{ old('is_flash_sale') ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
+                            <span style="font-size:14px; font-weight:600; color:var(--dark);">Flash Sale</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="checkbox" name="is_just_for_you" value="1" {{ old('is_just_for_you') ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
+                            <span style="font-size:14px; font-weight:600; color:var(--dark);">Just For You</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="checkbox" name="is_popular" value="1" {{ old('is_popular') ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
+                            <span style="font-size:14px; font-weight:600; color:var(--dark);">Popular Product</span>
+                        </label>
+                    </div>
+                    <small class="text-muted d-block mt-2">Toggle where this product will be displayed on the storefront home page.</small>
+                </div>
+            </div>
+        </div>
+
+        {{-- Payment Options --}}
+        <div class="form-card">
+            <div class="form-title">Payment Options</div>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="d-flex align-items-center gap-3 p-3 border rounded-3 cursor-pointer">
+                        <input type="checkbox" name="cash_on_delivery" value="1" {{ old('cash_on_delivery', 1) ? 'checked' : '' }} style="width:20px;height:20px;accent-color:#22c55e;">
+                        <div>
+                            <div class="fw-bold" style="font-size:14px;">Cash on Delivery</div>
+                            <small class="text-muted">Allow customers to pay on delivery</small>
+                        </div>
+                    </label>
+                </div>
+                <div class="col-md-6">
+                    <label class="d-flex align-items-center gap-3 p-3 border rounded-3 cursor-pointer">
+                        <input type="checkbox" name="online_payment" value="1" {{ old('online_payment', 1) ? 'checked' : '' }} style="width:20px;height:20px;accent-color:#3b82f6;">
+                        <div>
+                            <div class="fw-bold" style="font-size:14px;">Online Payment</div>
+                            <small class="text-muted">Allow customers to pay via Online</small>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
         {{-- Price Information --}}
         <div class="form-card">
             <div class="form-title">Price Information</div>
@@ -182,7 +243,7 @@
                         <div id="placeholder1">
                             <i class="bi bi-cloud-arrow-up fs-2 text-muted"></i>
                             <p class="mt-2 mb-0 text-muted">Click or drag image here (500x500)</p>
-                            <small class="text-muted d-block mt-2">Supported formats: jpg, jpeg, png</small>
+                            <small class="text-muted d-block mt-2">Supported formats: jpg, jpeg, png, webp, svg, gif · Max 10MB</small>
                         </div>
                         <img id="preview1" src="#" alt="Preview" style="max-width:100%; max-height:200px; display:none; margin:0 auto; border-radius:8px;">
                     </div>
@@ -194,7 +255,7 @@
                         <div id="placeholder-gallery">
                             <i class="bi bi-images fs-2 text-muted"></i>
                             <p class="mt-2 mb-0 text-muted">Click or drag images here (500x500)</p>
-                            <small class="text-muted d-block mt-2">You can select multiple files</small>
+                            <small class="text-muted d-block mt-2">You can select multiple files (Max 10MB each)</small>
                         </div>
                         <div id="preview-gallery" class="d-flex flex-wrap gap-2 justify-content-center mt-3" style="display:none;"></div>
                     </div>

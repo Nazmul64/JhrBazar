@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('app_secret')->nullable();
             $table->string('base_url')->default('https://tokenized.pay.bka.sh/v1.2.0-beta');
             $table->string('password')->nullable();
-            $table->boolean('status')->default(true);
+            $table->boolean('status')->default(false);
             $table->timestamps();
         });
     }

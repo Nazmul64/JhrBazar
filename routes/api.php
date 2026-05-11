@@ -1,0 +1,52 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\Api\FrontendApiController;
+use App\Http\Controllers\Api\AuthController;
+
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
+
+Route::get('/home-data', [FrontendApiController::class, 'getHomeData']);
+Route::get('/categories', [FrontendApiController::class, 'getCategories']);
+Route::get('/categories-with-sub', [FrontendApiController::class, 'getCategoriesWithSub']);
+Route::get('/settings', [FrontendApiController::class, 'getSettings']);
+Route::get('/banners', [FrontendApiController::class, 'getBanners']);
+Route::get('/all-products', [FrontendApiController::class, 'getAllProducts']);
+Route::get('/category/{id}/name', [FrontendApiController::class, 'getCategoryName']);
+Route::get('/subcategory/{id}/name', [FrontendApiController::class, 'getSubCategoryName']);
+Route::get('/popular-products', [FrontendApiController::class, 'getPopularProducts']);
+Route::get('/new-arrivals', [FrontendApiController::class, 'getNewArrivals']);
+Route::get('/just-for-you', [FrontendApiController::class, 'getJustForYouProducts']);
+Route::get('/digital-products', [FrontendApiController::class, 'getDigitalProducts']);
+Route::get('/best-deals', [FrontendApiController::class, 'getBestDeals']);
+Route::get('/top-shops', [FrontendApiController::class, 'getTopShops']);
+Route::get('/shop/{seller_id}/products', [FrontendApiController::class, 'getProductsBySeller']);
+Route::get('/products/search', [FrontendApiController::class, 'searchProducts']);
+Route::get('/footer-data', [FrontendApiController::class, 'getFooterData']);
+Route::get('/page/{id}', [FrontendApiController::class, 'getPage']);
+
+Route::get('/products/category/{id}', [FrontendApiController::class, 'getProductsByCategory']);
+Route::get('/products/subcategory/{id}', [FrontendApiController::class, 'getProductsBySubCategory']);
+Route::get('/product/{type}/{id}/related', [FrontendApiController::class, 'getRelatedProducts']);
+Route::get('/product/{type}/{id}', [FrontendApiController::class, 'getProductDetails']);
+// Wishlist Routes
+Route::get('/wishlist', [App\Http\Controllers\Api\WishlistController::class, 'index']);
+Route::post('/wishlist/toggle', [App\Http\Controllers\Api\WishlistController::class, 'toggle']);
+Route::post('/wishlist/sync', [App\Http\Controllers\Api\WishlistController::class, 'sync']);
+
+// Checkout Routes
+Route::get('/payment-gateways', [App\Http\Controllers\Api\CheckoutController::class, 'getPaymentGateways']);
+Route::get('/shipping-charges', [App\Http\Controllers\Api\CheckoutController::class, 'getShippingCharges']);
+Route::post('/apply-coupon', [App\Http\Controllers\Api\CheckoutController::class, 'applyCoupon']);
+Route::post('/place-order', [App\Http\Controllers\Api\CheckoutController::class, 'placeOrder']);
+Route::get('/track-order/{invoice_no}', [App\Http\Controllers\Api\CheckoutController::class, 'trackOrder']);

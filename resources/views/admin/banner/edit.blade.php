@@ -142,24 +142,14 @@
 
     <div class="form-card">
 
-        {{-- Title --}}
-        <div class="fg">
-            <label for="title">Title</label>
-            <input type="text" id="title" name="title"
-                   value="{{ old('title', $banner->title) }}"
-                   placeholder="Enter Short Title"
-                   autocomplete="off">
-            @error('title')
-                <div class="err"><i class="bi bi-exclamation-circle"></i> {{ $message }}</div>
-            @enderror
-        </div>
+
 
         {{-- Banner preview: shows current image; new image overlays on select ── --}}
         <div class="banner-preview-box">
             @if($banner->image)
                 <img id="currentBannerImg"
                      src="{{ asset($banner->image) }}"
-                     alt="{{ $banner->title }}"
+                     alt="Banner"
                      onerror="this.style.display='none'">
             @else
                 <span class="placeholder-text" style="display:block;">2000 × 500</span>

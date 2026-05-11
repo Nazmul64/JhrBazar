@@ -1,146 +1,203 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import MasterLayout from '../layouts/MasterLayout';
 import HeroSection from '../components/HeroSection';
-import FeatureBar from '../components/FeatureBar';
 import Categories from '../components/Categories';
 import ProductCard from '../components/ProductCard';
 import TopRatedShops from '../components/TopRatedShops';
-
-const popularProducts = [
-    { 
-        id: 1, title: "iPhone 15 Pro Max - 256GB Titanium Blue", 
-        price: 1199.00, oldPrice: 1299.00, discount: 8, sold: 150, rating: '4.9', reviews: 45,
-        image: "https://images.unsplash.com/photo-1696446701796-da61225697cc?q=80&w=500&auto=format&fit=crop" 
-    },
-    { 
-        id: 2, title: "Sony WH-1000XM5 Wireless Noise Canceling Headphones", 
-        price: 348.00, oldPrice: 399.00, discount: 12, sold: 320, rating: '4.8', reviews: 120,
-        image: "https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?q=80&w=500&auto=format&fit=crop" 
-    },
-    { 
-        id: 3, title: "MacBook Pro M3 Max - 14-inch Space Black", 
-        price: 3199.00, discount: 0, sold: 45, rating: '5.0', reviews: 28,
-        image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=500&auto=format&fit=crop" 
-    },
-    { 
-        id: 4, title: "Nike Air Jordan 1 Retro High OG 'Chicago'", 
-        price: 180.00, oldPrice: 220.00, discount: 18, sold: 890, rating: '4.9', reviews: 310,
-        image: "https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=500&auto=format&fit=crop" 
-    },
-    { 
-        id: 5, title: "Rolex Submariner Date Luxury Watch - Oystersteel", 
-        price: 12500.00, discount: 0, sold: 12, rating: '5.0', reviews: 5,
-        image: "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?q=80&w=500&auto=format&fit=crop" 
-    },
-    { 
-        id: 6, title: "DJI Mavic 3 Pro Drone - 4K Camera System", 
-        price: 2199.00, oldPrice: 2499.00, discount: 12, sold: 65, rating: '4.7', reviews: 15,
-        image: "https://images.unsplash.com/photo-1507582020474-9a35b7d455d9?q=80&w=500&auto=format&fit=crop" 
-    }
-];
-
-const justForYouProducts = [
-    { 
-        id: 101, title: "Samsung Galaxy S24 Ultra - 512GB Titanium Grey", 
-        price: 1299.00, oldPrice: 1399.00, discount: 7, sold: 210, rating: '4.8', reviews: 55,
-        image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?q=80&w=500&auto=format&fit=crop" 
-    },
-    { 
-        id: 102, title: "Canon EOS R5 Mirrorless Camera Body", 
-        price: 3399.00, discount: 0, sold: 34, rating: '4.9', reviews: 12,
-        image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=500&auto=format&fit=crop" 
-    },
-    { 
-        id: 103, title: "Dyson V15 Detect Cordless Vacuum Cleaner", 
-        price: 749.00, oldPrice: 799.00, discount: 6, sold: 156, rating: '4.7', reviews: 89,
-        image: "https://images.unsplash.com/photo-1558317374-067fb5f30001?q=80&w=500&auto=format&fit=crop" 
-    },
-    { 
-        id: 104, title: "Lego Star Wars Millennium Falcon Set", 
-        price: 849.00, discount: 0, sold: 88, rating: '5.0', reviews: 42,
-        image: "https://images.unsplash.com/photo-1585366119957-e556f4325404?q=80&w=500&auto=format&fit=crop" 
-    },
-    { 
-        id: 105, title: "Nespresso Vertuo Next Coffee Machine", 
-        price: 179.00, oldPrice: 209.00, discount: 14, sold: 450, rating: '4.6', reviews: 120,
-        image: "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?q=80&w=500&auto=format&fit=crop" 
-    },
-    { 
-        id: 106, title: "Bose QuietComfort Ultra Earbuds", 
-        price: 299.00, discount: 0, sold: 130, rating: '4.8', reviews: 67,
-        image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=500&auto=format&fit=crop" 
-    },
-    { 
-        id: 107, title: "Logitech MX Master 3S Wireless Mouse", 
-        price: 99.00, oldPrice: 109.00, discount: 9, sold: 890, rating: '4.9', reviews: 540,
-        image: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?q=80&w=500&auto=format&fit=crop" 
-    },
-    { 
-        id: 108, title: "ASUS ROG Swift 32-inch 4K Gaming Monitor", 
-        price: 899.00, discount: 0, sold: 22, rating: '4.7', reviews: 8,
-        image: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?q=80&w=500&auto=format&fit=crop" 
-    }
-];
+import axios from 'axios';
+import { useSettings } from '../context/SettingsContext';
 
 const Home = () => {
-    const mainColor = '#57b500';
+    const { settings } = useSettings();
+    const mainColor = settings?.primary_color || '#001fcc';
+    const [popularProducts, setPopularProducts]       = useState([]);
+    const [newArrivals, setNewArrivals]               = useState([]);
+    const [justForYouProducts, setJustForYouProducts] = useState([]);
+    const [digitalProducts, setDigitalProducts]       = useState([]);
+    const [bestDeals, setBestDeals]                   = useState([]);
+    const [allProducts, setAllProducts]               = useState([]);
+    const [banners, setBanners]                       = useState([]);
+    const [categories, setCategories]                 = useState([]);
+    const [loading, setLoading]                       = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await axios.get('/api/home-data');
+                if (res.data.success) {
+                    const data = res.data.data;
+                    setPopularProducts(data.popularProducts);
+                    setNewArrivals(data.newArrivals);
+                    setJustForYouProducts(data.justForYouProducts);
+                    setDigitalProducts(data.digitalProducts);
+                    setBestDeals(data.bestDeals);
+                    setAllProducts(data.allProducts);
+                    setBanners(data.banners);
+                    setCategories(data.categories);
+                    
+                    // Force set CSS variables immediately to fix colors and logo
+                    const root = document.documentElement;
+                    if (data.settings) {
+                        const s = data.settings;
+                        if (s.primary_color) root.style.setProperty('--main-color', s.primary_color);
+                        if (s.primary_color) root.style.setProperty('--primary-color', s.primary_color);
+                        if (s.button_color) root.style.setProperty('--button-color', s.button_color);
+                        else if (s.primary_color) root.style.setProperty('--button-color', s.primary_color);
+                        
+                        if (s.top_header_color) root.style.setProperty('--top-header-color', s.top_header_color);
+                        if (s.header_color) root.style.setProperty('--header-color', s.header_color);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching homepage data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const renderSpinner = () => {
+        return null; // No spinner as per user request for <1s loading
+    };
+
+    const renderProductGrid = (products, colClass = null) => {
+        let finalColClass = colClass;
+        
+        if (!colClass) {
+            let mobileCol = 6;
+            if (settings?.products_per_row_mobile) {
+                mobileCol = Math.max(1, Math.floor(12 / parseInt(settings.products_per_row_mobile)));
+            }
+            
+            let desktopCol = 2;
+            let customDesktopClass = '';
+            if (settings?.products_per_row_desktop) {
+                const perRow = parseInt(settings.products_per_row_desktop);
+                if ([1, 2, 3, 4, 6, 12].includes(perRow)) {
+                    desktopCol = 12 / perRow;
+                } else {
+                    customDesktopClass = `custom-desktop-col-${perRow}`;
+                    desktopCol = 2; // fallback
+                }
+            }
+            finalColClass = `col-${mobileCol} col-md-4 col-lg-${desktopCol} ${customDesktopClass}`;
+        }
+
+        return (
+            <div className="row g-2 g-md-3">
+                {products.map(product => (
+                    <div key={product.uid} className={finalColClass}>
+                        <ProductCard product={product} />
+                    </div>
+                ))}
+            </div>
+        );
+    };
 
     return (
         <MasterLayout>
-            <HeroSection />
-            <FeatureBar />
-            <Categories />
+            <HeroSection banners={banners} categories={categories} loading={loading} />
+            <Categories categories={categories} loading={loading} />
 
-            {/* Popular Products */}
-            <section className="container mb-5">
-                <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-                    <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Popular Products</h4>
-                    <button className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</button>
-                </div>
-                <div className="row g-2 g-md-3">
-                    {popularProducts.map(product => (
-                        <div key={product.id} className="col-6 col-md-4 col-lg-2">
-                            <ProductCard product={product} />
+            {/* ===== All Products (always shows if any product exists) ===== */}
+            {!loading && allProducts.length > 0 && (
+                <section className="container mb-5">
+                    <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                        <div className="d-flex align-items-center gap-2">
+                            <h4 className="fw-bold mb-0" style={{ color: '#333' }}>সকল পণ্য</h4>
+                            <span className="badge rounded-pill text-white" style={{ backgroundColor: mainColor, fontSize: '10px' }}>ALL PRODUCTS</span>
                         </div>
-                    ))}
-                </div>
-            </section>
+                        <Link to="/products-all/all" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>সব দেখুন →</Link>
+                    </div>
+                    {renderProductGrid(allProducts)}
+                </section>
+            )}
 
-            {/* Top Rated Shops */}
-            <TopRatedShops />
+            {/* ===== Popular Products ===== */}
+            {!loading && popularProducts.length > 0 && (
+                <section className="container mb-5">
+                    <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                        <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Popular Products</h4>
+                        <Link to="/products-all/popular" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
+                    </div>
+                    {renderProductGrid(popularProducts)}
+                </section>
+            )}
 
-            {/* Just For You */}
-            <section className="container mb-5">
-                <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-                    <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Just For You</h4>
-                    <button className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</button>
-                </div>
-                
-                <div className="row g-2 g-md-3">
-                    {justForYouProducts.map(product => (
-                        <div key={product.id} className="col-6 col-md-4 col-lg-3">
-                            <ProductCard product={product} />
+            {/* ===== New Arrivals ===== */}
+            {!loading && newArrivals.length > 0 && (
+                <section className="container mb-5">
+                    <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                        <h4 className="fw-bold mb-0" style={{ color: '#333' }}>New Arrivals</h4>
+                        <Link to="/products-all/new-arrivals" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
+                    </div>
+                    {renderProductGrid(newArrivals)}
+                </section>
+            )}
+
+            {/* ===== Best Deals ===== */}
+            {!loading && bestDeals.length > 0 && (
+                <section className="container mb-5">
+                    <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                        <div className="d-flex align-items-center gap-2">
+                            <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Best Deals</h4>
+                            <span className="badge bg-danger text-white rounded-pill" style={{ fontSize: '10px' }}>BIG SAVINGS</span>
                         </div>
-                    ))}
-                </div>
+                        <Link to="/products-all/best-deal" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
+                    </div>
+                    {renderProductGrid(bestDeals)}
+                </section>
+            )}
 
-                {/* Load More Button */}
-                <div className="text-center mt-5">
-                    <button style={{ 
-                        padding: '12px 50px', 
-                        backgroundColor: '#fff', 
-                        color: mainColor, 
-                        border: `1.5px solid ${mainColor}`, 
-                        borderRadius: '30px',
-                        fontWeight: 'bold',
-                        transition: 'all 0.3s',
-                        fontSize: '14px',
-                        boxShadow: '0 4px 15px rgba(87, 181, 0, 0.1)'
-                    }} className="load-more-btn">
-                        Load More Products
-                    </button>
-                </div>
-            </section>
+            {/* ===== Digital Products ===== */}
+            {!loading && digitalProducts.length > 0 && (
+                <section className="container mb-5">
+                    <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                        <div className="d-flex align-items-center gap-2">
+                            <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Digital Products</h4>
+                            <span className="badge bg-warning text-dark rounded-pill" style={{ fontSize: '10px' }}>E-BOOKS &amp; SOFTWARES</span>
+                        </div>
+                        <Link to="/products-all/digital" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
+                    </div>
+                    {renderProductGrid(digitalProducts)}
+                </section>
+            )}
+
+            {/* ===== Top Rated Shops ===== */}
+            {!loading && <TopRatedShops />}
+
+            {/* ===== Just For You ===== */}
+            {!loading && justForYouProducts.length > 0 && (
+                <section className="container mb-5">
+                    <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                        <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Just For You</h4>
+                        <Link to="/products-all/just-for-you" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
+                    </div>
+                    <>
+                        {renderProductGrid(justForYouProducts, 'col-6 col-md-4 col-lg-3')}
+                            <div className="text-center mt-5">
+                                <Link to="/products-all/just-for-you" style={{
+                                    padding: '12px 50px',
+                                    backgroundColor: '#fff',
+                                    color: mainColor,
+                                    border: `1.5px solid ${mainColor}`,
+                                    borderRadius: '30px',
+                                    fontWeight: 'bold',
+                                    transition: 'all 0.3s',
+                                    fontSize: '14px',
+                                    boxShadow: '0 4px 15px rgba(87, 181, 0, 0.1)',
+                                    display: 'inline-block',
+                                    textDecoration: 'none'
+                                }} className="load-more-btn">
+                                    Load More Products
+                                </Link>
+                            </div>
+                        </>
+                </section>
+            )}
 
             <style>{`
                 .load-more-btn:hover {
@@ -148,6 +205,10 @@ const Home = () => {
                     color: #fff !important;
                     transform: translateY(-3px);
                     box-shadow: 0 6px 20px rgba(87, 181, 0, 0.3) !important;
+                }
+                @media (min-width: 992px) {
+                    .custom-desktop-col-5 { width: 20%; flex: 0 0 20%; }
+                    .custom-desktop-col-8 { width: 12.5%; flex: 0 0 12.5%; }
                 }
             `}</style>
         </MasterLayout>

@@ -18,4 +18,9 @@ class EmployeeSeller extends Model
         'address',
         'profile_image',
     ];
+
+    public function getNameAttribute()
+    {
+        return trim($this->first_name . ' ' . ($this->last_name ?? ''));
+    }
 }

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('terminal_id')->nullable();
             $table->string('title')->default('QiCard');
             $table->string('logo')->nullable();
-            $table->boolean('status')->default(true);
+            $table->boolean('status')->default(false);
             $table->timestamps();
         });
     }

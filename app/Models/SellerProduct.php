@@ -15,10 +15,20 @@ class SellerProduct extends Model
         'video_type', 'video',
         'meta_title', 'meta_description', 'meta_keywords',
         'is_active',
+        'is_new_arrival', 'is_best_seller', 'is_hot_product', 'is_flash_sale', 'is_just_for_you', 'is_popular',
+        'cash_on_delivery', 'online_payment',
     ];
 
     protected $casts = [
         'is_active'      => 'boolean',
+        'is_new_arrival' => 'boolean',
+        'is_best_seller' => 'boolean',
+        'is_hot_product' => 'boolean',
+        'is_flash_sale'  => 'boolean',
+        'is_just_for_you'=> 'boolean',
+        'is_popular'     => 'boolean',
+        'cash_on_delivery'=> 'boolean',
+        'online_payment'  => 'boolean',
         'buying_price'   => 'decimal:2',
         'selling_price'  => 'decimal:2',
         'discount_price' => 'decimal:2',

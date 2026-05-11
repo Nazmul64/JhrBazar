@@ -65,12 +65,21 @@ class PosInvoice extends Model
      */
     public static function generateInvoiceNumber(): string
     {
-        $last = static::latest('id')->lockForUpdate()->first();
-        $next = $last
-            ? ((int) ltrim(substr($last->invoice_number, 2), '0') + 1)
-            : 1;
+        $datePart = date('ymd'); // 240511
+        $randomPart = strtoupper(\Illuminate\Support\Str::random(4));
+        
+        $last = static::whereDate('created_at', today())->latest('id')->first();
+        $sequence = $last ? ((int)substr($last->invoice_number, -4) + 1) : 1;
+        $sequencePart = str_pad($sequence, 4, '0', STR_PAD_LEFT);
 
-        return 'RC' . str_pad($next, 6, '0', STR_PAD_LEFT);
+        $number = 'JB-' . $datePart . '-' . $randomPart . '-' . $sequencePart;
+
+        while (static::where('invoice_number', $number)->exists()) {
+            $randomPart = strtoupper(\Illuminate\Support\Str::random(4));
+            $number = 'JB-' . $datePart . '-' . $randomPart . '-' . $sequencePart;
+        }
+
+        return $number;
     }
 
     // ── Accessors ──────────────────────────────────────────────────────────

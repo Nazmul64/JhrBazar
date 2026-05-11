@@ -71,11 +71,39 @@
             <i class="bi bi-grid-fill"></i> Dashboard
         </a>
 
-        {{-- Order Management --}}
+        {{-- ══════════════ ORDERS HUB ══════════════ --}}
         @if(auth()->user()->hasPermission('order.list'))
-        <a class="nav-item-custom" href="#">
-            <i class="bi bi-bag-check"></i> Order Management
-        </a>
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}" data-sub="orders-hub">
+            <i class="bi bi-bag-fill" style="color: #3b82f6;"></i>
+            <span style="font-weight: 600; margin-left: 8px;">Orders Hub</span>
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-orders-hub">
+            <a class="nav-item-custom {{ request()->is('admin/orders/all') ? 'active' : '' }}"
+               href="{{ route('admin.orders.index', 'all') }}">
+                <i class="bi bi-basket"></i> All Orders
+            </a>
+            <a class="nav-item-custom {{ request()->is('admin/orders/pending') ? 'active' : '' }}"
+               href="{{ route('admin.orders.index', 'pending') }}">
+                <i class="bi bi-hourglass-split"></i> Pending
+            </a>
+            <a class="nav-item-custom {{ request()->is('admin/orders/processing') ? 'active' : '' }}"
+               href="{{ route('admin.orders.index', 'processing') }}">
+                <i class="bi bi-arrow-repeat"></i> Processing
+            </a>
+            <a class="nav-item-custom {{ request()->is('admin/orders/shipped') ? 'active' : '' }}"
+               href="{{ route('admin.orders.index', 'shipped') }}">
+                <i class="bi bi-truck"></i> Shipped
+            </a>
+            <a class="nav-item-custom {{ request()->is('admin/orders/delivered') ? 'active' : '' }}"
+               href="{{ route('admin.orders.index', 'delivered') }}">
+                <i class="bi bi-check-circle"></i> Delivered
+            </a>
+            <a class="nav-item-custom {{ request()->is('admin/orders/cancelled') ? 'active' : '' }}"
+               href="{{ route('admin.orders.index', 'cancelled') }}">
+                <i class="bi bi-x-circle"></i> Cancelled
+            </a>
+        </div>
         @endif
 
         {{-- POS Management (Permission Based) --}}

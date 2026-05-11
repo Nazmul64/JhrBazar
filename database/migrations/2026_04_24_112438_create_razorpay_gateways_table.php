@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('secret')->nullable();
             $table->string('title')->default('Razorpay');
             $table->string('logo')->nullable();
-            $table->boolean('status')->default(true);
+            $table->boolean('status')->default(false);
             $table->timestamps();
         });
     }

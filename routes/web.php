@@ -8,7 +8,7 @@
  // Frontend SPA Catch-all Route
  Route::get('/{any}', function () {
      return view('react-test');
- })->where('any', '^(?!admin|api|employee|manager|customer|seller|register|login|logout|user-profile).*$');
+ })->where('any', '^(?!admin|api|employee|manager|seller|logout|user-profile).*$');
 
 use App\Http\Controllers\Admin\Adminauthcontroller;
 use App\Http\Controllers\Admin\Admincontroller;
@@ -83,6 +83,8 @@ use App\Http\Controllers\Seller\SellerUnitController;
 use App\Http\Controllers\Seller\SellerSupplierController;
 use App\Http\Controllers\Admin\SellerApprovalController;
 use App\Http\Controllers\Admin\BankController;
+use App\Http\Controllers\Admin\OrderHubController;
+use App\Http\Controllers\Seller\SellerOrderHubController;
 use App\Http\Controllers\Manager\ManagerDashboardController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -202,7 +204,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
     // ── General Settings ──────────────────────────────────────────────────────
     Route::resource('generalsetting', GeneralSettingController::class)->names('admin.generalsettings')->except(['show', 'create']);
+    Route::post('generalsetting/{generalsetting}/reset', [GeneralSettingController::class, 'reset'])->name('admin.generalsettings.reset');
     Route::post('generalsetting/{generalsetting}/toggle', [GeneralSettingController::class, 'toggleStatus'])->name('admin.generalsettings.toggle');
+
+    // ── Page Categories ───────────────────────────────────────────────────────
+    Route::resource('page-categories', \App\Http\Controllers\Admin\PageCategoryController::class)->names('admin.page_categories');
+    Route::post('page-categories/{id}/toggle', [\App\Http\Controllers\Admin\PageCategoryController::class, 'toggleStatus'])->name('admin.page_categories.toggle');
 
     // ── Business Settings ─────────────────────────────────────────────────────
     Route::resource('businesssettings', BusinessSettingController::class)->names('admin.businesssettings')->except(['show', 'create', 'edit']);
@@ -277,6 +284,22 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         Route::get('draft-orders',              [PointOfSalePosController::class, 'draftIndex'])     ->name('draft.index');
         Route::get('draft-orders/{draft}/load', [PointOfSalePosController::class, 'getDraft'])       ->name('draft.load');
         Route::delete('draft-orders/{draft}',   [PointOfSalePosController::class, 'draftDestroy'])   ->name('draft.destroy');
+    });
+
+    Route::prefix('orders')->name('admin.orders.')->group(function () {
+        Route::get('/{status?}',       [OrderHubController::class, 'index'])       ->name('index');
+        Route::get('/show/{id}',       [OrderHubController::class, 'show'])        ->name('show');
+        Route::post('/status/{id}',    [OrderHubController::class, 'updateStatus'])->name('update-status');
+        Route::post('/assign-staff/{id}', [OrderHubController::class, 'assignStaff'])->name('assign-staff');
+        Route::post('/payment-status/{id}', [OrderHubController::class, 'updatePaymentStatus'])->name('payment-status');
+        Route::post('/bulk-action',    [OrderHubController::class, 'bulkAction'])->name('bulk-action');
+        Route::post('/bulk-invoice',   [OrderHubController::class, 'bulkGenerateInvoice'])->name('bulk-invoice');
+
+        // Pathao API Proxy
+        Route::get('/pathao/cities',          [OrderHubController::class, 'getPathaoCities'])->name('pathao.cities');
+        Route::get('/pathao/zones/{cityId}',  [OrderHubController::class, 'getPathaoZones'])->name('pathao.zones');
+        Route::get('/pathao/areas/{zoneId}',  [OrderHubController::class, 'getPathaoAreas'])->name('pathao.areas');
+        Route::get('/pathao/stores',          [OrderHubController::class, 'getPathaoStores'])->name('pathao.stores');
     });
 
     // ── Contact ───────────────────────────────────────────────────────────────
@@ -462,14 +485,32 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
     });
 
-    // Manager Dashboard
     Route::middleware(['role:manager'])->prefix('manager')->name('manager.')->group(function () {
         Route::get('/dashboard', [ManagerDashboardController::class, 'index'])->name('dashboard');
+        
+        // Orders Hub (Manager - uses Admin controller for global view)
+        Route::prefix('orders')->name('orders.')->group(function () {
+            Route::get('/{status?}',       [OrderHubController::class, 'index'])       ->name('index');
+            Route::get('/show/{id}',       [OrderHubController::class, 'show'])        ->name('show');
+            Route::post('/status/{id}',    [OrderHubController::class, 'updateStatus'])->name('update-status');
+            Route::post('/assign-staff/{id}', [OrderHubController::class, 'assignStaff'])->name('assign-staff');
+            Route::post('/payment-status/{id}', [OrderHubController::class, 'updatePaymentStatus'])->name('payment-status');
+            Route::post('/bulk-action',    [OrderHubController::class, 'bulkAction'])->name('bulk-action');
+        });
     });
 
     // Seller Dashboard
     Route::middleware(['role:seller'])->prefix('seller')->name('seller.')->group(function () {
         Route::get('/dashboard', [SellerDashboardController::class, 'index'])->name('dashboard');
+
+        // Profile Management
+        Route::prefix('profile')->name('profile.')->group(function () {
+            Route::get('/',                 [ProfileController::class, 'index'])         ->name('index');
+            Route::get('/edit',             [ProfileController::class, 'edit'])          ->name('edit');
+            Route::post('/update',          [ProfileController::class, 'update'])        ->name('update');
+            Route::get('/update',           function() { return redirect()->route('seller.profile.edit'); });
+            Route::post('/change-password', [ProfileController::class, 'changePassword'])->name('change-password');
+        });
 
         // Category Management (Read Only)
         Route::get('/categories', [SellerCategoryController::class, 'categories'])->name('categories.index');
@@ -576,6 +617,22 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/invoice/{id}',  [App\Http\Controllers\Seller\SellerPosController::class, 'printInvoice'])->name('invoice.print');
         });
 
+        Route::prefix('orders')->name('orders.')->group(function () {
+            Route::get('/{status?}',       [SellerOrderHubController::class, 'index'])       ->name('index');
+            Route::get('/show/{id}',       [SellerOrderHubController::class, 'show'])        ->name('show');
+            Route::post('/status/{id}',    [SellerOrderHubController::class, 'updateStatus'])->name('update-status');
+            Route::post('/assign-staff/{id}', [SellerOrderHubController::class, 'assignStaff'])->name('assign-staff');
+            Route::post('/payment-status/{id}', [SellerOrderHubController::class, 'updatePaymentStatus'])->name('payment-status');
+            Route::post('/bulk-action',    [SellerOrderHubController::class, 'bulkAction'])->name('bulk-action');
+            Route::post('/bulk-invoice',   [SellerOrderHubController::class, 'bulkGenerateInvoice'])->name('bulk-invoice');
+
+            // Pathao API Proxy
+            Route::get('/pathao/cities',          [SellerOrderHubController::class, 'getPathaoCities'])->name('pathao.cities');
+            Route::get('/pathao/zones/{cityId}',  [SellerOrderHubController::class, 'getPathaoZones'])->name('pathao.zones');
+            Route::get('/pathao/areas/{zoneId}',  [SellerOrderHubController::class, 'getPathaoAreas'])->name('pathao.areas');
+            Route::get('/pathao/stores',          [SellerOrderHubController::class, 'getPathaoStores'])->name('pathao.stores');
+        });
+
         // Withdraw Management (Seller)
         Route::prefix('withdraws')->name('withdraws.')->group(function () {
             Route::get('/',          [App\Http\Controllers\Seller\SellerWithdrawController::class, 'index'])->name('index');
@@ -617,7 +674,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store',           [ProfileController::class, 'store'])         ->name('store');
         Route::get('/edit',             [ProfileController::class, 'edit'])          ->name('edit');
         Route::post('/update',          [ProfileController::class, 'update'])        ->name('update');
+        Route::get('/update',           function() { return redirect()->route('admin.profile.edit'); });
         Route::post('/change-password', [ProfileController::class, 'changePassword'])->name('change-password');
     });
 });
-
+ 

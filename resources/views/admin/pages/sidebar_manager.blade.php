@@ -49,6 +49,56 @@
         text-transform: uppercase !important;
         font-weight: 700 !important;
     }
+
+    /* ── Orders Hub Custom Styles ── */
+    .orders-hub-icon {
+        background: #3b82f6 !important;
+        color: white !important;
+        width: 30px !important;
+        height: 30px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 8px !important;
+        margin-right: 12px !important;
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3) !important;
+    }
+    .nav-item-custom.has-sub.open .orders-hub-icon {
+        background: #2563eb !important;
+    }
+    .nav-submenu-orders {
+        position: relative;
+        margin-left: 30px !important;
+        padding-left: 0 !important;
+        border-left: 1px solid #e2e8f0 !important;
+    }
+    .nav-submenu-orders .nav-item-custom {
+        margin: 2px 10px 2px 0 !important;
+        padding: 8px 15px !important;
+        font-size: 13px !important;
+        background: transparent !important;
+    }
+    .nav-submenu-orders .nav-item-custom::before {
+        content: '';
+        display: inline-block;
+        width: 12px;
+        height: 1px;
+        background: #e2e8f0;
+        margin-right: 10px;
+        vertical-align: middle;
+    }
+    .nav-submenu-orders .nav-item-custom:hover {
+        color: #3b82f6 !important;
+        transform: translateX(3px) !important;
+    }
+    .nav-submenu-orders .nav-item-custom i {
+        font-size: 14px !important;
+        margin-right: 8px !important;
+        color: #94a3b8 !important;
+    }
+    .nav-submenu-orders .nav-item-custom:hover i {
+        color: #3b82f6 !important;
+    }
 </style>
 
 <div id="sidebar-overlay"></div>
@@ -71,11 +121,44 @@
             <i class="bi bi-grid-fill"></i> Dashboard
         </a>
 
-        {{-- Order Management --}}
+        {{-- ══════════════ ORDERS HUB ══════════════ --}}
         @if(auth()->user()->hasPermission('order.list'))
-        <a class="nav-item-custom" href="#">
-            <i class="bi bi-bag-check"></i> Order Management
-        </a>
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}" data-sub="orders-hub">
+            <div class="orders-hub-icon">
+                <i class="bi bi-bag-fill" style="margin-right: 0 !important; color: white !important;"></i>
+            </div>
+            <span style="font-weight: 600;">Orders Hub</span>
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu nav-submenu-orders" id="sub-orders-hub">
+            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'all') }}">
+                <i class="bi bi-basket"></i> All Orders
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'pending') }}">
+                <i class="bi bi-hourglass-split"></i> Pending
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'processing') }}">
+                <i class="bi bi-arrow-repeat"></i> Processing
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'shipped') }}">
+                <i class="bi bi-truck"></i> Shipped
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'delivered') }}">
+                <i class="bi bi-check-circle"></i> Delivered
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'cancelled') }}">
+                <i class="bi bi-x-circle"></i> Cancelled
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.pointofsalepos.index') }}">
+                <i class="bi bi-plus-lg"></i> Create Order
+            </a>
+            <a class="nav-item-custom" href="#">
+                <i class="bi bi-person-gear"></i> Staff Assignments
+            </a>
+            <a class="nav-item-custom" href="#">
+                <i class="bi bi-clock-history"></i> Activity History
+            </a>
+        </div>
         @endif
 
         {{-- POS Management (Permission Based) --}}

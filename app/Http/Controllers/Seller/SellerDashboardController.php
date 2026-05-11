@@ -23,7 +23,7 @@ class SellerDashboardController extends Controller
 
         // Isolated Statistics
         $totalProducts = Product::where('shop_id', $shop->id)->count();
-        $totalOrders = 0; // Set to 0 for now
+        $totalOrders   = \App\Models\PosInvoice::where('seller_id', $user->id)->count();
         $totalCategories = Category::count();
         $totalBrands = Brand::count();
 
