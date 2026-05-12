@@ -53,6 +53,19 @@ const ProductDetails = () => {
         window.scrollTo(0, 0);
     }, [type, id]);
 
+    const productImages = product ? [product.thumbnail, ...(product.gallery || [])] : [];
+
+    // Auto Slider Logic
+    useEffect(() => {
+        if (!product || productImages.length <= 1) return;
+
+        const interval = setInterval(() => {
+            setActiveImageIndex((prev) => (prev + 1) % productImages.length);
+        }, 3000); // Change image every 3 seconds
+
+        return () => clearInterval(interval);
+    }, [product, productImages.length]);
+
     const showToast = (message) => {
         setToast({ show: true, message });
         setTimeout(() => setToast({ show: false, message: '' }), 3000);
@@ -100,8 +113,6 @@ const ProductDetails = () => {
         );
     }
 
-    const productImages = [product.thumbnail, ...(product.gallery || [])];
-
     return (
         <MasterLayout>
             {/* Custom Toast Notification */}
@@ -130,11 +141,25 @@ const ProductDetails = () => {
                     from { opacity: 0; transform: translateY(20px); }
                     to { opacity: 1; transform: translateY(0); }
                 }
+                @keyframes imgFade {
+                    from { opacity: 0; transform: scale(0.98); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+                .product-main-img {
+                    animation: imgFade 0.5s ease-out forwards;
+                }
+                .thumbnail-item {
+                    transition: all 0.3s ease;
+                }
+                .thumbnail-item:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+                }
                 .hover-wishlist:hover { color: #ff4d4d !important; transform: scale(1.05); }
                 .hover-share:hover { color: ${mainColor} !important; transform: scale(1.05); }
             `}</style>
 
-            <div className="container py-4">
+            <div className={`${product.seller_id ? 'container-fluid px-4 px-md-5' : 'container'} py-4`}>
                 {/* Breadcrumbs */}
                 <nav className="mb-4">
                     <ol className="breadcrumb small" style={{ fontSize: '12px' }}>
@@ -145,69 +170,105 @@ const ProductDetails = () => {
 
                 <div className="row g-4">
                     {/* Left: Gallery & Main Info */}
-                    <div className={product.is_shipping_charge ? "col-lg-8" : "col-lg-12"}>
+                    <div className={(product.is_shipping_charge || product.seller_id) ? "col-lg-8" : "col-lg-12"}>
                         <div className="row g-4">
-                            {/* Product Images with Zoom */}
+                            {/* Product Images with Vertical Thumbnails */}
                             <div className="col-md-5">
-                                <div
-                                    className="position-relative shadow-sm"
-                                    onMouseMove={handleMouseMove}
-                                    onMouseLeave={() => setZoomPos({ ...zoomPos, show: false })}
-                                    style={{
-                                        border: '1px solid #f0f0f0',
-                                        borderRadius: '15px',
-                                        overflow: 'hidden',
-                                        backgroundColor: '#fff',
-                                        cursor: 'crosshair',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        padding: '0'
-                                    }}
-                                >
-                                    <img
-                                        src={productImages[activeImageIndex]}
-                                        alt={product.name}
-                                        style={{ width: '100%', height: 'auto', objectFit: 'cover', display: 'block' }}
-                                    />
-                                    {/* Floating Wishlist Button */}
+                                <div className="d-flex gap-3">
+                                    {/* Thumbnails (Vertical on the left) */}
                                     <div
-                                        className="position-absolute cursor-pointer d-flex align-items-center justify-content-center shadow-sm hover-wishlist"
-                                        onClick={() => toggleWishlist(product)}
-                                        title={isInWishlist(product.id, type) ? "উইশলিস্ট থেকে সরান" : "উইশলিস্টে যোগ করুন"}
-                                        style={{
-                                            top: '15px',
-                                            right: '15px',
-                                            width: '40px',
-                                            height: '40px',
-                                            borderRadius: '50%',
-                                            backgroundColor: '#fff',
-                                            zIndex: 10,
-                                            transition: 'all 0.3s',
-                                            color: isInWishlist(product.id, type) ? '#ff4d4d' : '#666',
-                                            fontSize: '22px'
-                                        }}
+                                        className="d-flex flex-column gap-2 d-none d-md-flex"
+                                        style={{ width: '80px', flexShrink: 0, maxHeight: '450px', overflowY: 'auto', scrollbarWidth: 'none' }}
                                     >
-                                        {isInWishlist(product.id, type) ? '❤️' : '🤍'}
+                                        {productImages.map((img, i) => (
+                                            <div
+                                                key={i}
+                                                onClick={() => setActiveImageIndex(i)}
+                                                className="thumbnail-item"
+                                                style={{
+                                                    width: '70px',
+                                                    height: '70px',
+                                                    border: i === activeImageIndex ? `2px solid ${mainColor}` : '1px solid #eee',
+                                                    borderRadius: '10px',
+                                                    overflow: 'hidden',
+                                                    cursor: 'pointer',
+                                                    padding: '3px',
+                                                    backgroundColor: '#fff',
+                                                    transition: 'all 0.2s',
+                                                    opacity: i === activeImageIndex ? 1 : 0.7
+                                                }}
+                                            >
+                                                <img src={img} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '7px' }} alt="thumb" />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Main Image Container */}
+                                    <div className="flex-grow-1">
+                                        <div
+                                            className="position-relative shadow-sm"
+                                            onMouseMove={handleMouseMove}
+                                            onMouseLeave={() => setZoomPos({ ...zoomPos, show: false })}
+                                            style={{
+                                                border: '1px solid #f0f0f0',
+                                                borderRadius: '15px',
+                                                overflow: 'hidden',
+                                                backgroundColor: '#fff',
+                                                cursor: 'crosshair',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                padding: '0'
+                                            }}
+                                        >
+                                            <img
+                                                key={activeImageIndex}
+                                                src={productImages[activeImageIndex]}
+                                                alt={product.name}
+                                                className="product-main-img"
+                                                style={{ width: '100%', height: 'auto', objectFit: 'cover', display: 'block' }}
+                                            />
+                                            {/* Floating Wishlist Button */}
+                                            <div
+                                                className="position-absolute cursor-pointer d-flex align-items-center justify-content-center shadow-sm hover-wishlist"
+                                                onClick={() => toggleWishlist(product)}
+                                                title={isInWishlist(product.id, type) ? "উইশলিস্ট থেকে সরান" : "উইশলিস্টে যোগ করুন"}
+                                                style={{
+                                                    top: '15px',
+                                                    right: '15px',
+                                                    width: '40px',
+                                                    height: '40px',
+                                                    borderRadius: '50%',
+                                                    backgroundColor: '#fff',
+                                                    zIndex: 10,
+                                                    transition: 'all 0.3s',
+                                                    color: isInWishlist(product.id, type) ? '#ff4d4d' : '#666',
+                                                    fontSize: '22px'
+                                                }}
+                                            >
+                                                {isInWishlist(product.id, type) ? '❤️' : '🤍'}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                {/* Thumbnail Slider */}
-                                <div className="d-flex gap-2 mt-3 overflow-auto pb-2" style={{ scrollbarWidth: 'thin' }}>
+
+                                {/* Horizontal Thumbnails for Mobile Only */}
+                                <div className="d-flex d-md-none gap-2 mt-3 overflow-auto pb-2" style={{ scrollbarWidth: 'thin' }}>
                                     {productImages.map((img, i) => (
                                         <div
                                             key={i}
                                             onClick={() => setActiveImageIndex(i)}
+                                            className="thumbnail-item"
                                             style={{
-                                                width: '80px',
-                                                height: '80px',
-                                                minWidth: '80px',
+                                                width: '70px',
+                                                height: '70px',
+                                                minWidth: '70px',
                                                 border: i === activeImageIndex ? `2px solid ${mainColor}` : '1px solid #eee',
                                                 borderRadius: '10px',
                                                 overflow: 'hidden',
                                                 cursor: 'pointer',
                                                 padding: '5px',
                                                 backgroundColor: '#fff',
-                                                transition: 'all 0.2s',
                                                 opacity: i === activeImageIndex ? 1 : 0.6
                                             }}
                                         >
@@ -253,14 +314,27 @@ const ProductDetails = () => {
                                     </div>
                                     <div className="text-muted small">| <span className="text-dark fw-bold">০</span> টি বিক্রিত</div>
                                     <div className="ms-auto d-flex gap-3 align-items-center">
-
+                                        <button
+                                            onClick={() => {
+                                                window.dispatchEvent(new CustomEvent('openSellerChat', {
+                                                    detail: { sellerId: product.seller_id, sellerName: product.seller_name }
+                                                }));
+                                            }}
+                                            className="btn btn-outline-secondary btn-sm rounded-circle shadow-sm"
+                                            title="Chat with Seller"
+                                            style={{ width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                        >
+                                            💬
+                                        </button>
                                     </div>
                                 </div>
 
                                 <div className="d-flex align-items-center gap-3 mb-4">
                                     <h2 className="fw-bold mb-0" style={{ color: mainColor }}>${product.price.toFixed(2)}</h2>
                                     {product.old_price > product.price && (
-                                        <span className="text-muted text-decoration-line-through">${product.old_price.toFixed(2)}</span>
+                                        <span className="text-muted text-decoration-line-through">
+                                            ${product.old_price.toFixed(2)}
+                                        </span>
                                     )}
                                 </div>
 
@@ -398,7 +472,7 @@ const ProductDetails = () => {
                                                 <div className="text-center py-4 text-muted">এই প্রোডাক্টে এখনো কোনো রিভিউ নেই।</div>
                                             )}
                                         </div>
-                                        
+
                                         <div className="alert alert-info py-2" style={{ borderRadius: '10px' }}>
                                             রিভিউ দিতে আপনার <Link to="/customer/dashboard" className="fw-bold">ড্যাশবোর্ড</Link> থেকে কেনা প্রোডাক্টের ওপর রিভিউ অপশনটি ব্যবহার করুন।
                                         </div>
@@ -408,12 +482,65 @@ const ProductDetails = () => {
                         </div>
                     </div>
 
-                    {/* Right: Delivery & Sidebar Info (Conditional) */}
-                    {product.is_shipping_charge && (
-                        <div className="col-lg-4">
-                            <div className="bg-white p-4 rounded shadow-sm border h-100">
+                    {/* Right: Sidebar */}
+                    <div className="col-lg-4">
+                        {/* Sold By Section (Conditional) */}
+                        {product.seller_id && (
+                            <div className="bg-white p-4 rounded shadow-sm border mb-4">
+                                <div className="d-flex align-items-center justify-content-between mb-4">
+                                    <div className="d-flex align-items-center gap-3">
+                                        <img
+                                            src={product.seller_logo || '/assets/admin/images/default-avatar.png'}
+                                            alt={product.seller_name}
+                                            style={{ width: '45px', height: '45px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #eee' }}
+                                        />
+                                        <div>
+                                            <div className="text-muted" style={{ fontSize: '11px' }}>Sold by</div>
+                                            <div className="fw-bold text-dark" style={{ fontSize: '14px' }}>{product.seller_name}</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-warning small d-flex align-items-center gap-1">
+                                        ★ <span className="text-dark fw-bold">{product.seller_rating.toFixed(1)}</span>
+                                    </div>
+                                </div>
+                                <div className="text-center border-top pt-3">
+                                    <Link to={`/shop/${product.seller_id}`} className="text-danger text-decoration-none small fw-bold">Visit Store</Link>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Popular Products From Them (Conditional) */}
+                        {product.seller_id && relatedProducts.length > 0 && (
+                            <div className="mb-4">
+                                <h6 className="fw-bold mb-3" style={{ fontSize: '14px' }}>Popular Products From Them</h6>
+                                <div className="d-flex flex-column gap-3">
+                                    {relatedProducts.slice(0, 4).map(prod => (
+                                        <Link key={prod.uid} to={`/product-details/${prod.product_type}/${prod.id}`} className="text-decoration-none text-dark bg-white p-2 rounded border shadow-sm d-flex gap-3 align-items-center">
+                                            <img src={prod.thumbnail} alt={prod.name} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
+                                            <div className="flex-grow-1 min-width-0">
+                                                <div className="small fw-bold text-truncate">{prod.name}</div>
+                                                <div className="d-flex align-items-center gap-2">
+                                                    <span className="fw-bold" style={{ color: mainColor }}>${prod.price.toFixed(2)}</span>
+                                                    {prod.old_price > prod.price && (
+                                                        <span className="text-muted text-decoration-line-through" style={{ fontSize: '10px' }}>${prod.old_price.toFixed(2)}</span>
+                                                    )}
+                                                </div>
+                                                <div className="d-flex align-items-center justify-content-between mt-1">
+                                                    <div className="text-warning" style={{ fontSize: '10px' }}>★ {prod.avg_rating || 5.0} (0)</div>
+                                                    <div className="text-muted" style={{ fontSize: '10px' }}>19 Sold</div>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Delivery Info */}
+                        {product.is_shipping_charge && (
+                            <div className="bg-white p-4 rounded shadow-sm border">
                                 <h5 className="fw-bold mb-4 pb-2 border-bottom">ডেলিভারি তথ্য</h5>
-                                
+
                                 <div className="d-flex flex-column gap-4">
                                     <div className="d-flex gap-3">
                                         <div className="fs-3 text-muted">📍</div>
@@ -438,7 +565,7 @@ const ProductDetails = () => {
                                         <div className="fs-3 text-muted">⏱️</div>
                                         <div>
                                             <div className="fw-bold small mb-1">ডেলিভারি সময়</div>
-                                            <div className="text-muted small">২-৫ কার্যদিবসের মধ্যে।</div>
+                                            <div className="text-muted small">{product.estimated_delivery || '২-৫ কার্যদিবসের মধ্যে।'}</div>
                                         </div>
                                     </div>
 
@@ -449,7 +576,7 @@ const ProductDetails = () => {
                                             <div className="text-muted small">১০০% অরিজিনাল প্রোডাক্ট।</div>
                                         </div>
                                     </div>
-                                    
+
                                     <div className="mt-2 pt-3 border-top">
                                         <div className="p-3 rounded" style={{ backgroundColor: '#f0fdf4' }}>
                                             <div className="fw-bold small text-success mb-1">পেমেন্ট মেথড</div>
@@ -458,8 +585,8 @@ const ProductDetails = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
 
                 {/* Related Products */}
@@ -467,7 +594,7 @@ const ProductDetails = () => {
                     <div className="mt-5 pt-4">
                         <div className="d-flex align-items-center gap-2 mb-4">
                             <div style={{ width: '5px', height: '25px', backgroundColor: mainColor, borderRadius: '10px' }}></div>
-                            <h4 className="fw-bold mb-0">সম্পর্কিত প্রোডাক্ট</h4>
+                            <h4 className="fw-bold mb-0">Similar Products</h4>
                         </div>
                         <div className="row g-3 g-md-4">
                             {relatedProducts.map(prod => (

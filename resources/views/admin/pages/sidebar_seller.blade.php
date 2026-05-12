@@ -254,7 +254,7 @@
         </div>
 
         {{-- Messages --}}
-        <a class="nav-item-custom" href="#">
+        <a class="nav-item-custom {{ request()->routeIs('seller.messages.*') ? 'active' : '' }}" href="{{ route('seller.messages.index') }}">
             <i class="bi bi-chat-left-dots-fill"></i> Messages
         </a>
 

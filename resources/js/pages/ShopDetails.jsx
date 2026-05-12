@@ -75,7 +75,16 @@ const ShopDetails = () => {
                         <div className="col-md-4 text-md-end">
                             <div className="d-flex flex-column align-items-md-end">
                                 <div className="text-warning mb-1">⭐⭐⭐⭐⭐ <span className="text-dark fw-bold">5.0 (0)</span></div>
-                                <button className="btn btn-outline-secondary btn-sm rounded-circle">💬</button>
+                                <button 
+                                    onClick={() => {
+                                        window.dispatchEvent(new CustomEvent('openSellerChat', { 
+                                            detail: { sellerId: shop.user_id, sellerName: shop.name } 
+                                        }));
+                                    }}
+                                    className="btn btn-outline-secondary btn-sm rounded-circle"
+                                >
+                                    💬
+                                </button>
                             </div>
                         </div>
                     </div>

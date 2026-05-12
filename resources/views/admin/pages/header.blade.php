@@ -8,7 +8,7 @@
     <title>@yield('title', Auth::check() ? ucfirst(Auth::user()->role) . ' Portal' : 'Admin') – Jhr Bazar</title>
 
     {{-- ── Favicon ── --}}
-    <link rel="shortcut icon" href="{{ asset('admin/assets/images/favicon.png') }}" type="image/x-icon" />
+    {{-- <link rel="shortcut icon" href="{{ asset('admin/assets/images/favicon.png') }}" type="image/x-icon" /> --}}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
     {{-- ── Google Fonts ── --}}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -16,7 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Sora:wght@600;700&display=swap" rel="stylesheet" />
 
     {{-- ── Bootstrap 5.3.3 CSS ── --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 
     {{-- ── Bootstrap Icons 1.11.3 ── --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
@@ -35,85 +35,50 @@
 
     {{-- ── Custom Admin CSS ── --}}
     <link rel="stylesheet" href="{{ asset('admin/assets/css/style.css') }}" />
-
-
 </head>
 <body>
-
-
-
-
-
-
     {{-- ── Custom Admin JS ── --}}
     <script src="{{ asset('admin/assets/js/app.js') }}"></script>
 
     {{-- ── Global Flash Messages (SweetAlert2) ── --}}
     @if(session('success'))
     <script>
-        Swal.fire({
-            icon: 'success',
-            title: 'Success!',
-            text: '{{ session('success') }}',
-            timer: 2500,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end',
-        });
-    </script>
-    @endif
-
-    @if(session('error'))
-    <script>
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: '{{ session('error') }}',
-            timer: 3000,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end',
-        });
-    </script>
-    @endif
-
-    @if(session('warning'))
-    <script>
-        Swal.fire({
-            icon: 'warning',
-            title: 'Warning!',
-            text: '{{ session('warning') }}',
-            timer: 3000,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end',
-        });
-    </script>
-    @endif
-
-    {{-- ── Delete Confirmation (global, reusable) ── --}}
-    <script>
-        $(document).on('click', '.btn-delete-confirm', function (e) {
-            e.preventDefault();
-            var form = $(this).closest('form');
+        document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
-                title: 'Are you sure?',
-                text: 'This action cannot be undone!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#e53e3e',
-                cancelButtonColor:  '#6c757d',
-                confirmButtonText:  'Yes, delete it!',
-                cancelButtonText:   'Cancel',
-            }).then(function (result) {
-                if (result.isConfirmed) {
-                    form.submit();
-                }
+                icon: 'success',
+                title: 'Success!',
+                text: '{{ session('success') }}',
+                timer: 2500,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end',
             });
         });
     </script>
+    @endif
 
-
-
-</body>
-</html>
+    {{-- ── Delete Confirmation Script moved to footer or wrapped ── --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof $ !== 'undefined') {
+                $(document).on('click', '.btn-delete-confirm', function (e) {
+                    e.preventDefault();
+                    var form = $(this).closest('form');
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: 'This action cannot be undone!',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#e53e3e',
+                        cancelButtonColor:  '#6c757d',
+                        confirmButtonText:  'Yes, delete it!',
+                        cancelButtonText:   'Cancel',
+                    }).then(function (result) {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            }
+        });
+    </script>

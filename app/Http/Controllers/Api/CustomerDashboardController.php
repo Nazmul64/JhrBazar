@@ -104,9 +104,10 @@ class CustomerDashboardController extends Controller
         $user = auth()->user();
 
         $validator = Validator::make($request->all(), [
-            'name'  => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|max:20',
+            'name'          => 'required|string|max:255',
+            'email'         => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'phone'         => 'nullable|string|max:20',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -116,16 +117,36 @@ class CustomerDashboardController extends Controller
             ], 422);
         }
 
-        $user->update([
+        $data = [
             'name'  => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
-        ]);
+        ];
+
+        if ($request->hasFile('profile_image')) {
+            $image = $request->file('profile_image');
+            $imageName = time() . '_' . $user->id . '.' . $image->getClientOriginalExtension();
+            $destinationPath = public_path('uploads/profile_images');
+            
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+            
+            $image->move($destinationPath, $imageName);
+            $data['profile_image'] = $imageName;
+            
+            // Delete old image if exists
+            if ($user->profile_image && file_exists(public_path('uploads/profile_images/' . $user->profile_image))) {
+                @unlink(public_path('uploads/profile_images/' . $user->profile_image));
+            }
+        }
+
+        $user->update($data);
 
         return response()->json([
             'success' => true,
             'message' => 'প্রোফাইল সফলভাবে আপডেট করা হয়েছে।',
-            'user'    => $user
+            'user'    => $user->fresh()
         ]);
     }
 

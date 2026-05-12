@@ -2,7 +2,6 @@
   <button class="header-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
   <div class="header-title">
     <h6>Welcome Back, {{ Auth::user()->name }}</h6>
-    <p>Monitor your {{ Auth::user()->isAdmin() ? 'business' : 'assigned' }} analytics and statistics.</p>
   </div>
 
   <button class="header-action">

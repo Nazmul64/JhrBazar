@@ -15,6 +15,7 @@ import AllProducts from './pages/AllProducts';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Terms from './pages/Terms';
+import About from './pages/About';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import SearchResults from './pages/SearchResults';
 import PageView from './pages/PageView';
@@ -25,6 +26,7 @@ import { CartProvider } from './context/CartContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { Toaster } from 'react-hot-toast';
+import LiveChatWidget from './components/LiveChatWidget';
 
 const MainApp = () => {
     return (
@@ -33,6 +35,7 @@ const MainApp = () => {
                 <CartProvider>
                     <Router>
                         <Toaster position="top-right" reverseOrder={false} />
+                        <LiveChatWidget />
                         <Routes>
                             {/* Main Routes */}
                             <Route path="/" element={<Home />} />
@@ -43,6 +46,7 @@ const MainApp = () => {
                             <Route path="/customer/login" element={<Login />} />
                             <Route path="/customer/register" element={<Register />} />
                             <Route path="/terms" element={<Terms />} />
+                            <Route path="/about" element={<About />} />
                             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                             <Route path="/category/:id" element={<CategoryProducts />} />
                             <Route path="/subcategory/:id" element={<CategoryProducts />} />

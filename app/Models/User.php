@@ -34,6 +34,8 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected $appends = ['profile_image_url'];
+
     protected function casts(): array
     {
         return [
@@ -98,9 +100,24 @@ class User extends Authenticatable
     // Usage in blade: {{ $user->profile_image_url }}
     public function getProfileImageUrlAttribute(): string
     {
-        if ($this->profile_image && file_exists(public_path($this->profile_image))) {
-            return asset($this->profile_image);
+        if (!$this->profile_image) {
+            return asset('assets/admin/images/default-avatar.png');
         }
+
+        // Check if it already has a path or is a full URL
+        if (str_starts_with($this->profile_image, 'http')) {
+            return $this->profile_image;
+        }
+
+        $path = $this->profile_image;
+        if (!str_contains($path, '/')) {
+            $path = 'uploads/profile_images/' . $path;
+        }
+
+        if (file_exists(public_path($path))) {
+            return asset($path);
+        }
+
         return asset('assets/admin/images/default-avatar.png');
     }
 

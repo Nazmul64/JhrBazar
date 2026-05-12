@@ -139,9 +139,12 @@
         @endif
 
         @if(auth()->user()->hasPermission('order.list'))
-        <a class="nav-item-custom" href="#">
+        <a class="nav-item-custom {{ request()->routeIs('admin.chat.*') ? 'active' : '' }}" href="{{ route('admin.chat.index') }}">
             <i class="bi bi-chat-left-dots"></i> Conversations
-            <span class="badge-count">9+</span>
+            @php $unreadChats = \App\Models\ChatSession::where('is_read_by_admin', false)->count(); @endphp
+            @if($unreadChats > 0)
+                <span class="badge bg-danger ms-auto rounded-pill" style="font-size: 10px;">{{ $unreadChats }}</span>
+            @endif
         </a>
         @endif
 

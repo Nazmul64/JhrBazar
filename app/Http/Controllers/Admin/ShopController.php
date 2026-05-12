@@ -109,19 +109,29 @@ class ShopController extends Controller
         $user = $shop->user;
 
         $request->validate([
-            'first_name'    => 'required|string|max:100',
-            'last_name'     => 'nullable|string|max:100',
-            'phone'         => 'required|string|max:20',
-            'gender'        => 'required|in:Male,Female,Other',
-            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'email'         => 'required|email|unique:users,email,' . $user->id,
-            'shop_name'     => 'required|string|max:200',
-            'address'       => 'nullable|string|max:500',
-            'shop_logo'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'shop_banner'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
-            'description'   => 'nullable|string',
-            'latitude'      => 'nullable|numeric',
-            'longitude'     => 'nullable|numeric',
+            'first_name'          => 'required|string|max:100',
+            'last_name'           => 'nullable|string|max:100',
+            'phone'               => 'required|string|max:20',
+            'gender'              => 'required|in:Male,Female,Other',
+            'profile_image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'national_id_card'    => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'email'               => 'required|email|unique:users,email,' . $user->id,
+            'password'            => ['nullable', 'confirmed', Password::min(6)],
+            'bank_name'           => 'nullable|string|max:255',
+            'bank_branch'         => 'nullable|string|max:255',
+            'bank_account_number' => 'nullable|string|max:100',
+            'bank_account_holder' => 'nullable|string|max:255',
+            'shop_name'           => 'required|string|max:200',
+            'business_name'       => 'nullable|string|max:255',
+            'business_type'       => 'nullable|string|max:100',
+            'address'             => 'nullable|string|max:500',
+            'city'                => 'nullable|string|max:100',
+            'postal_code'         => 'nullable|string|max:20',
+            'shop_logo'           => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'shop_banner'         => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'description'         => 'nullable|string',
+            'latitude'            => 'nullable|numeric',
+            'longitude'           => 'nullable|numeric',
         ]);
 
         // ── Update profile image ──
@@ -131,14 +141,31 @@ class ShopController extends Controller
             $profileImage = $this->uploadFile($request->file('profile_image'), 'uploads/shops/profiles');
         }
 
-        $user->update([
-            'name'          => trim($request->first_name . ' ' . $request->last_name),
-            'email'         => $request->email,
-            'phone'         => $request->phone,
-            'gender'        => $request->gender,
-            'profile_image' => $profileImage,
-            'role'          => User::ROLE_SELLER,
-        ]);
+        // ── Update NID ──
+        $nidPath = $user->national_id_card;
+        if ($request->hasFile('national_id_card')) {
+            $this->deleteFile($nidPath);
+            $nidPath = $this->uploadFile($request->file('national_id_card'), 'uploads/seller');
+        }
+
+        $userData = [
+            'name'                => trim($request->first_name . ' ' . $request->last_name),
+            'email'               => $request->email,
+            'phone'               => $request->phone,
+            'gender'              => $request->gender,
+            'profile_image'       => $profileImage,
+            'national_id_card'    => $nidPath,
+            'bank_name'           => $request->bank_name,
+            'bank_branch'         => $request->bank_branch,
+            'bank_account_number' => $request->bank_account_number,
+            'bank_account_holder' => $request->bank_account_holder,
+        ];
+
+        if ($request->filled('password')) {
+            $userData['password'] = Hash::make($request->password);
+        }
+
+        $user->update($userData);
 
         // ── Update shop logo ──
         $shopLogo = $shop->logo;
@@ -155,13 +182,18 @@ class ShopController extends Controller
         }
 
         $shop->update([
-            'name'        => $request->shop_name,
-            'address'     => $request->address,
-            'description' => $request->description,
-            'latitude'    => $request->latitude,
-            'longitude'   => $request->longitude,
-            'logo'        => $shopLogo,
-            'banner'      => $shopBanner,
+            'name'          => $request->shop_name,
+            'business_name' => $request->business_name,
+            'business_type' => $request->business_type,
+            'address'       => $request->address,
+            'city'          => $request->city,
+            'postal_code'   => $request->postal_code,
+            'categories'    => $request->categories,
+            'description'   => $request->description,
+            'latitude'      => $request->latitude,
+            'longitude'     => $request->longitude,
+            'logo'          => $shopLogo,
+            'banner'        => $shopBanner,
         ]);
 
         return redirect()->route('admin.shops.index')

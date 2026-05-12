@@ -104,12 +104,25 @@ const UserDashboard = () => {
         setUpdatingProfile(true);
         try {
             const token = localStorage.getItem('auth_token');
-            const res = await axios.post('/api/customer/update-profile', profileData, {
-                headers: { Authorization: `Bearer ${token}` }
+            const formData = new FormData();
+            formData.append('name', profileData.name);
+            formData.append('email', profileData.email);
+            formData.append('phone', profileData.phone);
+            if (profileData.profile_image) {
+                formData.append('profile_image', profileData.profile_image);
+            }
+
+            const res = await axios.post('/api/customer/update-profile', formData, {
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
             });
             if (res.data.success) {
                 setUser(res.data.user);
                 toast.success(res.data.message);
+                // Clear the selected file after update
+                setProfileData(prev => ({ ...prev, profile_image: null }));
             }
         } catch (err) {
             toast.error(err.response?.data?.message || "প্রোফাইল আপডেট করতে সমস্যা হয়েছে");
@@ -192,10 +205,14 @@ const UserDashboard = () => {
                         <div className="card border border-light-subtle shadow-sm overflow-hidden" style={{ borderRadius: '20px' }}>
                             <div className="bg-primary p-4 text-center text-white shadow-sm">
                                 <div
-                                    className="rounded-circle bg-white mx-auto mb-3 d-flex align-items-center justify-content-center text-primary fw-bold shadow-sm"
+                                    className="rounded-circle bg-white mx-auto mb-3 d-flex align-items-center justify-content-center text-primary fw-bold shadow-sm overflow-hidden"
                                     style={{ width: '70px', height: '70px', fontSize: '28px', border: '4px solid rgba(255,255,255,0.3)' }}
                                 >
-                                    {user?.name?.charAt(0).toUpperCase()}
+                                    {user?.profile_image ? (
+                                        <img src={`/uploads/profile_images/${user.profile_image}`} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                        user?.name?.charAt(0).toUpperCase()
+                                    )}
                                 </div>
                                 <h6 className="fw-bold mb-0">{user?.name}</h6>
                                 <p className="small mb-0 opacity-75">{user?.email}</p>
@@ -358,12 +375,19 @@ const UserDashboard = () => {
                                                         </td>
                                                         <td className="text-end">
                                                             {order.status === 'completed' && (
-                                                                <button 
-                                                                    onClick={() => openReviewModal(order.items?.[0])}
-                                                                    className="btn btn-warning btn-sm fw-bold rounded-pill px-3"
-                                                                >
-                                                                    রিভিউ
-                                                                </button>
+                                                                <div className="d-flex flex-column align-items-end gap-1">
+                                                                    {(order.items || []).map((item, idx) => (
+                                                                        <button 
+                                                                            key={idx}
+                                                                            onClick={() => openReviewModal(item)}
+                                                                            className="btn btn-warning btn-sm fw-bold rounded-pill px-2 py-1"
+                                                                            style={{ fontSize: '10px', whiteSpace: 'nowrap' }}
+                                                                            title={item.name}
+                                                                        >
+                                                                            {item.name?.substring(0, 12)}... রিভিউ
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
                                                             )}
                                                         </td>
                                                     </tr>
@@ -452,14 +476,24 @@ const UserDashboard = () => {
                                                     required
                                                 />
                                             </div>
-                                            <div className="col-12">
+                                            <div class="col-12">
                                                 <label className="form-label small fw-bold text-muted mb-2">ফোন নাম্বার</label>
                                                 <input 
                                                     type="text" 
-                                                    className="form-control form-control-lg border-secondary-subtle px-3" 
+                                                    className="form-control form-control-lg border-secondary-subtle px-3 mb-4" 
                                                     style={{ borderRadius: '12px', fontSize: '15px' }}
                                                     value={profileData.phone} 
                                                     onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+                                                />
+                                            </div>
+                                            <div className="col-12">
+                                                <label className="form-label small fw-bold text-muted mb-2">প্রোফাইল ছবি</label>
+                                                <input 
+                                                    type="file" 
+                                                    className="form-control form-control-lg border-secondary-subtle px-3" 
+                                                    style={{ borderRadius: '12px', fontSize: '15px' }}
+                                                    onChange={(e) => setProfileData({...profileData, profile_image: e.target.files[0]})}
+                                                    accept="image/*"
                                                 />
                                             </div>
                                         </div>

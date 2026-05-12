@@ -143,9 +143,7 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                                 transition: 'background-image 0.8s ease-in-out'
                             }}></div>
                         ) : (
-                            <div className="h-100 d-flex align-items-center justify-content-center text-muted">
-                                <span>No Main Banners Found</span>
-                            </div>
+                            <div className="h-100 w-100 bg-light" style={{ opacity: 0.5 }}></div>
                         )}
 
                         {/* Dot Pagination */}

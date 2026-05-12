@@ -85,7 +85,7 @@ export const SettingsProvider = ({ children }) => {
                     --main-font: ${settings?.font_family ? "'" + settings.font_family + "', " : ""} 'Inter', 'Outfit', 'Poppins', 'Hind Siliguri', sans-serif;
                 }
 
-                * {
+                *:not(i):not(.fas):not(.fab):not(.far):not(.fa):not(.bi) {
                     font-family: var(--main-font) !important;
                 }
 

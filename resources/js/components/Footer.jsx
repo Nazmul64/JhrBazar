@@ -113,7 +113,7 @@ const Footer = () => {
                             )}
                         </div>
 
-                        {footerData.settings?.show_download_app == 1 && (
+                        {footerData.settings?.show_download_app == 1 && (footerData.settings.google_playstore_link || footerData.settings.apple_store_link) && (
                             <div className="mt-4">
                                 <p className="mb-3 fw-bold" style={{ fontSize: '13px', color: '#333' }}>Download App on Mobile :</p>
                                 <div className="d-flex gap-2">

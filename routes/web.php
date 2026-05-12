@@ -8,7 +8,7 @@
  // Frontend SPA Catch-all Route
  Route::get('/{any}', function () {
      return view('react-test');
- })->where('any', '^(?!admin|api|employee|manager|seller|logout|user-profile).*$');
+ })->where('any', '^(?!admin|api|employee|manager|seller|register|logout|user-profile).*$');
 
 use App\Http\Controllers\Admin\Adminauthcontroller;
 use App\Http\Controllers\Admin\Admincontroller;
@@ -245,6 +245,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     // ── Membership Logos ──────────────────────────────────────────────────────
     Route::resource('membership_logos', \App\Http\Controllers\Admin\MembershipLogoController::class)->names('admin.membership_logos')->except(['create', 'show', 'edit', 'update']);
     Route::post('membership_logos/{membershipLogo}/toggle', [\App\Http\Controllers\Admin\MembershipLogoController::class, 'toggleStatus'])->name('admin.membership_logos.toggle');
+
+    // ── Chat ──────────────────────────────────────────────────────────────────
+    Route::get('chat', [\App\Http\Controllers\Admin\ChatController::class, 'index'])->name('admin.chat.index');
+    Route::get('chat/sessions', [\App\Http\Controllers\Admin\ChatController::class, 'getSessions'])->name('admin.chat.sessions');
+    Route::get('chat/{id}/messages', [\App\Http\Controllers\Admin\ChatController::class, 'getChatMessages'])->name('admin.chat.messages');
+    Route::post('chat/{id}/reply', [\App\Http\Controllers\Admin\ChatController::class, 'reply'])->name('admin.chat.reply');
 
     // ── Products ──────────────────────────────────────────────────────────────
     Route::get('products/subcategories/{categoryId}', [ProductControllerController::class, 'getSubCategories'])->name('products.subcategories');
@@ -635,6 +641,13 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/pathao/zones/{cityId}',  [SellerOrderHubController::class, 'getPathaoZones'])->name('pathao.zones');
             Route::get('/pathao/areas/{zoneId}',  [SellerOrderHubController::class, 'getPathaoAreas'])->name('pathao.areas');
             Route::get('/pathao/stores',          [SellerOrderHubController::class, 'getPathaoStores'])->name('pathao.stores');
+        });
+
+        // Chat / Messages Management (Seller)
+        Route::prefix('messages')->name('messages.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Seller\SellerChatController::class, 'index'])->name('index');
+            Route::get('/{sessionId}', [App\Http\Controllers\Seller\SellerChatController::class, 'show'])->name('show');
+            Route::post('/{sessionId}/reply', [App\Http\Controllers\Seller\SellerChatController::class, 'reply'])->name('reply');
         });
 
         // Withdraw Management (Seller)

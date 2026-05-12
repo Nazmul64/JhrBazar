@@ -65,3 +65,8 @@ Route::get('/shipping-charges', [App\Http\Controllers\Api\CheckoutController::cl
 Route::post('/apply-coupon', [App\Http\Controllers\Api\CheckoutController::class, 'applyCoupon']);
 Route::post('/place-order', [App\Http\Controllers\Api\CheckoutController::class, 'placeOrder']);
 Route::get('/track-order/{invoice_no}', [App\Http\Controllers\Api\CheckoutController::class, 'trackOrder']);
+
+// Chat Routes
+Route::post('/chat/send', [App\Http\Controllers\Api\ChatApiController::class, 'sendMessage']);
+Route::get('/chat/messages', [App\Http\Controllers\Api\ChatApiController::class, 'getMessages']);
+Route::get('/chat/unread-count', [App\Http\Controllers\Api\ChatApiController::class, 'getUnreadCount']);

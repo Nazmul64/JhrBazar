@@ -44,7 +44,7 @@ class FrontendApiController extends Controller
                 return $cat;
             });
 
-        $productColumns = ['id', 'name', 'thumbnail', 'selling_price', 'discount_price', 'is_active', 'created_at', 'seller_id'];
+        $productColumns = ['id', 'name', 'thumbnail', 'selling_price', 'discount_price', 'is_active', 'created_at', 'seller_id', 'cash_on_delivery', 'online_payment'];
         
         $popular = $this->getCombinedProducts('is_popular', 10, $productColumns);
         $newArrivals = $this->getCombinedProducts('is_new_arrival', 10, $productColumns);
@@ -452,10 +452,20 @@ class FrontendApiController extends Controller
 
     private function mapProductDetails($product, $type)
     {
+        $shop = null;
+        if ($type === 'seller' || $type === 'digital_seller') {
+            $shop = Shop::where('user_id', $product->seller_id)->first();
+        }
+
         return [
             'id'                => $product->id,
             'uid'               => $type . '_' . $product->id,
             'product_type'      => $type,
+            'seller_id'         => ($type === 'seller' || $type === 'digital_seller') ? $product->seller_id : null,
+            'seller_name'       => $shop ? $shop->name : 'JHR Bazar',
+            'seller_logo'       => $shop ? $shop->logo_url : null,
+            'seller_rating'     => 5.0, // Static for now as requested in screenshot
+            'estimated_delivery'=> $shop ? $shop->estimated_delivery : '2-5 days',
             'name'              => $product->name,
             'short_description' => $product->short_description,
             'description'       => $product->description,
@@ -498,7 +508,25 @@ class FrontendApiController extends Controller
         }
 
         $categoryId = $product->category_id;
+        $sellerId = (str_contains($type, 'seller')) ? $product->seller_id : null;
 
+        if ($sellerId) {
+            // Priority: Same seller's products
+            $sellerRelated = SellerProduct::where('is_active', 1)
+                ->where('seller_id', $sellerId)
+                ->where('id', '!=', $id)
+                ->latest()
+                ->take(12)
+                ->get()
+                ->map(fn($p) => $this->mapProduct($p, 'seller'));
+            
+            return response()->json([
+                'success' => true,
+                'data'    => $sellerRelated->values()
+            ]);
+        }
+
+        // Default: Same category products for Admin
         $adminRelated = Product::where('is_active', 1)
             ->where('category_id', $categoryId)
             ->where('id', '!=', $type === 'admin' ? $id : 0)
@@ -509,7 +537,6 @@ class FrontendApiController extends Controller
 
         $sellerRelated = SellerProduct::where('is_active', 1)
             ->where('category_id', $categoryId)
-            ->where('id', '!=', $type === 'seller' ? $id : 0)
             ->latest()
             ->take(6)
             ->get()
@@ -583,9 +610,12 @@ class FrontendApiController extends Controller
             'success' => true,
             'data'    => $products,
             'shop'    => $shop ? [
-                'name'   => $shop->name,
-                'logo'   => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : '/' . ltrim($shop->logo, '/')) : '/placeholder.jpg',
-                'banner' => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : '/' . ltrim($shop->banner, '/')) : '/placeholder.jpg',
+                'id'          => $shop->id,
+                'user_id'     => $shop->user_id,
+                'name'        => $shop->name,
+                'logo'        => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : '/' . ltrim($shop->logo, '/')) : '/placeholder.jpg',
+                'banner'      => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : '/' . ltrim($shop->banner, '/')) : '/placeholder.jpg',
+                'description' => $shop->description,
             ] : null
         ]);
     }
@@ -749,7 +779,7 @@ class FrontendApiController extends Controller
             'product_categories' => $productCategories,
             'page_categories'    => $pageCategories,
             'settings'           => $settings,
-            'social_links'       => SociallinkList::where('is_active', 1)->select('id', 'name', 'link', 'icon')->get(),
+            'social_links'       => SociallinkList::where('is_active', 1)->select('id', 'name', 'link')->get(),
             'membership_logos'   => $membershipLogos
         ]);
     }

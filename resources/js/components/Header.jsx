@@ -216,7 +216,7 @@ const Header = () => {
                     <div className="d-none d-lg-flex gap-4">
                         <Link to="/products" className="text-white text-decoration-none">সব পণ্য</Link>
                         <Link to="/order-tracking" className="text-white text-decoration-none">অর্ডার ট্র্যাক</Link>
-                        <Link to="/customer/login" className="text-white text-decoration-none">সেলার হন</Link>
+                        <a href="/seller/login" className="text-white text-decoration-none">সেলার হন</a>
                     </div>
                 </div>
             </div>
@@ -300,13 +300,11 @@ const Header = () => {
                                 <Link to="/products-all/best-deal" style={navLinkStyle('/products-all/best-deal')} className="nav-item-custom">সেরা অফার</Link>
                                 <Link to="/contact" style={navLinkStyle('/contact')} className="nav-item-custom">যোগাযোগ</Link>
                                 <Link to="/blogs" style={navLinkStyle('/blogs')} className="nav-item-custom">ব্লগ</Link>
+                                <Link to="/about" style={navLinkStyle('/about')} className="nav-item-custom">আমাদের সম্পর্কে</Link>
+                                <Link to="/terms" style={navLinkStyle('/terms')} className="nav-item-custom">শর্তাবলী</Link>
                             </nav>
                         </div>
-                        <div className="d-flex align-items-center gap-2">
-                            <span style={{ fontSize: '18px' }}>📱</span>
-                            <span className="small fw-bold text-muted">আমাদের অ্যাপ ডাউনলোড করুন</span>
-                            <span className="small ms-1">▼</span>
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -358,7 +356,7 @@ const Header = () => {
                             ) : (
                                 <Link to="/customer/login" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">লগইন / রেজিস্টার</Link>
                             )}
-                            <Link to="/customer/login" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">সেলার হন</Link>
+                            <a href="/seller/login" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">সেলার হন</a>
                         </div>
                     </div>
                 </div>

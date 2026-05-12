@@ -351,34 +351,61 @@
                             @error('gender')<div class="field-error">{{ $message }}</div>@enderror
                         </div>
 
+                        <div class="row-2" style="margin-bottom:16px">
+                            <div class="field-wrap" style="margin-bottom:0">
+                                <label class="field-label">Email <span class="req">*</span></label>
+                                <input type="email" name="email"
+                                    class="field-input @error('email') is-invalid @enderror"
+                                    value="{{ old('email', $user->email) }}">
+                                @error('email')<div class="field-error">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="field-wrap" style="margin-bottom:0">
+                                <label class="field-label">Password <small class="text-muted">(Leave empty to keep current)</small></label>
+                                <input type="password" name="password"
+                                    class="field-input @error('password') is-invalid @enderror"
+                                    placeholder="••••••••">
+                                @error('password')<div class="field-error">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+
                         <div class="field-wrap" style="margin-bottom:0">
-                            <label class="field-label">Email <span class="req">*</span></label>
-                            <input type="email" name="email"
-                                class="field-input @error('email') is-invalid @enderror"
-                                value="{{ old('email', $user->email) }}">
-                            @error('email')<div class="field-error">{{ $message }}</div>@enderror
+                            <label class="field-label">Confirm Password</label>
+                            <input type="password" name="password_confirmation"
+                                class="field-input"
+                                placeholder="••••••••">
                         </div>
                     </div>
 
-                    {{-- Right: profile image --}}
+                    {{-- Right: profile image & NID --}}
                     <div>
-                        <div class="img-preview-box profile-img-box" id="profilePreviewBox">
-                            @if($user->profile_image_url)
-                                <img src="{{ $user->profile_image_url }}" alt="Profile">
-                            @else
-                                <div class="img-preview-placeholder">
-                                    <span>500 × 500</span>
-                                </div>
-                            @endif
-                        </div>
-                        <div class="field-wrap" style="margin-bottom:0">
+                        <div class="field-wrap">
                             <label class="field-label">User profile (Ratio 1:1)</label>
+                            <div class="img-preview-box profile-img-box" id="profilePreviewBox" style="margin-bottom: 10px;">
+                                @if($user->profile_image_url)
+                                    <img src="{{ $user->profile_image_url }}" alt="Profile">
+                                @else
+                                    <div class="img-preview-placeholder"><span>500 × 500</span></div>
+                                @endif
+                            </div>
                             <input type="file" name="profile_image" id="profileInput"
                                 class="field-input @error('profile_image') is-invalid @enderror"
-                                accept="image/*"
-                                style="padding:6px 10px">
+                                accept="image/*" style="padding:6px 10px">
                             @error('profile_image')<div class="field-error">{{ $message }}</div>@enderror
-                            <small style="color:#999; font-size:12px">Leave empty to keep current photo</small>
+                        </div>
+
+                        <div class="field-wrap" style="margin-bottom:0">
+                            <label class="field-label">National ID Card</label>
+                            <div class="img-preview-box" id="nidPreviewBox" style="height: 120px; margin-bottom: 10px;">
+                                @if($user->national_id_card && file_exists(public_path($user->national_id_card)))
+                                    <img src="{{ asset($user->national_id_card) }}" alt="NID">
+                                @else
+                                    <div class="img-preview-placeholder"><span>NID Preview</span></div>
+                                @endif
+                            </div>
+                            <input type="file" name="national_id_card" id="nidInput"
+                                class="field-input @error('national_id_card') is-invalid @enderror"
+                                accept="image/*" style="padding:6px 10px">
+                            @error('national_id_card')<div class="field-error">{{ $message }}</div>@enderror
                         </div>
                     </div>
 
@@ -404,11 +431,65 @@
                         @error('shop_name')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
                     <div class="field-wrap" style="margin-bottom:0">
+                        <label class="field-label">Business Name</label>
+                        <input type="text" name="business_name"
+                            class="field-input @error('business_name') is-invalid @enderror"
+                            placeholder="Enter Business Name"
+                            value="{{ old('business_name', $shop->business_name) }}">
+                        @error('business_name')<div class="field-error">{{ $message }}</div>@enderror
+                    </div>
+                </div>
+
+                <div class="row-2" style="margin-bottom:20px">
+                    <div class="field-wrap" style="margin-bottom:0">
+                        <label class="field-label">Business Type</label>
+                        <input type="text" name="business_type"
+                            class="field-input @error('business_type') is-invalid @enderror"
+                            placeholder="e.g. Retail, Wholesale"
+                            value="{{ old('business_type', $shop->business_type) }}">
+                        @error('business_type')<div class="field-error">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="field-wrap" style="margin-bottom:0">
+                        <label class="field-label">Shop URL / Website</label>
+                        <input type="text" name="url"
+                            class="field-input @error('url') is-invalid @enderror"
+                            placeholder="https://..."
+                            value="{{ old('url', $shop->url) }}">
+                        @error('url')<div class="field-error">{{ $message }}</div>@enderror
+                    </div>
+                </div>
+
+                <div class="row-1" style="margin-bottom:20px">
+                    <div class="field-wrap" style="margin-bottom:0">
+                        <label class="field-label">Categories <small class="text-muted">(JSON format, e.g. ["Electronics", "Fashion"])</small></label>
+                        <input type="text" name="categories"
+                            class="field-input"
+                            placeholder='["Electronics", "Fashion"]'
+                            value="{{ old('categories', $shop->categories) }}">
+                    </div>
+                </div>
+
+                <div class="row-3" style="margin-bottom:20px">
+                    <div class="field-wrap" style="margin-bottom:0">
                         <label class="field-label">Address</label>
                         <input type="text" name="address"
                             class="field-input"
                             placeholder="Enter Address"
                             value="{{ old('address', $shop->address) }}">
+                    </div>
+                    <div class="field-wrap" style="margin-bottom:0">
+                        <label class="field-label">City</label>
+                        <input type="text" name="city"
+                            class="field-input"
+                            placeholder="Enter City"
+                            value="{{ old('city', $shop->city) }}">
+                    </div>
+                    <div class="field-wrap" style="margin-bottom:0">
+                        <label class="field-label">Postal Code</label>
+                        <input type="text" name="postal_code"
+                            class="field-input"
+                            placeholder="Enter Postal Code"
+                            value="{{ old('postal_code', $shop->postal_code) }}">
                     </div>
                 </div>
 
@@ -461,6 +542,33 @@
                     <label class="field-label">Description</label>
                     <textarea name="description" class="field-textarea"
                         placeholder="Enter Description">{{ old('description', $shop->description) }}</textarea>
+                </div>
+
+                {{-- ══ BANK INFORMATION ══ --}}
+                <div style="background: #fdf0f6; border: 1px dashed #e83e8c; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+                    <h6 style="margin-top: 0; margin-bottom: 15px; color: #e83e8c; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-university"></i> Bank Account Details
+                    </h6>
+                    <div class="row-2">
+                        <div class="field-wrap">
+                            <label class="field-label">Bank Name</label>
+                            <input type="text" name="bank_name" class="field-input" value="{{ old('bank_name', $user->bank_name) }}" placeholder="e.g. Dutch Bangla Bank">
+                        </div>
+                        <div class="field-wrap">
+                            <label class="field-label">Branch Name</label>
+                            <input type="text" name="bank_branch" class="field-input" value="{{ old('bank_branch', $user->bank_branch) }}" placeholder="e.g. Uttara Branch">
+                        </div>
+                    </div>
+                    <div class="row-2" style="margin-bottom: 0;">
+                        <div class="field-wrap" style="margin-bottom: 0;">
+                            <label class="field-label">Account Number</label>
+                            <input type="text" name="bank_account_number" class="field-input" value="{{ old('bank_account_number', $user->bank_account_number) }}" placeholder="Enter A/C Number">
+                        </div>
+                        <div class="field-wrap" style="margin-bottom: 0;">
+                            <label class="field-label">Account Holder Name</label>
+                            <input type="text" name="bank_account_holder" class="field-input" value="{{ old('bank_account_holder', $user->bank_account_holder) }}" placeholder="Enter Holder Name">
+                        </div>
+                    </div>
                 </div>
 
                 {{-- ── Map Search ── --}}
@@ -527,6 +635,7 @@ function bindPreview(inputId, boxId) {
 bindPreview('profileInput', 'profilePreviewBox');
 bindPreview('logoInput',    'logoPreviewBox');
 bindPreview('bannerInput',  'bannerPreviewBox');
+bindPreview('nidInput',     'nidPreviewBox');
 
 // ── Leaflet map
 var savedLat = {{ $shop->latitude  ?? 23.8103 }};
