@@ -86,6 +86,12 @@
                                         @elseif($item->status == 'rejected')
                                             <span class="badge bg-danger">Rejected</span>
                                         @endif
+
+                                        @if($item->admin_note)
+                                            <div class="mt-1">
+                                                <small class="text-danger"><strong>Note:</strong> {{ $item->admin_note }}</small>
+                                            </div>
+                                        @endif
                                     </td>
                                     <td>
                                         @if($item->status == 'pending')
@@ -129,7 +135,12 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Withdraw Amount <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="amount" class="form-control" placeholder="Enter amount" required>
+                        <input type="number" step="0.01" name="amount" class="form-control" 
+                               placeholder="Min: {{ $settings->min_withdraw ?? 0 }} | Max: {{ $settings->max_withdraw ?? 1000000 }}" 
+                               min="{{ $settings->min_withdraw ?? 0 }}" 
+                               max="{{ $settings->max_withdraw ?? 1000000 }}" 
+                               required>
+                        <div class="form-text small">Admin Limit: ৳{{ number_format($settings->min_withdraw ?? 0, 2) }} - ৳{{ number_format($settings->max_withdraw ?? 1000000, 2) }}</div>
                     </div>
 
                     <div class="mb-3">

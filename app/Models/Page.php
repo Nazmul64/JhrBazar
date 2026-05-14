@@ -13,7 +13,11 @@ class Page extends Model
         'page_category_id',
         'name',
         'title',
+        'slug',
         'description',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
         'status',
     ];
 

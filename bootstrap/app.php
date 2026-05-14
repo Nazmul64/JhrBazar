@@ -18,6 +18,15 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin'      => AdminMiddleware::class,
             'role'       => \App\Http\Middleware\CheckRole::class,
             'permission' => \App\Http\Middleware\PermissionMiddleware::class,
+            'blocked'    => \App\Http\Middleware\CheckBlocked::class,
+        ]);
+
+        $middleware->appendToGroup('web', [
+            \App\Http\Middleware\CheckBlocked::class,
+        ]);
+
+        $middleware->appendToGroup('api', [
+            \App\Http\Middleware\CheckBlocked::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

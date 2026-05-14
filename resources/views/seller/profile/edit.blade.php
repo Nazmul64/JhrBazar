@@ -115,7 +115,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small text-uppercase">Order ID Prefix</label>
-                                <input type="text" name="order_prefix" class="form-control" value="{{ old('order_prefix', $shop->order_prefix ?? 'RC') }}" maxlength="10">
+                                <input type="text" name="order_id_prefix" class="form-control" value="{{ old('order_id_prefix', $shop->order_prefix ?? 'RC') }}" maxlength="10">
                             </div>
 
                             {{-- Division & District --}}
@@ -143,7 +143,7 @@
                             {{-- Delivery & Min Order --}}
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small text-uppercase">Min. Order Amount (৳)</label>
-                                <input type="number" name="min_order_amount" class="form-control" value="{{ old('min_order_amount', $shop->min_order_amount ?? 0) }}" step="0.01">
+                                <input type="number" name="minimum_order_amount" class="form-control" value="{{ old('minimum_order_amount', $shop->min_order_amount ?? 0) }}" step="0.01">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small text-uppercase">Est. Delivery (Days)</label>

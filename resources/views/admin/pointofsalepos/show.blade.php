@@ -528,6 +528,7 @@ function posShowFmt($num, $cur) {
                 <div class="status-select-wrap">
                     <select class="status-select" id="orderStatusSelect">
                         @php $currentStatus = $invoice->order?->status ?? 'completed'; @endphp
+                        <option value="pending"   {{ $currentStatus === 'pending'   ? 'selected' : '' }}>Pending</option>
                         <option value="completed"  {{ $currentStatus === 'completed'  ? 'selected' : '' }}>Delivered</option>
                         <option value="draft"      {{ $currentStatus === 'draft'      ? 'selected' : '' }}>Draft</option>
                         <option value="cancelled"  {{ $currentStatus === 'cancelled'  ? 'selected' : '' }}>Cancelled</option>
@@ -584,10 +585,17 @@ function posShowFmt($num, $cur) {
                     <span class="addr-label">Date</span>
                     <span class="addr-value">{{ $invoice->created_at->format('d M Y') }}</span>
                 </div>
-                <div class="addr-item">
-                    <span class="addr-label">Assigned Staff</span>
-                    <span class="addr-value" style="color:var(--blue);font-weight:600;">{{ $invoice->order->assigned_staff_name ?? 'Not Assigned' }}</span>
-                </div>
+                    <div class="addr-item">
+                        <span class="addr-label">Assigned Staff</span>
+                        <select class="status-select" id="staffSelect">
+                            <option value="" {{ empty($invoice->order->assigned_staff_id) ? 'selected' : '' }}>Not Assigned</option>
+                            @foreach($staffs as $staff)
+                                <option value="{{ $staff->id }}" {{ (!empty($invoice->order) && $invoice->order->assigned_staff_id == $staff->id) ? 'selected' : '' }}>
+                                    {{ $staff->name ?? $staff->user->name ?? 'Staff' }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                 <div class="addr-item">
                     <span class="addr-label">Items</span>
                     <span class="addr-value">{{ count($invoice->items) }} product{{ count($invoice->items) !== 1 ? 's' : '' }}</span>

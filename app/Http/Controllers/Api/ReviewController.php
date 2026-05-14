@@ -42,8 +42,23 @@ class ReviewController extends Controller
             ], 422);
         }
 
+        $shopId = null;
+        if ($request->product_type === 'product' || $request->product_type === 'admin' || $request->product_type === 'digital_admin') {
+            $productTable = ($request->product_type === 'digital_admin') ? 'digital_products' : 'products';
+            $product = DB::table($productTable)->where('id', $request->product_id)->first();
+            $shopId = $product->shop_id ?? null;
+        } elseif ($request->product_type === 'seller' || $request->product_type === 'seller_product' || $request->product_type === 'digital_seller') {
+            $productTable = ($request->product_type === 'digital_seller') ? 'seller_digital_products' : 'seller_products';
+            $product = DB::table($productTable)->where('id', $request->product_id)->first();
+            if ($product) {
+                $shop = DB::table('shops')->where('user_id', $product->seller_id)->first();
+                $shopId = $shop->id ?? null;
+            }
+        }
+
         $review = Review::create([
             'user_id'      => auth()->id(),
+            'shop_id'      => $shopId,
             'product_id'   => $request->product_id,
             'product_type' => $request->product_type,
             'rating'       => $request->rating,

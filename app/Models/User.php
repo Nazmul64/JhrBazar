@@ -27,7 +27,20 @@ class User extends Authenticatable
         'bank_branch',
         'bank_account_number',
         'bank_account_holder',
+        'balance',
+        'is_blocked',
+        'last_ip',
     ];
+
+    public function transactions()
+    {
+        return $this->hasMany(SellerTransaction::class, 'seller_id');
+    }
+
+    public function orderStatusLogs()
+    {
+        return $this->hasMany(OrderStatusLog::class, 'changed_by');
+    }
 
     protected $hidden = [
         'password',

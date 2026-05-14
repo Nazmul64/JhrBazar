@@ -24,14 +24,67 @@ class SellerDashboardController extends Controller
         // Isolated Statistics
         $totalProducts = Product::where('shop_id', $shop->id)->count();
         $totalOrders   = \App\Models\PosInvoice::where('seller_id', $user->id)->count();
-        $totalCategories = Category::count();
-        $totalBrands = Brand::count();
+        
+        // Detailed Stats
+        $totalEarnings = $user->balance;
+        
+        $orderCounts = \App\Models\PosInvoice::where('pos_invoices.seller_id', $user->id)
+            ->join('pointofsalepos', 'pos_invoices.pointofsalepo_id', '=', 'pointofsalepos.id')
+            ->select('pointofsalepos.status', \DB::raw('count(*) as total'))
+            ->groupBy('pointofsalepos.status')
+            ->pluck('total', 'status')
+            ->toArray();
+
+        $deliveredOrders = $orderCounts['delivered'] ?? 0;
+        $rejectedOrders = ($orderCounts['cancelled'] ?? 0) + ($orderCounts['rejected'] ?? 0);
+        $pendingOrders = $orderCounts['pending'] ?? 0;
+        $processingOrders = $orderCounts['processing'] ?? 0;
+        $shippedOrders = $orderCounts['shipped'] ?? 0;
+        $confirmedOrders = $orderCounts['confirmed'] ?? 0;
+
+        // Withdrawal Stats
+        $pendingWithdraw = \App\Models\SellerTransaction::where('seller_id', $user->id)
+            ->where('type', 'withdrawal')
+            ->where('status', 'pending')
+            ->sum('amount');
+        $alreadyWithdraw = \App\Models\SellerTransaction::where('seller_id', $user->id)
+            ->where('type', 'withdrawal')
+            ->where('status', 'completed')
+            ->sum('amount');
+        $rejectedWithdraw = \App\Models\SellerTransaction::where('seller_id', $user->id)
+            ->where('type', 'withdrawal')
+            ->where('status', 'rejected')
+            ->sum('amount');
+        $totalWithdraw = $pendingWithdraw + $alreadyWithdraw;
+
+        $recentOrders = \App\Models\PosInvoice::where('seller_id', $user->id)
+            ->with('order')
+            ->orderBy('id', 'desc')
+            ->take(5)
+            ->get();
+
+        // Top Selling Products (Simplified logic for now)
+        $topProducts = \App\Models\Product::where('shop_id', $shop->id)
+            ->orderBy('id', 'desc')
+            ->take(3)
+            ->get();
 
         return view('seller.index', compact(
             'totalProducts', 
             'totalOrders', 
-            'totalCategories', 
-            'totalBrands'
+            'totalEarnings',
+            'deliveredOrders',
+            'rejectedOrders',
+            'pendingOrders',
+            'processingOrders',
+            'shippedOrders',
+            'confirmedOrders',
+            'pendingWithdraw',
+            'alreadyWithdraw',
+            'rejectedWithdraw',
+            'totalWithdraw',
+            'recentOrders',
+            'topProducts'
         ));
     }
 }

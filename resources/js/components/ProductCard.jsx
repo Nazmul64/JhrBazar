@@ -9,7 +9,7 @@ const ProductCard = ({ product }) => {
     const { settings } = useSettings();
     const mainColor = settings?.primary_color || '#001fcc';
     const [isVisible, setIsVisible] = useState(false);
-    const [added, setAdded]         = useState(false);
+    const [added, setAdded] = useState(false);
     const cardRef = useRef(null);
     const { addToCart } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
@@ -65,7 +65,7 @@ const ProductCard = ({ product }) => {
             }}
         >
             {/* Wishlist Button */}
-            <button 
+            <button
                 className="wishlist-btn-floating"
                 onClick={handleWishlist}
                 style={{
@@ -113,28 +113,29 @@ const ProductCard = ({ product }) => {
 
             {/* Product Image */}
             <Link
-                to={`/product-details/${product.product_type}/${product.id}`}
+                to={`/product-details/${product.product_type}/${product.slug}`}
                 className="product-card-img-wrapper"
-                style={{ 
-                    display: 'block', 
+                style={{
+                    display: 'block',
                     height: '200px', // Fallback
-                    flexShrink: 0, 
-                    textAlign: 'center', 
-                    overflow: 'hidden', 
-                    backgroundColor: '#f9f9f9' 
+                    flexShrink: 0,
+                    textAlign: 'center',
+                    overflow: 'hidden',
+                    backgroundColor: '#f9f9f9'
                 }}
             >
                 <img
-                    src={product.image}
+                    src={product.image?.startsWith('http') ? product.image : (product.image?.startsWith('/') ? product.image : (product.image?.startsWith('uploads/') ? `/${product.image}` : `/uploads/product/${product.image}`))}
                     alt={product.title}
                     className="product-img-hover"
                     loading="lazy"
                     style={{ width: '100%', height: '100%', objectFit: 'contain', transition: 'transform 0.5s ease' }}
+                    onError={(e) => { e.target.src = '/assets/admin/images/no-image.png'; }}
                 />
             </Link>
 
             <div className="card-body p-3 d-flex flex-column" style={{ flexGrow: 1 }}>
-                <Link to={`/product-details/${product.product_type}/${product.id}`} className="text-decoration-none text-dark">
+                <Link to={`/product-details/${product.product_type}/${product.slug}`} className="text-decoration-none text-dark">
                     <h6 className="mb-2 text-truncate-1 product-card-title" style={{ fontSize: '14px', fontWeight: '600', lineHeight: '1.4' }}>
                         {product.title}
                     </h6>
@@ -153,12 +154,12 @@ const ProductCard = ({ product }) => {
 
                 {settings?.show_product_stats !== false && (
                     <div className="d-flex justify-content-between align-items-center mb-3 border-top pt-2 mt-auto" style={{ fontSize: '11px' }}>
-                    <div className="text-warning">
-                        ★ <span className="text-dark fw-bold">{product.rating || '0.0'}</span>{' '}
-                        <span className="text-muted">({product.reviews || 0})</span>
+                        <div className="text-warning">
+                            ★ <span className="text-dark fw-bold">{product.rating || '0.0'}</span>{' '}
+                            <span className="text-muted">({product.reviews || 0})</span>
+                        </div>
+                        <div className="text-muted fw-bold">{product.sold || 0} Sold</div>
                     </div>
-                    <div className="text-muted fw-bold">{product.sold || 0} Sold</div>
-                </div>
                 )}
 
                 <div className={`d-flex gap-2 ${settings?.show_product_stats === false ? 'mt-auto' : ''}`}>

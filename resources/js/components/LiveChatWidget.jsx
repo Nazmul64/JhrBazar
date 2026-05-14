@@ -11,6 +11,7 @@ const LiveChatWidget = () => {
     const [unreadCount, setUnreadCount] = useState(0);
     const [newMessage, setNewMessage] = useState('');
     const [imageFile, setImageFile] = useState(null);
+    const [supportSettings, setSupportSettings] = useState(null);
     const [sessionId, setSessionId] = useState('');
     const [activeReceiver, setActiveReceiver] = useState(null); // null = Admin, {id, name} = Seller
     const messagesEndRef = useRef(null);
@@ -45,6 +46,21 @@ const LiveChatWidget = () => {
 
         window.addEventListener('openSellerChat', handleOpenChat);
         return () => window.removeEventListener('openSellerChat', handleOpenChat);
+    }, []);
+
+    // Fetch Admin Support Settings
+    useEffect(() => {
+        const fetchSupportSettings = async () => {
+            try {
+                const response = await axios.get('/api/admin-support');
+                if (response.data.success) {
+                    setSupportSettings(response.data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching support settings:', error);
+            }
+        };
+        fetchSupportSettings();
     }, []);
 
     // Link session to user when token is available (after login)
@@ -271,7 +287,7 @@ const LiveChatWidget = () => {
                     {/* Messenger */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ backgroundColor: '#fff', padding: '8px 15px', borderRadius: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)', fontSize: '14px', fontWeight: 'bold' }}>Messenger</div>
-                        <a href="https://m.me/yourpage" target="_blank" rel="noreferrer" style={{ width: '50px', height: '50px', borderRadius: '50%', backgroundColor: '#0084ff', color: '#fff', boxShadow: '0 4px 15px rgba(0,132,255,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', fontSize: '24px', textDecoration: 'none' }}>
+                        <a href={supportSettings?.messenger_url || "https://m.me/yourpage"} target="_blank" rel="noreferrer" style={{ width: '50px', height: '50px', borderRadius: '50%', backgroundColor: '#0084ff', color: '#fff', boxShadow: '0 4px 15px rgba(0,132,255,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', fontSize: '24px', textDecoration: 'none' }}>
                             <i className="fab fa-facebook-messenger"></i>
                         </a>
                     </div>
@@ -279,7 +295,7 @@ const LiveChatWidget = () => {
                     {/* WhatsApp */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ backgroundColor: '#fff', padding: '8px 15px', borderRadius: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)', fontSize: '14px', fontWeight: 'bold' }}>WhatsApp</div>
-                        <a href="https://wa.me/yournumber" target="_blank" rel="noreferrer" style={{ width: '50px', height: '50px', borderRadius: '50%', backgroundColor: '#25d366', color: '#fff', boxShadow: '0 4px 15px rgba(37,211,102,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', fontSize: '24px', textDecoration: 'none' }}>
+                        <a href={`https://wa.me/${supportSettings?.whatsapp_number || "yournumber"}`} target="_blank" rel="noreferrer" style={{ width: '50px', height: '50px', borderRadius: '50%', backgroundColor: '#25d366', color: '#fff', boxShadow: '0 4px 15px rgba(37,211,102,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', fontSize: '24px', textDecoration: 'none' }}>
                             <i className="fab fa-whatsapp"></i>
                         </a>
                     </div>
@@ -287,7 +303,7 @@ const LiveChatWidget = () => {
                     {/* Call Us */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ backgroundColor: '#fff', padding: '8px 15px', borderRadius: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)', fontSize: '14px', fontWeight: 'bold' }}>Call Us</div>
-                        <a href={`tel:${settings?.hotline_number || settings?.mobile_number || '01700000000'}`} style={{ width: '50px', height: '50px', borderRadius: '50%', backgroundColor: '#344050', color: '#fff', boxShadow: '0 4px 15px rgba(52,64,80,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', fontSize: '20px', textDecoration: 'none' }}>
+                        <a href={`tel:${supportSettings?.phone_number || settings?.hotline_number || settings?.mobile_number || '01700000000'}`} style={{ width: '50px', height: '50px', borderRadius: '50%', backgroundColor: '#344050', color: '#fff', boxShadow: '0 4px 15px rgba(52,64,80,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', fontSize: '20px', textDecoration: 'none' }}>
                             <i className="fas fa-phone-alt"></i>
                         </a>
                     </div>

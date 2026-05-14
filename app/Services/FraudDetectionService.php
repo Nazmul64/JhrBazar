@@ -36,8 +36,11 @@ class FraudDetectionService
         // 5. Transaction analysis
         $this->analyzeTransaction($data);
 
-        // 6. Rule engine
-        $this->runRuleEngine(array_merge($data, $networkData, $emailData, $phoneData));
+        // 6. Courier Success Analysis (Steadfast & Pathao)
+        $courierData = $this->analyzeCourierHistory($data['customer_phone'] ?? null, $data['ip_address'] ?? null);
+
+        // 7. Rule engine
+        $this->runRuleEngine(array_merge($data, $networkData, $emailData, $phoneData, $courierData));
 
         // 7. Clamp 0–100
         $this->score = max(0, min(100, $this->score));
@@ -79,6 +82,7 @@ class FraudDetectionService
             'os'                   => $data['os']                    ?? null,
             'triggered_rules'      => $this->triggeredRules,
             'flags'                => $this->flags,
+            'courier_data'         => $courierData,
             'notes'                => $data['notes']                 ?? null,
             'created_by'           => auth()->id(),
         ]);
@@ -227,6 +231,52 @@ class FraudDetectionService
             'phone_carrier' => $isBD ? 'GP / Robi / Banglalink' : 'Unknown',
             'phone_type'    => $isVoip ? 'voip' : 'mobile',
             'phone_country' => $isBD ? 'BD' : 'Unknown',
+        ];
+    }
+
+    // ─── Courier Analysis ──────────────────────────────────────────────────────
+    private function analyzeCourierHistory(?string $phone, ?string $ip): array
+    {
+        if (!$phone && !$ip) return [];
+
+        $query = \Illuminate\Support\Facades\DB::table('pointofsalepos');
+        if ($phone) $query->where('phone', $phone);
+        if ($ip) $query->orWhere('ip_address', $ip);
+
+        $orders = $query->get();
+        if ($orders->isEmpty()) return [];
+
+        $totalCount = $orders->count();
+        $steadfastOrders = $orders->where('courier_name', 'steadfast');
+        $pathaoOrders = $orders->where('courier_name', 'pathao');
+
+        $steadfastRejected = $steadfastOrders->whereIn('courier_status', ['cancelled', 'rejected', 'returned'])->count();
+        $pathaoRejected = $pathaoOrders->whereIn('courier_status', ['cancelled', 'rejected', 'returned'])->count();
+
+        $steadfastSuccess = $steadfastOrders->where('courier_status', 'delivered')->count();
+        $pathaoSuccess = $pathaoOrders->where('courier_status', 'delivered')->count();
+
+        $sfRate = $steadfastOrders->count() > 0 ? ($steadfastSuccess / $steadfastOrders->count()) * 100 : 0;
+        $ptRate = $pathaoOrders->count() > 0 ? ($pathaoSuccess / $pathaoOrders->count()) * 100 : 0;
+
+        if ($sfRate < 50 && $steadfastOrders->count() > 2) {
+            $this->score += 30;
+            $this->flags[] = 'LOW_STEADFAST_SUCCESS_RATE';
+        }
+
+        if ($ptRate < 50 && $pathaoOrders->count() > 2) {
+            $this->score += 30;
+            $this->flags[] = 'LOW_PATHAO_SUCCESS_RATE';
+        }
+
+        return [
+            'total_orders' => $totalCount,
+            'sf_total' => $steadfastOrders->count(),
+            'sf_rejected' => $steadfastRejected,
+            'sf_success_rate' => $sfRate,
+            'pt_total' => $pathaoOrders->count(),
+            'pt_rejected' => $pathaoRejected,
+            'pt_success_rate' => $ptRate,
         ];
     }
 

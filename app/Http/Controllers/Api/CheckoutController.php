@@ -272,6 +272,7 @@ class CheckoutController extends Controller
                     'coupon_code'     => $request->coupon_code,
                 ]);
 
+                $order->invoice_number = $invoice->invoice_number;
                 $orders[] = $order;
 
                 // Send Email Notification to Admin

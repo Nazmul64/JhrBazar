@@ -9,11 +9,15 @@ import '../css/frontend.css';
  * Renamed router import to MainApp to avoid Windows filename conflicts.
  */
 
+import { HelmetProvider } from 'react-helmet-async';
+
 if (document.getElementById('react-app')) {
     const root = ReactDOM.createRoot(document.getElementById("react-app"));
     root.render(
         <React.StrictMode>
-            <MainApp />
+            <HelmetProvider>
+                <MainApp />
+            </HelmetProvider>
         </React.StrictMode>
     );
 }

@@ -101,11 +101,14 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
-     Initialize rich text editor if needed
-     $('#description').summernote({ height: 200 });
-     tinymce.init({ selector: '#description', height: 200 });
+    $(document).ready(function() {
+        $('#description').summernote({
+            height: 300,
+            placeholder: 'Enter page content...'
+        });
+    });
 </script>
-
-
+@endpush
 @endsection

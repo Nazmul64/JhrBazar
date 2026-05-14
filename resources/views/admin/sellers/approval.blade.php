@@ -122,17 +122,89 @@
                             <td><span class="badge bg-success">Active</span></td>
                             <td>{{ $seller->created_at->format('d M, Y') }}</td>
                             <td class="text-end">
-                                <form action="{{ route('admin.sellers.reject', $seller->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="btn btn-outline-danger btn-sm px-3">
-                                        Suspend
-                                    </button>
-                                </form>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ route('admin.sellers.edit', $seller->id) }}" class="btn btn-sm btn-outline-primary" title="Edit Seller">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    
+                                    <form action="{{ route('admin.sellers.reject', $seller->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-outline-warning btn-sm" title="Suspend Seller">
+                                            Suspend
+                                        </button>
+                                    </form>
+
+                                    <form action="{{ route('admin.sellers.destroy', $seller->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this seller?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Seller">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
                             <td colspan="5" class="text-center py-4 text-muted">No approved sellers yet.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {{-- ── SUSPENDED SELLERS ────────────────────────────────────────────────── --}}
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header bg-white py-3">
+            <h6 class="fw-bold mb-0 text-danger"><i class="bi bi-slash-circle me-2"></i> Suspended Sellers</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Owner</th>
+                            <th>Shop Name</th>
+                            <th>Status</th>
+                            <th>Suspended Date</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($suspendedSellers as $seller)
+                        <tr>
+                            <td>
+                                <div class="fw-bold">{{ $seller->name }} {{ $seller->last_name }}</div>
+                                <div class="small text-muted">{{ $seller->email }}</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-primary">{{ $seller->shop->name ?? 'N/A' }}</div>
+                            </td>
+                            <td><span class="badge bg-danger">Suspended</span></td>
+                            <td>{{ $seller->updated_at->format('d M, Y') }}</td>
+                            <td class="text-end">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <form action="{{ route('admin.sellers.activate', $seller->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-success btn-sm px-3 fw-bold">
+                                            Activate
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('admin.sellers.destroy', $seller->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this seller?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">No suspended sellers found.</td>
                         </tr>
                         @endforelse
                     </tbody>

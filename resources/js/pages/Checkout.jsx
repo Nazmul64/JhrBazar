@@ -29,6 +29,8 @@ const Checkout = () => {
         online_gateway: ''
     });
 
+    const [saveStatus, setSaveStatus] = useState(''); // '' | 'saving' | 'saved'
+
     useEffect(() => {
         const fetchShipping = async () => {
             try {
@@ -62,6 +64,67 @@ const Checkout = () => {
         fetchShipping();
         fetchGateways();
     }, []);
+
+    // Lead Capture Logic (Incomplete Orders)
+    useEffect(() => {
+        if (!formData.phone || formData.phone.length < 11) return;
+
+        // If exactly 11, save immediately
+        if (formData.phone.length === 11) {
+            saveLead();
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            saveLead();
+        }, 1500); 
+
+        return () => clearTimeout(timer);
+    }, [formData.phone, formData.name]);
+
+    const saveLead = async () => {
+        try {
+            setSaveStatus('saving');
+            // Group items by shop/seller to save separate leads if necessary
+            const shops = [...new Set(cartItems.map(item => item.seller_id))];
+            
+            for (const shopId of shops) {
+                const shopTotal = cartItems
+                    .filter(item => item.seller_id === shopId)
+                    .reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+                await axios.post('/api/leads/save', {
+                    name: formData.name,
+                    phone: formData.phone,
+                    email: formData.email,
+                    address: formData.address,
+                    payment_method: formData.payment_method,
+                    area: formData.shipping_id, // This is the ID but usually represents area
+                    cart_items: cartItems.filter(item => item.seller_id === shopId),
+                    seller_id: shopId === 0 ? null : shopId, // 0 usually means admin
+                    total: shopTotal,
+                    url: window.location.href
+                });
+            }
+            setSaveStatus('saved');
+            toast.success("তথ্য সেভ হয়েছে!", {
+                duration: 3000,
+                position: 'top-center',
+                style: {
+                    background: '#10b981',
+                    color: '#fff',
+                    borderRadius: '50px',
+                    fontSize: '14px',
+                    fontWeight: 'bold'
+                }
+            });
+            // Hide status text after 5 seconds
+            setTimeout(() => setSaveStatus(''), 5000);
+        } catch (err) {
+            console.error("Error saving lead", err);
+            setSaveStatus('');
+        }
+    };
 
     useEffect(() => {
         const canCOD = cartItems.every(item => item.cash_on_delivery ?? true);
@@ -200,6 +263,16 @@ const Checkout = () => {
                                                     placeholder="০১৮XXXXXXXX" value={formData.phone} onChange={handleChange}
                                                 />
                                             </div>
+                                            {saveStatus === 'saved' && (
+                                                <div className="mt-1 small text-success animation-slide-down">
+                                                    <i className="bi bi-check-circle-fill me-1"></i> তথ্য সেভ হয়েছে
+                                                </div>
+                                            )}
+                                            {saveStatus === 'saving' && (
+                                                <div className="mt-1 small text-muted animation-slide-down">
+                                                    <span className="spinner-border spinner-border-sm me-1" style={{width:'10px', height:'10px'}}></span> সেভ হচ্ছে...
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="col-md-6">
@@ -359,7 +432,12 @@ const Checkout = () => {
                                         {cartItems.map(item => (
                                             <div key={item.uid} className="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom border-light">
                                                 <div className="rounded border overflow-hidden position-relative" style={{ width: '50px', height: '50px', flexShrink: 0 }}>
-                                                    <img src={item.image} alt={item.title} className="w-100 h-100 object-fit-cover" />
+                                                    <img 
+                                                        src={item.image?.startsWith('http') ? item.image : (item.image?.startsWith('/') ? item.image : (item.image?.startsWith('uploads/') ? `/${item.image}` : `/uploads/product/${item.image}`))} 
+                                                        alt={item.title} 
+                                                        className="w-100 h-100 object-fit-cover" 
+                                                        onError={(e) => { e.target.src = '/assets/admin/images/no-image.png'; }}
+                                                    />
                                                     <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark border border-light" style={{ fontSize: '10px' }}>
                                                         {item.qty}
                                                     </span>

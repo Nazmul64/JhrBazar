@@ -1,85 +1,149 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import axios from 'axios';
 import MasterLayout from '../layouts/MasterLayout';
-
-const blogs = [
-    {
-        id: 1,
-        category: "Clothing, Shoes & Jewelry",
-        title: "Top Clothing Trends to Elevate Your Style In 2024",
-        desc: "Fashion is ever-evolving, reflecting shifts in culture, technology, and sustainability...",
-        author: "Admin",
-        date: "27 Jan, 2024",
-        views: 6,
-        image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=500&auto=format&fit=crop"
-    },
-    {
-        id: 2,
-        category: "Gadgets",
-        title: "Boosting Productivity with Smartwatches In Today's World",
-        desc: "Boosting Productivity with Smartwatches in today's fast-paced world is very essential...",
-        author: "Admin",
-        date: "27 Jan, 2024",
-        views: 3,
-        image: "https://images.unsplash.com/photo-1544117518-30dd057a1bb2?q=80&w=500&auto=format&fit=crop"
-    },
-    {
-        id: 3,
-        category: "Business",
-        title: "Using a Complete Solution to Grow Your E-commerce Business",
-        desc: "What Does Scaling an eCommerce Business Actually mean? In simple words...",
-        author: "Admin",
-        date: "27 Jan, 2024",
-        views: 5,
-        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=500&auto=format&fit=crop"
-    }
-];
+import SEO from '../components/SEO';
 
 const Blogs = () => {
+    const [searchParams] = useSearchParams();
+    const categorySlug = searchParams.get('category');
+    
+    const [blogs, setBlogs] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [pagination, setPagination] = useState(null);
     const mainColor = '#ff4d4d';
+
+    useEffect(() => {
+        // Fetch Categories
+        axios.get('/api/blog-categories')
+            .then(res => {
+                if (res.data.success) {
+                    setCategories(res.data.data);
+                }
+            });
+    }, []);
+
+    useEffect(() => {
+        setLoading(true);
+        const url = categorySlug ? `/api/blogs?category_slug=${categorySlug}` : '/api/blogs';
+        axios.get(url)
+            .then(res => {
+                if (res.data.success) {
+                    setBlogs(res.data.data.data);
+                    setPagination(res.data.data);
+                }
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error("Error fetching blogs:", err);
+                setLoading(false);
+            });
+    }, [categorySlug]);
 
     return (
         <MasterLayout>
+            <SEO 
+                title="Blog - JhrBazar" 
+                description="Read latest updates, fashion trends and electronics gadgets reviews on JhrBazar blog."
+            />
+            
             <div className="container py-5">
-                {/* Blog Header & Categories (Matches Screenshot) */}
+                {/* Blog Header & Categories */}
                 <div className="bg-white p-4 shadow-sm mb-5" style={{ borderRadius: '15px' }}>
-                    <h3 className="fw-bold mb-4">Ready Blogs</h3>
+                    <h3 className="fw-bold mb-4">Latest Blogs</h3>
                     <div className="d-flex flex-wrap gap-3">
-                        <button className="btn px-4 py-2 rounded-3 border" style={{ borderColor: mainColor, color: mainColor, backgroundColor: '#fff', fontWeight: 'bold' }}>All Blogs</button>
-                        {['Clothing, Shoes & Jewelry', 'Gadgets', 'Business'].map(cat => (
-                            <button key={cat} className="btn px-4 py-2 rounded-3 border-0 bg-light text-muted fw-bold" style={{ fontSize: '14px' }}>{cat}</button>
+                        <Link 
+                            to="/blogs" 
+                            className={`btn px-4 py-2 rounded-3 border ${!categorySlug ? 'active' : ''}`} 
+                            style={!categorySlug ? { backgroundColor: mainColor, color: '#fff', fontWeight: 'bold', borderColor: mainColor } : { borderColor: '#eee', color: '#666', backgroundColor: '#fff' }}
+                        >
+                            All Blogs
+                        </Link>
+                        {categories.map(cat => (
+                            <Link 
+                                key={cat.id} 
+                                to={`/blogs?category=${cat.slug}`}
+                                className={`btn px-4 py-2 rounded-3 border ${categorySlug === cat.slug ? 'active' : ''}`}
+                                style={categorySlug === cat.slug ? { backgroundColor: mainColor, color: '#fff', fontWeight: 'bold', borderColor: mainColor } : { borderColor: '#eee', color: '#666', backgroundColor: '#f9f9f9' }}
+                            >
+                                {cat.name}
+                            </Link>
                         ))}
                     </div>
                 </div>
 
                 {/* Blog Cards Grid */}
-                <div className="row g-4 mb-5">
-                    {blogs.map(blog => (
-                        <div key={blog.id} className="col-md-6 col-lg-4">
-                            <div className="card h-100 border-0 shadow-sm" style={{ borderRadius: '20px', overflow: 'hidden' }}>
-                                <div className="position-relative">
-                                    <img src={blog.image} alt={blog.title} style={{ height: '220px', width: '100%', objectFit: 'cover' }} />
-                                    <span className="position-absolute top-0 left-0 m-3 badge bg-danger" style={{ backgroundColor: mainColor, borderRadius: '5px', padding: '5px 12px' }}>New</span>
-                                </div>
-                                <div className="card-body p-4">
-                                    <span className="small fw-bold" style={{ color: mainColor }}>{blog.category}</span>
-                                    <h5 className="fw-bold mt-2 mb-3" style={{ fontSize: '18px', lineHeight: '1.4' }}>{blog.title}</h5>
-                                    <p className="text-muted small mb-4" style={{ height: '40px', overflow: 'hidden' }}>{blog.desc}</p>
-                                    <div className="d-flex justify-content-between align-items-center border-top pt-3">
-                                        <div className="small text-muted fw-bold">By {blog.author} <span className="ms-2">{blog.date}</span></div>
-                                        <div className="small text-muted">👁️ {blog.views}</div>
+                {loading ? (
+                    <div className="text-center py-5">
+                        <div className="spinner-border text-danger" role="status"></div>
+                    </div>
+                ) : (
+                    <div className="row g-4 mb-5">
+                        {blogs.length > 0 ? blogs.map(blog => (
+                            <div key={blog.id} className="col-md-6 col-lg-4">
+                                <Link to={`/blog/${blog.slug}`} className="text-decoration-none">
+                                    <div className="card h-100 border-0 shadow-sm blog-card" style={{ borderRadius: '20px', overflow: 'hidden', transition: 'transform 0.3s' }}>
+                                        <div className="position-relative">
+                                            <img 
+                                                src={blog.thumbnail || '/placeholder-blog.jpg'} 
+                                                alt={blog.title} 
+                                                style={{ height: '220px', width: '100%', objectFit: 'cover' }} 
+                                            />
+                                            <span className="position-absolute top-0 left-0 m-3 badge" style={{ backgroundColor: mainColor, borderRadius: '5px', padding: '5px 12px' }}>
+                                                {blog.category?.name}
+                                            </span>
+                                        </div>
+                                        <div className="card-body p-4 text-dark">
+                                            <h5 className="fw-bold mt-2 mb-3" style={{ fontSize: '18px', lineHeight: '1.4' }}>{blog.title}</h5>
+                                            <div 
+                                                className="text-muted small mb-4" 
+                                                style={{ height: '40px', overflow: 'hidden' }}
+                                                dangerouslySetInnerHTML={{ __html: blog.content.substring(0, 100) + '...' }}
+                                            />
+                                            <div className="d-flex justify-content-between align-items-center border-top pt-3">
+                                                <div className="small text-muted fw-bold">
+                                                    {new Date(blog.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                </div>
+                                                <div className="small" style={{ color: mainColor }}>Read More →</div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                </Link>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        )) : (
+                            <div className="col-12 text-center py-5">
+                                <h4 className="text-muted">No blogs found in this category.</h4>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Pagination */}
-                <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                    <div className="small text-muted">Showing 1 to 3 of 3 results</div>
-                    <button className="btn text-white fw-bold" style={{ backgroundColor: mainColor, width: '40px', height: '40px', borderRadius: '10px' }}>1</button>
-                </div>
+                {pagination && pagination.last_page > 1 && (
+                    <div className="d-flex justify-content-center mt-4">
+                        <nav>
+                            <ul className="pagination">
+                                {[...Array(pagination.last_page).keys()].map(i => (
+                                    <li key={i+1} className={`page-item ${pagination.current_page === i+1 ? 'active' : ''}`}>
+                                        <button 
+                                            className="page-link" 
+                                            style={pagination.current_page === i+1 ? { backgroundColor: mainColor, borderColor: mainColor } : { color: mainColor }}
+                                            onClick={() => {/* Handle page change */}}
+                                        >
+                                            {i+1}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </nav>
+                    </div>
+                )}
             </div>
+
+            <style>{`
+                .blog-card:hover { transform: translateY(-10px); }
+            `}</style>
         </MasterLayout>
     );
 };

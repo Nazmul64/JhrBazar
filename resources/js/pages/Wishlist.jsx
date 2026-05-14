@@ -55,19 +55,19 @@ const Wishlist = () => {
                                             <tr key={product.uid} className="wishlist-row">
                                                 <td className="ps-4 py-4">
                                                     <div className="d-flex align-items-center gap-3">
-                                                        <Link to={`/product-details/${product.product_type}/${product.id}`}>
+                                                        <Link to={`/product-details/${product.product_type}/${product.slug}`}>
                                                             <div className="rounded-3 border overflow-hidden" style={{ width: '80px', height: '80px' }}>
-                                                                <img 
-                                                                    src={product.image} 
-                                                                    alt={product.title} 
-                                                                    className="w-100 h-100" 
-                                                                    style={{ objectFit: 'cover' }} 
+                                                                <img
+                                                                    src={product.image}
+                                                                    alt={product.title}
+                                                                    className="w-100 h-100"
+                                                                    style={{ objectFit: 'cover' }}
                                                                 />
                                                             </div>
                                                         </Link>
                                                         <div>
-                                                            <Link 
-                                                                to={`/product-details/${product.product_type}/${product.id}`} 
+                                                            <Link
+                                                                to={`/product-details/${product.product_type}/${product.slug}`}
                                                                 className="text-decoration-none fw-bold text-dark hover-primary-text d-block mb-1"
                                                                 style={{ fontSize: '15px' }}
                                                             >
@@ -86,32 +86,32 @@ const Wishlist = () => {
                                                     <span className="fw-bold" style={{ fontSize: '16px' }}>৳{Number(product.price).toLocaleString()}</span>
                                                 </td>
                                                 <td className="py-4 text-center">
-                                                    <span 
-                                                        className="badge rounded-pill px-3 py-2" 
-                                                        style={{ 
-                                                            backgroundColor: product.stock > 0 ? '#198754' : '#6c757d', 
-                                                            fontSize: '11px' 
+                                                    <span
+                                                        className="badge rounded-pill px-3 py-2"
+                                                        style={{
+                                                            backgroundColor: product.stock > 0 ? '#198754' : '#6c757d',
+                                                            fontSize: '11px'
                                                         }}
                                                     >
-                                                        <i className={`fas ${product.stock > 0 ? 'fa-check' : 'fa-times'} me-1`}></i> 
+                                                        <i className={`fas ${product.stock > 0 ? 'fa-check' : 'fa-times'} me-1`}></i>
                                                         {product.stock > 0 ? 'স্টকে আছে' : 'স্টক শেষ'}
                                                     </span>
                                                 </td>
                                                 <td className="pe-4 py-4 text-end">
                                                     <div className="d-flex align-items-center justify-content-end gap-3">
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleAddToCart(product)}
                                                             className="btn text-white fw-bold px-4 py-2 d-flex align-items-center gap-2"
-                                                            style={{ 
-                                                                backgroundColor: '#e31e24', 
-                                                                borderRadius: '8px', 
+                                                            style={{
+                                                                backgroundColor: '#e31e24',
+                                                                borderRadius: '8px',
                                                                 fontSize: '13px',
                                                                 transition: 'all 0.3s'
                                                             }}
                                                         >
                                                             🛒 কার্টে যোগ করুন
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleRemove(product)}
                                                             className="btn border-0 p-0 text-muted hover-danger"
                                                             title="Remove Item"

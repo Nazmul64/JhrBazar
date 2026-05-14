@@ -16,7 +16,7 @@ class FraudCheck extends Model
         'email_valid', 'email_disposable', 'email_domain', 'email_domain_age',
         'social_profiles', 'phone_valid', 'phone_carrier', 'phone_type', 'phone_country',
         'transaction_amount', 'transaction_currency', 'device_type', 'browser', 'os',
-        'device_fingerprint', 'triggered_rules', 'flags', 'notes',
+        'device_fingerprint', 'triggered_rules', 'flags', 'courier_data', 'notes',
         'reviewed_by', 'reviewed_at', 'created_by',
     ];
 
@@ -30,6 +30,7 @@ class FraudCheck extends Model
         'social_profiles'  => 'array',
         'triggered_rules'  => 'array',
         'flags'            => 'array',
+        'courier_data'     => 'array',
         'risk_score'       => 'float',
         'reviewed_at'      => 'datetime',
     ];

@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 
 class ProductControllerController extends Controller
@@ -133,6 +134,7 @@ class ProductControllerController extends Controller
 
         Product::create([
             'name'              => $request->name,
+            'slug'              => Str::slug($request->name) . '-' . Str::random(5),
             'short_description' => $request->short_description,
             'description'       => $request->description,
             'category_id'       => $request->category_id,
@@ -269,6 +271,7 @@ class ProductControllerController extends Controller
 
         $product->update([
             'name'              => $request->name,
+            'slug'              => Str::slug($request->name) . '-' . Str::random(5),
             'short_description' => $request->short_description,
             'description'       => $request->description,
             'category_id'       => $request->category_id,

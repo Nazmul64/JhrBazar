@@ -10,6 +10,7 @@ import Products from './pages/Products';
 import BestDeal from './pages/BestDeal';
 import Contact from './pages/Contact';
 import Blogs from './pages/Blogs';
+import BlogDetail from './pages/BlogDetail';
 import CategoryProducts from './pages/CategoryProducts';
 import AllProducts from './pages/AllProducts';
 import Login from './pages/Login';
@@ -43,18 +44,19 @@ const MainApp = () => {
                             <Route path="/best-deal" element={<BestDeal />} />
                             <Route path="/contact" element={<Contact />} />
                             <Route path="/blogs" element={<Blogs />} />
+                            <Route path="/blog/:slug" element={<BlogDetail />} />
                             <Route path="/customer/login" element={<Login />} />
                             <Route path="/customer/register" element={<Register />} />
-                            <Route path="/terms" element={<Terms />} />
                             <Route path="/about" element={<About />} />
+                            <Route path="/terms" element={<PrivacyPolicy />} />
                             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                             <Route path="/category/:id" element={<CategoryProducts />} />
                             <Route path="/subcategory/:id" element={<CategoryProducts />} />
                             <Route path="/products-all/:type" element={<AllProducts />} />
                             <Route path="/shop/:id" element={<ShopDetails />} />
-                            <Route path="/product-details/:type/:id" element={<ProductDetails />} />
+                            <Route path="/product-details/:type/:slug" element={<ProductDetails />} />
                             <Route path="/search" element={<SearchResults />} />
-                            <Route path="/page/:id" element={<PageView />} />
+                            <Route path="/page/:slug" element={<PageView />} />
 
                             {/* Shopping Routes */}
                             <Route path="/cart" element={<Cart />} />

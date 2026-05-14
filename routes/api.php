@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\FrontendApiController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CustomerDashboardController;
 use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\LeadController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -44,9 +45,16 @@ Route::get('/digital-products', [FrontendApiController::class, 'getDigitalProduc
 Route::get('/best-deals', [FrontendApiController::class, 'getBestDeals']);
 Route::get('/top-shops', [FrontendApiController::class, 'getTopShops']);
 Route::get('/shop/{seller_id}/products', [FrontendApiController::class, 'getProductsBySeller']);
+Route::get('/shop/{seller_id}/reviews', [FrontendApiController::class, 'getReviewsBySeller']);
 Route::get('/products/search', [FrontendApiController::class, 'searchProducts']);
 Route::get('/footer-data', [FrontendApiController::class, 'getFooterData']);
-Route::get('/page/{id}', [FrontendApiController::class, 'getPage']);
+Route::get('/admin-support', [App\Http\Controllers\Admin\AdminSupportController::class, 'index']);
+Route::get('/blog-categories', [FrontendApiController::class, 'getBlogCategories']);
+Route::get('/blogs', [FrontendApiController::class, 'getBlogs']);
+Route::get('/blog/{slug}', [FrontendApiController::class, 'getBlogDetails']);
+Route::get('/page/{slug}', [FrontendApiController::class, 'getPage']);
+Route::get('/about-company', [FrontendApiController::class, 'getAboutCompany']);
+Route::get('/privacy-policy', [FrontendApiController::class, 'getPrivacyPolicy']);
 
 Route::get('/products/category/{id}', [FrontendApiController::class, 'getProductsByCategory']);
 Route::get('/products/subcategory/{id}', [FrontendApiController::class, 'getProductsBySubCategory']);
@@ -70,3 +78,6 @@ Route::get('/track-order/{invoice_no}', [App\Http\Controllers\Api\CheckoutContro
 Route::post('/chat/send', [App\Http\Controllers\Api\ChatApiController::class, 'sendMessage']);
 Route::get('/chat/messages', [App\Http\Controllers\Api\ChatApiController::class, 'getMessages']);
 Route::get('/chat/unread-count', [App\Http\Controllers\Api\ChatApiController::class, 'getUnreadCount']);
+
+// Lead Generation (Incomplete Orders)
+Route::post('/leads/save', [LeadController::class, 'store']);

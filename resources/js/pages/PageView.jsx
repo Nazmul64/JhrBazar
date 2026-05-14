@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import MasterLayout from '../layouts/MasterLayout';
+import SEO from '../components/SEO';
 
-const PageView = () => {
-    const { id } = useParams();
+const PageView = (props) => {
+    const { slug: urlSlug } = useParams();
+    const slug = props.slug || urlSlug;
     const [page, setPage] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         setLoading(true);
-        axios.get(`/api/page/${id}`)
+        axios.get(`/api/page/${slug}`)
             .then(res => {
                 if (res.data.success) {
                     setPage(res.data.data);
@@ -21,7 +23,7 @@ const PageView = () => {
                 console.error("Error fetching page:", err);
                 setLoading(false);
             });
-    }, [id]);
+    }, [slug]);
 
     if (loading) {
         return (
@@ -47,15 +49,21 @@ const PageView = () => {
 
     return (
         <MasterLayout>
+            <SEO 
+                title={page.meta_title || page.name}
+                description={page.meta_description}
+                keywords={page.meta_keywords}
+            />
+            
             <div className="container py-5">
                 <div className="row justify-content-center">
                     <div className="col-lg-10 col-md-12">
                         <div className="card border-0 shadow-sm rounded-4" style={{ overflow: 'hidden' }}>
                             <div className="card-body p-4 p-md-5">
                                 <h1 className="fw-bold mb-3" style={{ color: '#2c3e50', fontSize: '2.5rem' }}>
-                                    {page.title}
+                                    {page.name}
                                 </h1>
-                                <div className="mb-4" style={{ height: '4px', width: '60px', backgroundColor: '#e67e22', borderRadius: '2px' }}></div>
+                                <div className="mb-4" style={{ height: '4px', width: '60px', backgroundColor: '#ff4d4d', borderRadius: '2px' }}></div>
 
                                 <div
                                     className="page-content"

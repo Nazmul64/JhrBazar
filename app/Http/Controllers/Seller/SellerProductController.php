@@ -13,6 +13,7 @@ use App\Models\Size;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 
 class SellerProductController extends Controller
@@ -98,6 +99,7 @@ class SellerProductController extends Controller
         SellerProduct::create([
             'seller_id'         => Auth::id(),
             'name'              => $request->name,
+            'slug'              => Str::slug($request->name) . '-' . Str::random(5),
             'short_description' => $request->short_description,
             'description'       => $request->description,
             'category_id'       => $request->category_id,
@@ -210,6 +212,7 @@ class SellerProductController extends Controller
 
         $product->update([
             'name'              => $request->name,
+            'slug'              => Str::slug($request->name) . '-' . Str::random(5),
             'short_description' => $request->short_description,
             'description'       => $request->description,
             'category_id'       => $request->category_id,

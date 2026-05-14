@@ -58,16 +58,16 @@ const Footer = () => {
                     {/* Column 1: Brand Info */}
                     <div className="col-lg-4 col-md-12">
                         <div className="mb-4">
-                            <img 
-                                src={footerData.settings?.footer_logo || footerData.settings?.logo || "https://ghorerbazar.com/wp-content/uploads/2020/10/Ghorer-Bazar-Logo.png"} 
-                                alt={footerData.settings?.website_name || "Ghorer Bazar"} 
-                                style={{ maxHeight: '55px' }} 
+                            <img
+                                src={footerData.settings?.footer_logo || footerData.settings?.logo || "https://ghorerbazar.com/wp-content/uploads/2020/10/Ghorer-Bazar-Logo.png"}
+                                alt={footerData.settings?.website_name || "Ghorer Bazar"}
+                                style={{ maxHeight: '55px' }}
                             />
                         </div>
                         <p style={{ color: '#777', lineHeight: '1.8', fontSize: '13px', marginBottom: '25px', maxWidth: '340px' }}>
                             {footerData.settings?.footer_text || "Ghorer Bazar is an e-commerce platform dedicated to providing safe and reliable food to every home."}
                         </p>
-                        
+
                         <div className="d-flex flex-column gap-3 mb-4" style={{ fontSize: '13px', color: '#666' }}>
                             {footerData.settings?.address && (
                                 <div className="d-flex align-items-start gap-2">
@@ -92,12 +92,12 @@ const Footer = () => {
                         <div className="d-flex gap-2 mb-4">
                             {footerData.social_links && footerData.social_links.length > 0 ? (
                                 footerData.social_links.map((social) => (
-                                    <a 
-                                        key={social.id} 
-                                        href={social.link || '#'} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
-                                        style={socialIconStyle} 
+                                    <a
+                                        key={social.id}
+                                        href={social.link || '#'}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={socialIconStyle}
                                         className="social-icon-hover"
                                         title={social.name}
                                     >
@@ -139,7 +139,7 @@ const Footer = () => {
                             <ul className="list-unstyled d-flex flex-column gap-3">
                                 {cat.pages.map(page => (
                                     <li key={page.id}>
-                                        <Link to={`/page/${page.id}`} style={linkStyle} className="footer-link">
+                                        <Link to={`/page/${page.slug || page.id}`} style={linkStyle} className="footer-link">
                                             {page.name}
                                         </Link>
                                     </li>
@@ -157,11 +157,11 @@ const Footer = () => {
                             <div className="d-flex gap-4 justify-content-center justify-content-lg-start align-items-center flex-wrap">
                                 {footerData.membership_logos && footerData.membership_logos.length > 0 ? (
                                     footerData.membership_logos.map((logo) => (
-                                        <img 
-                                            key={logo.id} 
-                                            src={logo.image} 
-                                            alt={logo.name || "Member"} 
-                                            style={{ height: '40px', maxWidth: '120px', objectFit: 'contain' }} 
+                                        <img
+                                            key={logo.id}
+                                            src={logo.image}
+                                            alt={logo.name || "Member"}
+                                            style={{ height: '40px', maxWidth: '120px', objectFit: 'contain' }}
                                         />
                                     ))
                                 ) : (
@@ -170,14 +170,14 @@ const Footer = () => {
                             </div>
                         </div>
                         <div className="col-lg-7 text-center text-lg-end">
-                             <div className="d-flex align-items-center justify-content-center justify-content-lg-end gap-3 flex-wrap">
+                            <div className="d-flex align-items-center justify-content-center justify-content-lg-end gap-3 flex-wrap">
                                 <span style={{ fontSize: '13px', color: '#333', fontWeight: 'bold' }}>Pay With</span>
                                 <div className="d-flex gap-1 flex-wrap justify-content-center">
                                     {footerData.settings?.payment_methods_logo ? (
-                                        <img 
-                                            src={footerData.settings.payment_methods_logo} 
-                                            alt="Payment Methods" 
-                                            style={{ maxHeight: '45px', width: 'auto', maxWidth: '100%' }} 
+                                        <img
+                                            src={footerData.settings.payment_methods_logo}
+                                            alt="Payment Methods"
+                                            style={{ maxHeight: '45px', width: 'auto', maxWidth: '100%' }}
                                         />
                                     ) : (
                                         <div className="text-muted small">Upload payment banner in admin</div>

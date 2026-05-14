@@ -12,9 +12,9 @@ const TypingSearchInput = ({ mainColor }) => {
     const navigate = useNavigate();
     const placeholderTexts = [
         "পণ্য, ব্র্যান্ড, ক্যাটাগরি খুঁজুন...",
-        "ল্যাপটপ খুঁজছেন?", 
-        "স্মার্টফোন খুঁজছেন?", 
-        "স্মার্ট ওয়াচ খুঁজছেন?", 
+        "ল্যাপটপ খুঁজছেন?",
+        "স্মার্টফোন খুঁজছেন?",
+        "স্মার্ট ওয়াচ খুঁজছেন?",
         "হেডফোন খুঁজছেন?"
     ];
     const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -31,7 +31,7 @@ const TypingSearchInput = ({ mainColor }) => {
     useEffect(() => {
         const currentText = placeholderTexts[placeholderIndex];
         let timer;
-        
+
         if (isDeleting) {
             timer = setTimeout(() => {
                 setPlaceholderText(currentText.substring(0, placeholderText.length - 1));
@@ -48,7 +48,7 @@ const TypingSearchInput = ({ mainColor }) => {
                 }
             }, 100);
         }
-        
+
         return () => clearTimeout(timer);
     }, [placeholderText, isDeleting, placeholderIndex]);
 
@@ -87,16 +87,16 @@ const TypingSearchInput = ({ mainColor }) => {
 
     return (
         <div className="position-relative w-100">
-            <form onSubmit={handleSearchSubmit} className="input-group" style={{ 
-                borderRadius: '10px', 
-                overflow: 'hidden', 
-                border: `1px solid #ddd`, 
-                backgroundColor: '#fff', 
-                boxShadow: showDropdown ? '0 10px 25px rgba(0,0,0,0.1)' : 'none' 
+            <form onSubmit={handleSearchSubmit} className="input-group" style={{
+                borderRadius: '10px',
+                overflow: 'hidden',
+                border: `1px solid #ddd`,
+                backgroundColor: '#fff',
+                boxShadow: showDropdown ? '0 10px 25px rgba(0,0,0,0.1)' : 'none'
             }}>
-                <input 
-                    type="text" 
-                    className="form-control border-0 bg-transparent px-4 py-2" 
+                <input
+                    type="text"
+                    className="form-control border-0 bg-transparent px-4 py-2"
                     placeholder={placeholderText}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
@@ -117,9 +117,9 @@ const TypingSearchInput = ({ mainColor }) => {
                     </div>
                     <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                         {results.map((item) => (
-                            <Link 
-                                key={item.uid} 
-                                to={`/product-details/${item.product_type}/${item.id}`} 
+                            <Link
+                                key={item.uid}
+                                to={`/product-details/${item.product_type}/${item.slug}`}
                                 className="d-flex align-items-center gap-3 p-2 text-decoration-none border-bottom hover-bg-light"
                                 onClick={() => setShowDropdown(false)}
                             >
@@ -134,9 +134,9 @@ const TypingSearchInput = ({ mainColor }) => {
                             </Link>
                         ))}
                     </div>
-                    <Link 
-                        to={`/search?q=${query}`} 
-                        className="d-block p-2 text-center text-decoration-none fw-bold small" 
+                    <Link
+                        to={`/search?q=${query}`}
+                        className="d-block p-2 text-center text-decoration-none fw-bold small"
                         style={{ color: mainColor, backgroundColor: '#f8fff0' }}
                         onClick={() => setShowDropdown(false)}
                     >
@@ -144,7 +144,7 @@ const TypingSearchInput = ({ mainColor }) => {
                     </Link>
                 </div>
             )}
-            
+
             {showDropdown && results.length === 0 && query.length >= 2 && !isSearching && (
                 <div className="position-absolute w-100 bg-white shadow-lg rounded-3 mt-1 p-4 text-center text-muted small" style={{ zIndex: 11000, border: '1px solid #eee' }}>
                     <div className="mb-2 fs-4">🔍</div>
@@ -154,9 +154,9 @@ const TypingSearchInput = ({ mainColor }) => {
 
             {/* Dropdown Overlay to close on click outside */}
             {showDropdown && (
-                <div 
-                    className="position-fixed top-0 start-0 w-100 h-100" 
-                    style={{ zIndex: 10500, pointerEvents: 'auto' }} 
+                <div
+                    className="position-fixed top-0 start-0 w-100 h-100"
+                    style={{ zIndex: 10500, pointerEvents: 'auto' }}
                     onClick={() => setShowDropdown(false)}
                 ></div>
             )}
@@ -174,11 +174,11 @@ const Header = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [expandedCategory, setExpandedCategory] = useState(null);
     const [isSticky, setIsSticky] = useState(false);
-    
+
     const { settings, categories: realCategories } = useSettings();
     const { cartCount } = useCart();
     const { wishlist } = useWishlist();
-    
+
     const location = useLocation();
     const mainColor = settings?.primary_color || '#001fcc';
     const topHeaderColor = settings?.top_header_color || '#001fcc';
@@ -222,9 +222,9 @@ const Header = () => {
             </div>
 
             {/* Main Header */}
-            <div style={{ 
-                position: isSticky ? 'fixed' : 'relative', 
-                top: 0, left: 0, width: '100%', zIndex: 10000, 
+            <div style={{
+                position: isSticky ? 'fixed' : 'relative',
+                top: 0, left: 0, width: '100%', zIndex: 10000,
                 backgroundColor: headerColor,
                 boxShadow: isSticky ? '0 4px 15px rgba(0,0,0,0.08)' : 'none'
             }}>
@@ -235,14 +235,14 @@ const Header = () => {
                             <div className="col-4 col-lg-2 d-flex align-items-center gap-2">
                                 <button className="btn d-lg-none p-0 border-0" onClick={() => setIsMobileMenuOpen(true)} style={{ fontSize: '24px' }}>☰</button>
                                 <Link to="/">
-                                    <img 
-                                        src={settings?.logo || "https://demo.readyecommerce.app/public/assets/front-end/img/logo.png"} 
-                                        alt={settings?.website_name || "Logo"} 
-                                        style={{ maxHeight: '45px' }} 
+                                    <img
+                                        src={settings?.logo || "https://demo.readyecommerce.app/public/assets/front-end/img/logo.png"}
+                                        alt={settings?.website_name || "Logo"}
+                                        style={{ maxHeight: '45px' }}
                                     />
                                 </Link>
                             </div>
-                            
+
                             {/* Desktop Search */}
                             <div className="col-lg-5 d-none d-lg-block">
                                 <TypingSearchInput mainColor={mainColor} />
@@ -331,11 +331,11 @@ const Header = () => {
                                     {expandedCategory === cat.id && cat.subCategories?.length > 0 && (
                                         <div style={{ backgroundColor: '#fdfdfd', paddingLeft: '45px' }}>
                                             {cat.subCategories.map(sub => (
-                                                <Link 
-                                                    key={sub.id} 
-                                                    to={`/subcategory/${sub.id}`} 
+                                                <Link
+                                                    key={sub.id}
+                                                    to={`/subcategory/${sub.id}`}
                                                     onClick={() => setIsMobileMenuOpen(false)}
-                                                    className="d-block py-2 text-decoration-none text-muted" 
+                                                    className="d-block py-2 text-decoration-none text-muted"
                                                     style={{ fontSize: '13px' }}
                                                 >
                                                     {sub.name}
@@ -361,7 +361,7 @@ const Header = () => {
                     </div>
                 </div>
             )}
-            
+
             <style>{`
                 .hover-primary:hover { color: ${mainColor} !important; opacity: 0.8; }
                 .nav-item-custom:hover { color: ${mainColor} !important; }
@@ -384,7 +384,7 @@ const Header = () => {
                     transform: scaleX(1);
                 }
             `}</style>
-            
+
             {isSticky && <div style={{ height: '150px' }}></div>}
         </header>
     );

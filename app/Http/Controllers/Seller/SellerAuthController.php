@@ -34,7 +34,7 @@ class SellerAuthController extends Controller
                 Auth::logout();
                 $message = $user->status === 'pending' 
                     ? 'Your account is pending. Please wait for admin approval.' 
-                    : 'Your account is inactive. Please contact admin for activation.';
+                    : 'Your account is blocked. Please contact admin (Support) for activation.';
                 return back()->withErrors(['email' => $message]);
             }
 

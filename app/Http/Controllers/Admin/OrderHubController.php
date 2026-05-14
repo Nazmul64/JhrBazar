@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\SteadfastCourier;
 use App\Models\PathaoCourier;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\PosInvoice;
 use App\Models\GenaralSetting;
-use Illuminate\Http\Request;
+use App\Models\OrderStatusLog;
+use Illuminate\Support\Facades\DB;
 
 class OrderHubController extends Controller
 {
@@ -70,13 +72,143 @@ class OrderHubController extends Controller
     }
 
     /**
+     * Show the form for creating a new order.
+     */
+    public function create()
+    {
+        $products = \App\Models\Product::where('is_active', 1)->get();
+        $customers = \App\Models\Customer::with('user')->get();
+        $shippingCharges = \App\Models\ShippingCharge::where('status', 1)->get();
+        $settings = GenaralSetting::first();
+        
+        return view('admin.orders.create', compact('products', 'customers', 'shippingCharges', 'settings'));
+    }
+
+    /**
+     * Store a newly created order.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'customer_name'    => 'required|string',
+            'customer_phone'   => 'required|string',
+            'customer_address' => 'required|string',
+            'items'            => 'required|array|min:1',
+        ]);
+
+        \DB::beginTransaction();
+        try {
+            // 1. Handle Customer
+            $user = User::where('phone', $request->customer_phone)->first();
+            if (!$user) {
+                $user = User::create([
+                    'name'     => $request->customer_name,
+                    'phone'    => $request->customer_phone,
+                    'email'    => $request->customer_phone . '@jhrbazar.com', // Dummy email to satisfy DB constraint
+                    'role'     => 'customer',
+                    'password' => \Hash::make($request->customer_phone),
+                ]);
+            }
+            
+            $customer = \App\Models\Customer::where('user_id', $user->id)->first();
+            if (!$customer) {
+                $customer = \App\Models\Customer::create([
+                    'user_id'    => $user->id,
+                    'first_name' => $request->customer_name,
+                    'last_name'  => '',
+                    'address'    => $request->customer_address,
+                ]);
+            } else {
+                $customer->update([
+                    'first_name' => $request->customer_name,
+                    'address'    => $request->customer_address
+                ]);
+            }
+
+            // 2. Process Items
+            $subTotal = 0;
+            $itemSnapshots = [];
+            foreach ($request->items as $item) {
+                $product = \App\Models\Product::find($item['id']);
+                if (!$product) continue;
+
+                $qty = (int)$item['qty'];
+                $itemPrice = (float)$item['price'];
+                $itemDiscount = (float)($item['discount'] ?? 0);
+                $lineTotal = ($itemPrice * $qty) - $itemDiscount;
+                $subTotal += $lineTotal;
+
+                $itemSnapshots[] = [
+                    'id'             => $product->id,
+                    'name'           => $product->name,
+                    'sku'            => $product->sku,
+                    'thumbnail'      => $product->thumbnail,
+                    'price'          => $itemPrice,
+                    'qty'            => $qty,
+                    'discount'       => $itemDiscount,
+                    'line_total'     => $lineTotal,
+                ];
+
+                // Decrement Stock
+                $product->decrement('stock_quantity', $qty);
+            }
+
+            $shipping = (float)($request->shipping_charge ?? 0);
+            $grandTotal = $subTotal + $shipping;
+
+            // 3. Create POS Order Record (Pointofsalepo)
+            $order = \App\Models\Pointofsalepo::create([
+                'customer_id'    => $customer->id,
+                'items'          => $itemSnapshots,
+                'sub_total'      => $subTotal,
+                'grand_total'    => $grandTotal,
+                'delivery_charge'=> $shipping,
+                'payment_method' => $request->payment_method ?? 'cod',
+                'payment_status' => $request->payment_status ?? 'pending',
+                'status'         => 'pending', // Set to pending for admin hub orders
+                'note'           => "Area: " . ($request->delivery_area ?? 'N/A') . ". " . ($request->trx_id ? "TrxID: " . $request->trx_id : ""),
+            ]);
+
+            // 4. Create Invoice
+            $invoice = PosInvoice::create([
+                'invoice_number'   => PosInvoice::generateInvoiceNumber(),
+                'pointofsalepo_id' => $order->id,
+                'customer_id'      => $customer->id,
+                'items'            => $itemSnapshots,
+                'sub_total'        => $subTotal,
+                'delivery_charge'  => $shipping,
+                'grand_total'      => $grandTotal,
+                'payment_method'   => $request->payment_method ?? 'cod',
+                'note'             => $request->trx_id ? "TrxID: " . $request->trx_id : null,
+            ]);
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order created successfully!',
+                'invoice_url' => route('admin.pointofsalepos.invoice', $invoice->id)
+            ]);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Show single order detail.
      */
     public function show($id)
     {
-        $invoice = PosInvoice::with(['customer.user', 'order.staff', 'seller'])->findOrFail($id);
+        $invoice = PosInvoice::with(['customer.user', 'order.staff', 'seller', 'order.statusLogs.changedBy'])->findOrFail($id);
         $settings = GenaralSetting::first();
-        return view('admin.pointofsalepos.show', compact('invoice', 'settings'));
+        $staffs = \App\Models\User::whereIn('role', ['employee', 'manager', 'staff'])->get();
+        
+        return view('admin.pointofsalepos.show', compact('invoice', 'settings', 'staffs'));
     }
 
     /**
@@ -85,15 +217,85 @@ class OrderHubController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate(['status' => 'required|string']);
-        $invoice = PosInvoice::findOrFail($id);
+        $invoice = PosInvoice::with('order', 'seller')->findOrFail($id);
         
         if ($invoice->order) {
-            $invoice->order->update(['status' => $request->status]);
-            return response()->json(['success' => true, 'message' => 'Status updated to ' . ucfirst($request->status)]);
+            $previousStatus = $invoice->order->status;
+            
+            DB::beginTransaction();
+            try {
+                // Update Order Status
+                $invoice->order->update(['status' => $request->status]);
+
+                // Log Status Change
+                OrderStatusLog::create([
+                    'order_id'        => $invoice->order->id,
+                    'previous_status' => $previousStatus,
+                    'current_status'  => $request->status,
+                    'changed_by'      => auth()->id(),
+                    'note'            => $request->note ?? 'Status updated by admin',
+                ]);
+
+                // Handle Delivered Status for Seller Balance
+                if ($request->status === 'delivered' && $previousStatus !== 'delivered') {
+                    if ($invoice->seller) {
+                        // Calculate net amount (total - admin commission) from settings
+                        $settings = GenaralSetting::first();
+                        $commissionPercent = $settings->seller_commission ?? 10;
+                        $commissionAmount = ($invoice->grand_total * $commissionPercent) / 100;
+                        $netAmount = $invoice->grand_total - $commissionAmount;
+
+                        // Update Seller Balance
+                        $invoice->seller->increment('balance', $netAmount);
+
+                        // Log Earning Transaction
+                        \App\Models\SellerTransaction::create([
+                            'seller_id'      => $invoice->seller->id,
+                            'transaction_id' => 'EARN-' . strtoupper(str_random(10)),
+                            'type'           => 'earning',
+                            'amount'         => $invoice->grand_total,
+                            'commission'     => $commissionAmount,
+                            'net_amount'     => $netAmount,
+                            'status'         => 'completed',
+                            'description'    => 'Earning from Order #' . $invoice->invoice_number,
+                        ]);
+                    }
+                }
+
+                // Reversal: If previous was Delivered and new is NOT Delivered (e.g. Returned/Cancelled)
+                if ($previousStatus === 'delivered' && $request->status !== 'delivered') {
+                    if ($invoice->seller) {
+                        $settings = GenaralSetting::first();
+                        $commissionPercent = $settings->seller_commission ?? 10;
+                        $commissionAmount = ($invoice->grand_total * $commissionPercent) / 100;
+                        $netAmount = $invoice->grand_total - $commissionAmount;
+
+                        $invoice->seller->decrement('balance', $netAmount);
+
+                        \App\Models\SellerTransaction::create([
+                            'seller_id'      => $invoice->seller->id,
+                            'transaction_id' => 'REV-' . strtoupper(str_random(10)),
+                            'type'           => 'adjustment', // Reversal/Adjustment
+                            'amount'         => -$invoice->grand_total,
+                            'commission'     => -$commissionAmount,
+                            'net_amount'     => -$netAmount,
+                            'status'         => 'completed',
+                            'description'    => 'Reversal from Order #' . $invoice->invoice_number . ' (Status: ' . $request->status . ')',
+                        ]);
+                    }
+                }
+
+                DB::commit();
+                return response()->json(['success' => true, 'message' => 'Status updated to ' . ucfirst($request->status)]);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+            }
         }
 
         return response()->json(['success' => false, 'message' => 'Order link not found.'], 422);
     }
+
 
     /**
      * Assign staff to order.
@@ -138,7 +340,7 @@ class OrderHubController extends Controller
 
         $ids = $request->ids;
         $action = $request->action;
-        $invoices = PosInvoice::whereIn('id', $ids)->get();
+        $invoices = PosInvoice::with('order', 'seller')->whereIn('id', $ids)->get();
 
         switch ($action) {
             case 'delete':
@@ -158,10 +360,53 @@ class OrderHubController extends Controller
                 // For bulk status updates (e.g. status:pending, status:delivered)
                 if (str_starts_with($action, 'status:')) {
                     $newStatus = str_replace('status:', '', $action);
-                    foreach ($invoices as $inv) {
-                        if ($inv->order) $inv->order->update(['status' => $newStatus]);
+                    
+                    DB::beginTransaction();
+                    try {
+                        foreach ($invoices as $inv) {
+                            if ($inv->order) {
+                                $previousStatus = $inv->order->status;
+                                if ($previousStatus === $newStatus) continue;
+
+                                $inv->order->update(['status' => $newStatus]);
+
+                                OrderStatusLog::create([
+                                    'order_id'        => $inv->order->id,
+                                    'previous_status' => $previousStatus,
+                                    'current_status'  => $newStatus,
+                                    'changed_by'      => auth()->id(),
+                                    'note'            => 'Bulk status update by admin',
+                                ]);
+
+                                if ($newStatus === 'delivered' && $previousStatus !== 'delivered') {
+                                    if ($inv->seller) {
+                                        $settings = GenaralSetting::first();
+                                        $commissionPercent = $settings->seller_commission ?? 10;
+                                        $commissionAmount = ($inv->grand_total * $commissionPercent) / 100;
+                                        $netAmount = $inv->grand_total - $commissionAmount;
+
+                                        $inv->seller->increment('balance', $netAmount);
+
+                                        \App\Models\SellerTransaction::create([
+                                            'seller_id'      => $inv->seller->id,
+                                            'transaction_id' => 'EARN-' . strtoupper(str_random(10)),
+                                            'type'           => 'earning',
+                                            'amount'         => $inv->grand_total,
+                                            'commission'     => $commissionAmount,
+                                            'net_amount'     => $netAmount,
+                                            'status'         => 'completed',
+                                            'description'    => 'Bulk earning from Order #' . $inv->invoice_number,
+                                        ]);
+                                    }
+                                }
+                            }
+                        }
+                        DB::commit();
+                        return response()->json(['success' => true, 'message' => 'Selected orders updated to ' . ucfirst($newStatus)]);
+                    } catch (\Exception $e) {
+                        DB::rollBack();
+                        return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
                     }
-                    return response()->json(['success' => true, 'message' => 'Selected orders updated to ' . ucfirst($newStatus)]);
                 }
         }
 
@@ -341,5 +586,54 @@ class OrderHubController extends Controller
         $token = $this->getPathaoToken($gateway);
         $response = Http::withToken($token)->get($gateway->base_url . '/aladdin/api/v1/stores');
         return response()->json($response->json('data.data') ?? []);
+    }
+
+    /**
+     * Display staff assignments for orders.
+     */
+    public function staffAssignments(Request $request)
+    {
+        $query = PosInvoice::with(['customer.user', 'order.staff', 'seller'])
+            ->whereHas('order', function($q) {
+                $q->whereNotNull('staff_id');
+            })
+            ->orderBy('id', 'desc');
+
+        if ($request->filled('staff_id')) {
+            $query->whereHas('order', function($q) use ($request) {
+                $q->where('staff_id', $request->staff_id);
+            });
+        }
+
+        $orders = $query->paginate(20)->withQueryString();
+        $staffs = User::whereIn('role', ['employee', 'manager', 'staff'])->get();
+        $settings = GenaralSetting::first();
+
+        return view('admin.orders.index', [
+            'orders' => $orders,
+            'status' => 'assigned',
+            'staffs' => $staffs,
+            'settings' => $settings,
+            'title' => 'Staff Assignments'
+        ]);
+    }
+
+    /**
+     * Display activity history of orders.
+     */
+    public function activityHistory(Request $request)
+    {
+        $orders = PosInvoice::with(['customer.user', 'order.staff', 'seller'])
+            ->orderBy('updated_at', 'desc')
+            ->paginate(30);
+
+        $settings = GenaralSetting::first();
+
+        return view('admin.orders.index', [
+            'orders' => $orders,
+            'status' => 'activity',
+            'settings' => $settings,
+            'title' => 'Recent Activity'
+        ]);
     }
 }

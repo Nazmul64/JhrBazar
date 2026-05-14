@@ -282,6 +282,66 @@ body { background: var(--fc-primary); color: var(--fc-text); }
             </div>
             @endif
 
+            {{-- Courier Success History --}}
+            @if(!empty($fraudCheck->courier_data))
+            <div class="fc-card">
+                <div class="fc-card-hdr">
+                    <i class="fas fa-truck-loading" style="color:var(--fc-accent)"></i>
+                    Courier Success History (Steadfast & Pathao)
+                </div>
+                <div style="padding:1.25rem">
+                    <div class="row g-3">
+                        {{-- Steadfast --}}
+                        <div class="col-md-6">
+                            <div style="background:rgba(255,255,255,.03); border:1px solid var(--fc-border); border-radius:10px; padding:1rem">
+                                <div style="font-size:.7rem; font-weight:700; color:var(--fc-muted); text-transform:uppercase; margin-bottom:.8rem; display:flex; align-items:center; gap:8px">
+                                    <i class="fas fa-shipping-fast text-info"></i> Steadfast Courier
+                                </div>
+                                <div class="d-flex justify-content-between align-items-end">
+                                    <div>
+                                        <div style="font-size:1.5rem; font-weight:800; color:{{ $fraudCheck->courier_data['sf_success_rate'] >= 70 ? 'var(--fc-success)' : 'var(--fc-warning)' }}">
+                                            {{ round($fraudCheck->courier_data['sf_success_rate'] ?? 0) }}%
+                                        </div>
+                                        <div style="font-size:.65rem; color:var(--fc-muted); text-transform:uppercase">Success Rate</div>
+                                    </div>
+                                    <div style="text-align:right">
+                                        <div style="font-size:.85rem; font-weight:600">{{ $fraudCheck->courier_data['sf_total'] ?? 0 }} Orders</div>
+                                        <div style="font-size:.65rem; color:var(--fc-danger)">{{ $fraudCheck->courier_data['sf_rejected'] ?? 0 }} Rejected</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Pathao --}}
+                        <div class="col-md-6">
+                            <div style="background:rgba(255,255,255,.03); border:1px solid var(--fc-border); border-radius:10px; padding:1rem">
+                                <div style="font-size:.7rem; font-weight:700; color:var(--fc-muted); text-transform:uppercase; margin-bottom:.8rem; display:flex; align-items:center; gap:8px">
+                                    <i class="fas fa-bicycle text-warning"></i> Pathao Courier
+                                </div>
+                                <div class="d-flex justify-content-between align-items-end">
+                                    <div>
+                                        <div style="font-size:1.5rem; font-weight:800; color:{{ $fraudCheck->courier_data['pt_success_rate'] >= 70 ? 'var(--fc-success)' : 'var(--fc-warning)' }}">
+                                            {{ round($fraudCheck->courier_data['pt_success_rate'] ?? 0) }}%
+                                        </div>
+                                        <div style="font-size:.65rem; color:var(--fc-muted); text-transform:uppercase">Success Rate</div>
+                                    </div>
+                                    <div style="text-align:right">
+                                        <div style="font-size:.85rem; font-weight:600">{{ $fraudCheck->courier_data['pt_total'] ?? 0 }} Orders</div>
+                                        <div style="font-size:.65rem; color:var(--fc-danger)">{{ $fraudCheck->courier_data['pt_rejected'] ?? 0 }} Rejected</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:1rem; padding:.75rem; background:rgba(99,102,241,.05); border-radius:8px; border-left:4px solid var(--fc-accent); font-size:.75rem">
+                        <i class="fas fa-info-circle me-1"></i>
+                        This analysis is based on <strong>{{ $fraudCheck->courier_data['total_orders'] ?? 0 }}</strong> total orders found in our local database for this customer's phone/IP.
+                    </div>
+                </div>
+            </div>
+            @endif
+
             {{-- Triggered Rules --}}
             @if(!empty($fraudCheck->triggered_rules))
             <div class="fc-card">

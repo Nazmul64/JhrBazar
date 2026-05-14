@@ -128,33 +128,35 @@
 /* Logo + Name — overlaps the banner */
 .card-top {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: 12px;
     padding: 0 16px;
-    margin-top: -26px;
+    margin-top: -30px;
     margin-bottom: 10px;
+    position: relative;
+    z-index: 2;
 }
 .card-logo {
-    width: 56px; height: 56px;
-    border-radius: 50%;
-    border: 3px solid #fff;
-    background: #f5f5f5;
+    width: 65px; height: 65px;
+    border-radius: 12px;
+    border: 4px solid #fff;
+    background: #fff;
     overflow: hidden;
     flex-shrink: 0;
-    box-shadow: 0 2px 10px rgba(0,0,0,.12);
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
     display: flex; align-items: center; justify-content: center;
 }
 .card-logo img { width: 100%; height: 100%; object-fit: cover; }
-.card-logo i   { color: #bbb; font-size: 20px; }
+.card-logo i   { color: #bbb; font-size: 24px; }
 
-.card-meta { overflow: hidden; padding-bottom: 2px; padding-top: 22px; }
+.card-meta { overflow: hidden; flex: 1; padding-top: 30px; }
 .card-name {
-    font-size: 15px; font-weight: 700; color: #1a1a1a;
+    font-size: 16px; font-weight: 700; color: #1a1a1a;
     margin: 0 0 2px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .card-email {
-    font-size: 12px; color: #999;
+    font-size: 13px; color: #777;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 

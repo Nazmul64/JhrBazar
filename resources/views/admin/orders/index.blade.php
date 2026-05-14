@@ -222,75 +222,79 @@
 
 <div class="order-hub-page">
     <div class="header-flex">
-        <h1 class="page-title">Orders Hub</h1>
+        <h1 class="page-title">{{ $title ?? 'Orders Hub' }}</h1>
         <div class="search-box">
             <i class="bi bi-search"></i>
-            <form action="{{ route('admin.orders.index', $status) }}" method="GET">
+            <form action="{{ url()->current() }}" method="GET">
                 <input type="text" name="search" class="form-control" placeholder="Search orders..." value="{{ request('search') }}">
             </form>
         </div>
     </div>
 
     {{-- Stats Cards --}}
+    @if(!isset($status) || !in_array($status, ['assigned', 'activity']))
     <div class="stats-container">
         <div class="stat-card">
             <div class="stat-icon bg-all"><i class="bi bi-cart-fill"></i></div>
             <div class="stat-info">
-                <span class="value">{{ $totalOrders }}</span>
+                <span class="value">{{ $totalOrders ?? count($orders) }}</span>
                 <span class="label">Total Orders</span>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon bg-pending"><i class="bi bi-clock-history"></i></div>
             <div class="stat-info">
-                <span class="value">{{ $pendingOrders }}</span>
+                <span class="value">{{ $pendingOrders ?? 0 }}</span>
                 <span class="label">Pending</span>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon bg-processing"><i class="bi bi-gear-fill"></i></div>
             <div class="stat-info">
-                <span class="value">{{ $processingOrders }}</span>
+                <span class="value">{{ $processingOrders ?? 0 }}</span>
                 <span class="label">Processing</span>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon bg-shipped"><i class="bi bi-truck"></i></div>
             <div class="stat-info">
-                <span class="value">{{ $shippedOrders }}</span>
+                <span class="value">{{ $shippedOrders ?? 0 }}</span>
                 <span class="label">Shipped</span>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon bg-delivered"><i class="bi bi-check-circle-fill"></i></div>
             <div class="stat-info">
-                <span class="value">{{ $deliveredOrders }}</span>
+                <span class="value">{{ $deliveredOrders ?? 0 }}</span>
                 <span class="label">Delivered</span>
             </div>
         </div>
     </div>
+    @endif
 
     {{-- Filter Pills --}}
+    @if(!isset($status) || !in_array($status, ['assigned', 'activity']))
     <div class="filter-pills">
-        <a href="{{ route('admin.orders.index', 'all') }}" class="pill {{ $status == 'all' ? 'active' : '' }}">
-            All Orders <span class="badge-count">{{ $totalOrders }}</span>
+        <a href="{{ route('admin.orders.index', 'all') }}" class="pill {{ ($status ?? '') == 'all' ? 'active' : '' }}">
+            All Orders <span class="badge-count">{{ $totalOrders ?? 0 }}</span>
         </a>
-        <a href="{{ route('admin.orders.index', 'pending') }}" class="pill {{ $status == 'pending' ? 'active' : '' }}">
-            Pending <span class="badge-count">{{ $pendingOrders }}</span>
+        <a href="{{ route('admin.orders.index', 'pending') }}" class="pill {{ ($status ?? '') == 'pending' ? 'active' : '' }}">
+            Pending <span class="badge-count">{{ $pendingOrders ?? 0 }}</span>
         </a>
-        <a href="{{ route('admin.orders.index', 'processing') }}" class="pill {{ $status == 'processing' ? 'active' : '' }}">
-            Processing <span class="badge-count">{{ $processingOrders }}</span>
+        <a href="{{ route('admin.orders.index', 'processing') }}" class="pill {{ ($status ?? '') == 'processing' ? 'active' : '' }}">
+            Processing <span class="badge-count">{{ $processingOrders ?? 0 }}</span>
         </a>
-        <a href="{{ route('admin.orders.index', 'shipped') }}" class="pill {{ $status == 'shipped' ? 'active' : '' }}">
-            Shipped <span class="badge-count">{{ $shippedOrders }}</span>
+        <a href="{{ route('admin.orders.index', 'shipped') }}" class="pill {{ ($status ?? '') == 'shipped' ? 'active' : '' }}">
+            Shipped <span class="badge-count">{{ $shippedOrders ?? 0 }}</span>
         </a>
-        <a href="{{ route('admin.orders.index', 'delivered') }}" class="pill {{ $status == 'delivered' ? 'active' : '' }}">
-            Delivered <span class="badge-count">{{ $deliveredOrders }}</span>
+        <a href="{{ route('admin.orders.index', 'delivered') }}" class="pill {{ ($status ?? '') == 'delivered' ? 'active' : '' }}">
+            Delivered <span class="badge-count">{{ $deliveredOrders ?? 0 }}</span>
         </a>
-        <a href="{{ route('admin.orders.index', 'cancelled') }}" class="pill {{ $status == 'cancelled' ? 'active' : '' }}">
+        <a href="{{ route('admin.orders.index', 'cancelled') }}" class="pill {{ ($status ?? '') == 'cancelled' ? 'active' : '' }}">
             Cancelled
         </a>
     </div>
+    @endif
 
     <div class="order-hub-card">
         <div class="card-body p-0">
@@ -333,15 +337,14 @@
                         <tr>
                             <th width="40"></th>
                             <th>Order ID</th>
+                            <th>Items</th>
                             <th>Customer</th>
-                            <th>Color</th>
-                            <th>Size</th>
+                            <th width="100">Staff</th>
+                            <th width="100">Status</th>
+                            <th width="120">Payment</th>
                             <th>Total</th>
-                            <th>Payment</th>
-                            <th>Staff</th>
-                            <th>Status</th>
                             <th>Courier</th>
-                            <th>Action</th>
+                            <th width="150">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -357,45 +360,68 @@
                                 <input class="form-check-input order-checkbox" type="checkbox" value="{{ $order->id }}">
                             </td>
                             <td>
-                                <span class="fw-bold text-primary">#{{ $order->invoice_number }}</span>
-                                <div class="text-muted small">{{ $order->created_at->format('d M, h:i A') }}</div>
-                                @if($order->seller)
-                                    <span class="seller-tag">{{ $order->seller->name }}</span>
-                                @else
-                                    <span class="seller-tag" style="background:#fef2f2; color:#991b1b;">Admin</span>
-                                @endif
+                                <div class="d-flex flex-column">
+                                    <span class="fw-bold text-primary" style="font-size: 1.1rem;">#{{ $order->invoice_number }}</span>
+                                    <span class="text-muted" style="font-size: 11px;"><i class="bi bi-calendar3 me-1"></i>{{ $order->created_at->format('d M, Y') }}</span>
+                                    <span class="text-muted" style="font-size: 11px;"><i class="bi bi-clock me-1"></i>{{ $order->created_at->format('h:i A') }}</span>
+                                    @if($order->seller)
+                                        <span class="badge bg-soft-info text-info mt-1" style="font-size: 10px; width: fit-content;">{{ $order->seller->name }}</span>
+                                    @else
+                                        <span class="badge bg-soft-danger text-danger mt-1" style="font-size: 10px; width: fit-content;">Admin Order</span>
+                                    @endif
+                                </div>
+                            </td>
+                            <td>
+                                <div class="items-list">
+                                    @foreach($items as $item)
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            @php
+                                                $img = $item['thumbnail'] ?? ($item['image'] ?? null);
+                                                if ($img) {
+                                                    $img = ltrim($img, '/');
+                                                    if (str_starts_with($img, 'http')) {
+                                                        $img = $img;
+                                                    } elseif (str_starts_with($img, 'uploads/')) {
+                                                        $img = asset($img);
+                                                    } else {
+                                                        $img = asset('uploads/product/' . $img);
+                                                    }
+                                                }
+                                            @endphp
+                                            <img src="{{ $img ?? asset('assets/admin/images/no-image.png') }}" 
+                                                 style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #eee;">
+                                            <div style="line-height: 1.2;">
+                                                <div class="fw-bold small" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                    {{ $item['name'] ?? ($item['title'] ?? 'Product') }}
+                                                </div>
+                                                <div class="text-muted" style="font-size: 10px;">
+                                                    {{ $item['qty'] }}×{{ $cur }}{{ number_format($item['price'] ?? 0, 0) }}
+                                                    @if(isset($item['color']) && $item['color'] != 'N/A') <span class="badge bg-light text-dark p-0 px-1">{{ $item['color'] }}</span> @endif
+                                                    @if(isset($item['size']) && $item['size'] != 'N/A') <span class="badge bg-light text-dark p-0 px-1">{{ $item['size'] }}</span> @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
                             </td>
                             <td>
                                 <div class="customer-info">
-                                    <span class="customer-name">{{ $order->customer?->user?->name ?? 'Walk-in Customer' }}</span>
-                                    <span class="customer-phone">{{ $order->customer?->user?->phone ?? 'N/A' }}</span>
+                                    <span class="customer-name">{{ $order->customer?->user?->name ?? 'Guest' }}</span>
+                                    <span class="customer-phone"><i class="bi bi-telephone-fill me-1"></i>{{ $order->customer?->user?->phone ?? 'N/A' }}</span>
+                                    <span class="text-muted" style="font-size: 10px;">{{ $order->customer?->address ?? 'N/A' }}</span>
                                 </div>
                             </td>
-                            <td><span class="item-meta">{{ $color }}</span></td>
-                            <td><span class="item-meta">{{ $size }}</span></td>
                             <td>
-                                <span class="fw-bold">{{ $cur }}{{ number_format($order->grand_total, 2) }}</span>
-                                <div class="small text-muted">{{ count($items) }} items</div>
-                            </td>
-                            <td>
-                                <select class="form-select form-select-sm border-0 bg-light" onchange="updatePaymentStatus({{ $order->id }}, this.value)">
-                                    <option value="pending" {{ ($order->order->payment_status ?? 'pending') == 'pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="paid" {{ ($order->order->payment_status ?? 'pending') == 'paid' ? 'selected' : '' }}>Paid</option>
-                                    <option value="partial" {{ ($order->order->payment_status ?? 'pending') == 'partial' ? 'selected' : '' }}>Partial</option>
-                                    <option value="refunded" {{ ($order->order->payment_status ?? 'pending') == 'refunded' ? 'selected' : '' }}>Refunded</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select class="form-select form-select-sm border-0 bg-light" onchange="assignStaff({{ $order->id }}, this.value)">
-                                    <option value="">Assign Staff</option>
+                                <select class="form-select form-select-sm border-0 bg-soft-info text-info fw-bold" onchange="assignStaff({{ $order->id }}, this.value)" style="font-size: 11px;">
+                                    <option value="">Not Assigned</option>
                                     @foreach($staffs as $staff)
-                                    <option value="{{ $staff->id }}" {{ ($order->order->staff_id ?? '') == $staff->id ? 'selected' : '' }}>{{ $staff->name }}</option>
+                                        <option value="{{ $staff->id }}" {{ ($order->order->staff_id ?? '') == $staff->id ? 'selected' : '' }}>{{ $staff->name }}</option>
                                     @endforeach
                                 </select>
                             </td>
                             <td>
                                 @php $s = $order->order->status ?? 'pending'; @endphp
-                                <select class="form-select form-select-sm status-badge status-{{ $s }}" onchange="updateStatus({{ $order->id }}, this.value)">
+                                <select class="form-select form-select-sm status-badge status-{{ $s }}" onchange="updateStatus({{ $order->id }}, this.value)" style="font-size: 11px; font-weight: 700;">
                                     <option value="pending" {{ $s == 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="processing" {{ $s == 'processing' ? 'selected' : '' }}>Processing</option>
                                     <option value="shipped" {{ $s == 'shipped' ? 'selected' : '' }}>Shipped</option>
@@ -404,22 +430,45 @@
                                 </select>
                             </td>
                             <td>
+                                <select class="form-select form-select-sm border-0 bg-light" onchange="updatePaymentStatus({{ $order->id }}, this.value)" style="font-size: 11px;">
+                                    <option value="pending" {{ ($order->order->payment_status ?? 'pending') == 'pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="paid" {{ ($order->order->payment_status ?? 'pending') == 'paid' ? 'selected' : '' }}>Paid</option>
+                                    <option value="partial" {{ ($order->order->payment_status ?? 'pending') == 'partial' ? 'selected' : '' }}>Partial</option>
+                                    <option value="refunded" {{ ($order->order->payment_status ?? 'pending') == 'refunded' ? 'selected' : '' }}>Refunded</option>
+                                </select>
+                                <div class="mt-1" style="font-size: 10px; font-weight: 600; color: #666;">
+                                    <i class="bi bi-wallet2 me-1"></i>{{ strtoupper($order->payment_method ?? 'COD') }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column align-items-end">
+                                    <span class="fw-bold" style="font-size: 1rem;">{{ $cur }}{{ number_format($order->grand_total, 0) }}</span>
+                                    <span class="text-muted" style="font-size: 11px;">Items: {{ count($items) }}</span>
+                                    @if($order->delivery_charge > 0)
+                                        <span class="text-muted" style="font-size: 10px;">Ship: {{ $cur }}{{ number_format($order->delivery_charge, 0) }}</span>
+                                    @endif
+                                </div>
+                            </td>
+                            <td>
                                 @if($order->order->courier_name)
-                                    <div class="small fw-bold text-success">{{ $order->order->courier_name }}</div>
-                                    <div class="small text-muted">{{ $order->order->courier_status }}</div>
+                                    <div class="badge bg-soft-success text-success p-2 w-100" style="font-size: 10px;">
+                                        <div class="fw-bold"><i class="bi bi-truck me-1"></i>{{ $order->order->courier_name }}</div>
+                                        <div class="mt-1 text-uppercase">{{ $order->order->courier_status }}</div>
+                                    </div>
                                 @else
-                                    <span class="text-muted small">Not Sent</span>
+                                    <span class="text-muted" style="font-size: 10px;">No Courier</span>
                                 @endif
                             </td>
                             <td>
-                                <div class="d-flex">
+                                <div class="d-flex flex-wrap gap-1">
                                     <a href="{{ route('admin.orders.show', $order->id) }}" class="action-btn btn-view" title="View"><i class="bi bi-eye"></i></a>
                                     <a href="{{ route('admin.fraud.index', ['search' => $order->customer?->user?->phone]) }}" class="action-btn btn-fraud" title="Fraud Check"><i class="bi bi-shield-check"></i></a>
+                                    <a href="javascript:void(0)" onclick="generateBulkInvoice([{{ $order->id }}])" class="action-btn btn-edit" title="Invoice" style="background: var(--info);"><i class="bi bi-file-earmark-pdf"></i></a>
                                     @if(!$order->order->steadfast_order_id)
-                                        <a href="javascript:void(0)" onclick="sendIndividualCourier({{ $order->id }}, 'steadfast')" class="action-btn btn-steadfast" title="Send to Steadfast"><i class="bi bi-truck"></i></a>
+                                        <a href="javascript:void(0)" onclick="sendIndividualCourier({{ $order->id }}, 'steadfast')" class="action-btn btn-steadfast" title="Steadfast"><i class="bi bi-truck"></i></a>
                                     @endif
                                     @if(!$order->order->pathao_consignment_id)
-                                        <a href="javascript:void(0)" onclick="sendIndividualCourier({{ $order->id }}, 'pathao')" class="action-btn btn-pathao" title="Send to Pathao"><i class="bi bi-send"></i></a>
+                                        <a href="javascript:void(0)" onclick="sendIndividualCourier({{ $order->id }}, 'pathao')" class="action-btn btn-pathao" title="Pathao"><i class="bi bi-send"></i></a>
                                     @endif
                                     <a href="javascript:void(0)" onclick="deleteOrder({{ $order->id }})" class="action-btn btn-delete" title="Delete"><i class="bi bi-trash"></i></a>
                                 </div>

@@ -11,6 +11,7 @@
  })->where('any', '^(?!admin|api|employee|manager|seller|register|logout|user-profile).*$');
 
 use App\Http\Controllers\Admin\Adminauthcontroller;
+use App\Http\Controllers\Admin\AdminSupportController;
 use App\Http\Controllers\Admin\Admincontroller;
 use App\Http\Controllers\Admin\AipromptController;
 use App\Http\Controllers\Admin\AlltaxesController;
@@ -86,6 +87,8 @@ use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\OrderHubController;
 use App\Http\Controllers\Seller\SellerOrderHubController;
 use App\Http\Controllers\Manager\ManagerDashboardController;
+use App\Http\Controllers\Admin\CustomerManagementController;
+use App\Http\Controllers\Admin\IncompleteOrderController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -132,6 +135,23 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::resource('admincustomers', CustomerController::class)->names('admin.customers');
     Route::post('customers/{id}/reset-password', [CustomerController::class, 'resetPassword'])->name('admin.customers.reset-password');
 
+    // Advanced Customer Management
+    Route::get('customer-list', [CustomerManagementController::class, 'index'])->name('admin.customers.index');
+    Route::post('customer-list/{id}/toggle-block', [CustomerManagementController::class, 'toggleBlock'])->name('admin.customers.toggle-block');
+
+    // Incomplete Orders (Leads)
+    Route::get('incomplete-orders', [IncompleteOrderController::class, 'index'])->name('admin.orders.incomplete');
+    Route::post('incomplete-orders/{id}/update', [IncompleteOrderController::class, 'updateLead'])->name('admin.orders.incomplete.update-info');
+    Route::post('incomplete-orders/bulk-assign', [IncompleteOrderController::class, 'bulkAssign']);
+    Route::post('incomplete-orders/bulk-status', [IncompleteOrderController::class, 'bulkStatusUpdate']);
+    Route::post('incomplete-orders/bulk-delete', [IncompleteOrderController::class, 'bulkDelete']);
+    Route::post('incomplete-orders/{id}/status', [IncompleteOrderController::class, 'updateStatus'])->name('admin.orders.incomplete.status');
+    Route::delete('incomplete-orders/{id}', [IncompleteOrderController::class, 'destroy'])->name('admin.orders.incomplete.destroy');
+
+    // Orders Hub Extras
+    Route::get('orders-staff-assignments', [OrderHubController::class, 'staffAssignments'])->name('admin.orders.staff_assignments');
+    Route::get('orders-activity-history', [OrderHubController::class, 'activityHistory'])->name('admin.orders.activity_history');
+
     // ── Permissions ──────────────────────────────────────────────────────────
     Route::resource('permission', PermissionController::class)->names('admin.permissions');
 
@@ -152,10 +172,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::post('employee/{employee}/toggle-status',  [EmployeeController::class, 'toggleStatus'])     ->name('admin.employees.toggleStatus');
     Route::post('employee/{employee}/reset-password', [EmployeeController::class, 'resetPassword'])    ->name('admin.employees.resetPassword');
 
-    // ── Seller Approvals ──────────────────────────────────────────────────────
+    // ── Seller Management ──────────────────────────────────────────────────────
     Route::get('seller-approvals', [SellerApprovalController::class, 'index'])->name('admin.sellers.approvals');
     Route::post('seller-approvals/{id}/approve', [SellerApprovalController::class, 'approve'])->name('admin.sellers.approve');
     Route::post('seller-approvals/{id}/reject',  [SellerApprovalController::class, 'reject'])->name('admin.sellers.reject');
+    Route::post('seller-approvals/{id}/activate', [SellerApprovalController::class, 'activate'])->name('admin.sellers.activate');
+    Route::get('seller-approvals/{id}/edit',     [SellerApprovalController::class, 'edit'])->name('admin.sellers.edit');
+    Route::post('seller-approvals/{id}/update',  [SellerApprovalController::class, 'update'])->name('admin.sellers.update');
+    Route::delete('seller-approvals/{id}',       [SellerApprovalController::class, 'destroy'])->name('admin.sellers.destroy');
 
     // ── Bank Management ───────────────────────────────────────────────────────
     Route::resource('banks', BankController::class)->names('admin.banks');
@@ -171,6 +195,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     // ── Unified Users ─────────────────────────────────────────────────────────
     Route::middleware(['permission:employee.list'])->group(function () {
         Route::resource('users', UserController::class)->names('admin.users');
+        Route::patch('users/{user}/toggle-block', [UserController::class, 'toggleBlock'])->name('admin.users.toggle-block');
     });
 
     // ── Suppliers ─────────────────────────────────────────────────────────────
@@ -242,6 +267,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::resource('sociallinkList', SociallinkListController::class)->names('admin.sociallinkList')->except(['create', 'store', 'show', 'destroy']);
     Route::post('sociallinkList/{sociallinkList}/toggle', [SociallinkListController::class, 'toggleStatus'])->name('admin.sociallinkList.toggle');
 
+    // ── Admin Support ─────────────────────────────────────────────────────────
+    Route::get('admin-support', [AdminSupportController::class, 'index'])->name('admin.support.index');
+    Route::post('admin-support', [AdminSupportController::class, 'update'])->name('admin.support.update');
+
     // ── Membership Logos ──────────────────────────────────────────────────────
     Route::resource('membership_logos', \App\Http\Controllers\Admin\MembershipLogoController::class)->names('admin.membership_logos')->except(['create', 'show', 'edit', 'update']);
     Route::post('membership_logos/{membershipLogo}/toggle', [\App\Http\Controllers\Admin\MembershipLogoController::class, 'toggleStatus'])->name('admin.membership_logos.toggle');
@@ -297,6 +326,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     });
 
     Route::prefix('orders')->name('admin.orders.')->group(function () {
+        Route::get('/create',          [OrderHubController::class, 'create'])       ->name('create');
+        Route::post('/store',          [OrderHubController::class, 'store'])        ->name('store');
         Route::get('/{status?}',       [OrderHubController::class, 'index'])       ->name('index');
         Route::get('/show/{id}',       [OrderHubController::class, 'show'])        ->name('show');
         Route::post('/status/{id}',    [OrderHubController::class, 'updateStatus'])->name('update-status');
@@ -424,6 +455,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
     // ── Page Management ───────────────────────────────────────────────────────
     Route::resource('pages', PageController::class)->names('admin.pages');
+
+    // ── Blog Management ───────────────────────────────────────────────────────
+    Route::resource('blog-categories', \App\Http\Controllers\Admin\BlogCategoryController::class)->names('admin.blog_categories');
+    Route::resource('blogs', \App\Http\Controllers\Admin\BlogController::class)->names('admin.blog');
+
+    // ── Company Pages ─────────────────────────────────────────────────────────
+    Route::get('about-company', [\App\Http\Controllers\Admin\AboutCompanyController::class, 'index'])->name('admin.about.index');
+    Route::post('about-company', [\App\Http\Controllers\Admin\AboutCompanyController::class, 'store'])->name('admin.about.store');
+    Route::get('privacy-policy', [\App\Http\Controllers\Admin\PrivacyPolicyController::class, 'index'])->name('admin.privacy.index');
+    Route::post('privacy-policy', [\App\Http\Controllers\Admin\PrivacyPolicyController::class, 'store'])->name('admin.privacy.store');
 
     // ── Shop Management ───────────────────────────────────────────────────────
     Route::resource('shops', ShopController::class)->names('admin.shops')->except(['show']);
@@ -624,7 +665,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/sales-history', [App\Http\Controllers\Seller\SellerPosController::class, 'salesIndex'])->name('sales-history');
             Route::get('/drafts',        [App\Http\Controllers\Seller\SellerPosController::class, 'draftIndex'])->name('drafts');
             Route::get('/draft/{draft}', [App\Http\Controllers\Seller\SellerPosController::class, 'getDraft'])->name('draft.get');
-            Route::get('/invoice/{id}',  [App\Http\Controllers\Seller\SellerPosController::class, 'printInvoice'])->name('invoice.print');
+            Route::get('/invoice/{id}',  [App\Http\Controllers\Seller\SellerPosController::class, 'printInvoice'])->name('invoice');
         });
 
         Route::prefix('orders')->name('orders.')->group(function () {

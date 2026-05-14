@@ -62,7 +62,7 @@ class PosInvoice extends Model
     public static function generateInvoiceNumber(): string
     {
         do {
-            $number = str_pad(mt_rand(100000, 999999), 6, '0', STR_PAD_LEFT);
+            $number = str_pad(mt_rand(10000000, 99999999), 8, '0', STR_PAD_LEFT);
         } while (static::where('invoice_number', $number)->exists());
 
         return $number;

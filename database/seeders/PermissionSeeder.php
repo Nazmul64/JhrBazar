@@ -131,6 +131,17 @@ class PermissionSeeder extends Seeder
             ['group' => 'Banner',               'name' => 'create',                 'key' => 'banner.create'],
             ['group' => 'Banner',               'name' => 'edit',                   'key' => 'banner.edit'],
             ['group' => 'Banner',               'name' => 'delete',                 'key' => 'banner.delete'],
+
+            // Chat
+            ['group' => 'Chat',                 'name' => 'list',                   'key' => 'chat.list'],
+            ['group' => 'Chat',                 'name' => 'view',                   'key' => 'chat.view'],
+            ['group' => 'Chat',                 'name' => 'delete',                 'key' => 'chat.delete'],
+
+            // Detailed Fraud
+            ['group' => 'Fraud',                'name' => 'dashboard',              'key' => 'fraud.dashboard'],
+            ['group' => 'Fraud',                'name' => 'rules',                  'key' => 'fraud.rules'],
+            ['group' => 'Fraud',                'name' => 'alerts',                 'key' => 'fraud.alerts'],
+            ['group' => 'Fraud',                'name' => 'blacklist',              'key' => 'fraud.blacklist'],
         ];
 
         foreach ($permissions as $permission) {

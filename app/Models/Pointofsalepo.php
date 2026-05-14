@@ -70,6 +70,11 @@ class Pointofsalepo extends Model
         return $this->hasOne(PosInvoice::class, 'pointofsalepo_id');
     }
 
+    public function statusLogs()
+    {
+        return $this->hasMany(OrderStatusLog::class, 'order_id');
+    }
+
     // ── Scopes ─────────────────────────────────────────────────────────────
 
     public function scopeCompleted(Builder $query): Builder

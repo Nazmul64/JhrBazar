@@ -8,8 +8,11 @@ const ShopDetails = () => {
     const { id } = useParams();
     const mainColor = '#57b500';
     const [products, setProducts] = useState([]);
+    const [reviews, setReviews] = useState([]);
     const [shop, setShop] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('products'); // 'products' or 'reviews'
+    const [reviewsLoading, setReviewsLoading] = useState(false);
 
     useEffect(() => {
         const fetchShopData = async () => {
@@ -29,6 +32,27 @@ const ShopDetails = () => {
         fetchShopData();
         window.scrollTo(0, 0);
     }, [id]);
+
+    const fetchReviews = async () => {
+        if (reviews.length > 0) return;
+        setReviewsLoading(true);
+        try {
+            const res = await axios.get(`/api/shop/${shop.user_id}/reviews`);
+            if (res.data.success) {
+                setReviews(res.data.data);
+            }
+        } catch (error) {
+            console.error("Error fetching reviews:", error);
+        } finally {
+            setReviewsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'reviews' && shop) {
+            fetchReviews();
+        }
+    }, [activeTab, shop]);
 
     if (loading) {
         return (
@@ -74,7 +98,12 @@ const ShopDetails = () => {
                         </div>
                         <div className="col-md-4 text-md-end">
                             <div className="d-flex flex-column align-items-md-end">
-                                <div className="text-warning mb-1">⭐⭐⭐⭐⭐ <span className="text-dark fw-bold">5.0 (0)</span></div>
+                                <div className="text-warning mb-1">
+                                    {Array(5).fill(0).map((_, i) => (
+                                        <i key={i} className={`bi bi-star-fill ${i < 5 ? 'text-warning' : 'text-secondary'}`}></i>
+                                    ))}
+                                    <span className="text-dark fw-bold ms-2">5.0 (0)</span>
+                                </div>
                                 <button 
                                     onClick={() => {
                                         window.dispatchEvent(new CustomEvent('openSellerChat', { 
@@ -94,8 +123,26 @@ const ShopDetails = () => {
                 <div className="border-top border-bottom">
                     <div className="container d-flex justify-content-between align-items-center py-2">
                         <div className="d-flex gap-3">
-                            <button className="btn text-white px-4" style={{ backgroundColor: mainColor, borderRadius: '20px' }}>All Products</button>
-                            <button className="btn btn-link text-decoration-none text-dark">Reviews</button>
+                            <button 
+                                onClick={() => setActiveTab('products')}
+                                className={`btn px-4 transition-all ${activeTab === 'products' ? 'text-white' : 'btn-link text-dark text-decoration-none'}`} 
+                                style={{ 
+                                    backgroundColor: activeTab === 'products' ? mainColor : 'transparent', 
+                                    borderRadius: '20px' 
+                                }}
+                            >
+                                All Products
+                            </button>
+                            <button 
+                                onClick={() => setActiveTab('reviews')}
+                                className={`btn px-4 transition-all ${activeTab === 'reviews' ? 'text-white' : 'btn-link text-dark text-decoration-none'}`}
+                                style={{ 
+                                    backgroundColor: activeTab === 'reviews' ? mainColor : 'transparent', 
+                                    borderRadius: '20px' 
+                                }}
+                            >
+                                Reviews
+                            </button>
                         </div>
                         <div className="d-none d-md-block">
                             <div className="input-group" style={{ width: '300px' }}>
@@ -109,29 +156,70 @@ const ShopDetails = () => {
 
             {/* Shop Content */}
             <div className="container py-5">
-                {/* Products Grid */}
-                <div className="row g-3 g-md-4">
-                    {products.length > 0 ? (
-                        products.map(product => (
-                            <div key={product.uid} className="col-6 col-md-4 col-lg-2">
-                                <ProductCard product={product} />
-                            </div>
-                        ))
-                    ) : (
-                        <div className="col-12 text-center py-5 text-muted">
-                            No products found in this store.
+                {activeTab === 'products' ? (
+                    <>
+                        <div className="row g-3 g-md-4">
+                            {products.length > 0 ? (
+                                products.map(product => (
+                                    <div key={product.uid} className="col-6 col-md-4 col-lg-2">
+                                        <ProductCard product={product} />
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="col-12 text-center py-5 text-muted">
+                                    No products found in this store.
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
 
-                {/* Pagination Placeholder */}
-                {products.length > 0 && (
-                    <div className="d-flex justify-content-center mt-5">
-                        <nav>
-                            <ul className="pagination">
-                                <li className="page-item active"><span className="page-link" style={{ backgroundColor: mainColor, borderColor: mainColor, color: '#fff' }}>1</span></li>
-                            </ul>
-                        </nav>
+                        {products.length > 0 && (
+                            <div className="d-flex justify-content-center mt-5">
+                                <nav>
+                                    <ul className="pagination">
+                                        <li className="page-item active"><span className="page-link" style={{ backgroundColor: mainColor, borderColor: mainColor, color: '#fff' }}>1</span></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <div className="row justify-content-center">
+                        <div className="col-md-8">
+                            {reviewsLoading ? (
+                                <div className="text-center py-5">
+                                    <div className="spinner-border text-success" role="status"></div>
+                                </div>
+                            ) : reviews.length > 0 ? (
+                                reviews.map(review => (
+                                    <div key={review.id} className="card border-0 shadow-sm mb-3">
+                                        <div className="card-body">
+                                            <div className="d-flex align-items-center gap-3 mb-2">
+                                                <img 
+                                                    src={review.user?.profile_image || '/assets/admin/images/default-avatar.png'} 
+                                                    alt={review.user?.name}
+                                                    style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
+                                                />
+                                                <div>
+                                                    <h6 className="mb-0 fw-bold">{review.user?.name || 'Customer'}</h6>
+                                                    <div className="text-warning small">
+                                                        {Array(5).fill(0).map((_, i) => (
+                                                            <i key={i} className={`bi bi-star-fill ${i < review.rating ? 'text-warning' : 'text-secondary'}`}></i>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <span className="ms-auto text-muted small">{new Date(review.created_at).toLocaleDateString()}</span>
+                                            </div>
+                                            <p className="mb-0 text-dark" style={{ fontSize: '14px' }}>{review.comment}</p>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-5 text-muted">
+                                    <i className="bi bi-chat-left-text d-block mb-2" style={{ fontSize: '3rem' }}></i>
+                                    <p>No reviews yet for this shop.</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>

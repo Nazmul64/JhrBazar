@@ -100,15 +100,14 @@
 </div>
 
 
-{{-- Summernote or TinyMCE Rich Text Editor --}}
-{{-- If using Summernote, include CDN in master layout and initialize below --}}
+@push('scripts')
 <script>
-     If you use Summernote:
-     $('#description').summernote({ height: 200, placeholder: 'Enter Your Text Here' });
-
-     If you use TinyMCE:
-     tinymce.init({ selector: '#description', height: 200 });
+    $(document).ready(function() {
+        $('#description').summernote({
+            height: 300,
+            placeholder: 'Enter page content...'
+        });
+    });
 </script>
-
-
+@endpush
 @endsection

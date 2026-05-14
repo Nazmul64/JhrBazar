@@ -44,7 +44,7 @@ class FrontendApiController extends Controller
                 return $cat;
             });
 
-        $productColumns = ['id', 'name', 'thumbnail', 'selling_price', 'discount_price', 'is_active', 'created_at', 'seller_id', 'cash_on_delivery', 'online_payment'];
+        $productColumns = ['id', 'name', 'slug', 'thumbnail', 'selling_price', 'discount_price', 'is_active', 'created_at', 'seller_id', 'cash_on_delivery', 'online_payment'];
         
         $popular = $this->getCombinedProducts('is_popular', 10, $productColumns);
         $newArrivals = $this->getCombinedProducts('is_new_arrival', 10, $productColumns);
@@ -139,6 +139,7 @@ class FrontendApiController extends Controller
                 $s->favicon = $s->favicon ? (str_starts_with($s->favicon, 'http') ? $s->favicon : '/' . ltrim($s->favicon, '/')) : null;
                 $s->footer_logo = $s->footer_logo ? (str_starts_with($s->footer_logo, 'http') ? $s->footer_logo : '/' . ltrim($s->footer_logo, '/')) : null;
                 $s->app_logo = $s->app_logo ? (str_starts_with($s->app_logo, 'http') ? $s->app_logo : '/' . ltrim($s->app_logo, '/')) : null;
+                $s->og_image = $s->og_image ? (str_starts_with($s->og_image, 'http') ? $s->og_image : '/' . ltrim($s->og_image, '/')) : null;
             }
             
             $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('name', 'asc')])
@@ -425,16 +426,22 @@ class FrontendApiController extends Controller
     {
         $product = null;
         if ($type === 'admin') {
-            $product = Product::with(['category', 'brand'])->find($id);
+            $product = Product::with(['category', 'brand'])
+                ->where(function($q) use ($id) {
+                    $q->where('id', $id)->orWhere('slug', $id);
+                })->first();
         } else {
-            $product = SellerProduct::with(['category', 'brand'])->find($id);
+            $product = SellerProduct::with(['category', 'brand'])
+                ->where(function($q) use ($id) {
+                    $q->where('id', $id)->orWhere('slug', $id);
+                })->first();
         }
 
         if (!$product) {
             return response()->json(['success' => false, 'message' => 'Product not found'], 404);
         }
 
-        $reviews = \App\Models\Review::where('product_id', $id)
+        $reviews = \App\Models\Review::where('product_id', $product->id)
             ->where('product_type', $type)
             ->where('status', 1);
         
@@ -459,6 +466,7 @@ class FrontendApiController extends Controller
 
         return [
             'id'                => $product->id,
+            'slug'              => $product->slug,
             'uid'               => $type . '_' . $product->id,
             'product_type'      => $type,
             'seller_id'         => ($type === 'seller' || $type === 'digital_seller') ? $product->seller_id : null,
@@ -488,6 +496,9 @@ class FrontendApiController extends Controller
             'cash_on_delivery'  => (bool) $product->cash_on_delivery,
             'online_payment'    => (bool) $product->online_payment,
             'is_shipping_charge'=> (bool) $product->is_shipping_charge,
+            'meta_title'        => $product->meta_title,
+            'meta_description'  => $product->meta_description,
+            'meta_keywords'     => $product->meta_keywords,
         ];
     }
 
@@ -498,9 +509,9 @@ class FrontendApiController extends Controller
     {
         $product = null;
         if ($type === 'admin') {
-            $product = Product::find($id);
+            $product = Product::where('id', $id)->orWhere('slug', $id)->first();
         } else {
-            $product = SellerProduct::find($id);
+            $product = SellerProduct::where('id', $id)->orWhere('slug', $id)->first();
         }
 
         if (!$product) {
@@ -617,6 +628,32 @@ class FrontendApiController extends Controller
                 'banner'      => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : '/' . ltrim($shop->banner, '/')) : '/placeholder.jpg',
                 'description' => $shop->description,
             ] : null
+        ]);
+    }
+
+    /**
+     * Get reviews by seller ID.
+     */
+    public function getReviewsBySeller($seller_id)
+    {
+        $sellerProductIds = SellerProduct::where('seller_id', $seller_id)->pluck('id');
+        $digitalSellerProductIds = SellerDigitalProduct::where('seller_id', $seller_id)->pluck('id');
+
+        $reviews = \App\Models\Review::with(['user:id,name,profile_image'])
+            ->where(function($q) use ($sellerProductIds, $digitalSellerProductIds) {
+                $q->where(function($sq) use ($sellerProductIds) {
+                    $sq->where('product_type', 'seller')->whereIn('product_id', $sellerProductIds);
+                })->orWhere(function($sq) use ($digitalSellerProductIds) {
+                    $sq->where('product_type', 'digital_seller')->whereIn('product_id', $digitalSellerProductIds);
+                });
+            })
+            ->where('status', 1)
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $reviews
         ]);
     }
 
@@ -757,7 +794,7 @@ class FrontendApiController extends Controller
         $productCategories = Category::where('is_active', 1)->select('id', 'name')->orderBy('name', 'asc')->get();
 
         $pageCategories = \App\Models\PageCategory::with(['pages' => function($q) {
-                $q->where('status', 1)->select('id', 'page_category_id', 'name')->orderBy('name', 'asc');
+                $q->where('status', 1)->select('id', 'page_category_id', 'name', 'slug')->orderBy('name', 'asc');
             }])
             ->where('status', 1)->select('id', 'name')->orderBy('name', 'asc')->get();
 
@@ -787,9 +824,13 @@ class FrontendApiController extends Controller
     /**
      * Get single page details.
      */
-    public function getPage($id)
+    public function getPage($slug)
     {
-        $page = \App\Models\Page::where('status', 1)->find($id);
+        $page = \App\Models\Page::where('status', 1)
+            ->where(function($q) use ($slug) {
+                $q->where('slug', $slug)->orWhere('id', $slug);
+            })->first();
+
         if (!$page) {
             return response()->json(['success' => false, 'message' => 'Page not found'], 404);
         }
@@ -798,6 +839,59 @@ class FrontendApiController extends Controller
             'success' => true,
             'data'    => $page
         ]);
+    }
+
+    /**
+     * Get blog categories.
+     */
+    public function getBlogCategories()
+    {
+        $categories = \App\Models\BlogCategory::where('status', 1)->get();
+        return response()->json(['success' => true, 'data' => $categories]);
+    }
+
+    /**
+     * Get blogs with pagination and category filter.
+     */
+    public function getBlogs(Request $request)
+    {
+        $query = \App\Models\Blog::with('category')->where('status', 1);
+
+        if ($request->category_id) {
+            $query->where('blog_category_id', $request->category_id);
+        }
+
+        if ($request->category_slug) {
+            $category = \App\Models\BlogCategory::where('slug', $request->category_slug)->first();
+            if ($category) {
+                $query->where('blog_category_id', $category->id);
+            }
+        }
+
+        $blogs = $query->latest()->paginate(12);
+
+        // Map thumbnails
+        $blogs->getCollection()->transform(function($blog) {
+            $blog->thumbnail = $blog->thumbnail ? (str_starts_with($blog->thumbnail, 'http') ? $blog->thumbnail : '/' . ltrim($blog->thumbnail, '/')) : null;
+            return $blog;
+        });
+
+        return response()->json(['success' => true, 'data' => $blogs]);
+    }
+
+    /**
+     * Get single blog details.
+     */
+    public function getBlogDetails($slug)
+    {
+        $blog = \App\Models\Blog::with('category')->where('status', 1)->where('slug', $slug)->first();
+        if (!$blog) {
+            return response()->json(['success' => false, 'message' => 'Blog not found'], 404);
+        }
+
+        $blog->thumbnail = $blog->thumbnail ? (str_starts_with($blog->thumbnail, 'http') ? $blog->thumbnail : '/' . ltrim($blog->thumbnail, '/')) : null;
+
+        return response()->json(['success' => true, 'data' => $blog]);
     }
 
     /**
@@ -812,11 +906,16 @@ class FrontendApiController extends Controller
 
         return [
             'id'                  => $product->id,
+            'slug'                => $product->slug ?? $product->id,
             'uid'                 => $type . '_' . $product->id,
             'product_type'        => $type,
             'seller_id'           => ($type === 'seller' || $type === 'digital_seller') ? ($product->seller_id ?? 0) : 0, 
             'title'               => $product->name,
-            'image'               => $product->thumbnail ? (str_starts_with($product->thumbnail, 'http') ? $product->thumbnail : '/' . ltrim($product->thumbnail, '/')) : '/placeholder.jpg',
+            'image'               => $product->thumbnail ? (
+                                        str_starts_with($product->thumbnail, 'http') 
+                                        ? $product->thumbnail 
+                                        : (str_starts_with($product->thumbnail, 'uploads/') ? '/' . ltrim($product->thumbnail, '/') : '/uploads/product/' . ltrim($product->thumbnail, '/'))
+                                     ) : '/placeholder.jpg',
             'price'               => $sellingPrice,
             'oldPrice'            => $originalPrice,
             'discount'            => $discountPercentage,
@@ -828,5 +927,25 @@ class FrontendApiController extends Controller
             'online_payment'      => (bool) ($product->online_payment ?? true),
             'created_at'          => $product->created_at,
         ];
+    }
+    /**
+     * Get about company details.
+     */
+    public function getAboutCompany()
+    {
+        $about = \App\Models\AboutCompany::first();
+        if ($about && $about->image) {
+            $about->image = str_starts_with($about->image, 'http') ? $about->image : '/' . ltrim($about->image, '/');
+        }
+        return response()->json(['success' => true, 'data' => $about]);
+    }
+
+    /**
+     * Get privacy policy details.
+     */
+    public function getPrivacyPolicy()
+    {
+        $policy = \App\Models\PrivacyPolicy::first();
+        return response()->json(['success' => true, 'data' => $policy]);
     }
 }

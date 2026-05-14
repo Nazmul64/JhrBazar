@@ -142,6 +142,16 @@ class UserController extends Controller
     }
 
     /**
+     * Toggle block status
+     */
+    public function toggleBlock(User $user)
+    {
+        $user->update(['is_blocked' => ! $user->is_blocked]);
+        $status = $user->is_blocked ? 'blocked' : 'unblocked';
+        return back()->with('success', "User has been {$status} successfully.");
+    }
+
+    /**
      * Delete image
      */
     private function deleteImage(?string $path): void

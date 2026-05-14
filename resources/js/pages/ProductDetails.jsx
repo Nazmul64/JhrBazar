@@ -7,7 +7,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 
 const ProductDetails = () => {
-    const { type, id } = useParams();
+    const { type, slug } = useParams();
     const mainColor = '#57b500';
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -21,24 +21,25 @@ const ProductDetails = () => {
     const [relatedProducts, setRelatedProducts] = useState([]);
     const { addToCart } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
+    const [supportSettings, setSupportSettings] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProduct = async () => {
             setLoading(true);
             try {
-                const res = await axios.get(`/api/product/${type}/${id}`);
+                const res = await axios.get(`/api/product/${type}/${slug}`);
                 if (res.data.success) {
                     setProduct(res.data.data);
 
                     // Fetch reviews
-                    const reviewsRes = await axios.get(`/api/product/${type}/${id}/reviews`);
+                    const reviewsRes = await axios.get(`/api/product/${type}/${res.data.data.id}/reviews`);
                     if (reviewsRes.data.success) {
                         setReviews(reviewsRes.data.data);
                     }
 
                     // Fetch related products
-                    const relatedRes = await axios.get(`/api/product/${type}/${id}/related`);
+                    const relatedRes = await axios.get(`/api/product/${type}/${res.data.data.id}/related`);
                     if (relatedRes.data.success) {
                         setRelatedProducts(relatedRes.data.data);
                     }
@@ -50,8 +51,30 @@ const ProductDetails = () => {
             }
         };
         fetchProduct();
+
+        // Fetch Admin Support Settings
+        const fetchSupportSettings = async () => {
+            try {
+                const res = await axios.get('/api/admin-support');
+                if (res.data.success) {
+                    setSupportSettings(res.data.data);
+                }
+            } catch (error) {
+                console.error("Error fetching support settings:", error);
+            }
+        };
+        fetchSupportSettings();
+
         window.scrollTo(0, 0);
-    }, [type, id]);
+    }, [type, slug]);
+
+    const getImageUrl = (url) => {
+        if (!url) return '/assets/admin/images/no-image.png';
+        if (url.startsWith('http')) return url;
+        if (url.startsWith('/')) return url;
+        if (url.startsWith('uploads/')) return '/' + url;
+        return '/uploads/product/' + url;
+    };
 
     const productImages = product ? [product.thumbnail, ...(product.gallery || [])] : [];
 
@@ -162,7 +185,7 @@ const ProductDetails = () => {
             <div className={`${product.seller_id ? 'container-fluid px-4 px-md-5' : 'container'} py-4`}>
                 {/* Breadcrumbs */}
                 <nav className="mb-4">
-                    <ol className="breadcrumb small" style={{ fontSize: '12px' }}>
+                    <ol className="breadcrumb small" style={{ fontSize: '14px' }}>
                         <li className="breadcrumb-item"><Link to="/" className="text-decoration-none text-muted">হোম</Link></li>
                         <li className="breadcrumb-item active text-dark fw-bold">{product.name}</li>
                     </ol>
@@ -170,15 +193,15 @@ const ProductDetails = () => {
 
                 <div className="row g-4">
                     {/* Left: Gallery & Main Info */}
-                    <div className={(product.is_shipping_charge || product.seller_id) ? "col-lg-8" : "col-lg-12"}>
+                    <div className={product.seller_id ? "col-lg-8" : "col-lg-12"}>
                         <div className="row g-4">
                             {/* Product Images with Vertical Thumbnails */}
-                            <div className="col-md-5">
+                            <div className="col-md-6">
                                 <div className="d-flex gap-3">
                                     {/* Thumbnails (Vertical on the left) */}
                                     <div
                                         className="d-flex flex-column gap-2 d-none d-md-flex"
-                                        style={{ width: '80px', flexShrink: 0, maxHeight: '450px', overflowY: 'auto', scrollbarWidth: 'none' }}
+                                        style={{ width: '85px', flexShrink: 0, maxHeight: '480px', overflowY: 'auto', scrollbarWidth: 'none' }}
                                     >
                                         {productImages.map((img, i) => (
                                             <div
@@ -198,7 +221,7 @@ const ProductDetails = () => {
                                                     opacity: i === activeImageIndex ? 1 : 0.7
                                                 }}
                                             >
-                                                <img src={img} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '7px' }} alt="thumb" />
+                                                <img src={getImageUrl(img)} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '7px' }} alt="thumb" onError={(e) => { e.target.src = '/assets/admin/images/no-image.png'; }} />
                                             </div>
                                         ))}
                                     </div>
@@ -218,15 +241,17 @@ const ProductDetails = () => {
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                padding: '0'
+                                                padding: '0',
+                                                maxHeight: '480px'
                                             }}
                                         >
                                             <img
                                                 key={activeImageIndex}
-                                                src={productImages[activeImageIndex]}
+                                                src={getImageUrl(productImages[activeImageIndex])}
                                                 alt={product.name}
                                                 className="product-main-img"
-                                                style={{ width: '100%', height: 'auto', objectFit: 'cover', display: 'block' }}
+                                                style={{ width: '100%', height: '100%', maxHeight: '480px', objectFit: 'contain', display: 'block' }}
+                                                onError={(e) => { e.target.src = '/assets/admin/images/no-image.png'; }}
                                             />
                                             {/* Floating Wishlist Button */}
                                             <div
@@ -279,7 +304,7 @@ const ProductDetails = () => {
                             </div>
 
                             {/* Product Purchase Info */}
-                            <div className="col-md-7 ps-md-4 position-relative">
+                            <div className="col-md-6 ps-md-5 position-relative">
                                 {/* Zoom Overlay */}
                                 {zoomPos.show && (
                                     <div style={{
@@ -303,9 +328,9 @@ const ProductDetails = () => {
                                     }}></div>
                                 )}
 
-                                <span className="badge mb-2 px-3 py-2" style={{ backgroundColor: '#fff0f3', color: '#ff4d4d', fontSize: '10px', fontWeight: 'bold', borderRadius: '5px' }}>{product.category || 'Product'}</span>
-                                <h2 className="fw-bold mb-2" style={{ color: '#333' }}>{product.name}</h2>
-                                <p className="text-muted mb-4" style={{ fontSize: '13px', lineHeight: '1.6' }}>{product.short_description}</p>
+                                <span className="badge mb-2 px-3 py-2" style={{ backgroundColor: '#fff0f3', color: '#ff4d4d', fontSize: '12px', fontWeight: 'bold', borderRadius: '5px' }}>{product.category || 'Product'}</span>
+                                <h1 className="fw-bold mb-3" style={{ color: '#333', fontSize: '32px' }}>{product.name}</h1>
+                                <p className="text-muted mb-4" style={{ fontSize: '15px', lineHeight: '1.6' }}>{product.short_description}</p>
 
                                 <div className="d-flex align-items-center gap-3 mb-4">
                                     <div className="text-warning small">
@@ -313,36 +338,38 @@ const ProductDetails = () => {
                                         <span className="text-muted ms-1">({product.review_count || 0} রিভিউ)</span>
                                     </div>
                                     <div className="text-muted small">| <span className="text-dark fw-bold">০</span> টি বিক্রিত</div>
-                                    <div className="ms-auto d-flex gap-3 align-items-center">
-                                        <button
-                                            onClick={() => {
-                                                window.dispatchEvent(new CustomEvent('openSellerChat', {
-                                                    detail: { sellerId: product.seller_id, sellerName: product.seller_name }
-                                                }));
-                                            }}
-                                            className="btn btn-outline-secondary btn-sm rounded-circle shadow-sm"
-                                            title="Chat with Seller"
-                                            style={{ width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        >
-                                            💬
-                                        </button>
-                                    </div>
+                                    {product.seller_id && (
+                                        <div className="ms-auto d-flex gap-3 align-items-center">
+                                            <button
+                                                onClick={() => {
+                                                    window.dispatchEvent(new CustomEvent('openSellerChat', {
+                                                        detail: { sellerId: product.seller_id, sellerName: product.seller_name }
+                                                    }));
+                                                }}
+                                                className="btn btn-outline-secondary btn-sm rounded-circle shadow-sm"
+                                                title="Chat with Seller"
+                                                style={{ width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                            >
+                                                💬
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="d-flex align-items-center gap-3 mb-4">
-                                    <h2 className="fw-bold mb-0" style={{ color: mainColor }}>${product.price.toFixed(2)}</h2>
+                                    <h2 className="fw-bold mb-0" style={{ color: mainColor, fontSize: '36px' }}>৳{Math.round(product.price)}</h2>
                                     {product.old_price > product.price && (
                                         <span className="text-muted text-decoration-line-through">
-                                            ${product.old_price.toFixed(2)}
+                                            ৳{Math.round(product.old_price)}
                                         </span>
                                     )}
                                 </div>
 
                                 {/* Product Variations */}
                                 <div className="mb-4">
-                                    <div className="d-flex align-items-center gap-4 mb-3">
-                                        <div className="small"><span className="text-muted">ব্র্যান্ড:</span> <span className="fw-bold text-dark">{product.brand || 'N/A'}</span></div>
-                                        <div className="small"><span className="text-muted">SKU:</span> <span className="fw-bold text-dark">{product.sku || 'N/A'}</span></div>
+                                    <div className="d-flex align-items-center gap-4 mb-4">
+                                        <div className="fs-6"><span className="text-muted">ব্র্যান্ড:</span> <span className="fw-bold text-dark">{product.brand || 'N/A'}</span></div>
+                                        <div className="fs-6"><span className="text-muted">SKU:</span> <span className="fw-bold text-dark">{product.sku || 'N/A'}</span></div>
                                     </div>
 
                                     {product.color && (
@@ -400,9 +427,9 @@ const ProductDetails = () => {
                                             color: mainColor,
                                             backgroundColor: '#fff',
                                             borderRadius: '8px',
-                                            fontSize: '15px',
+                                            fontSize: '18px',
                                             fontWeight: 'bold',
-                                            padding: '12px'
+                                            padding: '15px'
                                         }}
                                     >
                                         🛒 কার্টে যোগ করুন
@@ -413,12 +440,32 @@ const ProductDetails = () => {
                                         style={{
                                             backgroundColor: mainColor,
                                             borderRadius: '8px',
-                                            fontSize: '15px',
-                                            padding: '12px'
+                                            fontSize: '18px',
+                                            padding: '15px'
                                         }}
                                     >
                                         অর্ডার করুন
                                     </button>
+                                </div>
+
+                                {/* Support Buttons */}
+                                <div className="mt-3 d-flex flex-column gap-2">
+                                    <a
+                                        href={`tel:${supportSettings?.phone_number || "+8801816049357"}`}
+                                        className="btn d-flex align-items-center justify-content-center gap-2 text-white"
+                                        style={{ backgroundColor: '#111', borderRadius: '8px', padding: '12px', fontSize: '18px', fontWeight: 'bold', textDecoration: 'none', transition: 'all 0.3s' }}
+                                    >
+                                        <i className="fas fa-phone-alt"></i> কল করুন: {supportSettings?.phone_number || "+8801816049357"}
+                                    </a>
+                                    <a
+                                        href={`https://wa.me/${supportSettings?.whatsapp_number || "8801816049357"}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="btn d-flex align-items-center justify-content-center gap-2 text-white"
+                                        style={{ backgroundColor: '#25D366', borderRadius: '8px', padding: '12px', fontSize: '18px', fontWeight: 'bold', textDecoration: 'none', transition: 'all 0.3s' }}
+                                    >
+                                        <i className="fab fa-whatsapp"></i> WhatsApp অর্ডার
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -430,7 +477,7 @@ const ProductDetails = () => {
                                     <button
                                         onClick={() => setActiveTab('about')}
                                         className={`nav-link border-0 p-0 pb-2 ${activeTab === 'about' ? 'active border-bottom border-3 fw-bold' : 'text-muted'}`}
-                                        style={{ borderColor: activeTab === 'about' ? `${mainColor} !important` : 'transparent', color: activeTab === 'about' ? '#333' : '', fontSize: '14px' }}
+                                        style={{ borderColor: activeTab === 'about' ? `${mainColor} !important` : 'transparent', color: activeTab === 'about' ? '#333' : '', fontSize: '16px' }}
                                     >
                                         প্রোডাক্ট বিবরণ
                                     </button>
@@ -439,13 +486,13 @@ const ProductDetails = () => {
                                     <button
                                         onClick={() => setActiveTab('reviews')}
                                         className={`nav-link border-0 p-0 pb-2 ${activeTab === 'reviews' ? 'active border-bottom border-3 fw-bold' : 'text-muted'}`}
-                                        style={{ borderColor: activeTab === 'reviews' ? `${mainColor} !important` : 'transparent', color: activeTab === 'reviews' ? '#333' : '', fontSize: '14px' }}
+                                        style={{ borderColor: activeTab === 'reviews' ? `${mainColor} !important` : 'transparent', color: activeTab === 'reviews' ? '#333' : '', fontSize: '16px' }}
                                     >
                                         রিভিউ ({product.review_count || 0})
                                     </button>
                                 </li>
                             </ul>
-                            <div className="bg-white p-4 rounded shadow-sm border" style={{ fontSize: '13px', lineHeight: '1.8', color: '#666' }}>
+                            <div className="bg-white p-4 p-md-5 rounded shadow-sm border" style={{ fontSize: '16px', lineHeight: '1.8', color: '#444' }}>
                                 {activeTab === 'about' && (
                                     <div dangerouslySetInnerHTML={{ __html: product.description }}></div>
                                 )}
@@ -483,110 +530,62 @@ const ProductDetails = () => {
                     </div>
 
                     {/* Right: Sidebar */}
-                    <div className="col-lg-4">
-                        {/* Sold By Section (Conditional) */}
-                        {product.seller_id && (
-                            <div className="bg-white p-4 rounded shadow-sm border mb-4">
-                                <div className="d-flex align-items-center justify-content-between mb-4">
-                                    <div className="d-flex align-items-center gap-3">
-                                        <img
-                                            src={product.seller_logo || '/assets/admin/images/default-avatar.png'}
-                                            alt={product.seller_name}
-                                            style={{ width: '45px', height: '45px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #eee' }}
-                                        />
-                                        <div>
-                                            <div className="text-muted" style={{ fontSize: '11px' }}>Sold by</div>
-                                            <div className="fw-bold text-dark" style={{ fontSize: '14px' }}>{product.seller_name}</div>
-                                        </div>
-                                    </div>
-                                    <div className="text-warning small d-flex align-items-center gap-1">
-                                        ★ <span className="text-dark fw-bold">{product.seller_rating.toFixed(1)}</span>
-                                    </div>
-                                </div>
-                                <div className="text-center border-top pt-3">
-                                    <Link to={`/shop/${product.seller_id}`} className="text-danger text-decoration-none small fw-bold">Visit Store</Link>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Popular Products From Them (Conditional) */}
-                        {product.seller_id && relatedProducts.length > 0 && (
-                            <div className="mb-4">
-                                <h6 className="fw-bold mb-3" style={{ fontSize: '14px' }}>Popular Products From Them</h6>
-                                <div className="d-flex flex-column gap-3">
-                                    {relatedProducts.slice(0, 4).map(prod => (
-                                        <Link key={prod.uid} to={`/product-details/${prod.product_type}/${prod.id}`} className="text-decoration-none text-dark bg-white p-2 rounded border shadow-sm d-flex gap-3 align-items-center">
-                                            <img src={prod.thumbnail} alt={prod.name} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
-                                            <div className="flex-grow-1 min-width-0">
-                                                <div className="small fw-bold text-truncate">{prod.name}</div>
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <span className="fw-bold" style={{ color: mainColor }}>${prod.price.toFixed(2)}</span>
-                                                    {prod.old_price > prod.price && (
-                                                        <span className="text-muted text-decoration-line-through" style={{ fontSize: '10px' }}>${prod.old_price.toFixed(2)}</span>
-                                                    )}
-                                                </div>
-                                                <div className="d-flex align-items-center justify-content-between mt-1">
-                                                    <div className="text-warning" style={{ fontSize: '10px' }}>★ {prod.avg_rating || 5.0} (0)</div>
-                                                    <div className="text-muted" style={{ fontSize: '10px' }}>19 Sold</div>
-                                                </div>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Delivery Info */}
-                        {product.is_shipping_charge && (
-                            <div className="bg-white p-4 rounded shadow-sm border">
-                                <h5 className="fw-bold mb-4 pb-2 border-bottom">ডেলিভারি তথ্য</h5>
-
-                                <div className="d-flex flex-column gap-4">
-                                    <div className="d-flex gap-3">
-                                        <div className="fs-3 text-muted">📍</div>
-                                        <div>
-                                            <div className="fw-bold small mb-1">ডেলিভারি এলাকা</div>
-                                            <div className="text-muted small">সারা বাংলাদেশ ডেলিভারি করা হয়।</div>
-                                        </div>
-                                    </div>
-
-                                    <div className="d-flex gap-3">
-                                        <div className="fs-3 text-muted">🚚</div>
-                                        <div>
-                                            <div className="fw-bold small mb-1">শিপিং চার্জ</div>
-                                            <div className="d-flex flex-column gap-1">
-                                                <div className="text-muted small">ঢাকার ভিতরে: <span className="text-dark fw-bold">$৬০.০০</span></div>
-                                                <div className="text-muted small">ঢাকার বাইরে: <span className="text-dark fw-bold">$১২০.০০</span></div>
+                    {product.seller_id && (
+                        <div className="col-lg-4">
+                            {/* Sold By Section (Conditional) */}
+                            {product.seller_id && (
+                                <div className="bg-white p-4 rounded shadow-sm border mb-4">
+                                    <div className="d-flex align-items-center justify-content-between mb-4">
+                                        <div className="d-flex align-items-center gap-3">
+                                            <img
+                                                src={product.seller_logo || '/assets/admin/images/default-avatar.png'}
+                                                alt={product.seller_name}
+                                                style={{ width: '45px', height: '45px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #eee' }}
+                                            />
+                                            <div>
+                                                <div className="text-muted" style={{ fontSize: '11px' }}>Sold by</div>
+                                                <div className="fw-bold text-dark" style={{ fontSize: '14px' }}>{product.seller_name}</div>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <div className="d-flex gap-3">
-                                        <div className="fs-3 text-muted">⏱️</div>
-                                        <div>
-                                            <div className="fw-bold small mb-1">ডেলিভারি সময়</div>
-                                            <div className="text-muted small">{product.estimated_delivery || '২-৫ কার্যদিবসের মধ্যে।'}</div>
+                                        <div className="text-warning small d-flex align-items-center gap-1">
+                                            ★ <span className="text-dark fw-bold">{product.seller_rating.toFixed(1)}</span>
                                         </div>
                                     </div>
-
-                                    <div className="d-flex gap-3">
-                                        <div className="fs-3 text-muted">🛡️</div>
-                                        <div>
-                                            <div className="fw-bold small mb-1">গ্যারান্টি</div>
-                                            <div className="text-muted small">১০০% অরিজিনাল প্রোডাক্ট।</div>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-2 pt-3 border-top">
-                                        <div className="p-3 rounded" style={{ backgroundColor: '#f0fdf4' }}>
-                                            <div className="fw-bold small text-success mb-1">পেমেন্ট মেথড</div>
-                                            <div className="text-muted small" style={{ fontSize: '11px' }}>ক্যাশ অন ডেলিভারি এবং অনলাইন পেমেন্ট এভেইলেবল।</div>
-                                        </div>
+                                    <div className="text-center border-top pt-3">
+                                        <Link to={`/shop/${product.seller_id}`} className="text-danger text-decoration-none small fw-bold">Visit Store</Link>
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                    </div>
+                            )}
+
+                            {/* Popular Products From Them (Conditional) */}
+                            {product.seller_id && relatedProducts.length > 0 && (
+                                <div className="mb-4">
+                                    <h6 className="fw-bold mb-3" style={{ fontSize: '14px' }}>Popular Products From Them</h6>
+                                    <div className="d-flex flex-column gap-3">
+                                        {relatedProducts.slice(0, 4).map(prod => (
+                                            <Link key={prod.uid} to={`/product-details/${prod.product_type}/${prod.slug}`} className="text-decoration-none text-dark bg-white p-2 rounded border shadow-sm d-flex gap-3 align-items-center">
+                                                <img src={prod.image} alt={prod.title} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
+                                                <div className="flex-grow-1 min-width-0">
+                                                    <div className="small fw-bold text-truncate">{prod.title}</div>
+                                                    <div className="d-flex align-items-center gap-2">
+                                                        <span className="fw-bold" style={{ color: mainColor }}>${prod.price.toFixed(2)}</span>
+                                                        {prod.old_price > prod.price && (
+                                                            <span className="text-muted text-decoration-line-through" style={{ fontSize: '10px' }}>${prod.old_price.toFixed(2)}</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="d-flex align-items-center justify-content-between mt-1">
+                                                        <div className="text-warning" style={{ fontSize: '10px' }}>★ {prod.avg_rating || 5.0} (0)</div>
+                                                        <div className="text-muted" style={{ fontSize: '10px' }}>19 Sold</div>
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                        </div>
+                    )}
                 </div>
 
                 {/* Related Products */}

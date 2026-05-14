@@ -11,6 +11,9 @@ class GenaralSetting extends Model
     protected $fillable = [
         'website_name',
         'website_title',
+        'meta_description',
+        'meta_keywords',
+        'og_image',
         'default_currency',
         'currency_position',
         'logo',
@@ -65,6 +68,10 @@ class GenaralSetting extends Model
         'membership_logo_3',
         'show_membership_section',
         'payment_methods_logo',
+        'seller_commission',
+        'withdraw_commission',
+        'min_withdraw',
+        'max_withdraw',
     ];
 
     protected $casts = [
