@@ -9,6 +9,7 @@ class SubCategory extends Model
 {
     protected $fillable = [
         'name',
+        'slug',
         'thumbnail',
         'is_active',
     ];
@@ -16,6 +17,15 @@ class SubCategory extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (SubCategory $subCategory) {
+            if (empty($subCategory->slug)) {
+                $subCategory->slug = \Illuminate\Support\Str::slug($subCategory->name);
+            }
+        });
+    }
 
     public function categories(): BelongsToMany
     {

@@ -34,4 +34,13 @@ class DigitalProduct extends Model
     {
         return $this->belongsTo(Brand::class, 'brand_id');
     }
+
+    protected static function booted(): void
+    {
+        static::saving(function (DigitalProduct $product) {
+            if (empty($product->slug)) {
+                $product->slug = \Illuminate\Support\Str::slug($product->name) . '-' . strtolower(\Illuminate\Support\Str::random(5));
+            }
+        });
+    }
 }

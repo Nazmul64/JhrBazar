@@ -26,6 +26,10 @@ class Admincontroller extends Controller
         $totalCustomers = Customer::count();
         $totalSellers   = User::where('role', 'seller')->count();
 
+        // New Statistics
+        $lastMonthOrders = PosInvoice::where('created_at', '>=', now()->subMonth())->count();
+        $thisYearOrders  = PosInvoice::whereYear('created_at', now()->year)->count();
+
         // Dynamic Trending Shops (based on order count)
         $trendingShops = Shop::take(5)->get();
         foreach($trendingShops as $shop) {
@@ -65,7 +69,8 @@ class Admincontroller extends Controller
             'totalOrders', 'totalProducts', 'totalCustomers', 'totalSellers',
             'pendingCount', 'confirmedCount', 'processingCount', 'pickupCount',
             'onthewayCount', 'deliveredCount', 'cancelledCount', 'trendingShops',
-            'recentOrders', 'totalCommission', 'alreadyWithdraw', 'pendingWithdraw', 'favoriteProducts', 'topSellingProducts'
+            'recentOrders', 'totalCommission', 'alreadyWithdraw', 'pendingWithdraw', 'favoriteProducts', 'topSellingProducts',
+            'lastMonthOrders', 'thisYearOrders'
         ));
     }
 }

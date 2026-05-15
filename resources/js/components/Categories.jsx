@@ -7,6 +7,7 @@ const Categories = ({ categories, loading }) => {
   const [isDown, setIsDown] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseDown = (e) => {
     setIsDown(true);
@@ -37,11 +38,28 @@ const Categories = ({ categories, loading }) => {
     navigate(`/category/${catId}`);
   };
 
+  useEffect(() => {
+    if (!scrollRef.current || isDown || isHovered || categories.length < 5) return;
+
+    const interval = setInterval(() => {
+      const container = scrollRef.current;
+      const maxScroll = container.scrollWidth - container.clientWidth;
+      
+      if (container.scrollLeft >= maxScroll - 5) {
+        container.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        container.scrollBy({ left: 200, behavior: 'smooth' });
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [categories, isDown, isHovered]);
+
   if (loading || !categories || categories.length === 0) return null;
 
 
   return (
-    <section className="container mb-5">
+    <section className="container mb-3">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div className="d-flex align-items-center gap-2">
             <div style={{ width: '5px', height: '25px', backgroundColor: '#57b500', borderRadius: '10px' }}></div>
@@ -53,7 +71,8 @@ const Categories = ({ categories, loading }) => {
       <div 
         ref={scrollRef}
         onMouseDown={handleMouseDown}
-        onMouseLeave={handleMouseLeave}
+        onMouseLeave={() => { handleMouseLeave(); setIsHovered(false); }}
+        onMouseEnter={() => setIsHovered(true)}
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
         style={{
@@ -98,7 +117,17 @@ const Categories = ({ categories, loading }) => {
               }}>
                 <img src={cat.thumbnail} alt={cat.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
               </div>
-              <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#333' }}>{cat.name}</div>
+              <div style={{ 
+                fontSize: '13px', 
+                fontWeight: 'bold', 
+                color: '#333',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                width: '100%'
+              }}>
+                {cat.name}
+              </div>
             </div>
           </div>
         ))}

@@ -16,10 +16,12 @@ class CheckBlocked
     {
         $ip = $request->ip();
 
-        // 1. IP Blacklist Check
+        // 1. IP Blacklist Check (Moved to checkout logic)
+        /*
         if (\App\Models\FraudBlacklist::where('type', 'ip')->where('value', $ip)->where('is_active', true)->exists()) {
             abort(403, 'Your IP address (' . $ip . ') has been blocked by the administrator.');
         }
+        */
 
         if (Auth::check()) {
             $user = Auth::user();

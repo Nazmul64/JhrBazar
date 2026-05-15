@@ -42,6 +42,12 @@ class FrontendApiController extends Controller
                 ->get()
                 ->map(function($cat) {
                     $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : '/placeholder.jpg';
+                    if ($cat->subCategories) {
+                        $cat->subCategories->map(function($sub) {
+                            $sub->thumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : '/' . ltrim($sub->thumbnail, '/')) : '/placeholder.jpg';
+                            return $sub;
+                        });
+                    }
                     return $cat;
                 });
 
@@ -150,6 +156,12 @@ class FrontendApiController extends Controller
                 ->get()
                 ->map(function($cat) {
                     $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : '/placeholder.jpg';
+                    if ($cat->subCategories) {
+                        $cat->subCategories->map(function($sub) {
+                            $sub->thumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : '/' . ltrim($sub->thumbnail, '/')) : '/placeholder.jpg';
+                            return $sub;
+                        });
+                    }
                     return $cat;
                 });
 
@@ -180,6 +192,12 @@ class FrontendApiController extends Controller
                 ->get()
                 ->map(function($cat) {
                     $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : '/placeholder.jpg';
+                    if ($cat->subCategories) {
+                        $cat->subCategories->map(function($sub) {
+                            $sub->thumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : '/' . ltrim($sub->thumbnail, '/')) : '/placeholder.jpg';
+                            return $sub;
+                        });
+                    }
                     return $cat;
                 });
             return response()->json([
@@ -213,9 +231,6 @@ class FrontendApiController extends Controller
         ]);
     }
 
-    /**
-     * Get all categories for the frontend.
-     */
     public function getCategories()
     {
         $categories = Category::with(['subCategories' => function($q) {
@@ -223,7 +238,17 @@ class FrontendApiController extends Controller
             }])
             ->where('is_active', 1)
             ->orderBy('id', 'asc')
-            ->get();
+            ->get()
+            ->map(function($cat) {
+                $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : '/placeholder.jpg';
+                if ($cat->subCategories) {
+                    $cat->subCategories->map(function($sub) {
+                        $sub->thumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : '/' . ltrim($sub->thumbnail, '/')) : '/placeholder.jpg';
+                        return $sub;
+                    });
+                }
+                return $cat;
+            });
 
         return response()->json([
             'success' => true,
@@ -378,14 +403,28 @@ class FrontendApiController extends Controller
      */
     public function getProductsByCategory($id)
     {
+        $category = Category::with('subCategories')->find($id);
+        if (!$category) {
+            return response()->json(['success' => false, 'message' => 'Category not found'], 404);
+        }
+
+        $subCategoryIds = $category->subCategories->pluck('id')->toArray();
+        $allIds = array_merge([$id], $subCategoryIds);
+
         $adminProducts = Product::where('is_active', 1)
-            ->where('category_id', $id)
+            ->where(function($q) use ($id, $subCategoryIds) {
+                $q->where('category_id', $id)
+                  ->orWhereIn('sub_category_id', $subCategoryIds);
+            })
             ->latest()
             ->get()
             ->map(fn($p) => $this->mapProduct($p, 'admin'));
 
         $sellerProducts = SellerProduct::where('is_active', 1)
-            ->where('category_id', $id)
+            ->where(function($q) use ($id, $subCategoryIds) {
+                $q->where('category_id', $id)
+                  ->orWhereIn('sub_category_id', $subCategoryIds);
+            })
             ->latest()
             ->get()
             ->map(fn($p) => $this->mapProduct($p, 'seller'));
@@ -424,21 +463,30 @@ class FrontendApiController extends Controller
     }
 
     /**
-     * Get single product details.
+     * Get single product details by slug.
      */
-    public function getProductDetails($type, $id)
+    public function getProductBySlug($slug)
     {
-        $product = null;
-        if ($type === 'admin') {
-            $product = Product::with(['category', 'brand'])
-                ->where(function($q) use ($id) {
-                    $q->where('id', $id)->orWhere('slug', $id);
-                })->first();
-        } else {
-            $product = SellerProduct::with(['category', 'brand'])
-                ->where(function($q) use ($id) {
-                    $q->where('id', $id)->orWhere('slug', $id);
-                })->first();
+        // Try Admin Products
+        $product = Product::with(['category', 'brand'])->where('slug', $slug)->orWhere('id', $slug)->first();
+        $type = 'admin';
+
+        if (!$product) {
+            // Try Seller Products
+            $product = SellerProduct::with(['category', 'brand'])->where('slug', $slug)->orWhere('id', $slug)->first();
+            $type = 'seller';
+        }
+
+        if (!$product) {
+            // Try Digital Admin
+            $product = DigitalProduct::with(['category'])->where('slug', $slug)->orWhere('id', $slug)->first();
+            $type = 'digital_admin';
+        }
+
+        if (!$product) {
+            // Try Digital Seller
+            $product = SellerDigitalProduct::with(['category'])->where('slug', $slug)->orWhere('id', $slug)->first();
+            $type = 'digital_seller';
         }
 
         if (!$product) {
@@ -459,6 +507,12 @@ class FrontendApiController extends Controller
                 'review_count' => $reviewCount
             ])
         ]);
+    }
+
+    public function getProductDetails($type, $id)
+    {
+        // Keep this for backward compatibility if needed, but internally call the same logic
+        return $this->getProductBySlug($id);
     }
 
     private function mapProductDetails($product, $type)
@@ -910,7 +964,7 @@ class FrontendApiController extends Controller
 
         return [
             'id'                  => $product->id,
-            'slug'                => $product->slug ?? $product->id,
+            'slug'                => $product->slug ?: $product->id,
             'uid'                 => $type . '_' . $product->id,
             'product_type'        => $type,
             'seller_id'           => ($type === 'seller' || $type === 'digital_seller') ? ($product->seller_id ?? 0) : 0, 

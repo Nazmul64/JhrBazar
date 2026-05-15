@@ -136,6 +136,7 @@
     flex-direction: column;
     background: var(--white);
     border-left: 1px solid var(--border);
+    height: 726px;
 }
 
 .cust-section { padding: 16px; border-bottom: 1px solid var(--border); }

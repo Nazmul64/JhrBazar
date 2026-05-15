@@ -41,16 +41,20 @@ class Shop extends Model
 
     public function getLogoUrlAttribute(): ?string
     {
-        if ($this->logo && file_exists(public_path($this->logo))) {
-            return asset($this->logo);
+        if (!$this->logo) return null;
+        $path = ltrim($this->logo, '/');
+        if (file_exists(public_path($path))) {
+            return asset($path);
         }
         return null;
     }
 
     public function getBannerUrlAttribute(): ?string
     {
-        if ($this->banner && file_exists(public_path($this->banner))) {
-            return asset($this->banner);
+        if (!$this->banner) return null;
+        $path = ltrim($this->banner, '/');
+        if (file_exists(public_path($path))) {
+            return asset($path);
         }
         return null;
     }

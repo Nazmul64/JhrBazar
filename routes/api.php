@@ -58,6 +58,7 @@ Route::get('/privacy-policy', [FrontendApiController::class, 'getPrivacyPolicy']
 
 Route::get('/products/category/{id}', [FrontendApiController::class, 'getProductsByCategory']);
 Route::get('/products/subcategory/{id}', [FrontendApiController::class, 'getProductsBySubCategory']);
+Route::get('/product/{slug}', [FrontendApiController::class, 'getProductBySlug']);
 Route::get('/product/{type}/{id}/related', [FrontendApiController::class, 'getRelatedProducts']);
 Route::get('/product/{type}/{id}', [FrontendApiController::class, 'getProductDetails']);
 Route::get('/product/{type}/{id}/reviews', [App\Http\Controllers\Api\ReviewController::class, 'getProductReviews']);

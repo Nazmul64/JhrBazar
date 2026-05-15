@@ -165,7 +165,7 @@ const Home = () => {
 
             {/* ===== Popular Products ===== */}
             {!loading && popularProducts.length > 0 && (
-                <section className="container mb-5">
+                <section className="container mb-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Popular Products</h4>
                         <Link to="/products-all/popular" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
@@ -176,7 +176,7 @@ const Home = () => {
 
             {/* ===== New Arrivals ===== */}
             {!loading && newArrivals.length > 0 && (
-                <section className="container mb-5">
+                <section className="container mb-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <h4 className="fw-bold mb-0" style={{ color: '#333' }}>New Arrivals</h4>
                         <Link to="/products-all/new-arrivals" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
@@ -187,7 +187,7 @@ const Home = () => {
 
             {/* ===== Best Deals ===== */}
             {!loading && bestDeals.length > 0 && (
-                <section className="container mb-5">
+                <section className="container mb-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <div className="d-flex align-items-center gap-2">
                             <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Best Deals</h4>
@@ -201,7 +201,7 @@ const Home = () => {
 
             {/* ===== Digital Products ===== */}
             {!loading && digitalProducts.length > 0 && (
-                <section className="container mb-5">
+                <section className="container mb-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <div className="d-flex align-items-center gap-2">
                             <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Digital Products</h4>
@@ -218,7 +218,7 @@ const Home = () => {
 
             {/* ===== Customer Reviews ===== */}
             {!loading && recentReviews.length > 0 && (
-                <section className="container mb-5 mt-5">
+                <section className="container mb-4 mt-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <div className="d-flex align-items-center gap-2">
                             <h4 className="fw-bold mb-0" style={{ color: '#333' }}>কাস্টমার রিভিউ</h4>
@@ -252,7 +252,7 @@ const Home = () => {
 
             {/* ===== Just For You ===== */}
             {!loading && justForYouProducts.length > 0 && (
-                <section className="container mb-5">
+                <section className="container mb-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Just For You</h4>
                         <Link to="/products-all/just-for-you" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
@@ -282,7 +282,7 @@ const Home = () => {
 
             {/* ===== All Products (Moved to Bottom) ===== */}
             {!loading && allProducts.length > 0 && (
-                <section className="container mb-5 mt-5">
+                <section className="container mb-4 mt-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <div className="d-flex align-items-center gap-2">
                             <h4 className="fw-bold mb-0" style={{ color: '#333' }}>সকল পণ্য</h4>

@@ -22,7 +22,7 @@
     .alert-ok{background:#f0fdf4;color:#15803d;border-left:3.5px solid #22c55e;border-radius:var(--r-md);padding:12px 16px;font-size:13.5px;margin-bottom:1.2rem;display:flex;align-items:center;gap:9px}
 
     /* ── Grid ── */
-    .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+    .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0px}
     .p-card{background:#fff;border-radius:var(--r-lg);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;transition:var(--ease);display:flex;flex-direction:column}
     .p-card:hover{box-shadow:0 8px 30px rgba(0,0,0,.1);transform:translateY(-2px)}
     .p-img-wrap{position:relative;background:#fafafa;flex-shrink:0}
@@ -46,7 +46,7 @@
     .form-check-input{width:38px!important;height:20px!important;cursor:pointer;border-radius:10px!important}
     .form-check-input:checked{background-color:var(--brand)!important;border-color:var(--brand)!important}
     .form-check-input:not(:checked){background-color:#d1d5db!important;border-color:#d1d5db!important}
-    .p-body{padding:14px 16px;flex:1}
+    .p-body{padding:14px 16px;}
     .p-name{font-size:13.5px;font-weight:700;color:var(--dark);margin:0 0 5px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
     .p-desc{font-size:12px;color:var(--muted);margin:0 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .p-price{font-size:14px;font-weight:700;color:var(--dark)}
@@ -178,7 +178,7 @@
                     <p class="p-name">{{ $product->name }}</p>
                     <p class="p-desc">{{ $product->short_description }}</p>
                     <div style="display:flex;align-items:center;justify-content:space-between;">
-                        <span class="p-price">${{ number_format($product->selling_price, 0) }}</span>
+                        <span class="p-price">৳{{ number_format($product->selling_price, 0) }}</span>
                         <span class="p-rating">
                             <i class="bi bi-star-fill"></i>
                             ({{ number_format($product->rating ?? 0, 1) }})
@@ -254,7 +254,7 @@
                         <td style="font-weight:600;">{{ $product->name }}</td>
                         <td>{{ $product->category->name ?? '—' }}</td>
                         <td style="font-size:12px;color:var(--muted);font-family:monospace;">{{ $product->sku }}</td>
-                        <td>${{ number_format($product->selling_price, 0) }}</td>
+                        <td>৳{{ number_format($product->selling_price, 0) }}</td>
                         <td>{{ $product->stock_quantity }}</td>
                         <td style="text-align:center;">
                             <form action="{{ route('products.toggle', $product->id) }}" method="POST">

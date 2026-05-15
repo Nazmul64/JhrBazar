@@ -241,6 +241,44 @@
         <div class="stat-icon-premium" style="background: rgba(139, 92, 246, 0.1); color: var(--purple);"><i class="bi bi-wallet2"></i></div>
       </div>
     </div>
+  <!-- ── TIME-BASED ORDER STATS ── -->
+  <div class="row g-4 mb-5">
+    <div class="col-6 col-lg-3 anim anim-1">
+      <div class="stat-card-premium" style="border-top: 4px solid var(--blue);">
+        <div>
+          <div class="text-muted mb-1" style="font-size: 13px; font-weight: 500;">Orders (Last 30 Days)</div>
+          <div class="fw-bold h3 mb-0">{{ $lastMonthOrders }}</div>
+        </div>
+        <div class="stat-icon-premium" style="background: rgba(59, 130, 246, 0.1); color: var(--blue);"><i class="bi bi-calendar-check"></i></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3 anim anim-2">
+      <div class="stat-card-premium" style="border-top: 4px solid var(--orange);">
+        <div>
+          <div class="text-muted mb-1" style="font-size: 13px; font-weight: 500;">Orders (Current Year)</div>
+          <div class="fw-bold h3 mb-0">{{ $thisYearOrders }}</div>
+        </div>
+        <div class="stat-icon-premium" style="background: rgba(245, 158, 11, 0.1); color: var(--orange);"><i class="bi bi-calendar-event"></i></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3 anim anim-3">
+      <div class="stat-card-premium" style="border-top: 4px solid var(--purple);">
+        <div>
+          <div class="text-muted mb-1" style="font-size: 13px; font-weight: 500;">Total Orders</div>
+          <div class="fw-bold h3 mb-0">{{ $totalOrders }}</div>
+        </div>
+        <div class="stat-icon-premium" style="background: rgba(139, 92, 246, 0.1); color: var(--purple);"><i class="bi bi-bag-check-fill"></i></div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3 anim anim-4">
+      <div class="stat-card-premium" style="border-top: 4px solid var(--green);">
+        <div>
+          <div class="text-muted mb-1" style="font-size: 13px; font-weight: 500;">Confirmed Orders</div>
+          <div class="fw-bold h3 mb-0">{{ $confirmedCount }}</div>
+        </div>
+        <div class="stat-icon-premium" style="background: rgba(16, 185, 129, 0.1); color: var(--green);"><i class="bi bi-check-all"></i></div>
+      </div>
+    </div>
   </div>
 
   <!-- ── ORDER ANALYTICS ── -->

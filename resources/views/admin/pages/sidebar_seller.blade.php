@@ -258,6 +258,20 @@
             <i class="bi bi-chat-left-dots-fill"></i> Messages
         </a>
 
+        {{-- Admin Chat --}}
+        <a class="nav-item-custom {{ request()->routeIs('seller.admin_chat.*') ? 'active' : '' }}" href="{{ route('seller.admin_chat.index') }}">
+            <i class="bi bi-headset"></i> Chat with Admin
+            @php 
+                $unreadAdminMsg = \App\Models\ChatSession::where('user_id', auth()->id())
+                    ->where('is_read_by_user', false)
+                    ->where(function($q) { $q->whereNull('receiver_id')->orWhere('receiver_id', 0); })
+                    ->count();
+            @endphp
+            @if($unreadAdminMsg > 0)
+                <span class="badge bg-danger ms-auto rounded-pill" style="font-size: 10px;">{{ $unreadAdminMsg }}</span>
+            @endif
+        </a>
+
         {{-- Category Management --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('seller.categories.*') || request()->routeIs('seller.subcategories.*') ? 'active' : '' }}" data-sub="category">
             <i class="bi bi-layers-fill"></i> Category Management

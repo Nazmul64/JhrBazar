@@ -521,15 +521,20 @@
 
 <div id="sidebar-overlay"></div>
 
+@php $setting = \App\Models\GenaralSetting::first(); @endphp
 <aside id="sidebar">
 
     {{-- ── Brand ── --}}
     <a class="sidebar-brand" href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : (auth()->user()->role === 'employee' ? route('employee.dashboard') : '#') }}">
         <div class="brand-logo-wrap">
-            <i class="bi bi-rocket-takeoff-fill"></i>
+            @if($setting && $setting->logo_url)
+                <img src="{{ $setting->logo_url }}" style="width:100%; height:100%; object-fit:contain; border-radius:10px;">
+            @else
+                <i class="bi bi-rocket-takeoff-fill"></i>
+            @endif
         </div>
         <div class="brand-text-wrap">
-            <span class="brand-name-main">JHR BAZAR</span>
+            <span class="brand-name-main">{{ $setting->website_name ?? 'JHR BAZAR' }}</span>
             <div class="brand-status">
                 <span class="status-dot"></span>
                 <span class="status-text">System Live</span>
@@ -632,9 +637,21 @@
         @if(auth()->user()->hasPermission('chat.list'))
         <a class="nav-item-custom {{ request()->routeIs('admin.chat.*') ? 'active' : '' }}" href="{{ route('admin.chat.index') }}">
             <i class="bi bi-chat-left-dots"></i> Conversations
-            @php $unreadChats = \App\Models\ChatSession::where('is_read_by_admin', false)->count(); @endphp
+            @php $unreadChats = \App\Models\ChatSession::where('is_read_by_admin', false)->whereNotNull('user_id')->whereNull('receiver_id')->count(); @endphp
             @if($unreadChats > 0)
                 <span class="badge bg-danger ms-auto rounded-pill" style="font-size: 10px;">{{ $unreadChats }}</span>
+            @endif
+        </a>
+
+        <a class="nav-item-custom {{ request()->routeIs('admin.seller_chat.*') ? 'active' : '' }}" href="{{ route('admin.seller_chat.index') }}">
+            <i class="bi bi-chat-square-dots-fill"></i> Seller Chat
+            @php 
+                $unreadSellerChats = \App\Models\ChatSession::where('is_read_by_admin', false)
+                    ->whereHas('user', function($q) { $q->where('role', 'seller'); })
+                    ->count(); 
+            @endphp
+            @if($unreadSellerChats > 0)
+                <span class="badge bg-danger ms-auto rounded-pill" style="font-size: 10px;">{{ $unreadSellerChats }}</span>
             @endif
         </a>
         @endif

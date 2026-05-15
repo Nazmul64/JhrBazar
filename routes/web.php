@@ -279,11 +279,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::resource('membership_logos', \App\Http\Controllers\Admin\MembershipLogoController::class)->names('admin.membership_logos')->except(['create', 'show', 'edit', 'update']);
     Route::post('membership_logos/{membershipLogo}/toggle', [\App\Http\Controllers\Admin\MembershipLogoController::class, 'toggleStatus'])->name('admin.membership_logos.toggle');
 
-    // ── Chat ──────────────────────────────────────────────────────────────────
+    // ── Chat (Customer) ──────────────────────────────────────────────────────
     Route::get('chat', [\App\Http\Controllers\Admin\ChatController::class, 'index'])->name('admin.chat.index');
     Route::get('chat/sessions', [\App\Http\Controllers\Admin\ChatController::class, 'getSessions'])->name('admin.chat.sessions');
     Route::get('chat/{id}/messages', [\App\Http\Controllers\Admin\ChatController::class, 'getChatMessages'])->name('admin.chat.messages');
     Route::post('chat/{id}/reply', [\App\Http\Controllers\Admin\ChatController::class, 'reply'])->name('admin.chat.reply');
+
+    // ── Seller Chat (Admin perspective) ──────────────────────────────────────
+    Route::prefix('seller-chat')->name('admin.seller_chat.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SellerChatAdminController::class, 'index'])->name('index');
+        Route::get('/sessions', [\App\Http\Controllers\Admin\SellerChatAdminController::class, 'getSessions'])->name('sessions');
+        Route::get('/{id}/messages', [\App\Http\Controllers\Admin\SellerChatAdminController::class, 'getMessages'])->name('messages');
+        Route::post('/{id}/reply', [\App\Http\Controllers\Admin\SellerChatAdminController::class, 'reply'])->name('reply');
+    });
 
     // ── Products ──────────────────────────────────────────────────────────────
     Route::get('products/subcategories/{categoryId}', [ProductControllerController::class, 'getSubCategories'])->name('products.subcategories');
@@ -700,11 +708,18 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/pathao/stores',          [SellerOrderHubController::class, 'getPathaoStores'])->name('pathao.stores');
         });
 
-        // Chat / Messages Management (Seller)
+        // Chat / Messages Management (Seller with Customers)
         Route::prefix('messages')->name('messages.')->group(function () {
             Route::get('/', [App\Http\Controllers\Seller\SellerChatController::class, 'index'])->name('index');
             Route::get('/{sessionId}', [App\Http\Controllers\Seller\SellerChatController::class, 'show'])->name('show');
             Route::post('/{sessionId}/reply', [App\Http\Controllers\Seller\SellerChatController::class, 'reply'])->name('reply');
+        });
+
+        // Chat with Admin
+        Route::prefix('admin-chat')->name('admin_chat.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Seller\AdminChatSellerController::class, 'index'])->name('index');
+            Route::get('/{id}/messages', [\App\Http\Controllers\Seller\AdminChatSellerController::class, 'getMessages'])->name('messages');
+            Route::post('/{id}/reply', [\App\Http\Controllers\Seller\AdminChatSellerController::class, 'reply'])->name('reply');
         });
 
         // Withdraw Management (Seller)

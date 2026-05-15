@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class SellerProduct extends Model
 {
     protected $fillable = [
-        'seller_id', 'name', 'short_description', 'description',
+        'seller_id', 'name', 'slug', 'short_description', 'description',
         'category_id', 'sub_category_id', 'brand_id',
         'color', 'unit', 'size', 'sku', 'barcode',
         'buying_price', 'selling_price', 'discount_price',
@@ -58,6 +58,12 @@ class SellerProduct extends Model
 
     protected static function booted(): void
     {
+        static::saving(function (SellerProduct $product) {
+            if (empty($product->slug)) {
+                $product->slug = \Illuminate\Support\Str::slug($product->name) . '-' . strtolower(\Illuminate\Support\Str::random(5));
+            }
+        });
+
         static::creating(function (SellerProduct $product) {
             if (empty($product->barcode)) {
                 do {

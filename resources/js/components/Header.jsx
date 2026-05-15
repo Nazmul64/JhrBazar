@@ -119,7 +119,7 @@ const TypingSearchInput = ({ mainColor }) => {
                         {results.map((item) => (
                             <Link
                                 key={item.uid}
-                                to={`/product-details/${item.product_type}/${item.slug}`}
+                                to={`/product/${item.slug}`}
                                 className="d-flex align-items-center gap-3 p-2 text-decoration-none border-bottom hover-bg-light"
                                 onClick={() => setShowDropdown(false)}
                             >
@@ -326,19 +326,24 @@ const Header = () => {
                                             <img src={cat.thumbnail || '/placeholder.jpg'} alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
                                             <Link to={`/category/${cat.id}`} onClick={() => setIsMobileMenuOpen(false)} className="text-decoration-none text-dark">{cat.name}</Link>
                                         </div>
-                                        {cat.subCategories?.length > 0 && <span>{expandedCategory === cat.id ? '▼' : '▶'}</span>}
+                                        {(cat.sub_categories?.length > 0 || cat.subCategories?.length > 0) && <span>{expandedCategory === cat.id ? '▼' : '▶'}</span>}
                                     </div>
-                                    {expandedCategory === cat.id && cat.subCategories?.length > 0 && (
+                                    {expandedCategory === cat.id && (cat.sub_categories?.length > 0 || cat.subCategories?.length > 0) && (
                                         <div style={{ backgroundColor: '#fdfdfd', paddingLeft: '45px' }}>
-                                            {cat.subCategories.map(sub => (
+                                            {(cat.sub_categories || cat.subCategories || []).map(sub => (
                                                 <Link
                                                     key={sub.id}
                                                     to={`/subcategory/${sub.id}`}
                                                     onClick={() => setIsMobileMenuOpen(false)}
-                                                    className="d-block py-2 text-decoration-none text-muted"
+                                                    className="d-flex align-items-center gap-2 py-2 text-decoration-none text-muted"
                                                     style={{ fontSize: '13px' }}
                                                 >
-                                                    {sub.name}
+                                                    <img 
+                                                        src={sub.thumbnail ? (sub.thumbnail.startsWith('http') ? sub.thumbnail : sub.thumbnail) : '/placeholder.jpg'} 
+                                                        alt="" 
+                                                        style={{ width: '16px', height: '16px', objectFit: 'contain' }} 
+                                                    />
+                                                    <span>{sub.name}</span>
                                                 </Link>
                                             ))}
                                         </div>

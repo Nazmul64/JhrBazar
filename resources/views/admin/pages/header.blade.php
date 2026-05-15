@@ -6,10 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', Auth::check() ? ucfirst(Auth::user()->role) . ' Portal' : 'Admin') – Jhr Bazar</title>
+    <title>@yield('title', Auth::check() ? ucfirst(Auth::user()->role) . ' Portal' : 'Admin') – {{ $setting->website_name ?? 'Jhr Bazar' }}</title>
 
     {{-- ── Favicon ── --}}
-    {{-- <link rel="shortcut icon" href="{{ asset('admin/assets/images/favicon.png') }}" type="image/x-icon" /> --}}
+    @if($setting && $setting->favicon_url)
+        <link rel="shortcut icon" href="{{ $setting->favicon_url }}" type="image/x-icon" />
+    @endif
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
     {{-- ── Google Fonts ── --}}
     <link rel="preconnect" href="https://fonts.googleapis.com" />

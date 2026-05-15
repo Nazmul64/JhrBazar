@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Cache;
 
 class SubCategoryController extends Controller
 {
@@ -50,6 +51,10 @@ class SubCategoryController extends Controller
         ]);
 
         $sub->categories()->sync($request->category_ids);
+
+        Cache::forget('home_data_v2');
+        Cache::forget('categories_with_sub_v2');
+        Cache::forget('general_settings_with_cats');
 
         return redirect()->route('admin.subcategory.index')
             ->with('success', 'Sub Category created successfully.');
@@ -96,6 +101,10 @@ class SubCategoryController extends Controller
         $subcategory->update($data);
         $subcategory->categories()->sync($request->category_ids);
 
+        Cache::forget('home_data_v2');
+        Cache::forget('categories_with_sub_v2');
+        Cache::forget('general_settings_with_cats');
+
         return redirect()->route('admin.subcategory.index')
             ->with('success', 'Sub Category updated successfully.');
     }
@@ -109,6 +118,10 @@ class SubCategoryController extends Controller
         $subcategory->categories()->detach();
         $subcategory->delete();
 
+        Cache::forget('home_data_v2');
+        Cache::forget('categories_with_sub_v2');
+        Cache::forget('general_settings_with_cats');
+
         return redirect()->route('admin.subcategory.index')
             ->with('success', 'Sub Category deleted successfully.');
     }
@@ -119,6 +132,11 @@ class SubCategoryController extends Controller
     public function toggleStatus(SubCategory $subcategory)
     {
         $subcategory->update(['is_active' => !$subcategory->is_active]);
+
+        Cache::forget('home_data_v2');
+        Cache::forget('categories_with_sub_v2');
+        Cache::forget('general_settings_with_cats');
+
         return redirect()->back()->with('success', 'Status updated.');
     }
 

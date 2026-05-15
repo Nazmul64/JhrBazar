@@ -556,7 +556,7 @@ class OrderHubController extends Controller
         $invoices = PosInvoice::with(['customer.user', 'order', 'seller'])->whereIn('id', $ids)->get();
         $settings = GenaralSetting::first();
         
-        return view('admin.Invoice.bulk-invoice', compact('invoices', 'settings'));
+        return view('admin.invoice.bulk_invoice', compact('invoices', 'settings'));
     }
 
     /**

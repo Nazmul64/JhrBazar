@@ -113,7 +113,7 @@
         box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
     }
 
-    .badge-count { background: rgba(0,0,0,0.1); padding: 2px 8px; border-radius: 20px; font-size: 11px; }
+    .badge-count { background: rgba(0,0,0,0.1); padding: 2px 8px; border-radius: 20px; font-size: 13px; }
 
     .bulk-actions {
         background: #f8f9fe;
@@ -131,7 +131,7 @@
         color: #4b5563;
         font-weight: 700;
         text-transform: uppercase;
-        font-size: 0.75rem;
+        font-size: 0.85rem;
         letter-spacing: 0.05em;
         padding: 1rem;
         border: none;
@@ -398,12 +398,12 @@
                             <td>
                                 <div class="d-flex flex-column">
                                     <span class="fw-bold text-primary" style="font-size: 1.1rem;">#{{ $order->invoice_number }}</span>
-                                    <span class="text-muted" style="font-size: 11px;"><i class="bi bi-calendar3 me-1"></i>{{ $order->created_at->format('d M, Y') }}</span>
-                                    <span class="text-muted" style="font-size: 11px;"><i class="bi bi-clock me-1"></i>{{ $order->created_at->format('h:i A') }}</span>
+                                    <span class="text-muted" style="font-size: 12px;"><i class="bi bi-calendar3 me-1"></i>{{ $order->created_at->format('d M, Y') }}</span>
+                                    <span class="text-muted" style="font-size: 12px;"><i class="bi bi-clock me-1"></i>{{ $order->created_at->format('h:i A') }}</span>
                                     @if($order->seller)
-                                        <span class="badge bg-soft-info text-info mt-1" style="font-size: 10px; width: fit-content;">{{ $order->seller->name }}</span>
+                                        <span class="badge bg-soft-info text-info mt-1" style="font-size: 11px; width: fit-content;">{{ $order->seller->name }}</span>
                                     @else
-                                        <span class="badge bg-soft-danger text-danger mt-1" style="font-size: 10px; width: fit-content;">Admin Order</span>
+                                        <span class="badge bg-soft-danger text-danger mt-1" style="font-size: 11px; width: fit-content;">Admin Order</span>
                                     @endif
                                 </div>
                             </td>
@@ -430,7 +430,7 @@
                                                 <div class="fw-bold small" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                                     {{ $item['name'] ?? ($item['title'] ?? 'Product') }}
                                                 </div>
-                                                <div class="text-muted" style="font-size: 10px;">
+                                                <div class="text-muted" style="font-size: 12px;">
                                                     {{ $item['qty'] }}×{{ $cur }}{{ number_format($item['price'] ?? 0, 0) }}
                                                     @if(isset($item['color']) && $item['color'] != 'N/A') <span class="badge bg-light text-dark p-0 px-1">{{ $item['color'] }}</span> @endif
                                                     @if(isset($item['size']) && $item['size'] != 'N/A') <span class="badge bg-light text-dark p-0 px-1">{{ $item['size'] }}</span> @endif
@@ -445,16 +445,16 @@
                                     <span class="customer-name mb-1"><i class="bi bi-person-circle me-1"></i>{{ $customerName }}</span>
                                     <span class="customer-phone mb-1"><i class="bi bi-telephone-fill me-1"></i>{{ $customerPhone }}</span>
                                     @if($customerEmail != 'N/A')
-                                        <span class="text-muted mb-1" style="font-size: 11px;"><i class="bi bi-envelope-fill me-1"></i>{{ $customerEmail }}</span>
+                                        <span class="text-muted mb-1" style="font-size: 12px;"><i class="bi bi-envelope-fill me-1"></i>{{ $customerEmail }}</span>
                                     @endif
-                                    <span class="text-muted mb-2" style="font-size: 11px; display:block; line-height:1.4;"><i class="bi bi-geo-alt-fill me-1 text-danger"></i>{{ $customerAddress }}</span>
+                                    <span class="text-muted mb-2" style="font-size: 12px; display:block; line-height:1.4;"><i class="bi bi-geo-alt-fill me-1 text-danger"></i>{{ $customerAddress }}</span>
                                     
                                     <div class="mt-1 d-flex align-items-center justify-content-between p-2 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0;">
-                                        <div title="IP Address" style="font-size: 11px; font-weight: 600; color: #475569;">
+                                        <div title="IP Address" style="font-size: 12px; font-weight: 600; color: #475569;">
                                             <i class="bi bi-globe me-1 text-primary"></i>{{ $customerIp }}
                                         </div>
                                         @if($customerIp != 'N/A')
-                                        <button onclick="blockIpAddress('{{ $customerIp }}')" class="btn btn-sm btn-outline-danger p-0 px-2" title="Block this IP" style="font-size: 10px; border-radius: 4px;">
+                                        <button onclick="blockIpAddress('{{ $customerIp }}')" class="btn btn-sm btn-outline-danger p-0 px-2" title="Block this IP" style="font-size: 11px; border-radius: 4px;">
                                             <i class="bi bi-ban"></i> Block
                                         </button>
                                         @endif
@@ -462,7 +462,7 @@
                                 </div>
                             </td>
                             <td>
-                                <select class="form-select form-select-sm border-0 bg-soft-info text-info fw-bold" onchange="assignStaff({{ $order->id }}, this.value)" style="font-size: 11px;">
+                                <select class="form-select form-select-sm border-0 bg-soft-info text-info fw-bold" onchange="assignStaff({{ $order->id }}, this.value)" style="font-size: 13px;">
                                     <option value="">Not Assigned</option>
                                     @foreach($staffs as $staff)
                                         <option value="{{ $staff->id }}" {{ ($order->order->staff_id ?? '') == $staff->id ? 'selected' : '' }}>{{ $staff->name }}</option>
@@ -471,7 +471,7 @@
                             </td>
                             <td>
                                 @php $s = $order->order->status ?? 'pending'; @endphp
-                                <select class="form-select form-select-sm status-badge status-{{ $s }}" onchange="updateStatus({{ $order->id }}, this.value)" style="font-size: 11px; font-weight: 700;">
+                                <select class="form-select form-select-sm status-badge status-{{ $s }}" onchange="updateStatus({{ $order->id }}, this.value)" style="font-size: 13px; font-weight: 700;">
                                     <option value="pending" {{ $s == 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="processing" {{ $s == 'processing' ? 'selected' : '' }}>Processing</option>
                                     <option value="shipped" {{ $s == 'shipped' ? 'selected' : '' }}>Shipped</option>
@@ -480,33 +480,33 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="form-select form-select-sm border-0 bg-light" onchange="updatePaymentStatus({{ $order->id }}, this.value)" style="font-size: 11px;">
+                                <select class="form-select form-select-sm border-0 bg-light" onchange="updatePaymentStatus({{ $order->id }}, this.value)" style="font-size: 13px;">
                                     <option value="pending" {{ ($order->order->payment_status ?? 'pending') == 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="paid" {{ ($order->order->payment_status ?? 'pending') == 'paid' ? 'selected' : '' }}>Paid</option>
                                     <option value="partial" {{ ($order->order->payment_status ?? 'pending') == 'partial' ? 'selected' : '' }}>Partial</option>
                                     <option value="refunded" {{ ($order->order->payment_status ?? 'pending') == 'refunded' ? 'selected' : '' }}>Refunded</option>
                                 </select>
-                                <div class="mt-1" style="font-size: 10px; font-weight: 600; color: #666;">
+                                <div class="mt-1" style="font-size: 12px; font-weight: 600; color: #666;">
                                     <i class="bi bi-wallet2 me-1"></i>{{ strtoupper($order->payment_method ?? 'COD') }}
                                 </div>
                             </td>
                             <td>
                                 <div class="d-flex flex-column align-items-end">
                                     <span class="fw-bold" style="font-size: 1rem;">{{ $cur }}{{ number_format($order->grand_total, 0) }}</span>
-                                    <span class="text-muted" style="font-size: 11px;">Items: {{ count($items) }}</span>
+                                    <span class="text-muted" style="font-size: 12px;">Items: {{ count($items) }}</span>
                                     @if($order->delivery_charge > 0)
-                                        <span class="text-muted" style="font-size: 10px;">Ship: {{ $cur }}{{ number_format($order->delivery_charge, 0) }}</span>
+                                        <span class="text-muted" style="font-size: 11px;">Ship: {{ $cur }}{{ number_format($order->delivery_charge, 0) }}</span>
                                     @endif
                                 </div>
                             </td>
                             <td>
                                 @if($order->order->courier_name)
-                                    <div class="badge bg-soft-success text-success p-2 w-100" style="font-size: 10px;">
+                                    <div class="badge bg-soft-success text-success p-2 w-100" style="font-size: 12px;">
                                         <div class="fw-bold"><i class="bi bi-truck me-1"></i>{{ $order->order->courier_name }}</div>
                                         <div class="mt-1 text-uppercase">{{ $order->order->courier_status }}</div>
                                     </div>
                                 @else
-                                    <span class="text-muted" style="font-size: 10px;">No Courier</span>
+                                    <span class="text-muted" style="font-size: 12px;">No Courier</span>
                                 @endif
                             </td>
                             <td>

@@ -54,7 +54,7 @@ const MainApp = () => {
                             <Route path="/subcategory/:id" element={<CategoryProducts />} />
                             <Route path="/products-all/:type" element={<AllProducts />} />
                             <Route path="/shop/:id" element={<ShopDetails />} />
-                            <Route path="/product-details/:type/:slug" element={<ProductDetails />} />
+                            <Route path="/product/:slug" element={<ProductDetails />} />
                             <Route path="/search" element={<SearchResults />} />
                             <Route path="/page/:slug" element={<PageView />} />
 

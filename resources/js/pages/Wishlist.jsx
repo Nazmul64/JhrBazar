@@ -55,7 +55,7 @@ const Wishlist = () => {
                                             <tr key={product.uid} className="wishlist-row">
                                                 <td className="ps-4 py-4">
                                                     <div className="d-flex align-items-center gap-3">
-                                                        <Link to={`/product-details/${product.product_type}/${product.slug}`}>
+                                                        <Link to={`/product/${product.slug}`}>
                                                             <div className="rounded-3 border overflow-hidden" style={{ width: '80px', height: '80px' }}>
                                                                 <img
                                                                     src={product.image}
@@ -67,7 +67,7 @@ const Wishlist = () => {
                                                         </Link>
                                                         <div>
                                                             <Link
-                                                                to={`/product-details/${product.product_type}/${product.slug}`}
+                                                                to={`/product/${product.slug}`}
                                                                 className="text-decoration-none fw-bold text-dark hover-primary-text d-block mb-1"
                                                                 style={{ fontSize: '15px' }}
                                                             >

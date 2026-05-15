@@ -146,7 +146,7 @@ const ProductCard = ({ product }) => {
 
             {/* Product Image */}
             <Link
-                to={`/product-details/${product.product_type}/${product.slug}`}
+                to={`/product/${product.slug}`}
                 className="product-card-img-wrapper"
                 style={{
                     display: 'block',
@@ -168,7 +168,7 @@ const ProductCard = ({ product }) => {
             </Link>
 
             <div className="card-body p-3 d-flex flex-column" style={{ flexGrow: 1 }}>
-                <Link to={`/product-details/${product.product_type}/${product.slug}`} className="text-decoration-none text-dark">
+                <Link to={`/product/${product.slug}`} className="text-decoration-none text-dark">
                     <h6 className="mb-2 text-truncate-1 product-card-title" style={{ fontSize: '14px', fontWeight: '600', lineHeight: '1.4' }}>
                         {product.title}
                     </h6>

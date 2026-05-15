@@ -94,4 +94,21 @@ class GenaralSetting extends Model
         'enable_pixel' => 'boolean',
         'enable_gtm' => 'boolean',
     ];
+    public function getLogoUrlAttribute(): ?string
+    {
+        $path = ltrim($this->logo, '/');
+        if ($this->logo && file_exists(public_path($path))) {
+            return asset($path);
+        }
+        return null;
+    }
+
+    public function getFaviconUrlAttribute(): ?string
+    {
+        $path = ltrim($this->favicon, '/');
+        if ($this->favicon && file_exists(public_path($path))) {
+            return asset($path);
+        }
+        return null;
+    }
 }

@@ -18,9 +18,8 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
     }, [behavior]);
 
     useEffect(() => {
-        if (initialBanners) {
-            const mainBanners = initialBanners.filter(b => b.for_own_shop);
-            setSlides(mainBanners.length > 0 ? mainBanners : initialBanners.slice(0, 1));
+        if (initialBanners && initialBanners.length > 0) {
+            setSlides(initialBanners);
         }
         if (initialCategories) {
             setCategories(initialCategories);
@@ -31,10 +30,10 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
         if (slides.length > 1) {
             const timer = setInterval(() => {
                 setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-            }, 5000);
+            }, 3500); // Slightly faster for better engagement
             return () => clearInterval(timer);
         }
-    }, [slides]);
+    }, [slides.length]); // Use length to be safer
 
     if (loading) {
         return (
@@ -50,7 +49,7 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
     const activeCategory = categories.find(c => c.id === activeCatId);
 
     return (
-        <section className="container my-4">
+        <section className="container mb-3 mt-4">
             <div className="row g-3">
                 {/* Column 1: Vertical Categories Sidebar */}
                 {settings && behavior === 'fixed' && (
@@ -88,12 +87,12 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                                             <img src={cat.thumbnail || '/placeholder.jpg'} alt="" loading="lazy" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
                                             <Link to={`/category/${cat.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>{cat.name}</Link>
                                         </div>
-                                        {cat.subCategories?.length > 0 && <span style={{ fontSize: '10px' }}>▶</span>}
+                                        {(cat.sub_categories?.length > 0 || cat.subCategories?.length > 0) && <span style={{ fontSize: '10px' }}>▶</span>}
                                     </div>
                                 ))}
 
                                 {/* Subcategories Panel (Appears on Hover) */}
-                                {activeCatId && activeCategory?.subCategories?.length > 0 && (
+                                {activeCatId && (activeCategory?.sub_categories?.length > 0 || activeCategory?.subCategories?.length > 0) && (
                                     <div className="position-absolute bg-white shadow-lg border" style={{ 
                                         top: 0, 
                                         left: '100%', 
@@ -106,14 +105,15 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                                     }}>
                                         <h6 className="fw-bold mb-3 border-bottom pb-2" style={{ color: 'var(--button-color, #57b500)' }}>{activeCategory.name}</h6>
                                         <div className="d-flex flex-column gap-2">
-                                            {activeCategory.subCategories.map(sub => (
+                                            {(activeCategory.sub_categories || activeCategory.subCategories || []).map(sub => (
                                                 <Link 
                                                     key={sub.id} 
                                                     to={`/subcategory/${sub.id}`} 
-                                                    className="text-decoration-none text-muted small hover-primary"
+                                                    className="text-decoration-none text-muted small hover-primary d-flex align-items-center gap-2 py-1"
                                                     style={{ transition: 'color 0.2s' }}
                                                 >
-                                                    {sub.name}
+                                                    <img src={sub.thumbnail || '/placeholder.jpg'} alt="" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                                                    <span>{sub.name}</span>
                                                 </Link>
                                             ))}
                                         </div>
@@ -134,14 +134,18 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                         backgroundColor: '#f8f9fa'
                     }}>
                         {slides.length > 0 ? (
-                            <div style={{
-                                height: '100%',
-                                width: '100%',
-                                backgroundImage: `url(${slides[currentSlide]?.image})`,
-                                backgroundSize: '100% 100%',
-                                backgroundPosition: 'center',
-                                transition: 'background-image 0.8s ease-in-out'
-                            }}></div>
+                            <img 
+                                key={currentSlide}
+                                src={slides[currentSlide]?.image}
+                                alt="Banner"
+                                className="hero-slide-image"
+                                style={{
+                                    height: '100%',
+                                    width: '100%',
+                                    objectFit: 'fill',
+                                    animation: 'fadeInSlide 0.8s ease-in-out'
+                                }}
+                            />
                         ) : (
                             <div className="h-100 w-100 d-flex align-items-center justify-content-center text-center p-4" style={{ 
                                 background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
@@ -162,22 +166,42 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                             </div>
                         )}
 
+                        {/* Manual Navigation Arrows */}
+                        {slides.length > 1 && (
+                            <>
+                                <button 
+                                    onClick={() => setCurrentSlide(prev => prev === 0 ? slides.length - 1 : prev - 1)}
+                                    className="slider-nav-btn prev"
+                                    style={{ left: '15px' }}
+                                >
+                                    ‹
+                                </button>
+                                <button 
+                                    onClick={() => setCurrentSlide(prev => prev === slides.length - 1 ? 0 : prev + 1)}
+                                    className="slider-nav-btn next"
+                                    style={{ right: '15px' }}
+                                >
+                                    ›
+                                </button>
+                            </>
+                        )}
+
                         {/* Dot Pagination */}
                         {slides.length > 1 && (
-                            <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px' }}>
+                            <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', zIndex: 5 }}>
                                 {slides.map((_, idx) => (
                                     <div
                                         key={idx}
                                         onClick={() => setCurrentSlide(idx)}
                                         style={{
-                                            width: idx === currentSlide ? '25px' : '8px',
-                                            height: '8px',
-                                            borderRadius: '4px',
-                                            backgroundColor: '#fff',
+                                            width: idx === currentSlide ? '30px' : '10px',
+                                            height: '6px',
+                                            borderRadius: '3px',
+                                            backgroundColor: idx === currentSlide ? 'var(--button-color, #57b500)' : '#fff',
                                             cursor: 'pointer',
-                                            transition: 'all 0.3s',
+                                            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                                             boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-                                            opacity: idx === currentSlide ? 1 : 0.6
+                                            opacity: idx === currentSlide ? 1 : 0.5
                                         }}
                                     />
                                 ))}
@@ -194,10 +218,41 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                     color: var(--button-color, #57b500) !important;
                 }
                 
+                .slider-nav-btn {
+                    position: absolute;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.2);
+                    backdrop-filter: blur(5px);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    color: #fff;
+                    font-size: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    z-index: 5;
+                    outline: none;
+                }
+                .slider-nav-btn:hover {
+                    background: rgba(255, 255, 255, 0.4);
+                    color: #000;
+                }
+                
+                @keyframes fadeInSlide {
+                    0% { opacity: 0; transform: scale(1.05); filter: blur(5px); }
+                    100% { opacity: 1; transform: scale(1); filter: blur(0); }
+                }
+                
                 /* Dynamic Slider Height */
                 @media (max-width: 768px) {
                     .hero-slider-container { height: ${settings?.slider_height_mobile || '200px'} !important; }
                     .hero-sidebar-container { height: auto !important; }
+                    .slider-nav-btn { width: 30px; height: 30px; font-size: 18px; }
                 }
                 @media (min-width: 769px) {
                     .hero-slider-container { height: ${settings?.slider_height || '420px'} !important; }

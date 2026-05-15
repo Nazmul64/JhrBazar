@@ -48,8 +48,9 @@ class CategoryController extends Controller
             'is_active'   => true,
         ]);
 
-        Cache::forget('homepage_data_v2');
-        Cache::forget('categories_with_sub');
+        Cache::forget('home_data_v2');
+        Cache::forget('categories_with_sub_v2');
+        Cache::forget('general_settings_with_cats');
         return redirect()->route('admin.categories.index')
 
             ->with('success', 'Category created successfully.');
@@ -94,8 +95,9 @@ class CategoryController extends Controller
 
         $category->update($data);
 
-        Cache::forget('homepage_data_v2');
-        Cache::forget('categories_with_sub');
+        Cache::forget('home_data_v2');
+        Cache::forget('categories_with_sub_v2');
+        Cache::forget('general_settings_with_cats');
         return redirect()->route('admin.categories.index')
 
             ->with('success', 'Category updated successfully.');
@@ -109,8 +111,9 @@ class CategoryController extends Controller
         $this->deleteImage($category->thumbnail);
         $category->delete();
 
-        Cache::forget('homepage_data_v2');
-        Cache::forget('categories_with_sub');
+        Cache::forget('home_data_v2');
+        Cache::forget('categories_with_sub_v2');
+        Cache::forget('general_settings_with_cats');
         return redirect()->route('admin.categories.index')
 
             ->with('success', 'Category deleted successfully.');
@@ -122,8 +125,9 @@ class CategoryController extends Controller
     public function toggleStatus(Category $category)
     {
         $category->update(['is_active' => !$category->is_active]);
-        Cache::forget('homepage_data_v2');
-        Cache::forget('categories_with_sub');
+        Cache::forget('home_data_v2');
+        Cache::forget('categories_with_sub_v2');
+        Cache::forget('general_settings_with_cats');
         return redirect()->back()->with('success', 'Status updated.');
 
     }

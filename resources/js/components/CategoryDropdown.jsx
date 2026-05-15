@@ -75,13 +75,13 @@ const CategoryDropdown = ({ isOpen }) => {
                                         style={{ width: '20px', height: '20px', objectFit: 'contain' }} 
                                     />
                                     <span style={{ flexGrow: 1 }}>{cat.name}</span>
-                                    {cat.subCategories?.length > 0 && <span style={{ fontSize: '10px' }}>▶</span>}
+                                    {(cat.sub_categories?.length > 0 || cat.subCategories?.length > 0) && <span style={{ fontSize: '10px' }}>▶</span>}
                                 </Link>
                             </div>
                         ))}
 
                         {/* Subcategories Side Panel */}
-                        {activeCatId && activeCategory?.subCategories?.length > 0 && (
+                        {activeCatId && (activeCategory?.sub_categories?.length > 0 || activeCategory?.subCategories?.length > 0) && (
                             <div style={{
                                 position: 'absolute', top: '-1px', left: '100%', width: '250px',
                                 backgroundColor: '#fff', boxShadow: '15px 10px 30px rgba(0,0,0,0.1)',
@@ -92,16 +92,21 @@ const CategoryDropdown = ({ isOpen }) => {
                                     {activeCategory.name}
                                 </h6>
                                 <div className="d-flex flex-column gap-2">
-                                    {activeCategory.subCategories.map(sub => (
+                                    {(activeCategory.sub_categories || activeCategory.subCategories || []).map(sub => (
                                         <Link 
                                             key={sub.id} 
                                             to={`/subcategory/${sub.id}`} 
-                                            className="text-decoration-none text-muted"
-                                            style={{ fontSize: '13px', transition: 'color 0.2s' }}
+                                            className="text-decoration-none text-muted d-flex align-items-center gap-2"
+                                            style={{ fontSize: '13px', transition: 'color 0.2s', padding: '5px 0' }}
                                             onMouseEnter={(e) => e.target.style.color = 'var(--button-color, #57b500)'}
                                             onMouseLeave={(e) => e.target.style.color = 'inherit'}
                                         >
-                                            {sub.name}
+                                            <img 
+                                                src={sub.thumbnail ? (sub.thumbnail.startsWith('http') ? sub.thumbnail : sub.thumbnail) : '/placeholder.jpg'} 
+                                                alt="" 
+                                                style={{ width: '18px', height: '18px', objectFit: 'contain', borderRadius: '3px' }} 
+                                            />
+                                            <span>{sub.name}</span>
                                         </Link>
                                     ))}
                                 </div>

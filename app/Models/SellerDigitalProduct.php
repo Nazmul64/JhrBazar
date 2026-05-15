@@ -10,7 +10,7 @@ class SellerDigitalProduct extends Model
     use HasFactory;
 
     protected $fillable = [
-        'seller_id', 'name', 'short_description', 'description', 
+        'seller_id', 'name', 'slug', 'short_description', 'description', 
         'category_id', 'sub_category_id', 'brand_id', 'sku', 
         'buying_price', 'selling_price', 'discount_price', 'stock_quantity', 
         'thumbnail', 'additional_thumbnails', 'digital_file', 'license_keys',
@@ -35,5 +35,14 @@ class SellerDigitalProduct extends Model
     public function brand()
     {
         return $this->belongsTo(\App\Models\Brand::class);
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (SellerDigitalProduct $product) {
+            if (empty($product->slug)) {
+                $product->slug = \Illuminate\Support\Str::slug($product->name) . '-' . strtolower(\Illuminate\Support\Str::random(5));
+            }
+        });
     }
 }

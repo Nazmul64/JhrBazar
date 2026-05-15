@@ -101,18 +101,43 @@ const CategoryProducts = () => {
                             </div>
                             <div className="card-body p-0">
                                 <ul className="list-group list-group-flush border-0">
-                                    {categories.map(cat => (
-                                        <li key={cat.id} className="list-group-item border-0 p-0">
-                                            <Link
-                                                to={`/category/${cat.id}`}
-                                                className={`d-flex justify-content-between align-items-center p-3 text-decoration-none ${id == cat.id && !isSubCategory ? 'bg-light text-success fw-bold' : 'text-dark'}`}
-                                                style={{ transition: 'all 0.2s' }}
-                                            >
-                                                <span>{cat.name}</span>
-                                                <i className={`fas fa-chevron-right small`}></i>
-                                            </Link>
-                                        </li>
-                                    ))}
+                                    {categories.map(cat => {
+                                        const isActive = id == cat.id && !isSubCategory;
+                                        const hasSub = cat.sub_categories?.length > 0 || cat.subCategories?.length > 0;
+                                        const subCats = cat.sub_categories || cat.subCategories || [];
+                                        
+                                        return (
+                                            <li key={cat.id} className="list-group-item border-0 p-0">
+                                                <Link
+                                                    to={`/category/${cat.id}`}
+                                                    className={`d-flex justify-content-between align-items-center p-3 text-decoration-none ${isActive ? 'bg-light text-success fw-bold' : 'text-dark'}`}
+                                                    style={{ transition: 'all 0.2s' }}
+                                                >
+                                                    <div className="d-flex align-items-center gap-2">
+                                                        <img src={cat.thumbnail || '/placeholder.jpg'} alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+                                                        <span>{cat.name}</span>
+                                                    </div>
+                                                    <i className={`fas ${isActive ? 'fa-chevron-down' : 'fa-chevron-right'} small`}></i>
+                                                </Link>
+                                                
+                                                {/* Subcategories (Visible if this category is active or if we are in one of its subcategories) */}
+                                                {(isActive || (isSubCategory && subCats.some(s => s.id == id))) && hasSub && (
+                                                    <ul className="list-group list-group-flush ps-4 bg-light">
+                                                        {subCats.map(sub => (
+                                                            <li key={sub.id} className="list-group-item border-0 bg-transparent p-0">
+                                                                <Link
+                                                                    to={`/subcategory/${sub.id}`}
+                                                                    className={`d-flex align-items-center gap-2 p-2 text-decoration-none small ${id == sub.id && isSubCategory ? 'text-success fw-bold' : 'text-muted'}`}
+                                                                >
+                                                                    <span>• {sub.name}</span>
+                                                                </Link>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </li>
+                                        );
+                                    })}
                                 </ul>
                             </div>
                         </div>

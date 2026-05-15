@@ -179,6 +179,7 @@
     border-left: 1px solid var(--border);
     background: var(--white);
     overflow: hidden;
+    height: 726px;
 }
 
 /* Customer Section */
@@ -372,7 +373,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 10px 12px;
-    margin: 8px 0;
+    margin: 8px 0 15px 0;
 }
 .tax-summary-title {
     font-size: 12px; font-weight: 700; color: var(--text);
@@ -415,7 +416,7 @@
 .btn-apply:hover { background: var(--accent-dk); }
 
 /* Grand Total + Actions */
-.grand-section { margin-top: 6px; }
+.grand-section { margin-top: 15px; }
 .pos-actions { display: flex; gap: 10px; margin-top: 0; }
 .btn-draft {
     flex: 0 0 90px; height: 48px; background: #fffbe6;
@@ -583,7 +584,7 @@
 @media (max-width:1100px) {
     .pos-wrap { flex-direction: column; height: auto; overflow: auto; }
     .pos-left { min-height: 60vh; }
-    .pos-right { width: 100%; border-left: none; border-top: 1px solid var(--border); }
+    .pos-right { width: 100%; border-left: none; border-top: 1px solid var(--border); height: auto; }
     .product-grid { grid-template-columns: 1fr; }
     .cd-drawer { width: 100vw; }
 }

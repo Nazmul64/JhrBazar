@@ -120,15 +120,16 @@ class User extends Authenticatable
     public function getProfileImageUrlAttribute(): string
     {
         if (!$this->profile_image) {
-            return asset('assets/admin/images/default-avatar.png');
+            return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
         }
 
-        // Check if it already has a path or is a full URL
         if (str_starts_with($this->profile_image, 'http')) {
             return $this->profile_image;
         }
 
-        $path = $this->profile_image;
+        $path = ltrim($this->profile_image, '/');
+        
+        // Fallback for old paths without slashes
         if (!str_contains($path, '/')) {
             $path = 'uploads/profile_images/' . $path;
         }
@@ -137,7 +138,7 @@ class User extends Authenticatable
             return asset($path);
         }
 
-        return asset('assets/admin/images/default-avatar.png');
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
     }
 
     // ── Relations ────────────────────────────────────────────────────────────

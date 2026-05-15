@@ -6,10 +6,12 @@ import axios from 'axios';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import SEO from '../components/SEO';
+import { useSettings } from '../context/SettingsContext';
 
 const ProductDetails = () => {
-    const { type, slug } = useParams();
-    const mainColor = '#57b500';
+    const { slug } = useParams();
+    const { settings } = useSettings();
+    const mainColor = settings?.primary_color || '#57b500';
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
@@ -25,22 +27,29 @@ const ProductDetails = () => {
     const [supportSettings, setSupportSettings] = useState(null);
     const navigate = useNavigate();
 
+    const decodeHTML = (html) => {
+        const txt = document.createElement('textarea');
+        txt.innerHTML = html;
+        return txt.value;
+    };
+
     useEffect(() => {
         const fetchProduct = async () => {
             setLoading(true);
             try {
-                const res = await axios.get(`/api/product/${type}/${slug}`);
+                const res = await axios.get(`/api/product/${slug}`);
                 if (res.data.success) {
-                    setProduct(res.data.data);
+                    const pData = res.data.data;
+                    setProduct(pData);
 
-                    // Fetch reviews
-                    const reviewsRes = await axios.get(`/api/product/${type}/${res.data.data.id}/reviews`);
+                    // Fetch reviews using the detected type and ID from product data
+                    const reviewsRes = await axios.get(`/api/product/${pData.product_type}/${pData.id}/reviews`);
                     if (reviewsRes.data.success) {
                         setReviews(reviewsRes.data.data);
                     }
 
                     // Fetch related products
-                    const relatedRes = await axios.get(`/api/product/${type}/${res.data.data.id}/related`);
+                    const relatedRes = await axios.get(`/api/product/${pData.product_type}/${pData.id}/related`);
                     if (relatedRes.data.success) {
                         setRelatedProducts(relatedRes.data.data);
                     }
@@ -53,7 +62,6 @@ const ProductDetails = () => {
         };
         fetchProduct();
 
-        // Fetch Admin Support Settings
         const fetchSupportSettings = async () => {
             try {
                 const res = await axios.get('/api/admin-support');
@@ -67,7 +75,7 @@ const ProductDetails = () => {
         fetchSupportSettings();
 
         window.scrollTo(0, 0);
-    }, [type, slug]);
+    }, [slug]);
 
     // Data Layer: view_item
     useEffect(() => {
@@ -251,6 +259,11 @@ const ProductDetails = () => {
                 </div>
             )}
             <style>{`
+                .description-content ul, .description-content ol { padding-left: 20px; margin-bottom: 20px; }
+                .description-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 15px 0; }
+                .description-content table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                .description-content table td, .description-content table th { border: 1px solid #eee; padding: 10px; }
+                .description-content p { margin-bottom: 15px; }
                 @keyframes fadeIn {
                     from { opacity: 0; transform: translateY(20px); }
                     to { opacity: 1; transform: translateY(0); }
@@ -348,7 +361,7 @@ const ProductDetails = () => {
                                             <div
                                                 className="position-absolute cursor-pointer d-flex align-items-center justify-content-center shadow-sm hover-wishlist"
                                                 onClick={() => toggleWishlist(product)}
-                                                title={isInWishlist(product.id, type) ? "উইশলিস্ট থেকে সরান" : "উইশলিস্টে যোগ করুন"}
+                                                title={isInWishlist(product.id, product.product_type) ? "উইশলিস্ট থেকে সরান" : "উইশলিস্টে যোগ করুন"}
                                                 style={{
                                                     top: '15px',
                                                     right: '15px',
@@ -358,11 +371,11 @@ const ProductDetails = () => {
                                                     backgroundColor: '#fff',
                                                     zIndex: 10,
                                                     transition: 'all 0.3s',
-                                                    color: isInWishlist(product.id, type) ? '#ff4d4d' : '#666',
+                                                    color: isInWishlist(product.id, product.product_type) ? '#ff4d4d' : '#666',
                                                     fontSize: '22px'
                                                 }}
                                             >
-                                                {isInWishlist(product.id, type) ? '❤️' : '🤍'}
+                                                {isInWishlist(product.id, product.product_type) ? '❤️' : '🤍'}
                                             </div>
                                         </div>
                                     </div>
@@ -421,7 +434,11 @@ const ProductDetails = () => {
 
                                 <span className="badge mb-2 px-3 py-2" style={{ backgroundColor: '#fff0f3', color: '#ff4d4d', fontSize: '12px', fontWeight: 'bold', borderRadius: '5px' }}>{product.category || 'Product'}</span>
                                 <h1 className="fw-bold mb-3" style={{ color: '#333', fontSize: '32px' }}>{product.name}</h1>
-                                <p className="text-muted mb-4" style={{ fontSize: '15px', lineHeight: '1.6' }}>{product.short_description}</p>
+                                <div 
+                                    className="text-muted mb-4" 
+                                    style={{ fontSize: '15px', lineHeight: '1.6' }}
+                                    dangerouslySetInnerHTML={{ __html: decodeHTML(product.short_description || "") }}
+                                ></div>
 
                                 <div className="d-flex align-items-center gap-3 mb-4">
                                     <div className="text-warning small">
@@ -448,10 +465,10 @@ const ProductDetails = () => {
                                 </div>
 
                                 <div className="d-flex align-items-center gap-3 mb-4">
-                                    <h2 className="fw-bold mb-0" style={{ color: mainColor, fontSize: '36px' }}>৳{Math.round(product.price)}</h2>
+                                    <h2 className="fw-bold mb-0" style={{ color: mainColor, fontSize: '36px' }}>৳{Number(product.price).toLocaleString('en-BD')}</h2>
                                     {product.old_price > product.price && (
                                         <span className="text-muted text-decoration-line-through">
-                                            ৳{Math.round(product.old_price)}
+                                            ৳{Number(product.old_price).toLocaleString('en-BD')}
                                         </span>
                                     )}
                                 </div>
@@ -594,9 +611,9 @@ const ProductDetails = () => {
                                     </button>
                                 </li>
                             </ul>
-                            <div className="bg-white p-4 p-md-5 rounded shadow-sm border" style={{ fontSize: '16px', lineHeight: '1.8', color: '#444' }}>
+                            <div className="bg-white p-4 p-md-5 rounded shadow-sm border description-content" style={{ fontSize: '16px', lineHeight: '1.8', color: '#444' }}>
                                 {activeTab === 'about' && (
-                                    <div dangerouslySetInnerHTML={{ __html: product.description }}></div>
+                                    <div dangerouslySetInnerHTML={{ __html: decodeHTML(product.description || "") }}></div>
                                 )}
 
                                 {activeTab === 'video' && product.video && (
@@ -697,7 +714,7 @@ const ProductDetails = () => {
                                     <h6 className="fw-bold mb-3" style={{ fontSize: '14px' }}>Popular Products From Them</h6>
                                     <div className="d-flex flex-column gap-3">
                                         {relatedProducts.slice(0, 4).map(prod => (
-                                            <Link key={prod.uid} to={`/product-details/${prod.product_type}/${prod.slug}`} className="text-decoration-none text-dark bg-white p-2 rounded border shadow-sm d-flex gap-3 align-items-center">
+                                            <Link key={prod.uid} to={`/product/${prod.slug}`} className="text-decoration-none text-dark bg-white p-2 rounded border shadow-sm d-flex gap-3 align-items-center">
                                                 <img src={prod.image} alt={prod.title} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
                                                 <div className="flex-grow-1 min-width-0">
                                                     <div className="small fw-bold text-truncate">{prod.title}</div>

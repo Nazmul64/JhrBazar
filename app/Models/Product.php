@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Product extends Model
 {
     protected $fillable = [
-        'name', 'short_description', 'description',
+        'name', 'slug', 'short_description', 'description',
         'category_id', 'sub_category_id', 'brand_id',
         'color', 'unit', 'size', 'sku', 'barcode',
         'buying_price', 'selling_price', 'discount_price',
@@ -64,6 +64,12 @@ class Product extends Model
     // ── Auto-generate barcode on creating ─────────────────
     protected static function booted(): void
     {
+        static::saving(function (Product $product) {
+            if (empty($product->slug)) {
+                $product->slug = \Illuminate\Support\Str::slug($product->name) . '-' . strtolower(\Illuminate\Support\Str::random(5));
+            }
+        });
+
         static::creating(function (Product $product) {
             if (empty($product->barcode)) {
                 // Generate a unique 8-digit numeric barcode

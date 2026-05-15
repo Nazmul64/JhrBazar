@@ -16,11 +16,7 @@
   <div class="avatar-wrap dropdown">
     <div class="d-flex align-items-center gap-2 cursor-pointer dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
         <div class="avatar">
-            @if(Auth::user()->profile_image)
-                <img src="{{ asset(Auth::user()->profile_image) }}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
-            @else
-                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-            @endif
+            <img src="{{ Auth::user()->profile_image_url }}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
         </div>
         <div class="avatar-info d-none d-md-block">
             <span class="name">{{ Auth::user()->name }}</span>
