@@ -1,24 +1,18 @@
 <header id="header">
   <button class="header-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
   <div class="header-title">
-    <h6>Welcome Back, {{ Auth::user()->name }}</h6>
+    <h6>{{ Auth::user()->name }}</h6>
   </div>
 
-  <button class="header-action">
-    <i class="bi bi-search"></i>
+  {{-- Search removed per user request --}}
+  {{-- mobileSidebarToggle removed per user request --}}
+  {{-- Notification removed per user request --}}
+  
+  <button class="header-action" id="darkToggleBtn" title="Toggle Dark/Light Mode">
+    <i class="bi {{ ($general_setting->admin_theme ?? 'light') === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill' }}"></i>
   </button>
-  <button class="header-action" id="darkToggle" title="Dark mode">
-    <i class="bi bi-moon-stars-fill"></i>
-  </button>
-  <button class="header-action" style="position:relative;">
-    <i class="bi bi-bell"></i>
-    <span class="header-notif-badge">9+</span>
-  </button>
-  <button class="lang-btn">
-    <i class="bi bi-globe2"></i>
-    <span>English</span>
-    <i class="bi bi-chevron-down" style="font-size:10px;"></i>
-  </button>
+
+  {{-- Language selector removed per user request --}}
   <div class="avatar-wrap dropdown">
     <div class="d-flex align-items-center gap-2 cursor-pointer dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
         <div class="avatar">
@@ -39,18 +33,23 @@
             <small class="text-muted">{{ Auth::user()->email }}</small>
         </li>
         <li>
-            <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-2" href="{{ route('admin.profile.index') }}">
-                <i class="bi bi-person-circle text-primary"></i> My Profile
+            <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-2" href="{{ route('admin.profile.edit') }}">
+                <i class="bi bi-person text-primary"></i> Profile
             </a>
         </li>
+
         <li>
             <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-2" href="{{ route('admin.profile.index') }}#change-password">
-                <i class="bi bi-shield-lock text-warning"></i> Change Password
+                <i class="bi bi-shield-lock text-warning"></i> Password
             </a>
         </li>
         <li><hr class="dropdown-divider"></li>
         <li>
-            <form action="{{ Auth::user()->role === 'admin' ? route('admin.logout') : (Auth::user()->role === 'manager' ? route('manager.logout') : route('employee.logout')) }}" method="POST">
+            <form action="{{ 
+                Auth::user()->role === 'admin' ? route('admin.logout') : 
+                (Auth::user()->role === 'manager' ? route('manager.logout') : 
+                (Auth::user()->role === 'seller' ? route('seller.logout') : route('employee.logout'))) 
+            }}" method="POST">
                 @csrf
                 <button type="submit" class="dropdown-item py-2 px-3 d-flex align-items-center gap-2 text-danger">
                     <i class="bi bi-box-arrow-right"></i> Sign Out

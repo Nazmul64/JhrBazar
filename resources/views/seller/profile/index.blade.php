@@ -208,7 +208,7 @@
             </div>
 
             {{-- Change Password Card --}}
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm" id="change-password">
                 <div class="card-body">
                     <h6 class="fw-bold border-bottom pb-2 mb-3">
                         <i class="fas fa-shield-alt me-2 text-danger"></i> Security Settings

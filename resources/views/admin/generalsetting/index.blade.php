@@ -9,17 +9,17 @@
     :root {
         --primary: #e91e8c;
         --primary-hover: #c4166f;
-        --border-radius: 6px;
-        --input-border: #dee2e6;
-        --section-bg: #ffffff;
-        --page-bg: #f4f6f9;
-        --label-color: #444;
-        --section-title: #333;
+        --border-radius: 12px;
+        --input-border: var(--border-color);
+        --section-bg: var(--bg-card);
+        --page-bg: var(--bg-body);
+        --label-color: var(--text-main);
+        --section-title: var(--text-main);
         --toggle-on: #e91e8c;
     }
 
     .gs-page-wrapper {
-        padding: 20px;
+        padding: 30px;
         background: var(--page-bg);
         min-height: 100vh;
     }
@@ -340,6 +340,16 @@
                     </div>
                 </div>
 
+                {{-- Admin Theme --}}
+                <div style="margin-bottom:18px;">
+                    <label class="gs-label">Admin Theme Style</label>
+                    <select name="admin_theme" class="gs-select">
+                        <option value="light" {{ ($setting->admin_theme ?? 'light') == 'light' ? 'selected' : '' }}>Light Mode (Classic)</option>
+                        <option value="dark" {{ ($setting->admin_theme ?? 'light') == 'dark' ? 'selected' : '' }}>Dark Mode (Premium)</option>
+                    </select>
+                    <div class="img-sub-label">Choose the visual style of your administration panel.</div>
+                </div>
+
             </div>
 
             {{-- Logo (4:1 200x50) --}}
@@ -436,6 +446,23 @@
                 <input type="text" name="address" class="gs-input"
                        placeholder="Enter Address"
                        value="{{ old('address', $setting->address ?? '') }}">
+            </div>
+        </div>
+        <div class="gs-row" style="margin-top: 18px;">
+            <div class="gs-col">
+                <label class="gs-label">Trade License Number</label>
+                <input type="text" name="trade_license_number" class="gs-input"
+                       placeholder="Enter Trade License Number"
+                       value="{{ old('trade_license_number', $setting->trade_license_number ?? '') }}">
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">DBID Number</label>
+                <input type="text" name="dbid_number" class="gs-input"
+                       placeholder="Enter DBID Number"
+                       value="{{ old('dbid_number', $setting->dbid_number ?? '') }}">
+            </div>
+            <div class="gs-col">
+                {{-- Spacer --}}
             </div>
         </div>
     </div>{{-- /section 2 --}}
@@ -660,11 +687,36 @@
             <div class="gs-col">
                 <label class="gs-label">Font Family</label>
                 <select name="font_family" class="gs-input">
-                    @php $currentFont = old('font_family', $setting->font_family ?? 'Arial, sans-serif'); @endphp
-                    <option value="Arial, sans-serif" {{ $currentFont == 'Arial, sans-serif' ? 'selected' : '' }}>Arial</option>
-                    <option value="'Poppins', sans-serif" {{ $currentFont == "'Poppins', sans-serif" ? 'selected' : '' }}>Poppins</option>
-                    <option value="'Roboto', sans-serif" {{ $currentFont == "'Roboto', sans-serif" ? 'selected' : '' }}>Roboto</option>
-                    <option value="'Open Sans', sans-serif" {{ $currentFont == "'Open Sans', sans-serif" ? 'selected' : '' }}>Open Sans</option>
+                    @php 
+                        $currentFont = old('font_family', $setting->font_family ?? 'Arial, sans-serif');
+                        $fonts = [
+                            'Arial, sans-serif' => 'Arial (System)',
+                            'Roboto, sans-serif' => 'Roboto',
+                            'Open Sans, sans-serif' => 'Open Sans',
+                            'Lato, sans-serif' => 'Lato',
+                            'Montserrat, sans-serif' => 'Montserrat',
+                            'Poppins, sans-serif' => 'Poppins',
+                            'Inter, sans-serif' => 'Inter',
+                            'Nunito, sans-serif' => 'Nunito',
+                            'DM Sans, sans-serif' => 'DM Sans',
+                            'Sora, sans-serif' => 'Sora',
+                            'Ubuntu, sans-serif' => 'Ubuntu',
+                            'Merriweather, serif' => 'Merriweather',
+                            'Quicksand, sans-serif' => 'Quicksand',
+                            'Titillium Web, sans-serif' => 'Titillium Web',
+                            'Playfair Display, serif' => 'Playfair Display',
+                            'Oswald, sans-serif' => 'Oswald',
+                            'Raleway, sans-serif' => 'Raleway',
+                            'Hind Siliguri, sans-serif' => 'Hind Siliguri (Bengali)',
+                            'Noto Sans Bengali, sans-serif' => 'Noto Sans Bengali (Bengali)',
+                            'SolaimanLipi, sans-serif' => 'SolaimanLipi (Bengali)',
+                            'Hind, sans-serif' => 'Hind (Bengali)',
+                            'Mina, sans-serif' => 'Mina (Bengali)',
+                        ];
+                    @endphp
+                    @foreach($fonts as $value => $label)
+                        <option value="{{ $value }}" {{ $currentFont == $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
                 </select>
             </div>
             <div class="gs-col">
@@ -693,6 +745,77 @@
                 <label class="gs-label">Old Price Size</label>
                 <input type="text" name="product_old_price_size" class="gs-input" placeholder="e.g. 12px" value="{{ old('product_old_price_size', $setting->product_old_price_size ?? '12px') }}">
             </div>
+        </div>
+    </div>
+    
+    {{-- =============================================
+         SECTION 5.5 – Tracking & Analytics
+    ============================================= --}}
+    <div class="gs-section">
+        <div class="gs-section-title">
+            <div class="title-left">
+                <span class="title-icon">📊</span>
+                <span>Tracking & Analytics</span>
+            </div>
+        </div>
+
+        <div class="gs-row">
+            {{-- Google Analytics --}}
+            <div class="gs-col" style="border: 1px solid var(--border); padding: 20px; border-radius: 12px; background: #fcfcfc;">
+                <label class="gs-label fw-bold"><i class="bi bi-google text-primary"></i> Google Analytics (Universal/GA4)</label>
+                <input type="text" name="google_analytics_id" class="gs-input mb-3"
+                       placeholder="UA-XXXXX-Y or G-XXXXXXX"
+                       value="{{ old('google_analytics_id', $setting->google_analytics_id ?? '') }}">
+                
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="enable_analytics"
+                               {{ old('enable_analytics', $setting->enable_analytics ?? 0) ? 'checked' : '' }}
+                               onchange="ajaxToggle(this, '{{ $setting ? route('admin.generalsettings.toggle', $setting->id) : '#' }}', 'enable_analytics')">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span style="font-size:13px;font-weight:600;color:#333;">Enable Analytics Tracking</span>
+                </div>
+            </div>
+
+            {{-- Facebook Pixel --}}
+            <div class="gs-col" style="border: 1px solid var(--border); padding: 20px; border-radius: 12px; background: #fcfcfc;">
+                <label class="gs-label fw-bold"><i class="bi bi-facebook text-primary"></i> Facebook Pixel ID</label>
+                <input type="text" name="facebook_pixel_id" class="gs-input mb-3"
+                       placeholder="Enter Pixel ID"
+                       value="{{ old('facebook_pixel_id', $setting->facebook_pixel_id ?? '') }}">
+                
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="enable_pixel"
+                               {{ old('enable_pixel', $setting->enable_pixel ?? 0) ? 'checked' : '' }}
+                               onchange="ajaxToggle(this, '{{ $setting ? route('admin.generalsettings.toggle', $setting->id) : '#' }}', 'enable_pixel')">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span style="font-size:13px;font-weight:600;color:#333;">Enable Facebook Pixel Tracking</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="gs-row" style="margin-top: 20px;">
+            {{-- Google Tag Manager --}}
+            <div class="gs-col" style="border: 1px solid var(--border); padding: 20px; border-radius: 12px; background: #fcfcfc;">
+                <label class="gs-label fw-bold"><i class="bi bi-code-slash text-success"></i> Google Tag Manager (GTM) ID</label>
+                <input type="text" name="gtm_id" class="gs-input mb-3"
+                       placeholder="GTM-XXXXXXX"
+                       value="{{ old('gtm_id', $setting->gtm_id ?? '') }}">
+                
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="enable_gtm"
+                               {{ old('enable_gtm', $setting->enable_gtm ?? 0) ? 'checked' : '' }}
+                               onchange="ajaxToggle(this, '{{ $setting ? route('admin.generalsettings.toggle', $setting->id) : '#' }}', 'enable_gtm')">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span style="font-size:13px;font-weight:600;color:#333;">Enable GTM Tracking</span>
+                </div>
+            </div>
+            <div class="gs-col"></div> {{-- Empty space for layout --}}
         </div>
     </div>
 

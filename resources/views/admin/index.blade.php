@@ -2,203 +2,200 @@
 @section('content')
 <style>
     :root {
-        --glass: rgba(255, 255, 255, 0.7);
-        --glass-border: rgba(255, 255, 255, 0.3);
-        --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
         --accent: #6366f1;
+        --accent-hover: #4f46e5;
         --pink: #e91e63;
         --blue: #3b82f6;
         --red: #ef4444;
         --green: #10b981;
         --orange: #f59e0b;
         --purple: #8b5cf6;
-        --muted: #64748b;
     }
 
     #main {
-        background: #f1f5f9;
+        background: var(--bg-body) !important;
         min-height: 100vh;
-        padding: 30px !important;
+        padding: 32px !important;
+        transition: background 0.4s ease;
     }
 
+    /* ── Premium Cards ── */
     .card-premium {
-        background: var(--glass);
-        backdrop-filter: blur(12px);
-        border: 1px solid var(--glass-border);
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
         border-radius: 24px;
-        box-shadow: var(--card-shadow);
-        transition: all 0.3s ease;
+        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
     }
 
     .card-premium:hover {
         transform: translateY(-5px);
-        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 20px 50px -10px rgba(0,0,0,0.1);
     }
 
+    /* ── Stat Cards ── */
     .stat-card-premium {
-        background: white;
-        padding: 24px;
-        border-radius: 20px;
+        background: var(--bg-card);
+        padding: 28px;
+        border-radius: 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-        border: 1px solid rgba(0,0,0,0.05);
+        border: 1px solid var(--border-color);
         transition: all 0.3s ease;
+        position: relative;
     }
 
-    .stat-card-premium:hover {
-        transform: scale(1.02);
-        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+    .stat-card-premium::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 4px;
+        background: transparent;
+        border-radius: 0 0 24px 24px;
+        transition: background 0.3s;
+    }
+
+    .stat-card-premium:hover::after {
+        background: var(--accent);
     }
 
     .stat-icon-premium {
-        width: 56px;
-        height: 56px;
-        border-radius: 16px;
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 24px;
+        font-size: 26px;
+        transition: transform 0.3s ease;
     }
 
+    .stat-card-premium:hover .stat-icon-premium {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    /* ── Mini Order Stats ── */
     .order-mini-premium {
-        background: white;
-        padding: 15px 20px;
-        border-radius: 16px;
-        border: 1px solid rgba(0,0,0,0.03);
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        transition: all 0.2s;
+        background: var(--bg-card);
+        padding: 20px;
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
         text-align: center;
+        transition: all 0.2s;
     }
 
     .order-mini-premium:hover {
-        background: #f8fafc;
         border-color: var(--accent);
+        background: var(--glass-bg);
     }
 
+    /* ── Wallet Cards ── */
     .wallet-card-premium {
-        background: white;
+        background: var(--bg-card);
         padding: 24px;
-        border-radius: 20px;
-        position: relative;
-        overflow: hidden;
-        border: 1px solid rgba(0,0,0,0.05);
+        border-radius: 22px;
+        border: 1px solid var(--border-color);
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
 
     .wallet-card-premium.main {
-        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        color: white;
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        color: white !important;
+        border: none;
+        box-shadow: 0 15px 30px -5px rgba(15, 23, 42, 0.4);
     }
 
+    .wallet-card-premium.main * { color: white !important; }
+
+    /* ── Table Styling ── */
     .table-card-premium {
-        background: white;
-        border-radius: 24px;
-        border: 1px solid rgba(0,0,0,0.05);
-        box-shadow: var(--card-shadow);
+        background: var(--bg-card);
+        border-radius: 28px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05);
         overflow: hidden;
     }
 
     .table-header-premium {
-        padding: 25px 30px;
-        border-bottom: 1px solid #f1f5f9;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #fafafa;
-    }
-
-    .custom-table-premium {
-        width: 100%;
-        margin-bottom: 0;
+        padding: 28px 32px;
+        border-bottom: 1px solid var(--border-color);
+        background: rgba(0,0,0,0.01);
     }
 
     .custom-table-premium thead th {
-        background: #f8fafc;
-        padding: 18px 25px;
-        font-size: 12px;
-        font-weight: 700;
+        background: var(--bg-body);
+        padding: 20px 28px;
+        font-size: 11px;
+        font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #64748b;
+        letter-spacing: 1.5px;
+        color: var(--text-muted);
         border: none;
     }
 
     .custom-table-premium tbody td {
-        padding: 18px 25px;
-        vertical-align: middle;
-        border-bottom: 1px solid #f1f5f9;
+        padding: 22px 28px;
+        border-bottom: 1px solid var(--border-color);
         font-size: 14px;
-        color: #1e293b;
+        color: var(--text-main);
     }
 
-    .status-pill {
-        padding: 6px 12px;
-        border-radius: 100px;
-        font-size: 12px;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .status-pending { background: #fff7ed; color: #f59e0b; }
-    .status-delivered { background: #f0fdf4; color: #10b981; }
-
-    .anim { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-    .anim-1 { animation-delay: 0.1s; }
-    .anim-2 { animation-delay: 0.2s; }
-    .anim-3 { animation-delay: 0.3s; }
-    .anim-4 { animation-delay: 0.4s; }
-    .anim-5 { animation-delay: 0.5s; }
-    .anim-6 { animation-delay: 0.6s; }
-
-    @keyframes fadeInUp {
-        to { opacity: 1; transform: translateY(0); }
-    }
-
+    /* ── Typography & Anim ── */
     .section-title-premium {
         font-family: 'Sora', sans-serif;
-        font-weight: 700;
-        font-size: 18px;
-        margin-bottom: 20px;
-        color: #1e293b;
+        font-weight: 800;
+        font-size: 20px;
+        margin-bottom: 24px;
+        color: var(--text-main);
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
     }
 
     .section-title-premium::before {
         content: '';
-        width: 4px;
-        height: 20px;
+        width: 6px;
+        height: 24px;
         background: var(--accent);
         border-radius: 10px;
+    }
+
+    .anim { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+    
+    [data-theme="dark"] .card-premium, 
+    [data-theme="dark"] .stat-card-premium, 
+    [data-theme="dark"] .table-card-premium {
+        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.4);
     }
 </style>
 
   <!-- ── WELCOME BANNER ── -->
   <div class="row mb-4 anim anim-1">
     <div class="col-12">
-        <div class="card-premium border-0 overflow-hidden" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white;">
-            <div class="card-body p-4 p-lg-5 d-flex align-items-center justify-content-between">
+        <div class="card-premium border-0 overflow-hidden" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%); color: white; position: relative;">
+            <div style="position: absolute; top: -50px; right: -50px; width: 300px; height: 300px; background: rgba(255,255,255,0.05); border-radius: 50%;"></div>
+            <div class="card-body p-4 p-lg-5 d-flex align-items-center justify-content-between position-relative" style="z-index: 1;">
                 <div>
-                    <h2 class="fw-bold mb-2">Jhr Bazar Control Center</h2>
-                    <p class="opacity-75 mb-4" style="max-width: 600px;">Welcome back, Admin! Monitor your marketplace performance and manage your business efficiently with our advanced analytics tools.</p>
-                    <div class="d-flex gap-3">
-                        <button class="btn btn-light rounded-pill px-4 fw-bold text-primary shadow-sm border-0">View Analytics</button>
-                        <button class="btn btn-outline-light rounded-pill px-4 fw-bold">Recent Orders</button>
+                    <span class="badge bg-white bg-opacity-20 text-white mb-3 px-3 py-2 rounded-pill fw-bold" style="letter-spacing: 1px; font-size: 10px; text-transform: uppercase;">Marketplace Intelligence</span>
+                    <h1 class="fw-bold mb-3" style="font-family: 'Sora', sans-serif; font-size: clamp(24px, 5vw, 36px);">Jhr Bazar <span class="text-white-50">Command Center</span></h1>
+                    <p class="opacity-75 mb-4 fw-medium" style="max-width: 580px; font-size: 15px; line-height: 1.6;">Monitor your ecosystem in real-time. Manage sellers, analyze customer behavior, and optimize your revenue streams with our unified dashboard.</p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <button class="btn btn-light rounded-pill px-4 py-2 fw-bold text-primary shadow-sm border-0 transition-all hover-scale" style="font-size: 14px;">
+                            <i class="bi bi-graph-up-arrow me-2"></i> Analytics Hub
+                        </button>
+                        <button class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold hover-bg-white hover-text-primary" style="font-size: 14px;">
+                            Recent Activity
+                        </button>
                     </div>
                 </div>
-                <div class="d-none d-lg-block">
-                    <div class="glass-icon-wrap" style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 30px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">
-                        <i class="bi bi-rocket-takeoff" style="font-size: 80px; color: white;"></i>
+                <div class="d-none d-xl-block">
+                    <div class="glass-icon-wrap" style="background: rgba(255,255,255,0.1); padding: 40px; border-radius: 40px; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+                        <i class="bi bi-rocket-takeoff-fill" style="font-size: 90px; color: white;"></i>
                     </div>
                 </div>
             </div>

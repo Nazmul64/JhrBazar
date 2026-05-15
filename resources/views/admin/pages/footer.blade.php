@@ -77,16 +77,49 @@ document.querySelectorAll('.nav-item-custom[data-page]').forEach(el => {
 /* ── DARK MODE ── */
 function toggleDark() {
   const html = document.documentElement;
-  if (html.getAttribute('data-bs-theme') === 'dark') {
-    html.removeAttribute('data-bs-theme');
-  } else {
-    html.setAttribute('data-bs-theme', 'dark');
-  }
+  const currentTheme = html.getAttribute('data-theme') || 'light';
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  
+  html.setAttribute('data-theme', newTheme);
+  
+  // Update Icon
+  const icons = document.querySelectorAll('#darkToggle i, #darkToggleBtn i');
+  icons.forEach(icon => {
+    if (newTheme === 'dark') {
+      icon.classList.remove('bi-moon-stars-fill');
+      icon.classList.add('bi-sun-fill');
+    } else {
+      icon.classList.remove('bi-sun-fill');
+      icon.classList.add('bi-moon-stars-fill');
+    }
+  });
+  
+  // Save to database
+  fetch('{{ route("admin.generalsettings.update-theme") }}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': '{{ csrf_token() }}'
+    },
+    body: JSON.stringify({ theme: newTheme })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.success) {
+      console.error('Failed to save theme preference');
+    }
+  })
+  .catch(err => console.error('Error saving theme:', err));
 }
-const darkToggle = document.getElementById('darkToggle');
-const darkToggleBtn = document.getElementById('darkToggleBtn');
-if (darkToggle) darkToggle.addEventListener('click', toggleDark);
-if (darkToggleBtn) darkToggleBtn.addEventListener('click', toggleDark);
+  /* Mobile Sidebar Toggle Visibility removed */
+
+  // Explicitly attach dark mode listeners
+  document.addEventListener('DOMContentLoaded', () => {
+    const dt1 = document.getElementById('darkToggle');
+    const dt2 = document.getElementById('darkToggleBtn');
+    if (dt1) dt1.addEventListener('click', toggleDark);
+    if (dt2) dt2.addEventListener('click', toggleDark);
+  });
 
 /* ── CHART TABS ── */
 document.querySelectorAll('.chart-tab').forEach(btn => {

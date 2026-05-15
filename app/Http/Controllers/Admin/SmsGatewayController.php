@@ -17,6 +17,9 @@ class SmsGatewayController extends Controller
         $gateway->api_key = $request->api_key;
         $gateway->sender_id = $request->sender_id;
         $gateway->status = $request->boolean('status');
+        $gateway->order_confirm = $request->boolean('order_confirm');
+        $gateway->forgot_password = $request->boolean('forgot_password');
+        $gateway->password_generator = $request->boolean('password_generator');
 
         if ($request->hasFile('logo')) {
             if ($gateway->logo && Storage::disk('public')->exists($gateway->logo)) {

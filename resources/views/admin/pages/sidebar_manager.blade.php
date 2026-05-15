@@ -285,6 +285,9 @@
             <a class="nav-item-custom" href="{{ route('admin.orders.index', 'cancelled') }}">
                 <i class="bi bi-x-circle"></i> Cancelled
             </a>
+            <a class="nav-item-custom" href="{{ route('admin.orders.incomplete') }}">
+                <i class="bi bi-clipboard-x"></i> Incomplete Orders
+            </a>
             <a class="nav-item-custom" href="{{ route('admin.pointofsalepos.index') }}">
                 <i class="bi bi-plus-lg"></i> Create Order
             </a>
@@ -329,7 +332,7 @@
         </a>
         @endif
 
-        @if(auth()->user()->hasPermission('order.list'))
+        @if(auth()->user()->hasPermission('chat.list'))
         <a class="nav-item-custom {{ request()->routeIs('admin.chat.*') ? 'active' : '' }}" href="{{ route('admin.chat.index') }}">
             <i class="bi bi-chat-left-dots"></i> Conversations
             @php $unreadChats = \App\Models\ChatSession::where('is_read_by_admin', false)->count(); @endphp
@@ -340,67 +343,10 @@
         @endif
 
         {{-- ══════════════ FRAUD (Permission Based) ══════════════ --}}
-        @if(auth()->user()->hasPermission('order.list')) {{-- Using order.list as a proxy for fraud if fraud_access is missing --}}
+        @if(auth()->user()->hasPermission('fraud.dashboard') || auth()->user()->hasPermission('fraud.rules') || auth()->user()->hasPermission('fraud.alerts') || auth()->user()->hasPermission('fraud.blacklist'))
         <div class="nav-section-title">Fraud</div>
 
-        <a class="nav-item-custom {{ request()->routeIs('admin.fraud.dashboard') ? 'active' : '' }}"
-           href="{{ route('admin.fraud.dashboard') }}">
-            <i class="bi bi-shield-exclamation"></i> Fraud Dashboard
-        </a>
-        @endif
-
-        {{-- Fraud Components (Protected) --}}
-        @if(auth()->user()->hasPermission('fraud.list'))
-        {{-- Fraud Checks --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.fraud.index') || request()->routeIs('admin.fraud.create') || request()->routeIs('admin.fraud.edit') || request()->routeIs('admin.fraud.show') ? 'active' : '' }}"
-             data-sub="fraud-checks">
-            <i class="bi bi-search"></i> Fraud Checks
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
-        </div>
-        <div class="nav-submenu" id="sub-fraud-checks">
-            <a class="nav-item-custom {{ request()->routeIs('admin.fraud.index') ? 'active' : '' }}"
-               href="{{ route('admin.fraud.index') }}">
-                <i class="bi bi-dot"></i> All Checks
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.fraud.create') ? 'active' : '' }}"
-               href="{{ route('admin.fraud.create') }}">
-                <i class="bi bi-dot"></i> Add Check
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.fraud.export') }}">
-                <i class="bi bi-dot"></i> Export CSV
-            </a>
-        </div>
-
-        {{-- Fraud Rules --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.fraud.rules.*') ? 'active' : '' }}"
-             data-sub="fraud-rules">
-            <i class="bi bi-sliders2"></i> Fraud Rules
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
-        </div>
-        <div class="nav-submenu" id="sub-fraud-rules">
-            <a class="nav-item-custom {{ request()->routeIs('admin.fraud.rules.index') ? 'active' : '' }}"
-               href="{{ route('admin.fraud.rules.index') }}">
-                <i class="bi bi-dot"></i> All Rules
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.fraud.rules.create') ? 'active' : '' }}"
-               href="{{ route('admin.fraud.rules.create') }}">
-                <i class="bi bi-dot"></i> Add Rule
-            </a>
-        </div>
-
-        {{-- Fraud Alerts --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.fraud.alerts.*') ? 'active' : '' }}"
-             data-sub="fraud-alerts">
-            <i class="bi bi-bell-fill"></i> Fraud Alerts
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
-        </div>
-        <div class="nav-submenu" id="sub-fraud-alerts">
-            <a class="nav-item-custom {{ request()->routeIs('admin.fraud.alerts.index') ? 'active' : '' }}"
-               href="{{ route('admin.fraud.alerts.index') }}">
-                <i class="bi bi-dot"></i> All Alerts
-            </a>
-        </div>
-
+        @if(auth()->user()->hasPermission('fraud.blacklist'))
         {{-- Blacklist --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.fraud.blacklist.*') ? 'active' : '' }}"
              data-sub="fraud-blacklist">
@@ -414,6 +360,7 @@
             </a>
         </div>
         @endif
+        @endif
 
         {{-- Catalog Section (Protected) --}}
         @if(auth()->user()->hasPermission('product.list'))
@@ -421,12 +368,14 @@
         <div class="nav-section-title">Catalog</div>
 
         {{-- Category Management --}}
+        @if(auth()->user()->hasPermission('category.list') || auth()->user()->hasPermission('subcategory.list'))
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.categories.*') || request()->routeIs('admin.subcategory.*') ? 'active' : '' }}"
              data-sub="category">
             <i class="bi bi-grid-3x3-gap"></i> Category Management
             <i class="bi bi-chevron-right arrow ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-category">
+            @if(auth()->user()->hasPermission('category.list'))
             <a class="nav-item-custom {{ request()->routeIs('admin.categories.index') ? 'active' : '' }}"
                href="{{ route('admin.categories.index') }}">
                 <i class="bi bi-dot"></i> All Categories
@@ -435,6 +384,8 @@
                href="{{ route('admin.categories.create') }}">
                 <i class="bi bi-dot"></i> Add Category
             </a>
+            @endif
+            @if(auth()->user()->hasPermission('subcategory.list'))
             <a class="nav-item-custom {{ request()->routeIs('admin.subcategory.index') ? 'active' : '' }}"
                href="{{ route('admin.subcategory.index') }}">
                 <i class="bi bi-dot"></i> All SubCategories
@@ -443,7 +394,9 @@
                href="{{ route('admin.subcategory.create') }}">
                 <i class="bi bi-dot"></i> Add SubCategory
             </a>
+            @endif
         </div>
+        @endif
 
         {{-- Product Management --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('products.*') ? 'active' : '' }}"
@@ -464,29 +417,37 @@
         @endif
 
         {{-- Product Variant Management --}}
-        @if(auth()->user()->hasPermission('product.list'))
+        @if(auth()->user()->hasPermission('brand.list') || auth()->user()->hasPermission('color.list') || auth()->user()->hasPermission('size.list') || auth()->user()->hasPermission('unit.list'))
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.productbrands.*') || request()->routeIs('admin.colors.*') || request()->routeIs('admin.sizes.*') || request()->routeIs('admin.units.*') ? 'active' : '' }}"
              data-sub="variant">
             <i class="bi bi-layers"></i> Product Variant Management
             <i class="bi bi-chevron-right arrow ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-variant">
+            @if(auth()->user()->hasPermission('brand.list'))
             <a class="nav-item-custom {{ request()->routeIs('admin.productbrands.*') ? 'active' : '' }}"
                href="{{ route('admin.productbrands.index') }}">
                 <i class="bi bi-dot"></i> Brand
             </a>
+            @endif
+            @if(auth()->user()->hasPermission('color.list'))
             <a class="nav-item-custom {{ request()->routeIs('admin.colors.*') ? 'active' : '' }}"
                href="{{ route('admin.colors.index') }}">
                 <i class="bi bi-dot"></i> Color
             </a>
+            @endif
+            @if(auth()->user()->hasPermission('size.list'))
             <a class="nav-item-custom {{ request()->routeIs('admin.sizes.*') ? 'active' : '' }}"
                href="{{ route('admin.sizes.index') }}">
                 <i class="bi bi-dot"></i> Size
             </a>
+            @endif
+            @if(auth()->user()->hasPermission('unit.list'))
             <a class="nav-item-custom {{ request()->routeIs('admin.units.*') ? 'active' : '' }}"
                href="{{ route('admin.units.index') }}">
                 <i class="bi bi-dot"></i> Unit
             </a>
+            @endif
         </div>
         @endif
 
@@ -552,11 +513,12 @@
         @endif
 
         {{-- Management Section (Protected) --}}
-        @if(auth()->user()->hasPermission('employee.list'))
+        @if(auth()->user()->hasPermission('customer.list') || auth()->user()->hasPermission('user.list') || auth()->user()->hasPermission('role.list') || auth()->user()->hasPermission('employee.list') || auth()->user()->hasPermission('supplier.list'))
         {{-- ══════════════ MANAGEMENT ══════════════ --}}
         <div class="nav-section-title">Management</div>
 
         {{-- Customer Management --}}
+        @if(auth()->user()->hasPermission('customer.list'))
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}"
              data-sub="customer">
             <i class="bi bi-people"></i> Customer Management
@@ -568,8 +530,10 @@
                 <i class="bi bi-dot"></i> All Customers
             </a>
         </div>
+        @endif
 
         {{-- Unified User Management --}}
+        @if(auth()->user()->hasPermission('user.list'))
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
              data-sub="all-users">
             <i class="bi bi-people-fill"></i> User Management
@@ -585,8 +549,10 @@
                 <i class="bi bi-person-plus-fill"></i> Add New User
             </a>
         </div>
+        @endif
 
         {{-- Roles & Permissions --}}
+        @if(auth()->user()->hasPermission('role.list'))
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.role.*') ? 'active' : '' }}"
              data-sub="roles">
             <i class="bi bi-shield-lock"></i> Roles & Permissions
@@ -598,8 +564,10 @@
                 <i class="bi bi-dot"></i> All Roles & Permissions
             </a>
         </div>
+        @endif
 
         {{-- Employee Management --}}
+        @if(auth()->user()->hasPermission('employee.list'))
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}"
              data-sub="employee">
             <i class="bi bi-person-badge"></i> Employee Management
@@ -615,8 +583,10 @@
                 <i class="bi bi-dot"></i> Add Employee
             </a>
         </div>
+        @endif
 
         {{-- Supplier Management --}}
+        @if(auth()->user()->hasPermission('supplier.list'))
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.supplier.*') ? 'active' : '' }}"
              data-sub="supplier">
             <i class="bi bi-truck"></i> Supplier Management
@@ -633,20 +603,32 @@
             </a>
         </div>
         @endif
+        @endif
 
-        @if(auth()->user()->isAdmin())
+        @if(auth()->user()->hasPermission('shop_product.list') || auth()->user()->hasPermission('subscription.list') || auth()->user()->hasPermission('support.list') || auth()->user()->hasPermission('withdrawal.list') || auth()->user()->hasPermission('import_export.list') || auth()->user()->hasPermission('business_setting.list') || auth()->user()->hasPermission('site_setting.list') || auth()->user()->hasPermission('landing_page.list') || auth()->user()->hasPermission('third_party.list') || auth()->user()->hasPermission('contact.list'))
         {{-- ══════════════ SYSTEM ══════════════ --}}
         <div class="nav-section-title">System</div>
 
+        @if(auth()->user()->hasPermission('shop_product.list'))
         <a class="nav-item-custom" href="#"><i class="bi bi-box"></i> Shop Product Management</a>
+        @endif
+        @if(auth()->user()->hasPermission('subscription.list'))
         <a class="nav-item-custom" href="#"><i class="bi bi-journal-bookmark"></i> Subscription Management</a>
+        @endif
+        @if(auth()->user()->hasPermission('support.list'))
         <a class="nav-item-custom" href="#"><i class="bi bi-headset"></i> Support Management</a>
-        <a class="nav-item-custom" href="#"><i class="bi bi-wallet2"></i> Withdrawal Management</a>
+        @endif
+        @if(auth()->user()->hasPermission('withdrawal.list'))
+        <a class="nav-item-custom {{ request()->routeIs('admin.withdraws.*') ? 'active' : '' }}" href="{{ route('admin.withdraws.index') }}">
+            <i class="bi bi-wallet2"></i> Withdrawal Management
+        </a>
+        @endif
+        @if(auth()->user()->hasPermission('import_export.list'))
         <a class="nav-item-custom" href="#"><i class="bi bi-arrow-left-right"></i> Import / Export</a>
-        <a class="nav-item-custom" href="#"><i class="bi bi-geo-alt"></i> Address</a>
-        <a class="nav-item-custom" href="#"><i class="bi bi-translate"></i> Languages</a>
+        @endif
 
         {{-- Business Settings --}}
+        @if(auth()->user()->hasPermission('business_setting.list'))
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.generalsettings.*') || request()->routeIs('admin.businesssettings.*') || request()->routeIs('admin.verificationotpsettings.*') || request()->routeIs('admin.aiprompt.*') || request()->routeIs('admin.currencies.*') || request()->routeIs('admin.alltaxes.*') || request()->routeIs('admin.themecolorssettings.*') || request()->routeIs('admin.sociallinkList.*') ? 'active' : '' }}"
              data-sub="business-settings">
             <i class="bi bi-gear"></i> Business Settings
@@ -677,34 +659,21 @@
                href="{{ route('admin.alltaxes.index') }}">
                 <i class="bi bi-dot"></i> VAT & Tax
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.themecolorssettings.*') ? 'active' : '' }}"
-               href="{{ route('admin.themecolorssettings.index') }}">
-                <i class="bi bi-dot"></i> Theme Colors
-            </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.sociallinkList.*') ? 'active' : '' }}"
                href="{{ route('admin.sociallinkList.index') }}">
                 <i class="bi bi-dot"></i> Social Links
             </a>
-            <a class="nav-item-custom" href="#">
-                <i class="bi bi-dot"></i> Ticket Issue Types
-            </a>
         </div>
+        @endif
 
         {{-- Site Settings --}}
+        @if(auth()->user()->hasPermission('site_setting.list'))
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.pixels.*') || request()->routeIs('admin.googletagmanager.*') || request()->routeIs('admin.shippingcharge.*') || request()->routeIs('admin.duplicateordersetting.*') || request()->routeIs('admin.Ipblockmanage.*') ? 'active' : '' }}"
              data-sub="site-settings">
             <i class="bi bi-sliders"></i> Site Settings
             <i class="bi bi-chevron-right arrow ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-site-settings">
-            <a class="nav-item-custom {{ request()->routeIs('admin.pixels.*') ? 'active' : '' }}"
-               href="{{ route('admin.pixels.index') }}">
-                <i class="bi bi-dot"></i> Pixels Manage
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.googletagmanager.*') ? 'active' : '' }}"
-               href="{{ route('admin.googletagmanager.index') }}">
-                <i class="bi bi-dot"></i> Google Tag Manager
-            </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.shippingcharge.*') ? 'active' : '' }}"
                href="{{ route('admin.shippingcharge.index') }}">
                 <i class="bi bi-dot"></i> Shipping Charge
@@ -718,8 +687,10 @@
                 <i class="bi bi-dot"></i> IP Block Manage
             </a>
         </div>
+        @endif
 
         {{-- Landing Page Settings --}}
+        @if(auth()->user()->hasPermission('landing_page.list'))
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.landingpages.*') || request()->routeIs('admin.pages.*') ? 'active' : '' }}"
              data-sub="landing-page-settings">
             <i class="bi bi-layout-text-window-reverse"></i> Landing Page Settings
@@ -734,15 +705,19 @@
                href="{{ route('admin.landingpages.index') }}">
                 <i class="bi bi-dot"></i> Campaign List
             </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.page_categories.*') ? 'active' : '' }}"
+               href="{{ route('admin.page_categories.index') }}">
+                <i class="bi bi-dot"></i> Page Categories
+            </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}"
                href="{{ route('admin.pages.index') }}">
                 <i class="bi bi-dot"></i> Page Manage
             </a>
         </div>
-
-        <a class="nav-item-custom" href="#"><i class="bi bi-file-code"></i> CMS</a>
+        @endif
 
         {{-- 3rd Party Configuration --}}
+        @if(auth()->user()->hasPermission('third_party.list'))
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.settings.gateways') || request()->routeIs('admin.stripe.*') || request()->routeIs('admin.paypal.*') || request()->routeIs('admin.razorpay.*') || request()->routeIs('admin.paystack.*') || request()->routeIs('admin.aamarpay.*') || request()->routeIs('admin.bkash.*') || request()->routeIs('admin.paytabs.*') || request()->routeIs('admin.qicard.*') || request()->routeIs('admin.jazzcash.*') || request()->routeIs('admin.steadfast.*') || request()->routeIs('admin.pathao.*') || request()->routeIs('admin.bkash-pay.*') || request()->routeIs('admin.shurjopay.*') || request()->routeIs('admin.sms.*') || request()->routeIs('admin.twilio.*') || request()->routeIs('admin.nexmo.*') || request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
              data-sub="third-party">
             <i class="bi bi-plug"></i> 3rd Party Configuration
@@ -780,17 +755,14 @@
             <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#jazzcash">
                 <i class="bi bi-dot"></i> JazzCash
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#steadfast">
-                <i class="bi bi-dot"></i> Steadfast Courier
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#pathao">
-                <i class="bi bi-dot"></i> Pathao Courier
-            </a>
             <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#bkash-pay">
                 <i class="bi bi-dot"></i> Bkash Payment
             </a>
             <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#shurjopay">
                 <i class="bi bi-dot"></i> Shurjopay
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#sslcommerz">
+                <i class="bi bi-dot"></i> SSLCommerz
             </a>
             <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#sms">
                 <i class="bi bi-dot"></i> SMS Gateway
@@ -804,11 +776,14 @@
                 <i class="bi bi-dot"></i> Mail Configuration
             </a>
         </div>
+        @endif
 
+        @if(auth()->user()->hasPermission('contact.list'))
         <a class="nav-item-custom {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}"
            href="{{ route('admin.contact.index') }}">
             <i class="bi bi-envelope"></i> Contact Us
         </a>
+        @endif
         @endif
 
         {{-- Logout --}}

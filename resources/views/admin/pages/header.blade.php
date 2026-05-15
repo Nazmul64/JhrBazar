@@ -1,5 +1,6 @@
+@php $setting = \App\Models\GenaralSetting::first(); @endphp
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="{{ $setting->admin_theme ?? 'light' }}">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -38,6 +39,57 @@
 
     {{-- ── Custom Admin CSS ── --}}
     <link rel="stylesheet" href="{{ asset('admin/assets/css/style.css') }}" />
+
+    <style>
+        :root {
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: rgba(0,0,0,0.05);
+            --glass-bg: rgba(255,255,255,0.7);
+            --header-bg: rgba(255, 255, 255, 0.9);
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #0b0e14;
+            --bg-card: #151921;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255,255,255,0.05);
+            --glass-bg: rgba(21, 25, 33, 0.8);
+            --header-bg: rgba(9, 11, 16, 0.9);
+        }
+
+        body {
+            background-color: var(--bg-body) !important;
+            color: var(--text-main) !important;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        #main {
+            background-color: var(--bg-body) !important;
+        }
+
+        .card, .table-card-premium, .stat-card-premium, .wallet-card-premium {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+
+        .text-muted { color: var(--text-muted) !important; }
+        
+        #header {
+            background-color: var(--header-bg) !important;
+            border-bottom-color: var(--border-color) !important;
+        }
+
+        [data-theme="dark"] .table-header-premium { background: #1a1f29 !important; }
+        [data-theme="dark"] .custom-table-premium thead th { background: #1e2430 !important; color: #94a3b8 !important; }
+        [data-theme="dark"] .custom-table-premium tbody td { border-bottom-color: rgba(255,255,255,0.05) !important; color: #e2e8f0 !important; }
+        [data-theme="dark"] .btn-light { background: #1e293b !important; border-color: rgba(255,255,255,0.1) !important; color: #f1f5f9 !important; }
+        [data-theme="dark"] input, [data-theme="dark"] select, [data-theme="dark"] textarea { background-color: #1a1d27 !important; color: #f1f5f9 !important; border-color: rgba(255,255,255,0.1) !important; }
+    </style>
 </head>
 <body>
     {{-- ── Custom Admin JS ── --}}

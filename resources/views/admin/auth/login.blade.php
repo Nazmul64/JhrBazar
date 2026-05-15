@@ -303,7 +303,7 @@
     </div>
 
     <div class="welcome-text">
-      <h1>Welcome Back!</h1>
+      <h1></h1>
       <p>Sign in to access your admin dashboard and manage your platform with powerful tools and insights.</p>
     </div>
 

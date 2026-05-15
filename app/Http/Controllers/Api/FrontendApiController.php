@@ -22,72 +22,74 @@ class FrontendApiController extends Controller
      */
     public function getHomeData()
     {
-        $settings = GenaralSetting::first();
-        
-        if ($settings) {
-            $settings->logo = $settings->logo ? (str_starts_with($settings->logo, 'http') ? $settings->logo : '/' . ltrim($settings->logo, '/')) : null;
-            $settings->footer_logo = $settings->footer_logo ? (str_starts_with($settings->footer_logo, 'http') ? $settings->footer_logo : '/' . ltrim($settings->footer_logo, '/')) : null;
-        }
+        return Cache::remember('home_data_v2', 60, function() {
+            $settings = GenaralSetting::first();
+            
+            if ($settings) {
+                $settings->logo = $settings->logo ? (str_starts_with($settings->logo, 'http') ? $settings->logo : '/' . ltrim($settings->logo, '/')) : null;
+                $settings->footer_logo = $settings->footer_logo ? (str_starts_with($settings->footer_logo, 'http') ? $settings->footer_logo : '/' . ltrim($settings->footer_logo, '/')) : null;
+            }
 
-        $banners = Banner::where('is_active', 1)->latest()->get()->map(fn($b) => [
-            'id' => $b->id,
-            'image' => $b->image ? (str_starts_with($b->image, 'http') ? $b->image : '/' . ltrim($b->image, '/')) : '/placeholder.jpg',
-            'for_own_shop' => (bool) $b->for_own_shop,
-        ]);
-
-        $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('name', 'asc')])
-            ->where('is_active', 1)
-            ->orderBy('name', 'asc')
-            ->get()
-            ->map(function($cat) {
-                $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : '/placeholder.jpg';
-                return $cat;
-            });
-
-        $productColumns = ['id', 'name', 'slug', 'thumbnail', 'selling_price', 'discount_price', 'is_active', 'created_at', 'seller_id', 'cash_on_delivery', 'online_payment'];
-        
-        $popular = $this->getCombinedProducts('is_popular', 10, $productColumns);
-        $newArrivals = $this->getCombinedProducts('is_new_arrival', 10, $productColumns);
-        $justForYou = $this->getCombinedProducts('is_just_for_you', 12, $productColumns);
-        $bestDeals = $this->getCombinedProducts('is_best_seller', 6, $productColumns);
-        
-        $digitalAdmin = DigitalProduct::where('is_active', 1)->latest()->limit(6)->get()->map(fn($p) => $this->mapProduct($p, 'digital_admin'));
-        $digitalSeller = SellerDigitalProduct::where('is_active', 1)->latest()->limit(6)->get()->map(fn($p) => $this->mapProduct($p, 'digital_seller'));
-        $digital = $digitalAdmin->concat($digitalSeller)->sortByDesc('created_at')->take(6)->values();
-
-        $topShops = Shop::whereHas('user', fn($q) => $q->where('status', 'active'))
-            ->withCount(['sellerProducts as item_count' => fn($q) => $q->where('is_active', 1)])
-            ->latest()->limit(8)->get()
-            ->map(fn($shop) => [
-                'id'          => $shop->id,
-                'seller_id'   => $shop->user_id,
-                'name'        => $shop->name,
-                'logo'        => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : '/' . ltrim($shop->logo, '/')) : '/assets/admin/images/default-avatar.png',
-                'banner'      => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : '/' . ltrim($shop->banner, '/')) : '/placeholder.jpg',
-                'item_count'  => $shop->item_count,
-                'rating'      => '5.0',
-                'description' => $shop->description,
+            $banners = Banner::where('is_active', 1)->latest()->get()->map(fn($b) => [
+                'id' => $b->id,
+                'image' => $b->image ? (str_starts_with($b->image, 'http') ? $b->image : '/' . ltrim($b->image, '/')) : '/placeholder.jpg',
+                'for_own_shop' => (bool) $b->for_own_shop,
             ]);
 
-        $allProducts = $this->getCombinedProducts(null, 20, $productColumns);
-        $recentReviews = \App\Models\Review::with('user:id,name')->where('status', 1)->latest()->take(6)->get();
+            $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('name', 'asc')])
+                ->where('is_active', 1)
+                ->orderBy('name', 'asc')
+                ->get()
+                ->map(function($cat) {
+                    $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : '/placeholder.jpg';
+                    return $cat;
+                });
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'settings'             => $settings,
-                'banners'              => $banners,
-                'categories'           => $categories,
-                'popularProducts'      => $popular,
-                'newArrivals'          => $newArrivals,
-                'justForYouProducts'   => $justForYou,
-                'digitalProducts'      => $digital,
-                'bestDeals'            => $bestDeals,
-                'topShops'             => $topShops,
-                'allProducts'          => $allProducts,
-                'recentReviews'        => $recentReviews,
-            ]
-        ]);
+            $productColumns = ['id', 'name', 'slug', 'thumbnail', 'selling_price', 'discount_price', 'is_active', 'created_at', 'seller_id', 'cash_on_delivery', 'online_payment'];
+            
+            $popular = $this->getCombinedProducts('is_popular', 10, $productColumns);
+            $newArrivals = $this->getCombinedProducts('is_new_arrival', 10, $productColumns);
+            $justForYou = $this->getCombinedProducts('is_just_for_you', 12, $productColumns);
+            $bestDeals = $this->getCombinedProducts('is_best_seller', 6, $productColumns);
+            
+            $digitalAdmin = DigitalProduct::where('is_active', 1)->latest()->limit(6)->get()->map(fn($p) => $this->mapProduct($p, 'digital_admin'));
+            $digitalSeller = SellerDigitalProduct::where('is_active', 1)->latest()->limit(6)->get()->map(fn($p) => $this->mapProduct($p, 'digital_seller'));
+            $digital = $digitalAdmin->concat($digitalSeller)->sortByDesc('created_at')->take(6)->values();
+
+            $topShops = Shop::whereHas('user', fn($q) => $q->where('status', 'active'))
+                ->withCount(['sellerProducts as item_count' => fn($q) => $q->where('is_active', 1)])
+                ->latest()->limit(8)->get()
+                ->map(fn($shop) => [
+                    'id'          => $shop->id,
+                    'seller_id'   => $shop->user_id,
+                    'name'        => $shop->name,
+                    'logo'        => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : '/' . ltrim($shop->logo, '/')) : '/assets/admin/images/default-avatar.png',
+                    'banner'      => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : '/' . ltrim($shop->banner, '/')) : '/placeholder.jpg',
+                    'item_count'  => $shop->item_count,
+                    'rating'      => '5.0',
+                    'description' => $shop->description,
+                ]);
+
+            $allProducts = $this->getCombinedProducts(null, 20, $productColumns);
+            $recentReviews = \App\Models\Review::with('user:id,name')->where('status', 1)->latest()->take(6)->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'settings'             => $settings,
+                    'banners'              => $banners,
+                    'categories'           => $categories,
+                    'popularProducts'      => $popular,
+                    'newArrivals'          => $newArrivals,
+                    'justForYouProducts'   => $justForYou,
+                    'digitalProducts'      => $digital,
+                    'bestDeals'            => $bestDeals,
+                    'topShops'             => $topShops,
+                    'allProducts'          => $allProducts,
+                    'recentReviews'        => $recentReviews,
+                ]
+            ])->getData();
+        });
     }
 
     /**
@@ -167,6 +169,27 @@ class FrontendApiController extends Controller
     }
 
     /**
+     * Get categories with subcategories.
+     */
+    public function getCategoriesWithSub()
+    {
+        return Cache::remember('categories_with_sub_v2', 60, function() {
+            $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('name', 'asc')])
+                ->where('is_active', 1)
+                ->orderBy('name', 'asc')
+                ->get()
+                ->map(function($cat) {
+                    $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : '/placeholder.jpg';
+                    return $cat;
+                });
+            return response()->json([
+                'success' => true,
+                'data' => $categories
+            ])->getData();
+        });
+    }
+
+    /**
      * Get banners list.
      */
     public function getBanners()
@@ -208,26 +231,7 @@ class FrontendApiController extends Controller
         ]);
     }
 
-    public function getCategoriesWithSub()
-    {
-        $categories = Cache::remember('categories_with_sub', 60, function() {
-            return Category::with(['subCategories' => function($q) {
-                    $q->where('is_active', 1)->orderBy('name', 'asc');
-                }])
-                ->where('is_active', 1)
-                ->orderBy('name', 'asc')
-                ->get()
-                ->map(function($cat) {
-                    $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : '/placeholder.jpg';
-                    return $cat;
-                });
-        });
-
-        return response()->json([
-            'success' => true,
-            'data'    => $categories
-        ]);
-    }
+// Duplicate getCategoriesWithSub method fully removed – syntax cleaned
 
     /**
      * Get all products.

@@ -22,16 +22,25 @@ export const SettingsProvider = ({ children }) => {
 
                     const root = document.documentElement;
                     if (data.primary_color) {
-                        root.style.setProperty('--main-color', data.primary_color);
-                        root.style.setProperty('--button-color', data.button_color || data.primary_color);
+                        root.style.setProperty('--primary-color', data.primary_color);
+                        root.style.setProperty('--main-color', data.primary_color); // Fallback
                     }
-                    if (data.header_color) root.style.setProperty('--header-color', data.header_color);
-                    if (data.top_header_color) root.style.setProperty('--top-header-color', data.top_header_color);
-                    if (data.footer_color) root.style.setProperty('--footer-color', data.footer_color);
+                    if (data.button_color) root.style.setProperty('--button-color', data.button_color);
+                    if (data.button_hover_color) root.style.setProperty('--primary-hover', data.button_hover_color);
+                    
+                    if (data.header_color) root.style.setProperty('--header-bg', data.header_color);
+                    if (data.top_header_color) root.style.setProperty('--top-header-bg', data.top_header_color);
+                    if (data.footer_color) root.style.setProperty('--footer-bg', data.footer_color);
                     if (data.footer_text_color) root.style.setProperty('--footer-text-color', data.footer_text_color);
-                    if (data.button_hover_color) root.style.setProperty('--button-hover-color', data.button_hover_color || data.primary_color);
+                    
                     if (data.font_family) root.style.setProperty('--font-family', data.font_family);
-                    if (data.font_size) root.style.setProperty('--font-size', data.font_size);
+                    if (data.font_size) root.style.setProperty('--base-font-size', data.font_size);
+
+                    // Product specific sizes
+                    if (data.product_title_size_desktop) root.style.setProperty('--product-title-desktop', data.product_title_size_desktop);
+                    if (data.product_title_size_mobile) root.style.setProperty('--product-title-mobile', data.product_title_size_mobile);
+                    if (data.product_price_size) root.style.setProperty('--product-price-size', data.product_price_size);
+                    if (data.product_old_price_size) root.style.setProperty('--product-old-price-size', data.product_old_price_size);
 
                     if (data.slider_height) root.style.setProperty('--slider-height', data.slider_height);
                     if (data.category_img_height) root.style.setProperty('--category-img-height', data.category_img_height);
@@ -79,10 +88,13 @@ export const SettingsProvider = ({ children }) => {
     return (
         <SettingsContext.Provider value={{ settings, categories, loading }}>
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+                ${settings?.font_family && !['Arial', 'Times New Roman', 'Georgia', 'Verdana', 'SolaimanLipi'].some(f => settings.font_family.includes(f)) 
+                    ? `@import url('https://fonts.googleapis.com/css2?family=${settings.font_family.split(',')[0].replace(/['"]/g, '').trim().replace(/ /g, '+')}:wght@300;400;500;600;700&display=swap');` 
+                    : "@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');"
+                }
                 
                 :root {
-                    --main-font: ${settings?.font_family ? "'" + settings.font_family + "', " : ""} 'Inter', 'Outfit', 'Poppins', 'Hind Siliguri', sans-serif;
+                    --main-font: ${settings?.font_family ? settings.font_family : "'Inter', 'Outfit', 'Poppins', 'Hind Siliguri', sans-serif"};
                 }
 
                 *:not(i):not(.fas):not(.fab):not(.far):not(.fa):not(.bi) {

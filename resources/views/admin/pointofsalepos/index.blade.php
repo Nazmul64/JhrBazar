@@ -477,7 +477,7 @@
 .amount-prefix { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-weight: 700; font-size: 15px; }
 .amount-input {
     width: 100%; height: 48px; border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm); padding: 0 12px 0 30px;
+    border-radius: var(--radius-sm); padding: 0 12px 0 85px;
     font-size: 18px; font-weight: 700; outline: none; font-family: inherit;
     color: var(--text); transition: border-color .15s;
 }

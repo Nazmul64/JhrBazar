@@ -57,13 +57,31 @@ const Footer = () => {
                 <div className="row g-4 mb-5">
                     {/* Column 1: Brand Info */}
                     <div className="col-lg-4 col-md-12">
-                        <div className="mb-4">
+                        <div className="mb-3">
                             <img
                                 src={footerData.settings?.footer_logo || footerData.settings?.logo || "https://ghorerbazar.com/wp-content/uploads/2020/10/Ghorer-Bazar-Logo.png"}
                                 alt={footerData.settings?.website_name || "Ghorer Bazar"}
                                 style={{ maxHeight: '55px' }}
                             />
                         </div>
+                        {/* Trade License & DBID */}
+                        {(footerData.settings?.trade_license_number || footerData.settings?.dbid_number) && (
+                            <div style={{ marginBottom: '16px', fontSize: '12px', color: '#888', lineHeight: '1.8' }}>
+                                {footerData.settings?.trade_license_number && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <i className="fas fa-certificate" style={{ color: '#e67e22', fontSize: '11px' }}></i>
+                                        <span><strong>Trade License:</strong> {footerData.settings.trade_license_number}</span>
+                                    </div>
+                                )}
+                                {footerData.settings?.dbid_number && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <i className="fas fa-id-badge" style={{ color: '#e67e22', fontSize: '11px' }}></i>
+                                        <span><strong>DBID:</strong> {footerData.settings.dbid_number}</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        <div>
                         <p style={{ color: '#777', lineHeight: '1.8', fontSize: '13px', marginBottom: '25px', maxWidth: '340px' }}>
                             {footerData.settings?.footer_text || "Ghorer Bazar is an e-commerce platform dedicated to providing safe and reliable food to every home."}
                         </p>
@@ -130,7 +148,8 @@ const Footer = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
+                        </div> {/* end inner brand div */}
+                    </div> {/* end col-lg-4 */}
 
                     {/* Dynamic Page Categories (Information, Support, Policy, etc.) */}
                     {footerData.page_categories.map((cat) => (

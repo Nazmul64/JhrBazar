@@ -142,6 +142,39 @@ class PermissionSeeder extends Seeder
             ['group' => 'Fraud',                'name' => 'rules',                  'key' => 'fraud.rules'],
             ['group' => 'Fraud',                'name' => 'alerts',                 'key' => 'fraud.alerts'],
             ['group' => 'Fraud',                'name' => 'blacklist',              'key' => 'fraud.blacklist'],
+
+            // Catalog
+            ['group' => 'Catalog',              'name' => 'category list',          'key' => 'category.list'],
+            ['group' => 'Catalog',              'name' => 'subcategory list',       'key' => 'subcategory.list'],
+            ['group' => 'Catalog',              'name' => 'brand list',             'key' => 'brand.list'],
+            ['group' => 'Catalog',              'name' => 'color list',             'key' => 'color.list'],
+            ['group' => 'Catalog',              'name' => 'size list',              'key' => 'size.list'],
+            ['group' => 'Catalog',              'name' => 'unit list',              'key' => 'unit.list'],
+
+            // Shop Management
+            ['group' => 'Shop Management',      'name' => 'seller approval',        'key' => 'seller_approval.list'],
+            ['group' => 'Shop Management',      'name' => 'bank information',       'key' => 'bank.list'],
+            ['group' => 'Shop Management',      'name' => 'shop list',              'key' => 'shop.list'],
+
+            // Promotions
+            ['group' => 'Promotions',           'name' => 'coupon list',            'key' => 'promo_code.list'],
+            ['group' => 'Promotions',           'name' => 'flash sale list',        'key' => 'flash_sale.list'],
+            ['group' => 'Promotions',           'name' => 'banner list',            'key' => 'banner.list'],
+
+            // Management
+            ['group' => 'Management',           'name' => 'customer list',          'key' => 'customer.list'],
+            ['group' => 'Management',           'name' => 'user list',              'key' => 'user.list'],
+            ['group' => 'Management',           'name' => 'role list',              'key' => 'role.list'],
+
+            // System
+            ['group' => 'System',               'name' => 'withdrawal management',  'key' => 'withdrawal.list'],
+            ['group' => 'System',               'name' => 'business settings',      'key' => 'business_setting.list'],
+            ['group' => 'System',               'name' => 'site settings',          'key' => 'site_setting.list'],
+            ['group' => 'System',               'name' => 'landing page settings',  'key' => 'landing_page.list'],
+            ['group' => 'System',               'name' => 'third party config',     'key' => 'third_party.list'],
+            ['group' => 'System',               'name' => 'contact messages',       'key' => 'contact.list'],
+            ['group' => 'System',               'name' => 'courier management',     'key' => 'courier.list'],
+            ['group' => 'System',               'name' => 'support management',     'key' => 'support.list'],
         ];
 
         foreach ($permissions as $permission) {

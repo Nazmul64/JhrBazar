@@ -39,6 +39,24 @@ const SearchResults = () => {
         window.scrollTo(0, 0);
     }, [searchTerm]);
 
+    // Data Layer: view_item_list
+    useEffect(() => {
+        if (products.length > 0 && searchTerm) {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                event: 'view_item_list',
+                item_list_id: 'search_results',
+                item_list_name: `Search: ${searchTerm}`,
+                items: products.map((product, index) => ({
+                    item_id: String(product.id),
+                    item_name: product.name || product.title,
+                    price: Number(product.selling_price || product.price || 0),
+                    index: index + 1
+                }))
+            });
+        }
+    }, [products, searchTerm]);
+
     return (
         <MasterLayout>
             {/* Page Header */}

@@ -116,42 +116,7 @@
 
     <div class="ibm-card">
 
-        {{-- ═══ CREATE FORM ═══ --}}
-        <form action="{{ route('admin.Ipblockmanage.store') }}" method="POST" id="ipBlockForm">
-            @csrf
-
-            <div class="ibm-form-group">
-                <label class="ibm-form-label" for="ip_address">IP No <span>*</span></label>
-                <input
-                    type="text"
-                    name="ip_address"
-                    id="ip_address"
-                    class="ibm-form-control @error('ip_address') is-invalid @enderror"
-                    value="{{ old('ip_address') }}"
-                    placeholder="e.g. 192.168.1.1"
-                />
-                @error('ip_address')
-                    <span class="invalid-feedback-custom">{{ $message }}</span>
-                @enderror
-            </div>
-
-            <div class="ibm-form-group">
-                <label class="ibm-form-label" for="reason">Reason <span>*</span></label>
-                <textarea
-                    name="reason"
-                    id="reason"
-                    class="ibm-form-control @error('reason') is-invalid @enderror"
-                    placeholder="Enter reason for blocking this IP..."
-                >{{ old('reason') }}</textarea>
-                @error('reason')
-                    <span class="invalid-feedback-custom">{{ $message }}</span>
-                @enderror
-            </div>
-
-            <button type="submit" class="btn-submit">Submit</button>
-        </form>
-
-        <hr class="ibm-divider">
+        <!-- Create form removed per requirement: only list blocked IPs and allow toggle -->
 
         {{-- ═══ TABLE TOOLBAR ═══ --}}
         <div class="ibm-toolbar">
@@ -176,7 +141,7 @@
                 </tr>
             </thead>
             <tbody id="ipTableBody">
-                @forelse($ipblocks as $index => $ipblock)
+                @forelse($ipblocks->where('is_active', false) as $index => $ipblock)
                     <tr>
                         <td>{{ $index + 1 }}</td>
                         <td><code style="background:#f5f5f5; padding:2px 8px; border-radius:4px;">{{ $ipblock->ip_address }}</code></td>

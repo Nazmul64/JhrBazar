@@ -19,9 +19,7 @@ body { background: var(--fc-primary); color: var(--fc-text); }
 .fc-page-title { font-size: 1.2rem; font-weight: 700; }
 
 .bl-layout {
-    display: grid;
-    grid-template-columns: 1fr 360px;
-    gap: 1.5rem;
+    display: block; /* Changed from grid to block for full width */
     padding: 1.5rem 2rem;
 }
 
@@ -192,10 +190,10 @@ body { background: var(--fc-primary); color: var(--fc-text); }
 <div class="fc-page-header">
     <div>
         <div class="fc-page-title">
-            <i class="fas fa-ban me-2" style="color:var(--fc-danger)"></i>Fraud Blacklist
+            <i class="fas fa-user-shield me-2" style="color:var(--fc-danger)"></i>IP Blacklist
         </div>
         <div style="font-size:.72rem; color:var(--fc-muted); margin-top:3px">
-            {{ $stats['active'] }} active entries blocking emails, IPs & phones
+            Manage blocked IP addresses to prevent spam and fraud.
         </div>
     </div>
     <div class="d-flex gap-2">
@@ -209,39 +207,12 @@ body { background: var(--fc-primary); color: var(--fc-text); }
 
     {{-- Left: List --}}
     <div>
-        {{-- Stats --}}
-        <div class="stat-mini-grid">
-            <div class="stat-mini">
-                <div class="stat-mini-label">Total</div>
-                <div class="stat-mini-value">{{ $stats['total'] }}</div>
-            </div>
-            <div class="stat-mini" style="border-color:rgba(16,185,129,.2)">
-                <div class="stat-mini-label">Active</div>
-                <div class="stat-mini-value" style="color:var(--fc-success)">{{ $stats['active'] }}</div>
-            </div>
-            <div class="stat-mini" style="border-color:rgba(99,102,241,.2)">
-                <div class="stat-mini-label">Email</div>
-                <div class="stat-mini-value" style="color:#a5b4fc">{{ $stats['email'] }}</div>
-            </div>
-            <div class="stat-mini" style="border-color:rgba(56,189,248,.2)">
-                <div class="stat-mini-label">IP</div>
-                <div class="stat-mini-value" style="color:#38bdf8">{{ $stats['ip'] }}</div>
-            </div>
-            <div class="stat-mini" style="border-color:rgba(16,185,129,.2)">
-                <div class="stat-mini-label">Phone</div>
-                <div class="stat-mini-value" style="color:var(--fc-success)">{{ $stats['phone'] }}</div>
-            </div>
-        </div>
+        {{-- Stats removed per user request --}}
 
         {{-- Filters --}}
         <form method="GET" class="fc-filters">
             <input type="text" name="search" class="fc-input-sm" placeholder="Search value..." value="{{ request('search') }}">
-            <select name="type" class="fc-select" onchange="this.form.submit()">
-                <option value="">All Types</option>
-                @foreach($types as $val => $label)
-                <option value="{{ $val }}" {{ request('type') === $val ? 'selected' : '' }}>{{ $label }}</option>
-                @endforeach
-            </select>
+            {{-- Type selector removed since it is now IP only --}}
             @if(request()->hasAny(['search','type']))
             <a href="{{ route('admin.fraud.blacklist.index') }}" class="btn-fc-ghost" style="padding:6px 12px; font-size:.72rem;">
                 <i class="fas fa-times"></i> Clear
@@ -261,7 +232,7 @@ body { background: var(--fc-primary); color: var(--fc-text); }
         <table class="fc-table">
             <thead>
                 <tr>
-                    <th>Type</th>
+                    {{-- Type column removed --}}
                     <th>Value</th>
                     <th>Reason</th>
                     <th>Added By</th>
@@ -273,7 +244,7 @@ body { background: var(--fc-primary); color: var(--fc-text); }
             <tbody>
                 @forelse($blacklists as $item)
                 <tr>
-                    <td><span class="bl-type-badge {{ $item->type }}">{{ ucfirst($item->type) }}</span></td>
+                    {{-- Type cell removed --}}
                     <td><span class="bl-value">{{ $item->value }}</span></td>
                     <td><span style="font-size:.78rem; color:var(--fc-muted)">{{ Str::limit($item->reason, 45) }}</span></td>
                     <td>
@@ -296,7 +267,7 @@ body { background: var(--fc-primary); color: var(--fc-text); }
                             @csrf @method('PATCH')
                             <button type="submit" class="bl-status-badge {{ $item->is_active ? 'active' : 'inactive' }}">
                                 <span style="width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block"></span>
-                                {{ $item->is_active ? 'Active' : 'Inactive' }}
+                                {{ $item->is_active ? 'Blocked' : 'Unblocked' }}
                             </button>
                         </form>
                     </td>
@@ -316,7 +287,7 @@ body { background: var(--fc-primary); color: var(--fc-text); }
                         <div class="empty-state">
                             <i class="fas fa-shield-check" style="color:var(--fc-success)"></i>
                             Blacklist is empty
-                            <div style="font-size:.78rem; margin-top:.5rem">Use the form to add emails, IPs or phones</div>
+                            <div style="font-size:.78rem; margin-top:.5rem">No blocked IP addresses found.</div>
                         </div>
                     </td>
                 </tr>
@@ -327,66 +298,11 @@ body { background: var(--fc-primary); color: var(--fc-text); }
         <div style="margin-top:1.25rem">{{ $blacklists->links() }}</div>
     </div>
 
-    {{-- Right: Add Form --}}
+    {{-- Right Sidebar Form removed per user request --}}
+    {{-- 
     <div>
-        <div class="bl-add-panel">
-            <div class="bl-add-header">
-                <i class="fas fa-plus" style="color:var(--fc-danger)"></i> Add to Blacklist
-            </div>
-            <div class="bl-add-body">
-                @if($errors->any())
-                <div style="background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); color:var(--fc-danger); padding:.75rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:.75rem;">
-                    @foreach($errors->all() as $error)
-                    <div><i class="fas fa-exclamation-circle me-1"></i>{{ $error }}</div>
-                    @endforeach
-                </div>
-                @endif
-
-                <form method="POST" action="{{ route('admin.fraud.blacklist.store') }}">
-                    @csrf
-
-                    <label class="fc-label">Type <span>*</span></label>
-                    <select name="type" class="fc-control @error('type') is-invalid @enderror">
-                        <option value="">Select type...</option>
-                        @foreach($types as $val => $label)
-                        <option value="{{ $val }}" {{ old('type') === $val ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                    @error('type')<span class="invalid-feedback">{{ $message }}</span>@enderror
-
-                    <label class="fc-label">Value <span>*</span></label>
-                    <input type="text" name="value"
-                        class="fc-control @error('value') is-invalid @enderror"
-                        placeholder="e.g. test@mailinator.com"
-                        value="{{ old('value') }}">
-                    @error('value')<span class="invalid-feedback">{{ $message }}</span>@enderror
-
-                    <label class="fc-label">Reason <span>*</span></label>
-                    <input type="text" name="reason"
-                        class="fc-control @error('reason') is-invalid @enderror"
-                        placeholder="e.g. Known fraud account"
-                        value="{{ old('reason') }}">
-                    @error('reason')<span class="invalid-feedback">{{ $message }}</span>@enderror
-
-                    <label class="fc-label">Expires At <span style="color:var(--fc-muted)">(optional)</span></label>
-                    <input type="datetime-local" name="expires_at"
-                        class="fc-control @error('expires_at') is-invalid @enderror"
-                        value="{{ old('expires_at') }}">
-                    @error('expires_at')<span class="invalid-feedback">{{ $message }}</span>@enderror
-
-                    <button type="submit" class="bl-submit">
-                        <i class="fas fa-ban"></i> Add to Blacklist
-                    </button>
-                </form>
-
-                <div style="margin-top:1.25rem; padding:.85rem; background:rgba(99,102,241,.07); border:1px solid rgba(99,102,241,.15); border-radius:8px; font-size:.72rem; color:var(--fc-muted); line-height:1.6">
-                    <strong style="color:var(--fc-accent)">How it works:</strong><br>
-                    Blacklisted values score <strong style="color:var(--fc-danger)">+80 risk</strong> automatically on every new fraud check.
-                    Expired entries are ignored. Toggle to temporarily disable without deleting.
-                </div>
-            </div>
-        </div>
-    </div>
-
+        ... (rest of the sidebar)
+    </div> 
+    --}}
 </div>
 @endsection

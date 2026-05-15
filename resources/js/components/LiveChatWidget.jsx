@@ -183,7 +183,7 @@ const LiveChatWidget = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <i className="fas fa-headset" style={{ fontSize: '24px' }}></i>
                             <div>
-                                <h6 style={{ margin: 0, fontWeight: 'bold' }}>{activeReceiver ? activeReceiver.name : 'JHR Bazar Support'}</h6>
+                                <h6 style={{ margin: 0, fontWeight: 'bold' }}>{activeReceiver ? activeReceiver.name : (settings?.website_name ? settings.website_name + ' Support' : 'Support')}</h6>
                                 <small style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                     <span style={{ width: '8px', height: '8px', backgroundColor: '#fff', borderRadius: '50%', display: 'inline-block' }}></span>
                                     Online now
@@ -303,7 +303,7 @@ const LiveChatWidget = () => {
                     {/* Call Us */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ backgroundColor: '#fff', padding: '8px 15px', borderRadius: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)', fontSize: '14px', fontWeight: 'bold' }}>Call Us</div>
-                        <a href={`tel:${supportSettings?.phone_number || settings?.hotline_number || settings?.mobile_number || '01700000000'}`} style={{ width: '50px', height: '50px', borderRadius: '50%', backgroundColor: '#344050', color: '#fff', boxShadow: '0 4px 15px rgba(52,64,80,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', fontSize: '20px', textDecoration: 'none' }}>
+                        <a href={`tel:${supportSettings?.phone_number || settings?.hotline_number || settings?.mobile_number || ''}`} style={{ width: '50px', height: '50px', borderRadius: '50%', backgroundColor: '#344050', color: '#fff', boxShadow: '0 4px 15px rgba(52,64,80,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', fontSize: '20px', textDecoration: 'none' }}>
                             <i className="fas fa-phone-alt"></i>
                         </a>
                     </div>

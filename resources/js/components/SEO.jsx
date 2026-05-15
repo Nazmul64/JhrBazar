@@ -1,9 +1,8 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
-const SEO = ({ title, description, keywords, image, url, type = 'website', schema }) => {
-    const siteName = "JHR Bazar";
-    const fullTitle = title ? `${title} | ${siteName}` : siteName;
+const SEO = ({ title, description, keywords, image, url, type = 'website', schema, siteName }) => {
+    const fullTitle = title || siteName || "";
 
     return (
         <Helmet>

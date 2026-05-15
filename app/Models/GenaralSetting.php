@@ -9,6 +9,7 @@ class GenaralSetting extends Model
     protected $table = 'genaral_settings';
 
     protected $fillable = [
+        'admin_theme',
         'website_name',
         'website_title',
         'meta_description',
@@ -71,7 +72,14 @@ class GenaralSetting extends Model
         'seller_commission',
         'withdraw_commission',
         'min_withdraw',
-        'max_withdraw',
+        'google_analytics_id',
+        'facebook_pixel_id',
+        'gtm_id',
+        'enable_analytics',
+        'enable_pixel',
+        'enable_gtm',
+        'trade_license_number',
+        'dbid_number',
     ];
 
     protected $casts = [
@@ -82,5 +90,8 @@ class GenaralSetting extends Model
         'show_marquee' => 'boolean',
         'loader_status' => 'boolean',
         'show_membership_section' => 'boolean',
+        'enable_analytics' => 'boolean',
+        'enable_pixel' => 'boolean',
+        'enable_gtm' => 'boolean',
     ];
 }

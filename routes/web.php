@@ -54,6 +54,8 @@ use App\Http\Controllers\Admin\GoogleTagManagerController;
 use App\Http\Controllers\Admin\IpblockmanageController;
 use App\Http\Controllers\Admin\LandingPageController;
 use App\Http\Controllers\Admin\ShurjopayGatewayController;
+use App\Http\Controllers\Admin\SslcommerzGatewayController;
+use App\Http\Controllers\Admin\CourierController;
 use App\Http\Controllers\Admin\PathaoCourierController;
 use App\Http\Controllers\Admin\SmsGatewayController;
 use App\Http\Controllers\Admin\TwilioGatewayController;
@@ -64,6 +66,7 @@ use App\Http\Controllers\Admin\MailConfigurationController;
 use App\Http\Controllers\Admin\PixelController;
 use App\Http\Controllers\Admin\ShippingChargeController;
 use App\Http\Controllers\Admin\FraudDashboardController;
+use App\Http\Controllers\Admin\FraudApiController;
 use App\Http\Controllers\Admin\FraudCheckController;
 use App\Http\Controllers\Admin\FraudRuleController;
 use App\Http\Controllers\Admin\FraudAlertController;
@@ -231,6 +234,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::resource('generalsetting', GeneralSettingController::class)->names('admin.generalsettings')->except(['show', 'create']);
     Route::post('generalsetting/{generalsetting}/reset', [GeneralSettingController::class, 'reset'])->name('admin.generalsettings.reset');
     Route::post('generalsetting/{generalsetting}/toggle', [GeneralSettingController::class, 'toggleStatus'])->name('admin.generalsettings.toggle');
+    Route::post('generalsetting/update-theme', [GeneralSettingController::class, 'updateTheme'])->name('admin.generalsettings.update-theme');
 
     // ── Page Categories ───────────────────────────────────────────────────────
     Route::resource('page-categories', \App\Http\Controllers\Admin\PageCategoryController::class)->names('admin.page_categories');
@@ -335,6 +339,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         Route::post('/payment-status/{id}', [OrderHubController::class, 'updatePaymentStatus'])->name('payment-status');
         Route::post('/bulk-action',    [OrderHubController::class, 'bulkAction'])->name('bulk-action');
         Route::post('/bulk-invoice',   [OrderHubController::class, 'bulkGenerateInvoice'])->name('bulk-invoice');
+        Route::post('/fraud-check',    [OrderHubController::class, 'fraudCheck'])->name('fraud-check');
 
         // Pathao API Proxy
         Route::get('/pathao/cities',          [OrderHubController::class, 'getPathaoCities'])->name('pathao.cities');
@@ -362,6 +367,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
             'steadfast' => \App\Models\SteadfastCourier::first(),
             'bkashPay'  => \App\Models\BkashPayment::first(),
             'shurjopay' => \App\Models\ShurjopayGateway::first(),
+            'sslcommerz' => \App\Models\SslcommerzGateway::first(),
             'pathao'    => \App\Models\PathaoCourier::first(),
             'sms'       => \App\Models\SmsGateway::first(),
         ];
@@ -399,6 +405,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::post('/settings/bkash-pay/toggle', [BkashPaymentController::class,     'toggleStatus'])->name('admin.bkash-pay.toggle');
     Route::post('/settings/shurjopay/update', [ShurjopayGatewayController::class, 'update'])      ->name('admin.shurjopay.update');
     Route::post('/settings/shurjopay/toggle', [ShurjopayGatewayController::class, 'toggleStatus'])->name('admin.shurjopay.toggle');
+    Route::post('/settings/sslcommerz/update', [SslcommerzGatewayController::class, 'update'])      ->name('admin.sslcommerz.update');
+    Route::post('/settings/sslcommerz/toggle', [SslcommerzGatewayController::class, 'toggleStatus'])->name('admin.sslcommerz.toggle');
+
+    // ── Courier Management ───────────────────────────────────────────────────
+    Route::get('/courier', [CourierController::class, 'index'])->name('admin.courier.index');
 
     // ── SMS Gateway ───────────────────────────────────────────────────────────
     Route::post('/settings/sms/update', [SmsGatewayController::class, 'update'])->name('admin.sms.update');
@@ -477,6 +488,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
         // ── Fraud Dashboard ───────────────────────────────────────────────────
         Route::get('dashboard', [FraudDashboardController::class, 'index'])->name('dashboard');
+
+        // ── Fraud APIs ────────────────────────────────────────────────────────
+        Route::get('apis', [FraudApiController::class, 'index'])->name('apis.index');
+        Route::post('apis', [FraudApiController::class, 'update'])->name('apis.update');
 
         // ── Fraud Checks ──────────────────────────────────────────────────────
         Route::post('checks/bulk-action', [FraudCheckController::class, 'bulkAction'])->name('bulk-action');
@@ -676,6 +691,7 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/payment-status/{id}', [SellerOrderHubController::class, 'updatePaymentStatus'])->name('payment-status');
             Route::post('/bulk-action',    [SellerOrderHubController::class, 'bulkAction'])->name('bulk-action');
             Route::post('/bulk-invoice',   [SellerOrderHubController::class, 'bulkGenerateInvoice'])->name('bulk-invoice');
+            Route::post('/fraud-check',    [SellerOrderHubController::class, 'fraudCheck'])->name('fraud-check');
 
             // Pathao API Proxy
             Route::get('/pathao/cities',          [SellerOrderHubController::class, 'getPathaoCities'])->name('pathao.cities');

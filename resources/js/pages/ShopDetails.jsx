@@ -54,6 +54,24 @@ const ShopDetails = () => {
         }
     }, [activeTab, shop]);
 
+    // Data Layer: view_item_list
+    useEffect(() => {
+        if (products.length > 0 && shop) {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                event: 'view_item_list',
+                item_list_id: String(shop.id),
+                item_list_name: shop.name,
+                items: products.map((product, index) => ({
+                    item_id: String(product.id),
+                    item_name: product.name || product.title,
+                    price: Number(product.selling_price || product.price || 0),
+                    index: index + 1
+                }))
+            });
+        }
+    }, [products, shop]);
+
     if (loading) {
         return (
             <MasterLayout>

@@ -7,6 +7,7 @@ import ProductCard from '../components/ProductCard';
 import TopRatedShops from '../components/TopRatedShops';
 import axios from 'axios';
 import { useSettings } from '../context/SettingsContext';
+import SEO from '../components/SEO';
 
 const Home = () => {
     const { settings } = useSettings();
@@ -61,6 +62,55 @@ const Home = () => {
         fetchData();
     }, []);
 
+    // Data Layer: view_item_list for Home Sections
+    useEffect(() => {
+        if (!loading) {
+            window.dataLayer = window.dataLayer || [];
+            
+            if (popularProducts.length > 0) {
+                window.dataLayer.push({
+                    event: 'view_item_list',
+                    item_list_id: 'home_popular',
+                    item_list_name: 'Popular Products',
+                    items: popularProducts.map((p, i) => ({
+                        item_id: String(p.id),
+                        item_name: p.title || p.name,
+                        price: Number(p.selling_price || p.price || 0),
+                        index: i + 1
+                    }))
+                });
+            }
+            
+            if (newArrivals.length > 0) {
+                window.dataLayer.push({
+                    event: 'view_item_list',
+                    item_list_id: 'home_new_arrivals',
+                    item_list_name: 'New Arrivals',
+                    items: newArrivals.map((p, i) => ({
+                        item_id: String(p.id),
+                        item_name: p.title || p.name,
+                        price: Number(p.selling_price || p.price || 0),
+                        index: i + 1
+                    }))
+                });
+            }
+            
+            if (bestDeals.length > 0) {
+                window.dataLayer.push({
+                    event: 'view_item_list',
+                    item_list_id: 'home_best_deals',
+                    item_list_name: 'Best Deals',
+                    items: bestDeals.map((p, i) => ({
+                        item_id: String(p.id),
+                        item_name: p.title || p.name,
+                        price: Number(p.selling_price || p.price || 0),
+                        index: i + 1
+                    }))
+                });
+            }
+        }
+    }, [loading, popularProducts, newArrivals, bestDeals]);
+
     const renderSpinner = () => {
         return null; // No spinner as per user request for <1s loading
     };
@@ -101,6 +151,14 @@ const Home = () => {
 
     return (
         <MasterLayout>
+            <SEO 
+                title={settings?.website_title}
+                siteName={settings?.website_name}
+                description={settings?.meta_description}
+                keywords={settings?.meta_keywords}
+                image={settings?.og_image}
+                url={window.location.href}
+            />
             {/* Hero and Categories */}
             <HeroSection banners={banners} categories={categories} loading={loading} />
             <Categories categories={categories} loading={loading} />

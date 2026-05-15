@@ -143,7 +143,23 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                                 transition: 'background-image 0.8s ease-in-out'
                             }}></div>
                         ) : (
-                            <div className="h-100 w-100 bg-light" style={{ opacity: 0.5 }}></div>
+                            <div className="h-100 w-100 d-flex align-items-center justify-content-center text-center p-4" style={{ 
+                                background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}>
+                                {/* Decorative Circles */}
+                                <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', borderRadius: '50%', backgroundColor: 'rgba(87, 181, 0, 0.05)' }}></div>
+                                <div style={{ position: 'absolute', bottom: '-20px', left: '-20px', width: '100px', height: '100px', borderRadius: '50%', backgroundColor: 'rgba(0, 0, 0, 0.02)' }}></div>
+                                
+                                <div style={{ position: 'relative', zIndex: 2 }}>
+                                    <h2 className="fw-bold mb-3" style={{ color: '#333' }}>Welcome to <span style={{ color: 'var(--button-color, #57b500)' }}>{settings?.website_name || ''}</span></h2>
+                                    <p className="text-muted mb-4">Discover premium products at the best prices. Enjoy 100% secure shopping experience.</p>
+                                    <Link to="/products-all/all" className="btn text-white px-4 py-2" style={{ backgroundColor: 'var(--button-color, #57b500)', borderRadius: '30px' }}>
+                                        Shop Now
+                                    </Link>
+                                </div>
+                            </div>
                         )}
 
                         {/* Dot Pagination */}

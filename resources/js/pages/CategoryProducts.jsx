@@ -3,6 +3,7 @@ import { useParams, Link, useLocation } from 'react-router-dom';
 import MasterLayout from '../layouts/MasterLayout';
 import ProductCard from '../components/ProductCard';
 import axios from 'axios';
+import SEO from '../components/SEO';
 
 const CategoryProducts = () => {
     const { id } = useParams();
@@ -56,8 +57,27 @@ const CategoryProducts = () => {
         window.scrollTo(0, 0);
     }, [id, isSubCategory]);
 
+    // Data Layer: view_item_list
+    useEffect(() => {
+        if (products.length > 0) {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                event: 'view_item_list',
+                item_list_id: String(id),
+                item_list_name: activeCategoryName,
+                items: products.map((product, index) => ({
+                    item_id: String(product.id),
+                    item_name: product.name || product.title,
+                    price: Number(product.selling_price || product.price || 0),
+                    index: index + 1
+                }))
+            });
+        }
+    }, [products, activeCategoryName, id]);
+
     return (
         <MasterLayout>
+            <SEO title={activeCategoryName} url={window.location.href} />
             {/* Page Header */}
             <div className="bg-light py-4 mb-4 border-bottom">
                 <div className="container">

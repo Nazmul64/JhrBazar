@@ -11,11 +11,11 @@ import { useWishlist } from '../context/WishlistContext';
 const TypingSearchInput = ({ mainColor }) => {
     const navigate = useNavigate();
     const placeholderTexts = [
-        "পণ্য, ব্র্যান্ড, ক্যাটাগরি খুঁজুন...",
-        "ল্যাপটপ খুঁজছেন?",
-        "স্মার্টফোন খুঁজছেন?",
-        "স্মার্ট ওয়াচ খুঁজছেন?",
-        "হেডফোন খুঁজছেন?"
+        "Search products, brands, categories...",
+        "Looking for a laptop?",
+        "Looking for a smartphone?",
+        "Looking for a smartwatch?",
+        "Looking for headphones?"
     ];
     const [placeholderIndex, setPlaceholderIndex] = useState(0);
     const [placeholderText, setPlaceholderText] = useState("");
@@ -104,7 +104,7 @@ const TypingSearchInput = ({ mainColor }) => {
                     style={{ fontSize: '14px' }}
                 />
                 <button type="submit" className="btn border-0 px-4 d-flex align-items-center gap-2" style={{ backgroundColor: 'var(--button-color, #57b500)', color: '#fff', fontWeight: 'bold' }}>
-                    {isSearching ? <span className="spinner-border spinner-border-sm me-1"></span> : <><i className="fas fa-search"></i> সার্চ</>}
+                    {isSearching ? <span className="spinner-border spinner-border-sm me-1"></span> : <><i className="fas fa-search"></i> Search</>}
                 </button>
             </form>
 
@@ -112,8 +112,8 @@ const TypingSearchInput = ({ mainColor }) => {
             {showDropdown && results.length > 0 && (
                 <div className="position-absolute w-100 bg-white shadow-lg rounded-3 mt-1 overflow-hidden" style={{ zIndex: 11000, border: '1px solid #eee' }}>
                     <div className="p-2 bg-light small fw-bold text-muted border-bottom d-flex justify-content-between">
-                        <span>পরামর্শ</span>
-                        <span>{results.length} টি ফলাফল</span>
+                        <span>Suggestions</span>
+                        <span>{results.length} Results</span>
                     </div>
                     <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                         {results.map((item) => (
@@ -140,7 +140,7 @@ const TypingSearchInput = ({ mainColor }) => {
                         style={{ color: mainColor, backgroundColor: '#f8fff0' }}
                         onClick={() => setShowDropdown(false)}
                     >
-                        সব ফলাফল দেখুন <i className="bi bi-arrow-right ms-1"></i>
+                        View all results <i className="bi bi-arrow-right ms-1"></i>
                     </Link>
                 </div>
             )}
@@ -148,7 +148,7 @@ const TypingSearchInput = ({ mainColor }) => {
             {showDropdown && results.length === 0 && query.length >= 2 && !isSearching && (
                 <div className="position-absolute w-100 bg-white shadow-lg rounded-3 mt-1 p-4 text-center text-muted small" style={{ zIndex: 11000, border: '1px solid #eee' }}>
                     <div className="mb-2 fs-4">🔍</div>
-                    "{query}" এর জন্য কোনো পণ্য পাওয়া যায়নি
+                    No products found for "{query}"
                 </div>
             )}
 
@@ -212,11 +212,11 @@ const Header = () => {
             {/* Professional Top Bar */}
             <div style={{ backgroundColor: topHeaderColor, color: '#fff', padding: '8px 0', fontSize: '12px' }}>
                 <div className="container d-flex justify-content-between align-items-center">
-                    <div style={{ fontWeight: 'bold' }}>⚡ ৫,০০০ টাকার বেশি অর্ডারে ফ্রি শিপিং</div>
+                    <div style={{ fontWeight: 'bold' }}>⚡ Free shipping on orders over 5,000 BDT</div>
                     <div className="d-none d-lg-flex gap-4">
-                        <Link to="/products" className="text-white text-decoration-none">সব পণ্য</Link>
-                        <Link to="/order-tracking" className="text-white text-decoration-none">অর্ডার ট্র্যাক</Link>
-                        <a href="/seller/login" className="text-white text-decoration-none">সেলার হন</a>
+                        <Link to="/products" className="text-white text-decoration-none">All Products</Link>
+                        <Link to="/order-tracking" className="text-white text-decoration-none">Track Order</Link>
+                        <a href="/seller/login" className="text-white text-decoration-none">Become a Seller</a>
                     </div>
                 </div>
             </div>
@@ -252,21 +252,21 @@ const Header = () => {
                             <div className="col-8 col-lg-5 d-flex justify-content-end align-items-center gap-3 gap-md-4">
                                 <Link to={localStorage.getItem('auth_token') ? "/customer/dashboard" : "/customer/login"} className="text-decoration-none text-dark d-flex flex-column align-items-center hover-primary">
                                     <div style={{ fontSize: '22px' }}>👤</div>
-                                    <span style={{ fontSize: '10px', fontWeight: 'bold' }}>{localStorage.getItem('auth_token') ? "ড্যাশবোর্ড" : "লগইন"}</span>
+                                    <span style={{ fontSize: '10px', fontWeight: 'bold' }}>{localStorage.getItem('auth_token') ? "Dashboard" : "Login"}</span>
                                 </Link>
                                 <Link to="/wishlist" className="text-decoration-none text-dark d-flex flex-column align-items-center hover-primary">
                                     <div style={{ fontSize: '22px', position: 'relative' }}>
                                         🤍
                                         <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '9px', padding: '2px 5px' }}>{wishlist.length}</span>
                                     </div>
-                                    <span style={{ fontSize: '10px', fontWeight: 'bold' }}>উইশলিস্ট</span>
+                                    <span style={{ fontSize: '10px', fontWeight: 'bold' }}>Wishlist</span>
                                 </Link>
                                 <Link to="/cart" className="text-decoration-none text-dark d-flex flex-column align-items-center hover-primary">
                                     <div style={{ fontSize: '22px', position: 'relative' }}>
                                         🛒
                                         <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill" style={{ backgroundColor: mainColor, fontSize: '9px', padding: '2px 5px', color: '#fff' }}>{cartCount}</span>
                                     </div>
-                                    <span style={{ fontSize: '10px', fontWeight: 'bold' }}>কার্ট</span>
+                                    <span style={{ fontSize: '10px', fontWeight: 'bold' }}>Cart</span>
                                 </Link>
                             </div>
                         </div>
@@ -287,21 +287,21 @@ const Header = () => {
                             {!(settings?.sidebar_behavior === 'fixed' && location.pathname === '/') && (
                                 <div onMouseEnter={() => setIsCategoryOpen(true)} onMouseLeave={() => setIsCategoryOpen(false)} style={{ position: 'relative' }}>
                                     <div style={{ padding: '12px 20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#333', fontWeight: 'bold', borderRight: '1px solid #eee' }}>
-                                        <span style={{ color: mainColor, fontSize: '18px' }}>⣿</span> ক্যাটাগরি
+                                        <span style={{ color: mainColor, fontSize: '18px' }}>⣿</span> Categories
                                     </div>
                                     <CategoryDropdown isOpen={isCategoryOpen} />
                                 </div>
                             )}
                             <nav className={`d-flex ${settings?.sidebar_behavior === 'fixed' && location.pathname === '/' ? '' : 'ms-2'}`}>
-                                <Link to="/" style={navLinkStyle('/')} className="nav-item-custom">হোম</Link>
-                                <Link to="/products-all/all" style={navLinkStyle('/products-all/all')} className="nav-item-custom">প্রোডাক্ট</Link>
-                                <Link to="/products-all/digital" style={navLinkStyle('/products-all/digital')} className="nav-item-custom">ডিজিটাল প্রোডাক্ট</Link>
-                                <Link to="/products-all/popular" style={navLinkStyle('/products-all/popular')} className="nav-item-custom">জনপ্রিয় প্রোডাক্ট</Link>
-                                <Link to="/products-all/best-deal" style={navLinkStyle('/products-all/best-deal')} className="nav-item-custom">সেরা অফার</Link>
-                                <Link to="/contact" style={navLinkStyle('/contact')} className="nav-item-custom">যোগাযোগ</Link>
-                                <Link to="/blogs" style={navLinkStyle('/blogs')} className="nav-item-custom">ব্লগ</Link>
-                                <Link to="/about" style={navLinkStyle('/about')} className="nav-item-custom">আমাদের সম্পর্কে</Link>
-                                <Link to="/terms" style={navLinkStyle('/terms')} className="nav-item-custom">শর্তাবলী</Link>
+                                <Link to="/" style={navLinkStyle('/')} className="nav-item-custom">Home</Link>
+                                <Link to="/products-all/all" style={navLinkStyle('/products-all/all')} className="nav-item-custom">Products</Link>
+                                <Link to="/products-all/digital" style={navLinkStyle('/products-all/digital')} className="nav-item-custom">Digital Products</Link>
+                                <Link to="/products-all/popular" style={navLinkStyle('/products-all/popular')} className="nav-item-custom">Popular Products</Link>
+                                <Link to="/products-all/best-deal" style={navLinkStyle('/products-all/best-deal')} className="nav-item-custom">Best Deals</Link>
+                                <Link to="/contact" style={navLinkStyle('/contact')} className="nav-item-custom">Contact</Link>
+                                <Link to="/blogs" style={navLinkStyle('/blogs')} className="nav-item-custom">Blog</Link>
+                                <Link to="/about" style={navLinkStyle('/about')} className="nav-item-custom">About Us</Link>
+                                <Link to="/terms" style={navLinkStyle('/terms')} className="nav-item-custom">Terms</Link>
                             </nav>
                         </div>
 
@@ -314,11 +314,11 @@ const Header = () => {
                 <div onClick={() => setIsMobileMenuOpen(false)} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10001 }}>
                     <div onClick={(e) => e.stopPropagation()} style={{ width: '300px', height: '100%', backgroundColor: '#fff', overflowY: 'auto' }}>
                         <div style={{ padding: '20px', backgroundColor: mainColor, color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
-                            <h5 className="mb-0 fw-bold">মেনু</h5>
+                            <h5 className="mb-0 fw-bold">Menu</h5>
                             <button className="btn text-white p-0" onClick={() => setIsMobileMenuOpen(false)}>✕</button>
                         </div>
                         <div style={{ padding: '10px 0' }}>
-                            <div style={{ padding: '15px 20px', fontWeight: 'bold', color: mainColor, borderBottom: '1px solid #f0f0f0' }}>⣿ ক্যাটাগরি ব্রাউজ করুন</div>
+                            <div style={{ padding: '15px 20px', fontWeight: 'bold', color: mainColor, borderBottom: '1px solid #f0f0f0' }}>⣿ Browse Categories</div>
                             {realCategories.map(cat => (
                                 <div key={cat.id} className="border-bottom">
                                     <div onClick={() => toggleCategory(cat.id)} style={{ padding: '15px 20px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
@@ -345,18 +345,18 @@ const Header = () => {
                                     )}
                                 </div>
                             ))}
-                            <div style={{ padding: '15px 20px', fontWeight: 'bold', marginTop: '10px' }}>কুইক লিংক</div>
-                            <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">হোম</Link>
-                            <Link to="/products" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">সব পণ্য</Link>
-                            <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">আমার কার্ট</Link>
-                            <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">আমার উইশলিস্ট</Link>
-                            <Link to="/order-tracking" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">অর্ডার ট্র্যাক</Link>
+                            <div style={{ padding: '15px 20px', fontWeight: 'bold', marginTop: '10px' }}>Quick Links</div>
+                            <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">Home</Link>
+                            <Link to="/products" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">All Products</Link>
+                            <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">My Cart</Link>
+                            <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">My Wishlist</Link>
+                            <Link to="/order-tracking" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">Track Order</Link>
                             {localStorage.getItem('auth_token') ? (
-                                <Link to="/customer/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">ড্যাশবোর্ড</Link>
+                                <Link to="/customer/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">Dashboard</Link>
                             ) : (
-                                <Link to="/customer/login" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">লগইন / রেজিস্টার</Link>
+                                <Link to="/customer/login" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">Login / Register</Link>
                             )}
-                            <a href="/seller/login" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">সেলার হন</a>
+                            <a href="/seller/login" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">Become a Seller</a>
                         </div>
                     </div>
                 </div>

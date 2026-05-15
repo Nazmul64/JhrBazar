@@ -32,11 +32,44 @@ const ProductCard = ({ product }) => {
         addToCart(product, 1);
         setAdded(true);
         setTimeout(() => setAdded(false), 1500);
+
+        // Data Layer
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: 'add_to_cart',
+            currency: 'BDT',
+            value: Number(product.selling_price || product.price || 0),
+            items: [
+                {
+                    item_id: String(product.id),
+                    item_name: product.title || product.name,
+                    price: Number(product.selling_price || product.price || 0),
+                    quantity: 1
+                }
+            ]
+        });
     };
 
     const handleBuyNow = (e) => {
         e.preventDefault();
         addToCart(product, 1);
+
+        // Data Layer
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: 'add_to_cart',
+            currency: 'BDT',
+            value: Number(product.selling_price || product.price || 0),
+            items: [
+                {
+                    item_id: String(product.id),
+                    item_name: product.title || product.name,
+                    price: Number(product.selling_price || product.price || 0),
+                    quantity: 1
+                }
+            ]
+        });
+
         navigate('/checkout');
     };
 

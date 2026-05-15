@@ -20,6 +20,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         try {
+            if (\Schema::hasTable('genaral_settings')) {
+                $gs = \App\Models\GenaralSetting::first();
+                \View::share('gs', $gs);
+            }
+
             if (\Schema::hasTable('mail_configurations')) {
                 $config = \App\Models\MailConfiguration::first();
                 if ($config) {

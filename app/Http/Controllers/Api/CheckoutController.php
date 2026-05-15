@@ -21,11 +21,16 @@ use App\Models\PaytabsGateway;
 use App\Models\QicardGateway;
 use App\Models\JazzcashGateway;
 use App\Models\ShurjopayGateway;
+use App\Models\SslcommerzGateway;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Models\GenaralSetting;
+use App\Models\SmsGateway;
+use App\Models\Ipblockmanage;
+use App\Models\FraudBlacklist;
+use App\Services\SmsService;
 use App\Mail\OrderPlacedNotification;
 use Illuminate\Support\Facades\Mail;
 
@@ -106,6 +111,11 @@ class CheckoutController extends Controller
             $gateways[] = ['name' => 'Shurjopay', 'key' => 'shurjopay', 'title' => 'Shurjopay', 'logo' => $this->getDefaultLogo('shurjopay')];
         }
 
+        $sslcommerz = SslcommerzGateway::first();
+        if ($sslcommerz && $sslcommerz->status) {
+            $gateways[] = ['name' => 'SSLCommerz', 'key' => 'sslcommerz', 'title' => $sslcommerz->title, 'logo' => $sslcommerz->logo ? asset('storage/' . $sslcommerz->logo) : $this->getDefaultLogo('sslcommerz')];
+        }
+
         // Add COD by default or check a setting if you have one
         $gateways[] = ['name' => 'Cash on Delivery', 'key' => 'cod', 'title' => 'Cash on Delivery', 'logo' => null];
 
@@ -180,6 +190,22 @@ class CheckoutController extends Controller
             'discount'       => 'nullable|numeric',
             'coupon_code'    => 'nullable|string',
         ]);
+
+        // IP Block & Fraud Blacklist Check
+        $isIpBlocked = Ipblockmanage::where('ip_address', $request->ip())
+            ->where('is_active', true)
+            ->exists();
+            
+        $isBlacklisted = FraudBlacklist::isBlacklisted('ip', $request->ip()) ||
+                         FraudBlacklist::isBlacklisted('phone', $request->phone) ||
+                         ($request->email && FraudBlacklist::isBlacklisted('email', $request->email));
+
+        if ($isIpBlocked || $isBlacklisted) {
+            return response()->json([
+                'success' => false,
+                'message' => 'দুঃখিত, আপনার তথ্য আমাদের সিস্টেমে ব্লক করা হয়েছে। আপনি বর্তমানে কোনো অর্ডার করতে পারবেন না।'
+            ], 403);
+        }
 
         if ($request->payment_method === 'online') {
             if (!$this->isGatewayConfigured($request->online_gateway)) {
@@ -287,6 +313,20 @@ class CheckoutController extends Controller
             }
 
             DB::commit();
+
+            // 4. Send SMS Notification to Customer
+            try {
+                $smsGateway = SmsGateway::first();
+                if ($smsGateway && $smsGateway->status && $smsGateway->order_confirm) {
+                    $invoiceNumber = $orders[0]->invoice_number ?? '';
+                    $shopName = GenaralSetting::first()->shop_name ?? 'Our Shop';
+                    $message = "প্রিয় গ্রাহক, " . $shopName . "-এ আপনার অর্ডারটি সফলভাবে সম্পন্ন হয়েছে। ইনভয়েস নং: #" . $invoiceNumber . "। আমাদের সাথে কেনাকাটার জন্য ধন্যবাদ।";
+                    
+                    SmsService::send($request->phone, $message);
+                }
+            } catch (\Exception $e) {
+                \Log::error("Failed to send order SMS: " . $e->getMessage());
+            }
 
             return response()->json([
                 'success' => true,
@@ -404,6 +444,9 @@ class CheckoutController extends Controller
             case 'shurjopay':
                 $g = ShurjopayGateway::first();
                 return $g && $g->username && $g->password && $g->prefix;
+            case 'sslcommerz':
+                $g = SslcommerzGateway::first();
+                return $g && $g->store_id && $g->store_password;
             default:
                 return true;
         }
@@ -425,6 +468,7 @@ class CheckoutController extends Controller
             'qicard'    => 'https://www.qicard.net/wp-content/uploads/2021/04/Qi-Card-Logo.png',
             'jazzcash'  => 'https://www.vectorlogo.zone/logos/jazzcash/jazzcash-ar21.png',
             'shurjopay' => 'https://shurjopay.com.bd/logo/shurjopay-logo.png',
+            'sslcommerz' => 'https://securepay.sslcommerz.com/gw/asset/img/sslcommerz-logo.png',
         ];
         
         // Manual override for bkash if the above fails

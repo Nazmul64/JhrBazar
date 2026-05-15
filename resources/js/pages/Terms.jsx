@@ -14,7 +14,7 @@ const Terms = () => {
 
                                 <div style={{ lineHeight: '1.8', color: '#555' }}>
                                     <h5 className="fw-bold text-dark mt-4">1. Introduction</h5>
-                                    <p>Welcome to JHR Bazar. By accessing our website and using our services, you agree to comply with and be bound by the following terms and conditions. Please read them carefully.</p>
+                                    <p>Welcome to {settings?.website_name || ''}. By accessing our website and using our services, you agree to comply with and be bound by the following terms and conditions. Please read them carefully.</p>
 
                                     <h5 className="fw-bold text-dark mt-4">2. Use of the Site</h5>
                                     <p>You must be at least 18 years old to use our services. You agree to use the website only for lawful purposes and in a way that does not infringe the rights of, restrict, or inhibit anyone else's use of the website.</p>
@@ -32,7 +32,7 @@ const Terms = () => {
                                     <p>We reserve the right to update or modify these terms and conditions at any time without prior notice. Your continued use of the website following any changes indicates your acceptance of the new terms.</p>
 
                                     <div className="mt-5 p-3 bg-light rounded text-center">
-                                        <p className="mb-0 small fw-bold">If you have any questions about these Terms, please contact us at support@jhrbazar.com</p>
+                                        <p className="mb-0 small fw-bold">If you have any questions about these Terms, please contact us at {settings?.email_address || ''}</p>
                                     </div>
                                 </div>
                             </div>

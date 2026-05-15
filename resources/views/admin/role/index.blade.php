@@ -195,19 +195,12 @@
     {{-- Permissions (hidden until role selected) --}}
     <div id="permsContent" style="display:none;">
 
-      @php
-        $shopGroups  = ['Order','Product','Flash Sale','Promo Code','Bulk Product Import','Bulk Product Export','Gallery Import','Pos'];
-        $otherGroups = ['Employee','Profile','ReturnOrder','Supplier','Purchase','PurchaseReturn'];
-      @endphp
-
-      <div class="section-heading">Shop</div>
-
-      @foreach($shopGroups as $groupName)
-        @if(isset($permissions[$groupName]))
+      {{-- Dynamic Permissions Grouping --}}
+      @foreach($permissions as $groupName => $groupPerms)
         <div class="perm-group">
           <div class="perm-group-title">{{ $groupName }}</div>
           <div class="perm-checks">
-            @foreach($permissions[$groupName] as $perm)
+            @foreach($groupPerms as $perm)
             <label class="perm-check">
               <input type="checkbox" value="{{ $perm->id }}" class="perm-chk" onchange="updateCount()"/>
               {{ $perm->name }}
@@ -215,23 +208,6 @@
             @endforeach
           </div>
         </div>
-        @endif
-      @endforeach
-
-      @foreach($otherGroups as $groupName)
-        @if(isset($permissions[$groupName]))
-        <div class="perm-group">
-          <div class="perm-group-title">{{ $groupName }}</div>
-          <div class="perm-checks">
-            @foreach($permissions[$groupName] as $perm)
-            <label class="perm-check">
-              <input type="checkbox" value="{{ $perm->id }}" class="perm-chk" onchange="updateCount()"/>
-              {{ $perm->name }}
-            </label>
-            @endforeach
-          </div>
-        </div>
-        @endif
       @endforeach
 
       <button type="button" class="btn-update" id="updateBtn" onclick="savePermissions()">

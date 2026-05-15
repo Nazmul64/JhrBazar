@@ -319,6 +319,10 @@
                 <button class="btn btn-sm btn-info text-white" onclick="generateBulkInvoice()">
                     <i class="bi bi-file-earmark-pdf"></i> Generate Invoice
                 </button>
+
+                <button class="btn btn-sm btn-dark" onclick="applyBulkAction('fraud')" style="background: #6b21a8; border: none;">
+                    <i class="bi bi-shield-lock-fill"></i> Fraud Check
+                </button>
             </div>
 
             <div class="table-responsive">
@@ -341,10 +345,42 @@
                     <tbody>
                         @forelse($orders as $order)
                         @php
-                            $items = $order->order->items ?? [];
+                            $items = $order->items ?? ($order->order->items ?? []);
                             $firstItem = $items[0] ?? null;
                             $color = $firstItem['color'] ?? 'N/A';
                             $size = $firstItem['size'] ?? 'N/A';
+
+                            $orderData = $order->order;
+                            $customerName = $order->customer?->user?->name;
+                            $customerPhone = $order->customer?->user?->phone;
+                            
+                            if (!$customerPhone && $orderData) {
+                                $customerPhone = $orderData->phone;
+                            }
+                            
+                            if (!$customerName && $orderData && $orderData->note) {
+                                if (preg_match('/Name: (.*)/', $orderData->note, $matches)) {
+                                    $customerName = trim($matches[1]);
+                                }
+                            }
+                            
+                            $customerName = $customerName ?? 'Guest';
+                            $customerPhone = $customerPhone ?? 'N/A';
+
+                            $customerEmail = $order->customer?->user?->email;
+                            $customerAddress = $order->customer?->address;
+                            $customerIp = $orderData->ip_address ?? 'N/A';
+
+                            if ($orderData && $orderData->note) {
+                                if (preg_match('/Email: (.*)/', $orderData->note, $matches)) {
+                                    $customerEmail = trim($matches[1]);
+                                }
+                                if (preg_match('/Address: (.*)/', $orderData->note, $matches)) {
+                                    $customerAddress = trim($matches[1]);
+                                }
+                            }
+                            $customerEmail = $customerEmail ?? 'N/A';
+                            $customerAddress = $customerAddress ?? 'N/A';
                         @endphp
                         <tr id="order-row-{{ $order->id }}">
                             <td>
@@ -355,9 +391,24 @@
                                 <div class="text-muted small">{{ $order->created_at->format('d M, h:i A') }}</div>
                             </td>
                             <td>
-                                <div class="customer-info">
-                                    <span class="customer-name">{{ $order->customer?->user?->name ?? 'Walk-in Customer' }}</span>
-                                    <span class="customer-phone">{{ $order->customer?->user?->phone ?? 'N/A' }}</span>
+                                <div class="customer-info" style="min-width: 180px;">
+                                    <span class="customer-name mb-1"><i class="bi bi-person-circle me-1"></i>{{ $customerName }}</span>
+                                    <span class="customer-phone mb-1"><i class="bi bi-telephone-fill me-1"></i>{{ $customerPhone }}</span>
+                                    @if($customerEmail != 'N/A')
+                                        <span class="text-muted mb-1" style="font-size: 11px;"><i class="bi bi-envelope-fill me-1"></i>{{ $customerEmail }}</span>
+                                    @endif
+                                    <span class="text-muted mb-2" style="font-size: 11px; display:block; line-height:1.4;"><i class="bi bi-geo-alt-fill me-1 text-danger"></i>{{ $customerAddress }}</span>
+                                    
+                                    <div class="mt-1 d-flex align-items-center justify-content-between p-2 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                                        <div title="IP Address" style="font-size: 11px; font-weight: 600; color: #475569;">
+                                            <i class="bi bi-globe me-1 text-primary"></i>{{ $customerIp }}
+                                        </div>
+                                        @if($customerIp != 'N/A')
+                                        <button onclick="blockIpAddress('{{ $customerIp }}')" class="btn btn-sm btn-outline-danger p-0 px-2" title="Block this IP" style="font-size: 10px; border-radius: 4px;">
+                                            <i class="bi bi-ban"></i> Block
+                                        </button>
+                                        @endif
+                                    </div>
                                 </div>
                             </td>
                             <td><span class="item-meta">{{ $color }}</span></td>
@@ -403,6 +454,7 @@
                             <td>
                                 <div class="d-flex">
                                     <a href="{{ route('seller.orders.show', $order->id) }}" class="action-btn btn-view" title="View"><i class="bi bi-eye"></i></a>
+                                    <button onclick="performFraudCheck('{{ $customerPhone }}')" class="action-btn btn-fraud" title="Fraud Check" style="background: #f59e0b; border: none;"><i class="bi bi-shield-lock-fill"></i></button>
                                     @if(!$order->order->steadfast_order_id)
                                         <a href="javascript:void(0)" onclick="sendIndividualCourier({{ $order->id }}, 'steadfast')" class="action-btn btn-steadfast" title="Send to Steadfast"><i class="bi bi-truck"></i></a>
                                     @endif
@@ -426,6 +478,27 @@
             </div>
             <div class="p-4">
                 {{ $orders->links() }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Fraud Check Modal --}}
+<div class="modal fade" id="fraudCheckModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border-radius: 15px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Fraud Check Result</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="fraudResultLoading" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Analyzing customer data...</p>
+                </div>
+                <div id="fraudResultContent" style="display: none;">
+                    {{-- Content will be injected here --}}
+                </div>
             </div>
         </div>
     </div>
@@ -552,6 +625,11 @@
         if (finalAction === 'pathao') {
             document.getElementById('pathaoOrderIds').value = selected.join(',');
             openPathaoModal();
+            return;
+        }
+
+        if (finalAction === 'fraud') {
+            bulkFraudCheck();
             return;
         }
 
@@ -698,6 +776,44 @@
         });
     }
 
+    function blockIpAddress(ip) {
+        Swal.fire({
+            title: 'Block this IP?',
+            text: `Are you sure you want to block ${ip}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e63946',
+            confirmButtonText: 'Yes, block it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`{{ route('admin.Ipblockmanage.store') }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ ip_address: ip, reason: 'Blocked from Seller Orders Dashboard for suspicious activity.' })
+                })
+                .then(res => {
+                    if(!res.ok && res.status === 422) {
+                        return res.json().then(err => { throw new Error(err.message || 'Validation error'); });
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if(data.success) {
+                        Swal.fire('Blocked!', data.message, 'success');
+                    } else {
+                        Swal.fire('Notice', data.message || 'Already blocked or error occurred.', 'info');
+                    }
+                })
+                .catch(err => {
+                    Swal.fire('Error', 'IP is already blocked or invalid.', 'error');
+                });
+            }
+        });
+    }
     function generateBulkInvoice() {
         const selected = Array.from(document.querySelectorAll('.order-checkbox:checked')).map(cb => cb.value);
         if(selected.length === 0) {
@@ -725,6 +841,139 @@
         document.body.appendChild(form);
         form.submit();
         document.body.removeChild(form);
+    }
+
+    /* Fraud Check Logic */
+    function performFraudCheck(phone) {
+        if (!phone || phone === 'N/A') {
+            Swal.fire('Error', 'Customer phone number is missing.', 'error');
+            return;
+        }
+
+        const modal = new bootstrap.Modal(document.getElementById('fraudCheckModal'));
+        const loading = document.getElementById('fraudResultLoading');
+        const content = document.getElementById('fraudResultContent');
+
+        loading.style.display = 'block';
+        content.style.display = 'none';
+        modal.show();
+
+        fetch(`{{ route('seller.orders.fraud-check') }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ phone: phone })
+        })
+        .then(res => res.json())
+        .then(data => {
+            loading.style.display = 'none';
+            content.style.display = 'block';
+
+            if (data.success) {
+                const ext = data.external || {};
+                const res = ext.data || {};
+                const intnl = data.internal || {};
+
+                // Format Internal Courier Stats
+                const courierHtml = `
+                    <div class="row mt-3 g-2">
+                        <div class="col-12">
+                            <h6 class="fw-bold mb-2 border-bottom pb-2">Internal Courier History & Success Ratio</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded h-100" style="background:#f8fafc;">
+                                <div class="fw-bold text-primary mb-2"><i class="bi bi-box-seam"></i> Steadfast</div>
+                                <div class="small">
+                                    <div class="d-flex justify-content-between mb-1"><span>Total Orders:</span> <strong>${intnl.sf_total || 0}</strong></div>
+                                    <div class="d-flex justify-content-between mb-1"><span>Rejected/Cancelled:</span> <strong class="text-danger">${intnl.sf_rejected || 0}</strong></div>
+                                    <div class="d-flex justify-content-between"><span>Success Ratio:</span> <strong class="text-success">${(intnl.sf_success_rate || 0).toFixed(2)}%</strong></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded h-100" style="background:#f8fafc;">
+                                <div class="fw-bold text-danger mb-2"><i class="bi bi-bicycle"></i> Pathao</div>
+                                <div class="small">
+                                    <div class="d-flex justify-content-between mb-1"><span>Total Orders:</span> <strong>${intnl.pt_total || 0}</strong></div>
+                                    <div class="d-flex justify-content-between mb-1"><span>Rejected/Cancelled:</span> <strong class="text-danger">${intnl.pt_rejected || 0}</strong></div>
+                                    <div class="d-flex justify-content-between"><span>Success Ratio:</span> <strong class="text-success">${(intnl.pt_success_rate || 0).toFixed(2)}%</strong></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <div class="small text-muted text-end">Total Lifetime Orders (All): <strong>${intnl.total_orders || 0}</strong></div>
+                        </div>
+                    </div>
+                `;
+
+                if (ext.success) {
+                    content.innerHTML = `
+                        <div class="alert alert-success d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill me-2 fs-4"></i>
+                            <div>Check completed successfully using <strong>${ext.api_type || 'External'}</strong> API.</div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="card bg-light border-0">
+                                    <div class="card-body">
+                                        <small class="text-muted d-block mb-1">Customer Phone</small>
+                                        <h5 class="mb-0 fw-bold">${phone}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light border-0">
+                                    <div class="card-body">
+                                        <small class="text-muted d-block mb-1">Status</small>
+                                        <h5 class="mb-0 fw-bold text-uppercase">${res.status || 'Verified'}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-3 border rounded">
+                                    <h6 class="fw-bold mb-3">Analysis Details:</h6>
+                                    <pre class="bg-dark text-success p-3 rounded mb-0" style="font-size: 13px; max-height:200px; overflow-y:auto;">${JSON.stringify(res, null, 4)}</pre>
+                                </div>
+                            </div>
+                        </div>
+                        ${courierHtml}
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="alert alert-warning">
+                            <h6 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i> External API Error</h6>
+                            <div class="small">${ext.message || 'Could not fetch data from external API.'}</div>
+                        </div>
+                        ${courierHtml}
+                    `;
+                }
+            } else {
+                content.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h6 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i> Error</h6>
+                        <div class="small">Something went wrong.</div>
+                    </div>
+                `;
+            }
+        })
+        .catch(err => {
+            loading.style.display = 'none';
+            content.style.display = 'block';
+            content.innerHTML = `<div class="alert alert-danger">Failed to fetch data: ${err.message}</div>`;
+        });
+    }
+
+    function bulkFraudCheck() {
+        const selected = Array.from(document.querySelectorAll('.order-checkbox:checked'));
+        if(selected.length === 0) {
+            Swal.fire('Error', 'Please select at least one order.', 'error');
+            return;
+        }
+
+        const firstPhone = selected[0].closest('tr').querySelector('.customer-phone').innerText.replace(' ', '').replace('+', '');
+        performFraudCheck(firstPhone);
     }
 </script>
 @endsection

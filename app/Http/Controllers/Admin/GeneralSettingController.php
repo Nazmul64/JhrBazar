@@ -19,6 +19,7 @@ class GeneralSettingController extends Controller
         $request->validate([
             'website_name'          => 'nullable|string|max:255',
             'website_title'         => 'nullable|string|max:255',
+            'admin_theme'           => 'nullable|string|in:light,dark',
             'default_currency'      => 'nullable|string|max:100',
             'currency_position'     => 'nullable|string|max:50',
             'logo'                  => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
@@ -35,6 +36,11 @@ class GeneralSettingController extends Controller
             'footer_qr'             => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:1024',
             'membership_logo_3'     => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:1024',
             'payment_methods_logo'  => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
+            'google_analytics_id'   => 'nullable|string|max:255',
+            'facebook_pixel_id'     => 'nullable|string|max:255',
+            'gtm_id'                => 'nullable|string|max:255',
+            'trade_license_number'  => 'nullable|string|max:255',
+            'dbid_number'           => 'nullable|string|max:255',
         ]);
 
         $data = $request->except(['_token', 'logo', 'favicon', 'app_logo', 'footer_logo', 'footer_qr', 'membership_logo_1', 'membership_logo_2', 'membership_logo_3', 'payment_methods_logo']);
@@ -45,6 +51,9 @@ class GeneralSettingController extends Controller
         $data['show_product_stats'] = $request->has('show_product_stats') ? 1 : 0;
         $data['show_marquee'] = $request->has('show_marquee') ? 1 : 0;
         $data['show_membership_section'] = $request->has('show_membership_section') ? 1 : 0;
+        $data['enable_analytics'] = $request->has('enable_analytics') ? 1 : 0;
+        $data['enable_pixel'] = $request->has('enable_pixel') ? 1 : 0;
+        $data['enable_gtm'] = $request->has('enable_gtm') ? 1 : 0;
 
         $uploadPath = public_path('uploads/generalsetting');
         if (!file_exists($uploadPath)) {
@@ -85,6 +94,7 @@ class GeneralSettingController extends Controller
         $request->validate([
             'website_name'          => 'nullable|string|max:255',
             'website_title'         => 'nullable|string|max:255',
+            'admin_theme'           => 'nullable|string|in:light,dark',
             'default_currency'      => 'nullable|string|max:100',
             'currency_position'     => 'nullable|string|max:50',
             'logo'                  => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
@@ -101,6 +111,11 @@ class GeneralSettingController extends Controller
             'footer_qr'             => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:1024',
             'membership_logo_3'     => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:1024',
             'payment_methods_logo'  => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
+            'google_analytics_id'   => 'nullable|string|max:255',
+            'facebook_pixel_id'     => 'nullable|string|max:255',
+            'gtm_id'                => 'nullable|string|max:255',
+            'trade_license_number'  => 'nullable|string|max:255',
+            'dbid_number'           => 'nullable|string|max:255',
         ]);
 
         $setting = GenaralSetting::findOrFail($id);
@@ -113,6 +128,9 @@ class GeneralSettingController extends Controller
         $data['show_product_stats'] = $request->has('show_product_stats') ? 1 : 0;
         $data['show_marquee'] = $request->has('show_marquee') ? 1 : 0;
         $data['show_membership_section'] = $request->has('show_membership_section') ? 1 : 0;
+        $data['enable_analytics'] = $request->has('enable_analytics') ? 1 : 0;
+        $data['enable_pixel'] = $request->has('enable_pixel') ? 1 : 0;
+        $data['enable_gtm'] = $request->has('enable_gtm') ? 1 : 0;
 
         $uploadPath = public_path('uploads/generalsetting');
         if (!file_exists($uploadPath)) {
@@ -193,13 +211,29 @@ class GeneralSettingController extends Controller
         $setting = GenaralSetting::findOrFail($id);
         $field   = $request->field;
 
-        if (in_array($field, ['show_download_app', 'show_footer_section', 'top_rated_shops_status', 'show_product_stats', 'show_marquee', 'show_membership_section'])) {
+        if (in_array($field, ['show_download_app', 'show_footer_section', 'top_rated_shops_status', 'show_product_stats', 'show_marquee', 'show_membership_section', 'enable_analytics', 'enable_pixel', 'enable_gtm'])) {
             $setting->$field = !$setting->$field;
             $setting->save();
             return response()->json(['success' => true, 'status' => $setting->$field]);
         }
 
         return response()->json(['success' => false, 'message' => 'Invalid field']);
+    }
+
+    public function updateTheme(Request $request)
+    {
+        $request->validate([
+            'theme' => 'required|string|in:light,dark'
+        ]);
+
+        $setting = GenaralSetting::first();
+        if ($setting) {
+            $setting->admin_theme = $request->theme;
+            $setting->save();
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Settings not found']);
     }
 
 

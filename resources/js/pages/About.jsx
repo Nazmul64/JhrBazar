@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import MasterLayout from '../layouts/MasterLayout';
 import SEO from '../components/SEO';
+import { useSettings } from '../context/SettingsContext';
 
 const About = () => {
+    const { settings } = useSettings();
     const [about, setAbout] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -61,7 +63,7 @@ const About = () => {
                                             {about.title}
                                         </h1>
                                         <div className="mb-4" style={{ height: '4px', width: '60px', backgroundColor: '#ff4d4d', borderRadius: '2px' }}></div>
-                                        <p className="text-muted lead">JHR Bazar — আপনার বিশ্বস্ত অনলাইন শপিং প্ল্যাটফর্ম</p>
+                                        <p className="text-muted lead">{settings?.website_name || ''} — আপনার বিশ্বস্ত অনলাইন শপিং প্ল্যাটফর্ম</p>
                                     </div>
                                     {about.image && (
                                         <div className="col-md-5">

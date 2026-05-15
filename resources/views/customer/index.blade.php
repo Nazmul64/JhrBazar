@@ -12,7 +12,7 @@
                 </div>
             </div>
             <div class="col-md ps-md-4">
-                <h2 class="welcome-title">Welcome back, {{ Auth::user()->name }}! 👋</h2>
+                <h2 class="welcome-title"> {{ Auth::user()->name }}! 👋</h2>
                 <p class="welcome-subtitle">You have <span class="highlight">3 active orders</span> and <span class="highlight">12 items</span> in your wishlist.</p>
                 <div class="welcome-stats-row">
                     <div class="w-stat"><i class="bi bi-star-fill text-warning"></i> Gold Member</div>
@@ -127,8 +127,8 @@
 }
 .customer-avatar-wrapper { position: relative; width: 100px; height: 100px; margin: 0 auto; }
 .customer-profile-img { width: 100%; height: 100%; border-radius: 30px; object-fit: cover; border: 4px solid rgba(255,255,255,0.2); }
-.status-online-dot { 
-    position: absolute; bottom: 5px; right: 5px; width: 18px; height: 18px; 
+.status-online-dot {
+    position: absolute; bottom: 5px; right: 5px; width: 18px; height: 18px;
     background: #10b981; border: 3px solid #1e293b; border-radius: 50%;
 }
 .welcome-title { font-weight: 800; font-size: 28px; letter-spacing: -0.5px; }
@@ -136,8 +136,8 @@
 .highlight { color: #38bdf8; font-weight: 700; }
 .welcome-stats-row { display: flex; gap: 20px; }
 .w-stat { font-size: 14px; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 10px; }
-.btn-edit-profile { 
-    background: #38bdf8; color: #fff; border: none; padding: 12px 24px; 
+.btn-edit-profile {
+    background: #38bdf8; color: #fff; border: none; padding: 12px 24px;
     border-radius: 12px; font-weight: 600; text-decoration: none; transition: 0.3s;
 }
 .btn-edit-profile:hover { background: #0ea5e9; color: #fff; transform: translateY(-2px); }
@@ -153,29 +153,29 @@
 .box-purple { background: #8b5cf6; }
 .box-orange { background: #f59e0b; }
 
-.icon-circle { 
-    width: 45px; height: 45px; background: rgba(255,255,255,0.2); 
+.icon-circle {
+    width: 45px; height: 45px; background: rgba(255,255,255,0.2);
     border-radius: 12px; display: flex; align-items: center; justify-content: center;
     font-size: 20px; margin-bottom: 15px;
 }
 .stat-content h3 { font-size: 32px; font-weight: 800; margin: 0; }
 .stat-content p { font-size: 14px; opacity: 0.9; margin: 0; }
-.box-bg-icon { 
-    position: absolute; right: -10px; bottom: -10px; font-size: 80px; 
-    opacity: 0.1; transform: rotate(-15deg); 
+.box-bg-icon {
+    position: absolute; right: -10px; bottom: -10px; font-size: 80px;
+    opacity: 0.1; transform: rotate(-15deg);
 }
 
 /* Glass Card */
 .glass-card { background: #fff; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.03); }
 .timeline-item { position: relative; padding-left: 30px; margin-bottom: 25px; }
-.timeline-marker { 
-    position: absolute; left: 0; top: 5px; width: 12px; height: 12px; 
-    border-radius: 50%; background: #ddd; 
+.timeline-marker {
+    position: absolute; left: 0; top: 5px; width: 12px; height: 12px;
+    border-radius: 50%; background: #ddd;
 }
 .timeline-marker.status-done { background: #10b981; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2); }
 .timeline-marker.status-active { background: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); }
 .timeline-item::before {
-    content: ''; position: absolute; left: 5px; top: 20px; 
+    content: ''; position: absolute; left: 5px; top: 20px;
     width: 2px; height: calc(100% + 5px); background: #f1f5f9;
 }
 .timeline-item:last-child::before { display: none; }

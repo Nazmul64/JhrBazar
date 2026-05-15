@@ -6,12 +6,53 @@ use App\Models\FraudCheck;
 use App\Models\FraudRule;
 use App\Models\FraudAlert;
 use App\Models\FraudBlacklist;
+use App\Models\FraudApi;
+use Illuminate\Support\Facades\Http;
 
 class FraudDetectionService
 {
     private float $score         = 0;
     private array $triggeredRules = [];
     private array $flags          = [];
+
+    /**
+     * Call external courier check API
+     */
+    public function checkExternalCourierApi(string $phone)
+    {
+        $activeApi = FraudApi::where('is_active', true)->first();
+        if (!$activeApi) {
+            return ['success' => false, 'message' => 'No active Fraud API found.'];
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $activeApi->api_key,
+                'Accept'        => 'application/json',
+            ])->get($activeApi->api_url, [
+                'phone' => $phone
+            ]);
+
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data'    => $response->json(),
+                    'api_type' => $activeApi->type
+                ];
+            }
+
+            return [
+                'success' => false,
+                'status'  => $response->status(),
+                'message' => $response->body()
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'API Connection Error: ' . $e->getMessage()
+            ];
+        }
+    }
 
     // ─── Main Entry ────────────────────────────────────────────────────────────
 
@@ -235,7 +276,7 @@ class FraudDetectionService
     }
 
     // ─── Courier Analysis ──────────────────────────────────────────────────────
-    private function analyzeCourierHistory(?string $phone, ?string $ip): array
+    public function analyzeCourierHistory(?string $phone, ?string $ip = null): array
     {
         if (!$phone && !$ip) return [];
 

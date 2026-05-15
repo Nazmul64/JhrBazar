@@ -5,6 +5,7 @@ import ProductCard from '../components/ProductCard';
 import axios from 'axios';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import SEO from '../components/SEO';
 
 const ProductDetails = () => {
     const { type, slug } = useParams();
@@ -68,6 +69,28 @@ const ProductDetails = () => {
         window.scrollTo(0, 0);
     }, [type, slug]);
 
+    // Data Layer: view_item
+    useEffect(() => {
+        if (product) {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                event: 'view_item',
+                currency: 'BDT',
+                value: Number(product.selling_price || product.price || 0),
+                items: [
+                    {
+                        item_id: String(product.id),
+                        item_name: product.name,
+                        item_brand: product.brand?.name || '',
+                        item_category: product.category?.name || '',
+                        price: Number(product.selling_price || product.price || 0),
+                        quantity: 1
+                    }
+                ]
+            });
+        }
+    }, [product]);
+
     const getImageUrl = (url) => {
         if (!url) return '/assets/admin/images/no-image.png';
         if (url.startsWith('http')) return url;
@@ -96,12 +119,45 @@ const ProductDetails = () => {
 
     const handleBuyNow = () => {
         addToCart(product, quantity, product.color, product.size);
+        
+        // Data Layer
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: 'add_to_cart',
+            currency: 'BDT',
+            value: Number(product.selling_price || product.price || 0) * Number(quantity),
+            items: [
+                {
+                    item_id: String(product.id),
+                    item_name: product.name,
+                    price: Number(product.selling_price || product.price || 0),
+                    quantity: Number(quantity)
+                }
+            ]
+        });
+
         navigate('/checkout');
     };
 
     const handleAddToCart = () => {
         addToCart(product, quantity, product.color, product.size);
         showToast('কার্টে যোগ করা হয়েছে!');
+
+        // Data Layer
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: 'add_to_cart',
+            currency: 'BDT',
+            value: Number(product.selling_price || product.price || 0) * Number(quantity),
+            items: [
+                {
+                    item_id: String(product.id),
+                    item_name: product.name,
+                    price: Number(product.selling_price || product.price || 0),
+                    quantity: Number(quantity)
+                }
+            ]
+        });
     };
 
     const handleMouseMove = (e) => {
@@ -111,6 +167,13 @@ const ProductDetails = () => {
         const boundedX = Math.max(0, Math.min(100, x));
         const boundedY = Math.max(0, Math.min(100, y));
         setZoomPos({ x: boundedX, y: boundedY, show: true });
+    };
+
+    const getYouTubeId = (url) => {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
     };
 
     if (loading) {
@@ -136,8 +199,36 @@ const ProductDetails = () => {
         );
     }
 
+
     return (
         <MasterLayout>
+            <SEO 
+                title={product.meta_title || product.name}
+                description={product.meta_description || product.short_description}
+                keywords={product.meta_keywords}
+                image={getImageUrl(product.thumbnail)}
+                url={window.location.href}
+                type="product"
+                schema={{
+                    "@context": "https://schema.org/",
+                    "@type": "Product",
+                    "name": product.name,
+                    "image": [getImageUrl(product.thumbnail)],
+                    "description": product.short_description,
+                    "sku": product.sku,
+                    "brand": {
+                        "@type": "Brand",
+                        "name": product.brand || settings?.website_name || ""
+                    },
+                    "offers": {
+                        "@type": "Offer",
+                        "url": window.location.href,
+                        "priceCurrency": "BDT",
+                        "price": product.price,
+                        "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+                    }
+                }}
+            />
             {/* Custom Toast Notification */}
             {toast.show && (
                 <div style={{
@@ -482,6 +573,17 @@ const ProductDetails = () => {
                                         প্রোডাক্ট বিবরণ
                                     </button>
                                 </li>
+                                {product.video && (
+                                    <li className="nav-item">
+                                        <button
+                                            onClick={() => setActiveTab('video')}
+                                            className={`nav-link border-0 p-0 pb-2 ${activeTab === 'video' ? 'active border-bottom border-3 fw-bold' : 'text-muted'}`}
+                                            style={{ borderColor: activeTab === 'video' ? `${mainColor} !important` : 'transparent', color: activeTab === 'video' ? '#333' : '', fontSize: '16px' }}
+                                        >
+                                            প্রোডাক্ট ভিডিও
+                                        </button>
+                                    </li>
+                                )}
                                 <li className="nav-item">
                                     <button
                                         onClick={() => setActiveTab('reviews')}
@@ -495,6 +597,38 @@ const ProductDetails = () => {
                             <div className="bg-white p-4 p-md-5 rounded shadow-sm border" style={{ fontSize: '16px', lineHeight: '1.8', color: '#444' }}>
                                 {activeTab === 'about' && (
                                     <div dangerouslySetInnerHTML={{ __html: product.description }}></div>
+                                )}
+
+                                {activeTab === 'video' && product.video && (
+                                    <div className="video-container">
+                                        {product.video_type === 'youtube' ? (
+                                            <div className="ratio ratio-16x9">
+                                                <iframe
+                                                    src={`https://www.youtube.com/embed/${getYouTubeId(product.video)}`}
+                                                    title="Product Video"
+                                                    frameBorder="0"
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                    allowFullScreen
+                                                    style={{ width: '100%', height: '450px', borderRadius: '15px' }}
+                                                ></iframe>
+                                            </div>
+                                        ) : product.video_type === 'file' ? (
+                                            <video controls style={{ width: '100%', borderRadius: '15px' }}>
+                                                <source src={getImageUrl(product.video)} type="video/mp4" />
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        ) : (
+                                            <div className="ratio ratio-16x9">
+                                                <iframe
+                                                    src={product.video}
+                                                    title="Product Video"
+                                                    frameBorder="0"
+                                                    allowFullScreen
+                                                    style={{ width: '100%', height: '450px', borderRadius: '15px' }}
+                                                ></iframe>
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
 
                                 {activeTab === 'reviews' && (

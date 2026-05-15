@@ -65,6 +65,24 @@ const Checkout = () => {
         fetchGateways();
     }, []);
 
+    // Data Layer: begin_checkout
+    useEffect(() => {
+        if (cartItems.length > 0) {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                event: 'begin_checkout',
+                currency: 'BDT',
+                value: Number(cartTotal),
+                items: cartItems.map(item => ({
+                    item_id: String(item.id),
+                    item_name: item.name,
+                    price: Number(item.price),
+                    quantity: Number(item.qty)
+                }))
+            });
+        }
+    }, [cartItems, cartTotal]);
+
     // Lead Capture Logic (Incomplete Orders)
     useEffect(() => {
         if (!formData.phone || formData.phone.length < 11) return;
@@ -107,7 +125,7 @@ const Checkout = () => {
                 });
             }
             setSaveStatus('saved');
-            toast.success("তথ্য সেভ হয়েছে!", {
+            toast.success("Information saved!", {
                 duration: 3000,
                 position: 'top-center',
                 style: {
@@ -218,10 +236,10 @@ const Checkout = () => {
             <MasterLayout>
                 <div className="container py-5 text-center">
                     <div style={{ fontSize: '60px', marginBottom: '20px' }}>🛒</div>
-                    <h3>আপনার কার্ট খালি</h3>
-                    <p className="text-muted">অর্ডার করার জন্য প্রথমে কার্টে পণ্য যোগ করুন।</p>
+                    <h3>Your cart is empty</h3>
+                    <p className="text-muted">Please add products to your cart before placing an order.</p>
                     <Link to="/" className="btn text-white px-5 py-2 mt-3" style={{ backgroundColor: mainColor, borderRadius: '30px' }}>
-                        কেনাকাটা চালিয়ে যান
+                        Continue Shopping
                     </Link>
                 </div>
             </MasterLayout>
@@ -238,56 +256,56 @@ const Checkout = () => {
                             <div className="card border-0 shadow-sm p-4 p-md-5" style={{ borderRadius: '20px' }}>
                                 <div className="d-flex align-items-center gap-2 mb-4">
                                     <div style={{ width: '4px', height: '24px', backgroundColor: mainColor, borderRadius: '2px' }}></div>
-                                    <h4 className="fw-bold m-0">শিপিং তথ্য</h4>
+                                    <h4 className="fw-bold m-0">Shipping Information</h4>
                                 </div>
 
                                 <form onSubmit={handleSubmit}>
                                     <div className="row g-3">
                                         <div className="col-12">
-                                            <label className="form-label small fw-bold text-muted uppercase">আপনার নাম</label>
+                                            <label className="form-label small fw-bold text-muted uppercase">Full Name</label>
                                             <div className="input-group border rounded-3 p-1 bg-light shadow-sm">
                                                 <span className="input-group-text bg-transparent border-0"><i className="far fa-user text-muted"></i></span>
                                                 <input 
                                                     type="text" name="name" required className="form-control bg-transparent border-0" 
-                                                    placeholder="আপনার পূর্ণ নাম লিখুন" value={formData.name} onChange={handleChange}
+                                                    placeholder="Enter your full name" value={formData.name} onChange={handleChange}
                                                 />
                                             </div>
                                         </div>
 
                                         <div className="col-md-6">
-                                            <label className="form-label small fw-bold text-muted uppercase">মোবাইল নম্বর</label>
+                                            <label className="form-label small fw-bold text-muted uppercase">Mobile Number</label>
                                             <div className="input-group border rounded-3 p-1 bg-light shadow-sm">
                                                 <span className="input-group-text bg-transparent border-0"><i className="fas fa-phone-alt text-muted"></i></span>
                                                 <input 
                                                     type="tel" name="phone" required className="form-control bg-transparent border-0" 
-                                                    placeholder="০১৮XXXXXXXX" value={formData.phone} onChange={handleChange}
+                                                    placeholder="018XXXXXXXX" value={formData.phone} onChange={handleChange}
                                                 />
                                             </div>
                                             {saveStatus === 'saved' && (
                                                 <div className="mt-1 small text-success animation-slide-down">
-                                                    <i className="bi bi-check-circle-fill me-1"></i> তথ্য সেভ হয়েছে
+                                                    <i className="bi bi-check-circle-fill me-1"></i> Information Saved
                                                 </div>
                                             )}
                                             {saveStatus === 'saving' && (
                                                 <div className="mt-1 small text-muted animation-slide-down">
-                                                    <span className="spinner-border spinner-border-sm me-1" style={{width:'10px', height:'10px'}}></span> সেভ হচ্ছে...
+                                                    <span className="spinner-border spinner-border-sm me-1" style={{width:'10px', height:'10px'}}></span> Saving...
                                                 </div>
                                             )}
                                         </div>
 
                                         <div className="col-md-6">
-                                            <label className="form-label small fw-bold text-muted uppercase">ইমেইল (ঐচ্ছিক)</label>
+                                            <label className="form-label small fw-bold text-muted uppercase">Email (Optional)</label>
                                             <div className="input-group border rounded-3 p-1 bg-light shadow-sm">
                                                 <span className="input-group-text bg-transparent border-0"><i className="far fa-envelope text-muted"></i></span>
                                                 <input 
                                                     type="email" name="email" className="form-control bg-transparent border-0" 
-                                                    placeholder="আপনার ইমেইল ঠিকানা" value={formData.email} onChange={handleChange}
+                                                    placeholder="Your email address" value={formData.email} onChange={handleChange}
                                                 />
                                             </div>
                                         </div>
 
                                         <div className="col-12">
-                                            <label className="form-label small fw-bold text-muted uppercase">এলাকা নির্বাচন করুন (ডেলিভারির জন্য)</label>
+                                            <label className="form-label small fw-bold text-muted uppercase">Select Delivery Area</label>
                                             <div className="input-group border rounded-3 p-1 bg-light shadow-sm">
                                                 <span className="input-group-text bg-transparent border-0"><i className="fas fa-truck text-muted"></i></span>
                                                 <select name="shipping_id" required className="form-select bg-transparent border-0" value={formData.shipping_id} onChange={handleChange}>
@@ -299,10 +317,10 @@ const Checkout = () => {
                                         </div>
 
                                         <div className="col-12">
-                                            <label className="form-label small fw-bold text-muted uppercase">বিস্তারিত ঠিকানা</label>
+                                            <label className="form-label small fw-bold text-muted uppercase">Detailed Address</label>
                                             <textarea 
                                                 name="address" required rows="2" className="form-control border bg-light p-3 shadow-sm" 
-                                                placeholder="বাসা নম্বর, রোড নম্বর এবং এলাকা লিখুন..." style={{ borderRadius: '12px' }}
+                                                placeholder="House no, Road no, Area details..." style={{ borderRadius: '12px' }}
                                                 value={formData.address} onChange={handleChange}
                                             ></textarea>
                                         </div>
@@ -311,7 +329,7 @@ const Checkout = () => {
                                     <div className="mt-5">
                                         <div className="d-flex align-items-center gap-2 mb-4">
                                             <div style={{ width: '4px', height: '24px', backgroundColor: mainColor, borderRadius: '2px' }}></div>
-                                            <h4 className="fw-bold m-0">পেমেন্ট পদ্ধতি</h4>
+                                            <h4 className="fw-bold m-0">Payment Method</h4>
                                         </div>
                                         
                                         <div className="row g-3">
@@ -326,8 +344,8 @@ const Checkout = () => {
                                                                 className="form-check-input mt-0" 
                                                             />
                                                             <div>
-                                                                <div className="fw-bold">ক্যাশ অন ডেলিভারি</div>
-                                                                <div className="small text-muted">পণ্য বুঝে পেয়ে টাকা দিন</div>
+                                                                <div className="fw-bold">Cash On Delivery</div>
+                                                                <div className="small text-muted">Pay when you receive the product</div>
                                                             </div>
                                                         </div>
                                                     </label>
@@ -338,8 +356,8 @@ const Checkout = () => {
                                                         <div className="d-flex align-items-center gap-3">
                                                             <div className="text-muted"><i className="fas fa-ban"></i></div>
                                                             <div>
-                                                                <div className="fw-bold text-muted">ক্যাশ অন ডেলিভারি</div>
-                                                                <div className="small text-danger" style={{fontSize: '10px'}}>কার্টের কিছু পণ্যের জন্য এটি প্রযোজ্য নয়</div>
+                                                                <div className="fw-bold text-muted">Cash On Delivery</div>
+                                                                <div className="small text-danger" style={{fontSize: '10px'}}>Not available for some items</div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -357,8 +375,8 @@ const Checkout = () => {
                                                                 className="form-check-input mt-0" 
                                                             />
                                                             <div>
-                                                                <div className="fw-bold">অনলাইন পেমেন্ট</div>
-                                                                <div className="small text-muted">বিকাশ, নগদ বা কার্ডের মাধ্যমে পেমেন্ট করুন</div>
+                                                                <div className="fw-bold">Online Payment</div>
+                                                                <div className="small text-muted">Pay via Mobile Banking or Card</div>
                                                             </div>
                                                         </div>
                                                     </label>
@@ -369,8 +387,8 @@ const Checkout = () => {
                                                         <div className="d-flex align-items-center gap-3">
                                                             <div className="text-muted"><i className="fas fa-ban"></i></div>
                                                             <div>
-                                                                <div className="fw-bold text-muted">অনলাইন পেমেন্ট</div>
-                                                                <div className="small text-danger" style={{fontSize: '10px'}}>কার্টের কিছু পণ্যের জন্য এটি প্রযোজ্য নয়</div>
+                                                                <div className="fw-bold text-muted">Online Payment</div>
+                                                                <div className="small text-danger" style={{fontSize: '10px'}}>Not available for some items</div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -380,7 +398,7 @@ const Checkout = () => {
 
                                         {formData.payment_method === 'online' && (
                                             <div className="mt-4 p-3 border rounded-4 bg-light shadow-inner animation-slide-down">
-                                                <div className="small fw-bold text-muted mb-3 uppercase">পেমেন্ট গেটওয়ে নির্বাচন করুন</div>
+                                                <div className="small fw-bold text-muted mb-3 uppercase">Select Payment Gateway</div>
                                                 <div className="d-flex flex-wrap gap-2">
                                                     {availableGateways.map(gateway => (
                                                         <label key={gateway.key} className={`gateway-box ${formData.online_gateway === gateway.key ? 'active' : ''}`}>
@@ -399,7 +417,7 @@ const Checkout = () => {
                                                         </label>
                                                     ))}
                                                     {availableGateways.length === 0 && (
-                                                        <div className="text-danger small">কোনো অনলাইন পেমেন্ট গেটওয়ে সচল নেই।</div>
+                                                        <div className="text-danger small">No online payment gateway is active.</div>
                                                     )}
                                                 </div>
                                             </div>
@@ -416,7 +434,7 @@ const Checkout = () => {
                                         ) : (
                                             <i className="fas fa-shopping-bag me-2"></i>
                                         )}
-                                        {formData.payment_method === 'online' ? 'পেমেন্ট করুন এবং অর্ডার কনফার্ম করুন' : 'অর্ডার কনফার্ম করুন'}
+                                        {formData.payment_method === 'online' ? 'Pay and Confirm Order' : 'Confirm Order'}
                                     </button>
                                 </form>
                             </div>
@@ -426,7 +444,7 @@ const Checkout = () => {
                         <div className="col-lg-5">
                             <div className="card border-0 shadow-sm sticky-top" style={{ borderRadius: '20px', top: '100px' }}>
                                 <div className="card-body p-4">
-                                    <h5 className="fw-bold mb-4">অর্ডার সারসংক্ষেপ</h5>
+                                    <h5 className="fw-bold mb-4">Order Summary</h5>
                                     
                                     <div className="order-items-list mb-4 overflow-auto" style={{ maxHeight: '300px' }}>
                                         {cartItems.map(item => (
@@ -447,8 +465,8 @@ const Checkout = () => {
                                                     <div className="text-muted small">৳{Number(item.price).toLocaleString()}</div>
                                                     {(item.color || item.size) && (
                                                         <div className="text-muted small mt-1" style={{ fontSize: '10px' }}>
-                                                            {item.color && <span className="me-2">কালার: {item.color}</span>}
-                                                            {item.size && <span>সাইজ: {item.size}</span>}
+                                                            {item.color && <span className="me-2">Color: {item.color}</span>}
+                                                            {item.size && <span>Size: {item.size}</span>}
                                                         </div>
                                                     )}
                                                 </div>
@@ -461,7 +479,7 @@ const Checkout = () => {
 
                                     {/* Coupon Section */}
                                     <div className="mb-4">
-                                        <label className="form-label small fw-bold text-muted uppercase">কুপন আছে?</label>
+                                        <label className="form-label small fw-bold text-muted uppercase">Have a coupon?</label>
                                         <div className="input-group">
                                             <input 
                                                 type="text" className="form-control border shadow-none" 
@@ -475,13 +493,13 @@ const Checkout = () => {
                                                 disabled={couponApplied || applyingCoupon}
                                                 onClick={handleApplyCoupon}
                                             >
-                                                {applyingCoupon ? <span className="spinner-border spinner-border-sm"></span> : 'ব্যবহার করুন'}
+                                                {applyingCoupon ? <span className="spinner-border spinner-border-sm"></span> : 'Apply'}
                                             </button>
                                         </div>
                                         {couponApplied && (
                                             <div className="mt-2 small text-success fw-bold d-flex justify-content-between">
-                                                <span>কুপন ব্যবহার করা হয়েছে!</span>
-                                                <span className="cursor-pointer text-danger" onClick={() => {setCouponApplied(false); setCouponDiscount(0); setCouponCode('')}}>সরিয়ে ফেলুন</span>
+                                                <span>Coupon Applied Successfully!</span>
+                                                <span className="cursor-pointer text-danger" onClick={() => {setCouponApplied(false); setCouponDiscount(0); setCouponCode('')}}>Remove</span>
                                             </div>
                                         )}
                                     </div>
@@ -497,20 +515,20 @@ const Checkout = () => {
                                         </div>
                                         {couponDiscount > 0 && (
                                             <div className="d-flex justify-content-between mb-2 text-danger">
-                                                <span className="small">ডিসকাউন্ট</span>
+                                                <span className="small">Discount</span>
                                                 <span className="fw-bold small">- ৳{Number(couponDiscount).toLocaleString()}</span>
                                             </div>
                                         )}
                                         <div className="d-flex justify-content-between pt-2 border-top mt-2">
-                                            <span className="fw-bold">মোট টাকার পরিমাণ</span>
+                                            <span className="fw-bold">Total Amount</span>
                                             <span className="fw-bold h4 mb-0" style={{ color: mainColor }}>৳{Number(finalTotal).toLocaleString()}</span>
                                         </div>
                                     </div>
 
                                     <div className="text-center">
-                                        <div className="small text-muted mb-2"><i className="fas fa-shield-alt me-1 text-success"></i> ১০০% নিরাপদ চেকআউট</div>
+                                        <div className="small text-muted mb-2"><i className="fas fa-shield-alt me-1 text-success"></i> 100% Secure Checkout</div>
                                         <p className="text-muted px-3" style={{ fontSize: '11px' }}>
-                                            আপনার তথ্য আমাদের কাছে নিরাপদ। কোনো সমস্যার জন্য সরাসরি কল করুন আমাদের সাপোর্টে।
+                                            Your information is safe. Call support for any issues.
                                         </p>
                                     </div>
                                 </div>

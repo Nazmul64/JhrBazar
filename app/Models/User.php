@@ -87,7 +87,7 @@ class User extends Authenticatable
 
     /**
      * Check if the user has a specific permission.
-     * Permissions are retrieved via the user's role.
+     * Permissions are retrieved via the user's role and direct assignments.
      */
     public function hasPermission(string $permission): bool
     {
@@ -95,6 +95,12 @@ class User extends Authenticatable
             return true; // Admin/SuperAdmin has all permissions
         }
 
+        // 1. Check direct permissions
+        if ($this->permissions()->where('key', $permission)->exists()) {
+            return true;
+        }
+
+        // 2. Check role-based permissions
         $role = $this->roleModel;
 
         // Fallback: If role_id is missing, try to find role by name string
@@ -138,6 +144,11 @@ class User extends Authenticatable
     public function roleModel()
     {
         return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'employee_permissions', 'employee_id', 'permission_id');
     }
 
     public function shop()

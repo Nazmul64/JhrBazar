@@ -14,23 +14,20 @@ class FraudBlacklistController extends Controller
 
     public function index(Request $request): View
     {
-        $query = FraudBlacklist::with('creator')->latest();
+        $query = FraudBlacklist::with('creator')->where('type', 'ip')->latest();
 
-        if ($request->filled('type')) {
-            $query->byType($request->type);
-        }
         if ($request->filled('search')) {
             $query->where('value', 'like', '%' . $request->search . '%');
         }
+        
         if ($request->filled('is_active') && $request->is_active !== '') {
             $query->where('is_active', (bool) $request->is_active);
         }
 
         $blacklists = $query->paginate(20)->withQueryString();
-        $stats      = FraudBlacklist::getStats();
-        $types      = FraudBlacklist::getTypeOptions();
+        $types      = ['ip' => 'IP Address'];
 
-        return view('admin.fraud.blacklist.index', compact('blacklists', 'stats', 'types'));
+        return view('admin.fraud.blacklist.index', compact('blacklists', 'types'));
     }
 
     // ─── Store ─────────────────────────────────────────────────────────────────

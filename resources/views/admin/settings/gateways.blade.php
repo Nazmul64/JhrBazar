@@ -301,7 +301,7 @@
     @foreach(['stripe_success','paypal_success','razorpay_success','paystack_success',
               'aamarpay_success','bkash_success','paytabs_success','qicard_success',
               'jazzcash_success','steadfast_success','bkash_payment_success',
-              'shurjopay_success','pathao_success','sms_success'] as $key)
+              'shurjopay_success','sslcommerz_success','pathao_success','sms_success'] as $key)
         @if(session($key))
             <div class="gw-toast" id="toast-{{ $loop->index }}" style="display:block;">
                 ✓ {{ session($key) }}
@@ -432,6 +432,71 @@
             </div>
         </div>
     </div>{{-- end stripe+paypal grid --}}
+
+    {{-- ══════════════════════════════════════════════════════════ --}}
+    {{--  ROW X : SSLCOMMERZ                                     --}}
+    {{-- ══════════════════════════════════════════════════════════ --}}
+    <div class="gateway-grid">
+
+        {{-- ── SSLCOMMERZ ── --}}
+        <div class="gw-card">
+            <div class="gw-card-header">
+                <h3>SSLCommerz</h3>
+                <div class="toggle-wrap">
+                    <span class="toggle-label">{{ $sslcommerz && $sslcommerz->status ? 'On' : 'Off' }}</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" {{ $sslcommerz && $sslcommerz->status ? 'checked' : '' }}
+                            onchange="ajaxToggle('{{ route('admin.sslcommerz.toggle') }}', this)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="gw-card-body">
+                <div class="gw-logo-area">
+                    <img src="https://securepay.sslcommerz.com/gw/asset/img/sslcommerz-logo.png" alt="SSLCommerz"
+                        onerror="this.outerHTML='<span style=font-size:24px;font-weight:800;color:#005c92>SSLCommerz</span>'">
+                </div>
+
+                <form action="{{ route('admin.sslcommerz.update') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="gw-form-group">
+                        <label>Mode</label>
+                        <select name="mode" class="gw-form-control">
+                            <option value="test" {{ ($sslcommerz->mode ?? 'test') == 'test' ? 'selected' : '' }}>Test (Sandbox)</option>
+                            <option value="live" {{ ($sslcommerz->mode ?? 'test') == 'live' ? 'selected' : '' }}>Live (Production)</option>
+                        </select>
+                    </div>
+                    <div class="gw-form-group">
+                        <label>Store Id <span class="req">*</span></label>
+                        <input type="text" name="store_id" class="gw-form-control"
+                            value="{{ $sslcommerz->store_id ?? '' }}" required>
+                    </div>
+                    <div class="gw-form-group">
+                        <label>Store Password <span class="req">*</span></label>
+                        <input type="text" name="store_password" class="gw-form-control"
+                            value="{{ $sslcommerz->store_password ?? '' }}" required>
+                    </div>
+                    <div class="gw-form-group">
+                        <label>Payment Gateway Title <span class="req">*</span></label>
+                        <input type="text" name="title" class="gw-form-control"
+                            value="{{ $sslcommerz->title ?? 'SSLCommerz' }}" required>
+                    </div>
+                    <div class="gw-form-group">
+                        <label>Choose Logo</label>
+                        <div class="gw-file-wrap">
+                            <span class="gw-file-btn" onclick="document.getElementById('sslcommerz-logo').click()">Choose File</span>
+                            <span class="gw-file-name" id="sslcommerz-logo-name">No file chosen</span>
+                            <input type="file" id="sslcommerz-logo" name="logo" accept="image/*"
+                                onchange="updateFileName(this,'sslcommerz-logo-name')">
+                        </div>
+                    </div>
+            </div>
+            <div class="gw-card-footer">
+                    <button type="submit" class="btn-save">Save And Update</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
 
     {{-- ══════════════════════════════════════════════════════════ --}}
@@ -912,115 +977,6 @@
     </div>{{-- end jazzcash single --}}
 
 
-    {{-- ══════════════════════════════════════════════════════════ --}}
-    {{--  COURIER SECTION                                          --}}
-    {{-- ══════════════════════════════════════════════════════════ --}}
-    <span class="section-label">Courier Services</span>
-
-    {{-- ── STEADFAST ── --}}
-    <div class="gw-card" style="margin-bottom:20px;">
-        <div class="gw-card-header">
-            <h3>Steadfast Courier</h3>
-        </div>
-        <form action="{{ route('admin.steadfast.update') }}" method="POST">
-            @csrf
-            <div class="gw-card-body">
-                <div class="gateway-grid">
-                    <div class="gw-form-group">
-                        <label>API key <span class="req">*</span></label>
-                        <input type="text" name="api_key" class="gw-form-control"
-                            value="{{ $steadfast->api_key ?? '' }}" placeholder="Enter API Key" required>
-                    </div>
-                    <div class="gw-form-group">
-                        <label>Secret key <span class="req">*</span></label>
-                        <input type="text" name="secret_key" class="gw-form-control"
-                            value="{{ $steadfast->secret_key ?? '' }}" placeholder="Enter Secret Key" required>
-                    </div>
-                    <div class="gw-form-group">
-                        <label>URL <span class="req">*</span></label>
-                        <input type="text" name="url" class="gw-form-control"
-                            value="{{ $steadfast->url ?? 'https://portal.steadfast.com.bd/api/v1/create_order' }}" required>
-                    </div>
-                    <div class="gw-form-group" style="display:flex;align-items:center;gap:14px;margin-top:24px;">
-                        <label style="margin:0;">Status</label>
-                        <label class="toggle-switch">
-                            <input type="checkbox" name="status" value="1" {{ $steadfast && $steadfast->status ? 'checked' : '' }}>
-                            <span class="toggle-slider" style="background:#26c6a6;"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div style="padding:0 24px 20px;">
-                <button type="submit" class="btn-submit-teal">Submit</button>
-            </div>
-        </form>
-    </div>
-
-    {{-- ── PATHAO ── --}}
-    <div class="gw-card" style="margin-bottom:20px;">
-        <div class="gw-card-header">
-            <h3>Pathao Courier — Add Settings</h3>
-            <a href="{{ route('admin.settings.gateways') }}" class="btn-save" style="background:#6c757d;font-size:13px;padding:7px 16px;text-decoration:none;">← Back</a>
-        </div>
-        <form action="{{ route('admin.pathao.update') }}" method="POST">
-            @csrf
-            <div class="gw-card-body">
-                <div class="gw-alert-info">
-                    <span class="info-icon">ℹ</span>
-                    Sandbox credentials দিয়ে আগে test করুন। Live এ যেতে base_url পরিবর্তন করুন এবং merchant account এর real credentials দিন।
-                </div>
-                <div class="gw-form-group">
-                    <label>Base URL <span class="req">*</span></label>
-                    <input type="text" name="base_url" class="gw-form-control"
-                        value="{{ $pathao->base_url ?? 'https://courier-api-sandbox.pathao.com' }}" required>
-                    <small class="pathao-hint">Sandbox: https://courier-api-sandbox.pathao.com &nbsp;|&nbsp; Live: https://api-hermes.pathao.com</small>
-                </div>
-                <div class="gateway-grid">
-                    <div class="gw-form-group">
-                        <label>Client ID <span class="req">*</span></label>
-                        <input type="text" name="client_id" class="gw-form-control"
-                            value="{{ $pathao->client_id ?? '' }}" required>
-                        <small class="pathao-hint">Pathao merchant dashboard থেকে পাবেন</small>
-                    </div>
-                    <div class="gw-form-group">
-                        <label>Client Secret <span class="req">*</span></label>
-                        <input type="text" name="client_secret" class="gw-form-control"
-                            value="{{ $pathao->client_secret ?? '' }}" required>
-                    </div>
-                    <div class="gw-form-group">
-                        <label>Username <span class="req">*</span></label>
-                        <input type="email" name="username" class="gw-form-control"
-                            value="{{ $pathao->username ?? '' }}" placeholder="test@pathao.com" required>
-                        <small class="pathao-hint">Pathao merchant account এর email</small>
-                    </div>
-                    <div class="gw-form-group">
-                        <label>Password <span class="req">*</span></label>
-                        <input type="password" name="password" class="gw-form-control"
-                            value="{{ $pathao->password ?? '' }}" required>
-                        <small class="pathao-hint">Pathao merchant account এর password</small>
-                    </div>
-                    <div class="gw-form-group">
-                        <label>Grant Type <span class="req">*</span></label>
-                        <input type="text" name="grant_type" class="gw-form-control"
-                            value="{{ $pathao->grant_type ?? 'password' }}">
-                        <small class="pathao-hint">সাধারণত password হয়</small>
-                    </div>
-                    <div class="gw-form-group" style="display:flex;align-items:center;gap:14px;margin-top:24px;">
-                        <label style="margin:0;">Status</label>
-                        <label class="toggle-switch">
-                            <input type="checkbox" name="status" value="1" {{ $pathao && $pathao->status ? 'checked' : '' }}>
-                            <span class="toggle-slider" style="background:#26c6a6;"></span>
-                        </label>
-                        <span style="font-size:13px;color:#444;">Active</span>
-                    </div>
-                </div>
-            </div>
-            <div style="padding:0 24px 20px;display:flex;gap:12px;">
-                <button type="submit" class="btn-submit-teal">💾 Save Settings</button>
-                <a href="{{ route('admin.settings.gateways') }}" class="btn-save" style="background:#6c757d;text-decoration:none;display:inline-flex;align-items:center;">✕ Cancel</a>
-            </div>
-        </form>
-    </div>
 
 
     {{-- ══════════════════════════════════════════════════════════ --}}

@@ -12,9 +12,28 @@ use App\Models\EmployeeSeller;
 use App\Models\SteadfastCourier;
 use App\Models\PathaoCourier;
 use Illuminate\Support\Facades\Http;
+use App\Services\FraudDetectionService;
 
 class SellerOrderHubController extends Controller
 {
+    public function __construct(private readonly FraudDetectionService $fraudService) {}
+
+    /**
+     * Perform Fraud Check via External API
+     */
+    public function fraudCheck(Request $request)
+    {
+        $request->validate(['phone' => 'required']);
+        $externalResult = $this->fraudService->checkExternalCourierApi($request->phone);
+        $internalResult = $this->fraudService->analyzeCourierHistory($request->phone, null);
+
+        return response()->json([
+            'success'  => true,
+            'external' => $externalResult,
+            'internal' => $internalResult
+        ]);
+    }
+
     /**
      * Display a listing of orders for the authenticated seller.
      */
