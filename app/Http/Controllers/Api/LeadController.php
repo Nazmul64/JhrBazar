@@ -21,7 +21,6 @@ class LeadController extends Controller
             'seller_id' => 'nullable',
         ]);
 
-        $shopId = $request->shop_id;
         $phone = $request->phone;
         if (strlen($phone) < 11) return response()->json(['success' => false]);
 
@@ -40,17 +39,23 @@ class LeadController extends Controller
                 'url'             => $request->url,
                 'ip_address'      => $request->ip(),
                 'browser'         => $request->header('User-Agent'),
-                'device'          => $request->header('Sec-Ch-Ua-Platform') ?? 'Unknown',
+                'device'          => $this->getDeviceType($request->header('User-Agent')),
                 'status'          => 'incomplete'
             ]
         );
+
+        // Set persistent cookies for returning customer tracking (1 year)
+        \Illuminate\Support\Facades\Cookie::queue('customer_tracker_phone', $phone, 525600);
+        if ($request->name) {
+            \Illuminate\Support\Facades\Cookie::queue('customer_tracker_name', $request->name, 525600);
+        }
 
         return response()->json(['success' => true, 'id' => $lead->id]);
     }
 
     private function getDeviceType($userAgent)
     {
-        $userAgent = strtolower($userAgent);
+        $userAgent = strtolower($userAgent ?? '');
         if (str_contains($userAgent, 'mobile') || str_contains($userAgent, 'android') || str_contains($userAgent, 'iphone')) {
             return 'mobile';
         }

@@ -49,12 +49,12 @@ class SellerProductController extends Controller
 
     public function create()
     {
-        $categories = Category::all();
-        $subcategories = SubCategory::all();
-        $brands = Brand::all();
-        $colors = Color::all();
-        $units = Unit::all();
-        $sizes = Size::all();
+        $categories = Category::orderBy('name', 'asc')->get();
+        $subcategories = SubCategory::orderBy('name', 'asc')->get();
+        $brands = Brand::orderBy('name', 'asc')->get();
+        $colors = Color::orderBy('name', 'asc')->get();
+        $units = Unit::orderBy('name', 'asc')->get();
+        $sizes = Size::orderBy('name', 'asc')->get();
 
         return view('seller.product.create', compact('categories', 'subcategories', 'brands', 'colors', 'units', 'sizes'));
     }
@@ -64,6 +64,7 @@ class SellerProductController extends Controller
         $rules = [
             'name' => 'required|string|max:255',
             'category_id' => 'required|integer',
+            'frontend_sections' => 'nullable|array',
             'buying_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
             'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,webp,svg|max:10240',
@@ -129,10 +130,12 @@ class SellerProductController extends Controller
             'cash_on_delivery'  => $request->has('cash_on_delivery'),
             'online_payment'    => $request->has('online_payment'),
             'is_shipping_charge' => $request->has('is_shipping_charge'),
+            'frontend_sections' => $request->frontend_sections ?? null,
             'is_active'         => true,
         ]);
 
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
         return redirect()->route('seller.product.index')->with('success', 'Product Created Successfully');
 
     }
@@ -141,12 +144,12 @@ class SellerProductController extends Controller
     {
         $product = SellerProduct::where('seller_id', Auth::id())->findOrFail($id);
         
-        $categories = Category::all();
-        $subcategories = SubCategory::all();
-        $brands = Brand::all();
-        $colors = Color::all();
-        $units = Unit::all();
-        $sizes = Size::all();
+        $categories = Category::orderBy('name', 'asc')->get();
+        $subcategories = SubCategory::orderBy('name', 'asc')->get();
+        $brands = Brand::orderBy('name', 'asc')->get();
+        $colors = Color::orderBy('name', 'asc')->get();
+        $units = Unit::orderBy('name', 'asc')->get();
+        $sizes = Size::orderBy('name', 'asc')->get();
 
         return view('seller.product.edit', compact('product', 'categories', 'subcategories', 'brands', 'colors', 'units', 'sizes'));
     }
@@ -158,6 +161,7 @@ class SellerProductController extends Controller
         $rules = [
             'name' => 'required|string|max:255',
             'category_id' => 'required|integer',
+            'frontend_sections' => 'nullable|array',
             'buying_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:10240',
@@ -242,9 +246,11 @@ class SellerProductController extends Controller
             'cash_on_delivery'  => $request->has('cash_on_delivery'),
             'online_payment'    => $request->has('online_payment'),
             'is_shipping_charge' => $request->has('is_shipping_charge'),
+            'frontend_sections' => $request->frontend_sections ?? null,
         ]);
 
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
         return redirect()->route('seller.product.index')->with('success', 'Product Updated Successfully');
 
     }
@@ -257,6 +263,7 @@ class SellerProductController extends Controller
         $product->delete();
 
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
         return redirect()->back()->with('success', 'Product Deleted Successfully');
 
     }
@@ -267,6 +274,7 @@ class SellerProductController extends Controller
         $product->update(['is_active' => !$product->is_active]);
 
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
         return redirect()->back()->with('success', 'Product Status Updated');
 
     }

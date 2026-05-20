@@ -155,7 +155,7 @@
             <div class="form-title">Frontend Placement Options</div>
             <div class="row g-4">
                 <div class="col-md-12">
-                    <div style="display:flex; flex-wrap:wrap; gap:20px;">
+                    <div style="display:flex; flex-wrap:wrap; gap:20px; max-height: 250px; overflow-y: auto; padding: 15px; border: 1.5px solid var(--border); border-radius: var(--r-sm); background: #fff;">
                         <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
                             <input type="checkbox" name="is_new_arrival" value="1" {{ old('is_new_arrival', $product->is_new_arrival) ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
                             <span style="font-size:14px; font-weight:600; color:var(--dark);">New Arrival</span>
@@ -180,6 +180,15 @@
                             <input type="checkbox" name="is_popular" value="1" {{ old('is_popular', $product->is_popular) ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
                             <span style="font-size:14px; font-weight:600; color:var(--dark);">Popular Product</span>
                         </label>
+
+                        @foreach(config('placement.frontend_sections') as $section)
+                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                                <input type="checkbox" name="frontend_sections[]" value="{{ $section }}" 
+                                    {{ (is_array(old('frontend_sections', $product->frontend_sections)) && in_array($section, old('frontend_sections', $product->frontend_sections))) ? 'checked' : '' }} 
+                                    style="width:16px;height:16px;accent-color:var(--brand);">
+                                <span style="font-size:14px; font-weight:600; color:var(--dark);">{{ $section }}</span>
+                            </label>
+                        @endforeach
                     </div>
                     <small class="text-muted d-block mt-2">Toggle where this product will be displayed on the storefront home page.</small>
                 </div>

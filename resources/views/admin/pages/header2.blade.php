@@ -9,7 +9,7 @@
   {{-- Notification removed per user request --}}
   
   <button class="header-action" id="darkToggleBtn" title="Toggle Dark/Light Mode">
-    <i class="bi {{ ($general_setting->admin_theme ?? 'light') === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill' }}"></i>
+    <i class="bi {{ ($setting->admin_theme ?? 'light') === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill' }}"></i>
   </button>
 
   {{-- Language selector removed per user request --}}

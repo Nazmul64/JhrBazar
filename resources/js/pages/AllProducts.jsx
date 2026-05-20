@@ -95,11 +95,7 @@ const AllProducts = () => {
 
             <div className="container pb-5">
                 {loading ? (
-                    <div className="text-center py-5">
-                        <div className="spinner-border text-success" role="status">
-                            <span className="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
+                    <div className="py-5" style={{ minHeight: '60vh' }}></div>
                 ) : (
                     <>
                         {/* Top Bar */}

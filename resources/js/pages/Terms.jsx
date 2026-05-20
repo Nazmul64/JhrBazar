@@ -1,7 +1,9 @@
 import React from 'react';
 import MasterLayout from '../layouts/MasterLayout';
+import { useSettings } from '../context/SettingsContext';
 
 const Terms = () => {
+    const { settings } = useSettings();
     return (
         <MasterLayout>
             <div className="container py-5">

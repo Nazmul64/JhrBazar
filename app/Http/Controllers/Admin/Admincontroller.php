@@ -65,12 +65,26 @@ class Admincontroller extends Controller
         $alreadyWithdraw = Withdraw::where('status', 'approved')->sum('amount');
         $pendingWithdraw = Withdraw::where('status', 'pending')->sum('amount');
 
+        // Dynamic Chart Data (Last 6 Months Orders)
+        $chartMonths = [];
+        $chartOrderData = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $chartMonths[] = $month->format('M');
+            $chartOrderData[] = PosInvoice::whereMonth('created_at', $month->month)
+                                         ->whereYear('created_at', $month->year)
+                                         ->count();
+        }
+
+        // User Overview Chart (Customers vs Sellers)
+        $userOverviewData = [$totalCustomers, $totalSellers, User::where('role', 'manager')->count()];
+
         return view('admin.index', compact(
             'totalOrders', 'totalProducts', 'totalCustomers', 'totalSellers',
             'pendingCount', 'confirmedCount', 'processingCount', 'pickupCount',
             'onthewayCount', 'deliveredCount', 'cancelledCount', 'trendingShops',
             'recentOrders', 'totalCommission', 'alreadyWithdraw', 'pendingWithdraw', 'favoriteProducts', 'topSellingProducts',
-            'lastMonthOrders', 'thisYearOrders'
+            'lastMonthOrders', 'thisYearOrders', 'chartMonths', 'chartOrderData', 'userOverviewData'
         ));
     }
 }

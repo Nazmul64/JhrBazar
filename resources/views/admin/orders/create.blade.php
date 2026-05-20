@@ -27,7 +27,7 @@
                             <option value="{{ $product->id }}" 
                                     data-name="{{ $product->name }}" 
                                     data-price="{{ $product->discount_price > 0 ? $product->discount_price : $product->selling_price }}"
-                                    data-image="{{ $product->thumbnail ? asset($product->thumbnail) : 'https://via.placeholder.com/50' }}"
+                                    data-image="{{ $product->thumbnail ? asset($product->thumbnail) : 'https://placehold.co/50x50/f3f4f6/6b7280?text=No+Image' }}"
                                     data-sku="{{ $product->sku }}">
                                 {{ $product->name }} ({{ $product->sku }}) - ৳{{ $product->discount_price > 0 ? $product->discount_price : $product->selling_price }}
                             </option>

@@ -291,7 +291,7 @@
             Delivered <span class="badge-count">{{ $deliveredOrders ?? 0 }}</span>
         </a>
         <a href="{{ route('admin.orders.index', 'cancelled') }}" class="pill {{ ($status ?? '') == 'cancelled' ? 'active' : '' }}">
-            Cancelled
+            Cancelled <span class="badge-count">{{ $cancelledOrders ?? 0 }}</span>
         </a>
     </div>
     @endif
@@ -444,6 +444,22 @@
                                 <div class="customer-info" style="min-width: 180px;">
                                     <span class="customer-name mb-1"><i class="bi bi-person-circle me-1"></i>{{ $customerName }}</span>
                                     <span class="customer-phone mb-1"><i class="bi bi-telephone-fill me-1"></i>{{ $customerPhone }}</span>
+                                    @if($customerPhone && $customerPhone !== 'N/A')
+                                        @php
+                                            $isOldCustomer = \App\Models\Pointofsalepo::where('phone', $customerPhone)
+                                                ->where('id', '<', $order->id)
+                                                ->exists();
+                                        @endphp
+                                        @if($isOldCustomer)
+                                            <span class="badge bg-danger text-white rounded-pill px-2 py-1 mt-1 mb-1" style="font-size: 11px; width: fit-content; font-weight: 600; box-shadow: 0 2px 5px rgba(220, 53, 69, 0.2); letter-spacing: 0.3px;">
+                                                <i class="bi bi-person-check-fill me-1"></i> Old Customer (পুরাতন)
+                                            </span>
+                                        @else
+                                            <span class="badge bg-success text-white rounded-pill px-2 py-1 mt-1 mb-1" style="font-size: 11px; width: fit-content; font-weight: 600; box-shadow: 0 2px 5px rgba(40, 167, 69, 0.2); letter-spacing: 0.3px;">
+                                                <i class="bi bi-person-plus-fill me-1"></i> New Customer (নতুন)
+                                            </span>
+                                        @endif
+                                    @endif
                                     @if($customerEmail != 'N/A')
                                         <span class="text-muted mb-1" style="font-size: 12px;"><i class="bi bi-envelope-fill me-1"></i>{{ $customerEmail }}</span>
                                     @endif

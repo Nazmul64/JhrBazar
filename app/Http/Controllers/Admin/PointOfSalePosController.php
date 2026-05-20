@@ -110,8 +110,8 @@ class PointOfSalePosController extends Controller
                 'first_name'    => 'required|string|max:100',
                 'last_name'     => 'nullable|string|max:100',
                 'phone'         => 'required|string|max:20|unique:users,phone',
-                'email'         => 'required|email|max:191|unique:users,email',
-                'password'      => 'required|string|min:6|confirmed',
+                'email'         => 'nullable|email|max:191|unique:users,email',
+                'address'       => 'required|string|max:500',
                 'gender'        => 'nullable|in:male,female,other',
                 'date_of_birth' => 'nullable|date',
             ]);
@@ -130,8 +130,9 @@ class PointOfSalePosController extends Controller
                 'name'     => $fullName,
                 'phone'    => $request->phone,
                 'email'    => $request->email,
-                'password' => Hash::make($request->password),
+                'password' => Hash::make(\Illuminate\Support\Str::random(10)),
                 'role'     => 'customer',
+                'address'  => $request->address,
             ]);
 
             $customer = Customer::create([
@@ -293,11 +294,12 @@ class PointOfSalePosController extends Controller
     // ──────────────────────────────────────────────────────────────
     public function salesShow(PosInvoice $invoice)
     {
-        $invoice->load('customer.user', 'order');
+        $invoice->load(['customer.user', 'order.staff', 'seller']);
         $settings = GenaralSetting::first();
+        $staffs   = User::whereIn('role', ['employee', 'manager', 'staff'])->get();
 
         return view('admin.pointofsalepos.show',
-            compact('invoice', 'settings'));
+            compact('invoice', 'settings', 'staffs'));
     }
 
     // ──────────────────────────────────────────────────────────────

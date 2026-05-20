@@ -23,9 +23,9 @@ class DigitalProductController extends Controller
 
     public function create()
     {
-        $categories = Category::all();
-        $subcategories = SubCategory::all();
-        $brands = Brand::all();
+        $categories = Category::orderBy('name', 'asc')->get();
+        $subcategories = SubCategory::orderBy('name', 'asc')->get();
+        $brands = Brand::orderBy('name', 'asc')->get();
         return view('admin.digital_product.create', compact('categories', 'subcategories', 'brands'));
     }
 
@@ -86,6 +86,7 @@ class DigitalProductController extends Controller
         ]);
 
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
         return redirect()->route('admin.digital_product.index')->with('success', 'Digital Product Created Successfully');
 
     }
@@ -93,10 +94,10 @@ class DigitalProductController extends Controller
     public function edit($id)
     {
         $product = DigitalProduct::findOrFail($id);
-        $categories = Category::all();
+        $categories = Category::orderBy('name', 'asc')->get();
         $category = Category::find($product->category_id);
-        $subcategories = $category ? $category->subCategories : collect();
-        $brands = Brand::all();
+        $subcategories = $category ? $category->subCategories()->orderBy('name', 'asc')->get() : collect();
+        $brands = Brand::orderBy('name', 'asc')->get();
         return view('admin.digital_product.edit', compact('product', 'categories', 'subcategories', 'brands'));
     }
 
@@ -166,6 +167,7 @@ class DigitalProductController extends Controller
         ]);
 
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
         return redirect()->route('admin.digital_product.index')->with('success', 'Digital Product Updated Successfully');
 
     }
@@ -179,6 +181,7 @@ class DigitalProductController extends Controller
         if($product->video_type === 'upload') $this->deleteFile($product->video);
         $product->delete();
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
         return redirect()->back()->with('success', 'Product Deleted Successfully');
 
     }
@@ -188,6 +191,7 @@ class DigitalProductController extends Controller
         $product = DigitalProduct::findOrFail($id);
         $product->update(['is_active' => !$product->is_active]);
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
         return redirect()->back()->with('success', 'Status Updated');
 
     }

@@ -7,7 +7,7 @@ import { useWishlist } from '../context/WishlistContext';
 const ProductCard = ({ product }) => {
     const navigate = useNavigate();
     const { settings } = useSettings();
-    const mainColor = settings?.primary_color || '#001fcc';
+    const mainColor = settings?.primary_color || window.initialSettings?.primary_color || '#57b500';
     const [isVisible, setIsVisible] = useState(false);
     const [added, setAdded] = useState(false);
     const cardRef = useRef(null);
@@ -127,6 +127,8 @@ const ProductCard = ({ product }) => {
                 }}>{product.discount}% OFF</div>
             )}
 
+
+
             {/* Added to Cart Flash */}
             {added && (
                 <div style={{
@@ -174,7 +176,7 @@ const ProductCard = ({ product }) => {
                     </h6>
                 </Link>
 
-                <div className="d-flex align-items-center gap-2 mb-2 flex-grow-1">
+                <div className="d-flex align-items-center gap-2 mb-2">
                     <span className="fw-bold product-price-current" style={{ color: '#ff4d4d', fontSize: '16px' }}>
                         ৳{Number(product.price).toLocaleString('en-BD')}
                     </span>
@@ -185,8 +187,15 @@ const ProductCard = ({ product }) => {
                     )}
                 </div>
 
+                <div className="mb-2" style={{ fontSize: '12px', fontWeight: '500' }}>
+                    <span className="text-muted">Stock: </span>
+                    <span style={{ color: (product.stock_quantity > 0 || product.current_stock > 0 || product.stock > 0) ? '#57b500' : '#d9534f', fontWeight: 'bold' }}>
+                        {(product.stock_quantity > 0 || product.current_stock > 0 || product.stock > 0) ? 'Available' : 'Stock Out'}
+                    </span>
+                </div>
+
                 {settings?.show_product_stats !== false && (
-                    <div className="d-flex justify-content-between align-items-center mb-3 border-top pt-2 mt-auto" style={{ fontSize: '11px' }}>
+                    <div className="d-flex justify-content-between align-items-center mb-3 border-top pt-2 mt-auto d-none d-md-flex" style={{ fontSize: '11px' }}>
                         <div className="text-warning">
                             ★ <span className="text-dark fw-bold">{product.rating || '0.0'}</span>{' '}
                             <span className="text-muted">({product.reviews || 0})</span>
@@ -195,7 +204,7 @@ const ProductCard = ({ product }) => {
                     </div>
                 )}
 
-                <div className={`d-flex gap-2 ${settings?.show_product_stats === false ? 'mt-auto' : ''}`}>
+                <div className={`product-card-footer d-flex gap-2 ${settings?.show_product_stats === false ? 'mt-auto' : 'mt-2 mt-md-0'}`}>
                     <button
                         onClick={handleAddToCart}
                         className="btn btn-sm d-flex align-items-center justify-content-center cart-btn-hover"
@@ -216,7 +225,9 @@ const ProductCard = ({ product }) => {
                             backgroundColor: 'var(--button-color, #57b500)',
                             borderRadius: '10px', fontSize: '13px',
                             transition: 'all 0.3s',
-                            boxShadow: `0 4px 12px rgba(0, 0, 0, 0.1)`
+                            boxShadow: `0 4px 12px rgba(0, 0, 0, 0.1)`,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden'
                         }}
                     >অর্ডার করুন</button>
                 </div>
@@ -259,9 +270,21 @@ const ProductCard = ({ product }) => {
                 
                 /* Dynamic Responsive Styles */
                 @media (max-width: 768px) {
-                    .product-card-title { font-size: ${settings?.product_title_size_mobile || '12px'} !important; }
+                    .product-card-title { 
+                        font-size: 12px !important; 
+                        margin-bottom: 5px !important;
+                        height: 2.8em !important; 
+                        -webkit-line-clamp: 2 !important;
+                    }
                     .product-card-img-wrapper { height: ${settings?.product_img_height_mobile || '150px'} !important; }
-                    .buy-now-btn { font-size: 11px !important; padding: 8px 4px !important; }
+                    .buy-now-btn { font-size: 10px !important; padding: 5px 2px !important; border-radius: 8px !important; height: 32px !important; }
+                    .cart-btn-hover { width: 32px !important; height: 32px !important; border-radius: 8px !important; font-size: 13px !important; }
+                    .product-card-footer { gap: 6px !important; }
+                    .product-price-current { font-size: 14px !important; }
+                    .product-price-old { font-size: 10px !important; }
+                    .card-body { padding: 10px !important; }
+                    .wishlist-btn-floating { width: 26px !important; height: 26px !important; top: 8px !important; right: 8px !important; }
+                    .wish-icon { font-size: 13px !important; }
                 }
                 @media (min-width: 769px) {
                     .product-card-title { font-size: ${settings?.product_title_size_desktop || '14px'} !important; }

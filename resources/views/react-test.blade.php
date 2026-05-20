@@ -18,6 +18,18 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     @viteReactRefresh
     @vite(['resources/sass/app.scss', 'resources/js/app.jsx'])
+    <script>
+        window.initialSettings = {!! json_encode($setting) !!};
+        window.initialHomeData = {!! isset($homeData) ? json_encode($homeData) : 'null' !!};
+    </script>
+    <style>
+        :root {
+            --primary-color: {{ $setting->primary_color ?? '#57b500' }};
+            --top-header-bg: {{ $setting->top_header_color ?? '#57b500' }};
+            --header-bg: {{ $setting->header_color ?? '#ffffff' }};
+            --button-color: {{ $setting->button_color ?? '#57b500' }};
+        }
+    </style>
 </head>
 <body class="bg-light">
     <div id="react-app"></div>

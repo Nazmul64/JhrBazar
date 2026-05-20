@@ -285,16 +285,19 @@
             <a class="nav-item-custom" href="{{ route('admin.orders.index', 'cancelled') }}">
                 <i class="bi bi-x-circle"></i> Cancelled
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.orders.incomplete') }}">
+            <a class="nav-item-custom {{ request()->routeIs('admin.orders.incomplete') ? 'active' : '' }}" href="{{ route('admin.orders.incomplete') }}">
                 <i class="bi bi-clipboard-x"></i> Incomplete Orders
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.customer-detector.*') ? 'active' : '' }}" href="{{ route('admin.customer-detector.index') }}">
+                <i class="bi bi-eye-fill"></i> Customer Detector 🚨
             </a>
             <a class="nav-item-custom" href="{{ route('admin.pointofsalepos.index') }}">
                 <i class="bi bi-plus-lg"></i> Create Order
             </a>
-            <a class="nav-item-custom" href="#">
+            <a class="nav-item-custom {{ request()->routeIs('admin.orders.staff_assignments') ? 'active' : '' }}" href="{{ route('admin.orders.staff_assignments') }}">
                 <i class="bi bi-person-gear"></i> Staff Assignments
             </a>
-            <a class="nav-item-custom" href="#">
+            <a class="nav-item-custom {{ request()->routeIs('admin.orders.activity_history') ? 'active' : '' }}" href="{{ route('admin.orders.activity_history') }}">
                 <i class="bi bi-clock-history"></i> Activity History
             </a>
         </div>

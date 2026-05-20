@@ -17,6 +17,7 @@ class SellerProduct extends Model
         'is_active',
         'is_new_arrival', 'is_best_seller', 'is_hot_product', 'is_flash_sale', 'is_just_for_you', 'is_popular',
         'cash_on_delivery', 'online_payment', 'is_shipping_charge',
+        'frontend_sections',
     ];
 
     protected $casts = [
@@ -34,6 +35,7 @@ class SellerProduct extends Model
         'selling_price'  => 'decimal:2',
         'discount_price' => 'decimal:2',
         'gallery_images' => 'array',
+        'frontend_sections' => 'array',
     ];
 
     public function category()
@@ -49,6 +51,11 @@ class SellerProduct extends Model
     public function brand()
     {
         return $this->belongsTo(\App\Models\Brand::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(\App\Models\Review::class, 'product_id')->where('product_type', 'seller')->where('status', 1);
     }
 
     public function getBarcodeDisplayAttribute(): string

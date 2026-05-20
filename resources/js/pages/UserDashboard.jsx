@@ -189,9 +189,7 @@ const UserDashboard = () => {
 
     if (loading) return (
         <MasterLayout>
-            <div className="container py-5 text-center">
-                <div className="spinner-border text-primary" role="status"></div>
-                <p className="mt-3">লোড হচ্ছে...</p>
+            <div className="container py-5 text-center" style={{ minHeight: '80vh' }}>
             </div>
         </MasterLayout>
     );

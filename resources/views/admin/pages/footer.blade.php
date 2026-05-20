@@ -272,6 +272,163 @@ if (donutChartEl) {
             });
         @endif
     </script>
+
+    {{-- ── Customer Detector AJAX Poller ── --}}
+    @if(auth()->check() && auth()->user()->role === 'admin')
+    <style>
+        #cd-toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 999999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 380px;
+            width: calc(100% - 40px);
+        }
+        .cd-toast-alert {
+            background: #0b1329 !important;
+            color: #ffffff !important;
+            border-radius: 12px !important;
+            padding: 16px !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.35) !important;
+            border: 1px solid #1e293b !important;
+            font-family: 'Outfit', sans-serif !important;
+            position: relative;
+            cursor: pointer;
+            animation: cdSlideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: all 0.3s ease;
+        }
+        .cd-toast-alert:hover {
+            transform: translateY(-2px) scale(1.02);
+            border-color: #38bdf8 !important;
+            box-shadow: 0 12px 30px rgba(56, 189, 248, 0.15) !important;
+        }
+        .cd-toast-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .cd-toast-close:hover {
+            color: #ffffff;
+        }
+        @keyframes cdSlideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+    <script>
+        function playNotificationSound() {
+            try {
+                let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                let osc = audioCtx.createOscillator();
+                let gainNode = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.08); // A5
+                
+                gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+                
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.35);
+            } catch (e) {
+                console.log("Audio play failed: ", e);
+            }
+        }
+
+        $(document).ready(function() {
+            // Container setup
+            if (!$('#cd-toast-container').length) {
+                $('body').append('<div id="cd-toast-container"></div>');
+            }
+
+            function pollCustomerDetector() {
+                $.ajax({
+                    url: "{{ route('admin.customer-detector.poll') }}",
+                    method: "GET",
+                    dataType: "json",
+                    success: function(visits) {
+                        if (visits && visits.length > 0) {
+                            visits.forEach(function(visit) {
+                                playNotificationSound();
+                                
+                                let timeStr = new Date(visit.visited_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                let toastId = 'cd-toast-' + visit.id;
+                                
+                                // Map URL path to beautiful names if possible
+                                let pageName = visit.page_visited;
+                                if (pageName.includes('checkout') || pageName.toLowerCase() === 'checkout') {
+                                    pageName = 'চেকআউট পেজ';
+                                } else if (pageName === '/' || pageName.toLowerCase() === 'home' || pageName.toLowerCase() === 'index') {
+                                    pageName = 'হোম পেজ';
+                                } else if (pageName.toLowerCase() === 'cart') {
+                                    pageName = 'কার্ট পেজ';
+                                }
+
+                                let toastHtml = `
+                                    <div id="${toastId}" class="cd-toast-alert">
+                                        <button type="button" class="cd-toast-close">&times;</button>
+                                        <div style="font-weight: 700; color: #38bdf8; font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                                            <span>🔔</span> Returning Customer Visit Alert!
+                                        </div>
+                                        <div style="font-size: 13px; color: #e2e8f0; line-height: 1.4; margin-bottom: 8px; font-weight: 500;">
+                                            Customer <strong>${visit.customer_name}</strong> (<span style="color: #38bdf8;">${visit.phone_number}</span>) just visited <strong style="color: #f59e0b;">🛒 ${pageName}</strong>!
+                                        </div>
+                                        <div style="font-size: 11px; color: #94a3b8; display: flex; align-items: center; gap: 4px; font-weight: 600;">
+                                            <span>🕒</span> ${timeStr} (just now)
+                                        </div>
+                                    </div>
+                                `;
+
+                                $('#cd-toast-container').append(toastHtml);
+
+                                // Setup card click navigation
+                                $(`#${toastId}`).on('click', function(e) {
+                                    if ($(e.target).hasClass('cd-toast-close')) {
+                                        e.stopPropagation();
+                                        $(`#${toastId}`).remove();
+                                        return;
+                                    }
+                                    window.location.href = "{{ route('admin.customer-detector.index') }}?search=" + encodeURIComponent(visit.phone_number);
+                                });
+
+                                // Auto remove toast after 10 seconds
+                                setTimeout(function() {
+                                    let el = document.getElementById(toastId);
+                                    if (el) {
+                                        el.style.opacity = '0';
+                                        el.style.transform = 'translateX(100px)';
+                                        setTimeout(() => el.remove(), 300);
+                                    }
+                                }, 10000);
+                            });
+                        }
+                    }
+                });
+            }
+
+            // Poll every 8 seconds
+            setInterval(pollCustomerDetector, 8000);
+            // Run immediately on page load
+            pollCustomerDetector();
+        });
+    </script>
+    @endif
+
     @stack('scripts')
 </body>
 </html>

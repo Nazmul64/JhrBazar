@@ -35,6 +35,11 @@ class DigitalProduct extends Model
         return $this->belongsTo(Brand::class, 'brand_id');
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'product_id')->where('product_type', 'digital_admin')->where('status', 1);
+    }
+
     protected static function booted(): void
     {
         static::saving(function (DigitalProduct $product) {

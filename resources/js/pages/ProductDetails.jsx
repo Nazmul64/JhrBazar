@@ -41,18 +41,8 @@ const ProductDetails = () => {
                 if (res.data.success) {
                     const pData = res.data.data;
                     setProduct(pData);
-
-                    // Fetch reviews using the detected type and ID from product data
-                    const reviewsRes = await axios.get(`/api/product/${pData.product_type}/${pData.id}/reviews`);
-                    if (reviewsRes.data.success) {
-                        setReviews(reviewsRes.data.data);
-                    }
-
-                    // Fetch related products
-                    const relatedRes = await axios.get(`/api/product/${pData.product_type}/${pData.id}/related`);
-                    if (relatedRes.data.success) {
-                        setRelatedProducts(relatedRes.data.data);
-                    }
+                    setReviews(pData.reviews || []);
+                    setRelatedProducts(pData.related || []);
                 }
             } catch (error) {
                 console.error("Error fetching product details:", error);
@@ -187,10 +177,7 @@ const ProductDetails = () => {
     if (loading) {
         return (
             <MasterLayout>
-                <div className="container py-5 text-center">
-                    <div className="spinner-border text-success" role="status">
-                        <span className="visually-hidden">লোড হচ্ছে...</span>
-                    </div>
+                <div className="container py-5 text-center" style={{ minHeight: '60vh' }}>
                 </div>
             </MasterLayout>
         );
@@ -284,6 +271,28 @@ const ProductDetails = () => {
                 }
                 .hover-wishlist:hover { color: #ff4d4d !important; transform: scale(1.05); }
                 .hover-share:hover { color: ${mainColor} !important; transform: scale(1.05); }
+                
+                /* Mobile Responsive Adjustments */
+                @media (max-width: 768px) {
+                    .product-title-responsive { font-size: 18px !important; margin-bottom: 8px !important; }
+                    .product-price-responsive { font-size: 22px !important; }
+                    .product-btn-responsive { 
+                        font-size: 13px !important; 
+                        padding: 8px 5px !important; 
+                        border-radius: 8px !important;
+                    }
+                    .support-btn-responsive {
+                        font-size: 11px !important;
+                        padding: 8px 4px !important;
+                        white-space: nowrap !important;
+                        gap: 4px !important;
+                    }
+                    .thumbnail-item-mobile {
+                        width: 55px !important;
+                        height: 55px !important;
+                        min-width: 55px !important;
+                    }
+                }
             `}</style>
 
             <div className={`${product.seller_id ? 'container-fluid px-4 px-md-5' : 'container'} py-4`}>
@@ -313,8 +322,11 @@ const ProductDetails = () => {
                                                 onClick={() => setActiveImageIndex(i)}
                                                 className="thumbnail-item"
                                                 style={{
-                                                    width: '70px',
-                                                    height: '70px',
+                                                    width: '75px',
+                                                    height: '75px',
+                                                    minWidth: '75px',
+                                                    minHeight: '75px',
+                                                    flexShrink: 0,
                                                     border: i === activeImageIndex ? `2px solid ${mainColor}` : '1px solid #eee',
                                                     borderRadius: '10px',
                                                     overflow: 'hidden',
@@ -382,26 +394,28 @@ const ProductDetails = () => {
                                 </div>
 
                                 {/* Horizontal Thumbnails for Mobile Only */}
-                                <div className="d-flex d-md-none gap-2 mt-3 overflow-auto pb-2" style={{ scrollbarWidth: 'thin' }}>
+                                <div className="d-flex d-md-none gap-2 mt-3 overflow-auto pb-2" style={{ scrollbarWidth: 'none' }}>
                                     {productImages.map((img, i) => (
                                         <div
                                             key={i}
                                             onClick={() => setActiveImageIndex(i)}
-                                            className="thumbnail-item"
+                                            className="thumbnail-item thumbnail-item-mobile"
                                             style={{
-                                                width: '70px',
-                                                height: '70px',
-                                                minWidth: '70px',
+                                                width: '75px',
+                                                height: '75px',
+                                                minWidth: '75px',
+                                                minHeight: '75px',
+                                                flexShrink: 0,
                                                 border: i === activeImageIndex ? `2px solid ${mainColor}` : '1px solid #eee',
                                                 borderRadius: '10px',
                                                 overflow: 'hidden',
                                                 cursor: 'pointer',
-                                                padding: '5px',
+                                                padding: '3px',
                                                 backgroundColor: '#fff',
                                                 opacity: i === activeImageIndex ? 1 : 0.6
                                             }}
                                         >
-                                            <img src={img} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '5px' }} alt="thumb" />
+                                            <img src={getImageUrl(img)} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '7px' }} alt="thumb" />
                                         </div>
                                     ))}
                                 </div>
@@ -411,7 +425,7 @@ const ProductDetails = () => {
                             <div className="col-md-6 ps-md-5 position-relative">
                                 {/* Zoom Overlay */}
                                 {zoomPos.show && (
-                                    <div style={{
+                                    <div className="d-none d-md-block" style={{
                                         position: 'absolute',
                                         top: 0,
                                         left: '15px',
@@ -433,7 +447,7 @@ const ProductDetails = () => {
                                 )}
 
                                 <span className="badge mb-2 px-3 py-2" style={{ backgroundColor: '#fff0f3', color: '#ff4d4d', fontSize: '12px', fontWeight: 'bold', borderRadius: '5px' }}>{product.category || 'Product'}</span>
-                                <h1 className="fw-bold mb-3" style={{ color: '#333', fontSize: '32px' }}>{product.name}</h1>
+                                <h1 className="fw-bold mb-3 product-title-responsive" style={{ color: '#333', fontSize: '32px' }}>{product.name}</h1>
                                 <div 
                                     className="text-muted mb-4" 
                                     style={{ fontSize: '15px', lineHeight: '1.6' }}
@@ -465,7 +479,7 @@ const ProductDetails = () => {
                                 </div>
 
                                 <div className="d-flex align-items-center gap-3 mb-4">
-                                    <h2 className="fw-bold mb-0" style={{ color: mainColor, fontSize: '36px' }}>৳{Number(product.price).toLocaleString('en-BD')}</h2>
+                                    <h2 className="fw-bold mb-0 product-price-responsive" style={{ color: mainColor, fontSize: '36px' }}>৳{Number(product.price).toLocaleString('en-BD')}</h2>
                                     {product.old_price > product.price && (
                                         <span className="text-muted text-decoration-line-through">
                                             ৳{Number(product.old_price).toLocaleString('en-BD')}
@@ -475,9 +489,15 @@ const ProductDetails = () => {
 
                                 {/* Product Variations */}
                                 <div className="mb-4">
-                                    <div className="d-flex align-items-center gap-4 mb-4">
+                                    <div className="d-flex flex-wrap align-items-center gap-4 mb-4">
                                         <div className="fs-6"><span className="text-muted">ব্র্যান্ড:</span> <span className="fw-bold text-dark">{product.brand || 'N/A'}</span></div>
                                         <div className="fs-6"><span className="text-muted">SKU:</span> <span className="fw-bold text-dark">{product.sku || 'N/A'}</span></div>
+                                        <div className="fs-6">
+                                            <span className="text-muted">স্টক:</span>{' '}
+                                            <span className="fw-bold" style={{ color: (product.stock > 0 || product.stock >= 999999) ? '#28a745' : '#dc3545' }}>
+                                                {(product.stock >= 999999 || product.stock_quantity >= 999999) ? 'Unlimited' : (product.stock > 0 ? `${product.stock} Available` : 'Out of Stock')}
+                                            </span>
+                                        </div>
                                     </div>
 
                                     {product.color && (
@@ -513,64 +533,66 @@ const ProductDetails = () => {
                                         </div>
                                     )}
 
-                                    {/* Quantity Selection */}
-                                    <div className="mb-4">
-                                        <label className="small fw-bold mb-2">পরিমাণ:</label>
-                                        <div className="d-flex align-items-center" style={{ width: '120px', border: '1px solid #ddd', borderRadius: '5px', overflow: 'hidden' }}>
-                                            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="btn btn-light border-0 px-3 py-1" style={{ borderRadius: 0, backgroundColor: '#f8f9fa' }}>-</button>
-                                            <input type="text" value={quantity} readOnly className="form-control border-0 text-center px-0 py-1 bg-white" style={{ width: '40px', fontSize: '14px', borderRadius: 0, boxShadow: 'none' }} />
-                                            <button onClick={() => setQuantity(quantity + 1)} className="btn btn-light border-0 px-3 py-1" style={{ borderRadius: 0, backgroundColor: '#f8f9fa' }}>+</button>
+                                    {/* Action Area: Quantity & Buttons */}
+                                    <div className="d-flex flex-column flex-md-row align-items-md-end gap-3 mb-4">
+                                        {/* Quantity Selection */}
+                                        <div>
+                                            <label className="small fw-bold mb-2">পরিমাণ:</label>
+                                            <div className="d-flex align-items-center" style={{ width: '120px', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
+                                                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="btn btn-light border-0 px-3 py-2" style={{ borderRadius: 0, backgroundColor: '#f8f9fa', fontSize: '18px', fontWeight: 'bold' }}>-</button>
+                                                <input type="text" value={quantity} readOnly className="form-control border-0 text-center px-0 bg-white fw-bold" style={{ width: '40px', fontSize: '16px', borderRadius: 0, boxShadow: 'none' }} />
+                                                <button onClick={() => setQuantity(quantity + 1)} className="btn btn-light border-0 px-3 py-2" style={{ borderRadius: 0, backgroundColor: '#f8f9fa', fontSize: '18px', fontWeight: 'bold' }}>+</button>
+                                            </div>
                                         </div>
-                                        <small className="text-muted mt-2 d-block">স্টক: {product.stock}</small>
+
+                                        {/* Buttons */}
+                                        <div className="d-flex flex-grow-1 gap-3">
+                                            <button
+                                                onClick={handleAddToCart}
+                                                className="btn flex-grow-1 d-flex align-items-center justify-content-center gap-2 product-btn-responsive"
+                                                style={{
+                                                    border: `1.5px solid ${mainColor}`,
+                                                    color: mainColor,
+                                                    backgroundColor: '#fff',
+                                                    borderRadius: '8px',
+                                                    fontSize: '16px',
+                                                    fontWeight: 'bold',
+                                                    padding: '12px'
+                                                }}
+                                            >
+                                                🛒 কার্টে যোগ করুন
+                                            </button>
+                                            <button
+                                                onClick={handleBuyNow}
+                                                className="btn flex-grow-1 text-white fw-bold product-btn-responsive"
+                                                style={{
+                                                    backgroundColor: mainColor,
+                                                    borderRadius: '8px',
+                                                    fontSize: '16px',
+                                                    padding: '12px'
+                                                }}
+                                            >
+                                                অর্ডার করুন
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Buttons */}
-                                <div className="d-flex gap-3 mt-5">
-                                    <button
-                                        onClick={handleAddToCart}
-                                        className="btn btn-lg flex-grow-1 d-flex align-items-center justify-content-center gap-2"
-                                        style={{
-                                            border: `1.5px solid ${mainColor}`,
-                                            color: mainColor,
-                                            backgroundColor: '#fff',
-                                            borderRadius: '8px',
-                                            fontSize: '18px',
-                                            fontWeight: 'bold',
-                                            padding: '15px'
-                                        }}
-                                    >
-                                        🛒 কার্টে যোগ করুন
-                                    </button>
-                                    <button
-                                        onClick={handleBuyNow}
-                                        className="btn btn-lg flex-grow-1 text-white fw-bold"
-                                        style={{
-                                            backgroundColor: mainColor,
-                                            borderRadius: '8px',
-                                            fontSize: '18px',
-                                            padding: '15px'
-                                        }}
-                                    >
-                                        অর্ডার করুন
-                                    </button>
-                                </div>
-
                                 {/* Support Buttons */}
-                                <div className="mt-3 d-flex flex-column gap-2">
+                                <div className="mt-2 d-flex flex-row gap-2">
                                     <a
-                                        href={`tel:${supportSettings?.phone_number || "+8801816049357"}`}
-                                        className="btn d-flex align-items-center justify-content-center gap-2 text-white"
-                                        style={{ backgroundColor: '#111', borderRadius: '8px', padding: '12px', fontSize: '18px', fontWeight: 'bold', textDecoration: 'none', transition: 'all 0.3s' }}
+                                        href={`tel:${supportSettings?.phone_number || "+8801700000000"}`}
+                                        className="btn flex-grow-1 d-flex align-items-center justify-content-center gap-2 text-white support-btn-responsive shadow-sm"
+                                        style={{ backgroundColor: '#111', borderRadius: '8px', padding: '12px', fontSize: '15px', fontWeight: 'bold', textDecoration: 'none', transition: 'all 0.3s' }}
                                     >
-                                        <i className="fas fa-phone-alt"></i> কল করুন: {supportSettings?.phone_number || "+8801816049357"}
+                                        <i className="fas fa-phone-alt"></i> কল করুন: {supportSettings?.phone_number || "+8801700000000"}
                                     </a>
                                     <a
-                                        href={`https://wa.me/${supportSettings?.whatsapp_number || "8801816049357"}`}
+                                        href={`https://wa.me/${supportSettings?.whatsapp_number || "8801700000000"}`}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="btn d-flex align-items-center justify-content-center gap-2 text-white"
-                                        style={{ backgroundColor: '#25D366', borderRadius: '8px', padding: '12px', fontSize: '18px', fontWeight: 'bold', textDecoration: 'none', transition: 'all 0.3s' }}
+                                        className="btn flex-grow-1 d-flex align-items-center justify-content-center gap-2 text-white support-btn-responsive shadow-sm"
+                                        style={{ backgroundColor: '#25D366', borderRadius: '8px', padding: '12px', fontSize: '15px', fontWeight: 'bold', textDecoration: 'none', transition: 'all 0.3s' }}
                                     >
                                         <i className="fab fa-whatsapp"></i> WhatsApp অর্ডার
                                     </a>
@@ -613,35 +635,35 @@ const ProductDetails = () => {
                             </ul>
                             <div className="bg-white p-4 p-md-5 rounded shadow-sm border description-content" style={{ fontSize: '16px', lineHeight: '1.8', color: '#444' }}>
                                 {activeTab === 'about' && (
-                                    <div dangerouslySetInnerHTML={{ __html: decodeHTML(product.description || "") }}></div>
+                                    <div className="description-content-inner" dangerouslySetInnerHTML={{ __html: decodeHTML(product.description || "") }}></div>
                                 )}
 
                                 {activeTab === 'video' && product.video && (
-                                    <div className="video-container">
+                                    <div className="video-container-wrapper" style={{ position: 'relative', zIndex: 10 }}>
                                         {product.video_type === 'youtube' ? (
-                                            <div className="ratio ratio-16x9">
+                                            <div className="ratio ratio-16x9 shadow-sm" style={{ backgroundColor: '#000', borderRadius: '15px', overflow: 'hidden' }}>
                                                 <iframe
                                                     src={`https://www.youtube.com/embed/${getYouTubeId(product.video)}`}
                                                     title="Product Video"
                                                     frameBorder="0"
                                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                                     allowFullScreen
-                                                    style={{ width: '100%', height: '450px', borderRadius: '15px' }}
+                                                    style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
                                                 ></iframe>
                                             </div>
                                         ) : product.video_type === 'file' ? (
-                                            <video controls style={{ width: '100%', borderRadius: '15px' }}>
+                                            <video controls style={{ width: '100%', borderRadius: '15px', maxHeight: '500px', display: 'block', margin: '0 auto' }}>
                                                 <source src={getImageUrl(product.video)} type="video/mp4" />
                                                 Your browser does not support the video tag.
                                             </video>
                                         ) : (
-                                            <div className="ratio ratio-16x9">
+                                            <div className="ratio ratio-16x9 shadow-sm" style={{ backgroundColor: '#000', borderRadius: '15px', overflow: 'hidden' }}>
                                                 <iframe
                                                     src={product.video}
                                                     title="Product Video"
                                                     frameBorder="0"
                                                     allowFullScreen
-                                                    style={{ width: '100%', height: '450px', borderRadius: '15px' }}
+                                                    style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
                                                 ></iframe>
                                             </div>
                                         )}
@@ -741,7 +763,7 @@ const ProductDetails = () => {
 
                 {/* Related Products */}
                 {relatedProducts.length > 0 && (
-                    <div className="mt-5 pt-4">
+                    <div className="mt-5 pt-5 border-top" style={{ position: 'relative', zIndex: 1 }}>
                         <div className="d-flex align-items-center gap-2 mb-4">
                             <div style={{ width: '5px', height: '25px', backgroundColor: mainColor, borderRadius: '10px' }}></div>
                             <h4 className="fw-bold mb-0">Similar Products</h4>

@@ -2,12 +2,34 @@
 
  // Frontend SPA Root Route
  Route::get('/', function () {
-     return view('react-test');
+     $homeData = null;
+     try {
+         $response = app(\App\Http\Controllers\Api\FrontendApiController::class)->getHomeData();
+         if ($response instanceof \Symfony\Component\HttpFoundation\Response) {
+             $homeData = json_decode($response->getContent());
+         } else {
+             $homeData = json_decode(json_encode($response));
+         }
+     } catch (\Exception $e) {
+         // Fallback
+     }
+     return view('react-test', compact('homeData'));
  });
 
  // Frontend SPA Catch-all Route
  Route::get('/{any}', function () {
-     return view('react-test');
+     $homeData = null;
+     try {
+         $response = app(\App\Http\Controllers\Api\FrontendApiController::class)->getHomeData();
+         if ($response instanceof \Symfony\Component\HttpFoundation\Response) {
+             $homeData = json_decode($response->getContent());
+         } else {
+             $homeData = json_decode(json_encode($response));
+         }
+     } catch (\Exception $e) {
+         // Fallback
+     }
+     return view('react-test', compact('homeData'));
  })->where('any', '^(?!admin|api|employee|manager|seller|register|logout|user-profile).*$');
 
 use App\Http\Controllers\Admin\Adminauthcontroller;
@@ -208,6 +230,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
     // ── Categories ────────────────────────────────────────────────────────────
     Route::resource('category', CategoryController::class)->names('admin.categories');
+    Route::post('category/bulk-delete', [CategoryController::class, 'bulkDelete'])->name('admin.categories.bulkDelete');
     Route::post('category/{category}/toggle', [CategoryController::class, 'toggleStatus'])->name('admin.categories.toggle');
 
     // ── SubCategories ─────────────────────────────────────────────────────────
@@ -297,7 +320,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('products/subcategories/{categoryId}', [ProductControllerController::class, 'getSubCategories'])->name('products.subcategories');
     Route::post('products/{product}/toggle',          [ProductControllerController::class, 'toggleStatus'])    ->name('products.toggle');
     Route::get('products/{product}/barcode',          [ProductControllerController::class, 'barcode'])         ->name('products.barcode');
-    Route::resource('products', ProductControllerController::class)->names('products')->except(['show']);
+    Route::resource('products', ProductControllerController::class)->names('products');
 
     // ── Digital Products (Admin) ──────────────────────────────────────────────
     Route::get('admin-digital-products/subcategories/{categoryId}', [\App\Http\Controllers\Admin\DigitalProductController::class, 'getSubCategories'])->name('admin.digital_product.subcategories');
@@ -765,6 +788,17 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/update',          [ProfileController::class, 'update'])        ->name('update');
         Route::get('/update',           function() { return redirect()->route('admin.profile.edit'); });
         Route::post('/change-password', [ProfileController::class, 'changePassword'])->name('change-password');
+    });
+
+    // ── Customer Detector ─────────────────────────────────────────────────────
+    Route::middleware(['role:admin'])->prefix('admin')->group(function () {
+        Route::get('customer-detector', [App\Http\Controllers\Admin\CustomerDetectorController::class, 'index'])->name('admin.customer-detector.index');
+        Route::get('customer-detector/poll', [App\Http\Controllers\Admin\CustomerDetectorController::class, 'poll'])->name('admin.customer-detector.poll');
+        Route::post('customer-detector/bulk-delete', [App\Http\Controllers\Admin\CustomerDetectorController::class, 'bulkDelete'])->name('admin.customer-detector.bulk-delete');
+
+        // Cyber Security Alerts
+        Route::get('cyber-alerts', [App\Http\Controllers\Admin\FraudCheckerController::class, 'index'])->name('admin.cyber-alerts');
+        Route::delete('cyber-alerts/{id}', [App\Http\Controllers\Admin\FraudCheckerController::class, 'destroy'])->name('admin.cyber-alerts.destroy');
     });
 });
  

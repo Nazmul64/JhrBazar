@@ -55,10 +55,12 @@ class GenaralSetting extends Model
         'show_marquee',
         'slider_height',
         'slider_height_mobile',
+        'slider_speed',
         'category_img_height',
         'category_img_width',
         'category_shape',
         'category_behavior',
+        'category_slide_speed',
         'sidebar_behavior',
         'footer_text_color',
         'button_color',
@@ -93,6 +95,8 @@ class GenaralSetting extends Model
         'enable_analytics' => 'boolean',
         'enable_pixel' => 'boolean',
         'enable_gtm' => 'boolean',
+        'slider_speed' => 'integer',
+        'category_slide_speed' => 'integer',
     ];
     public function getLogoUrlAttribute(): ?string
     {

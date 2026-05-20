@@ -299,7 +299,7 @@
     <div class="s-card">
         <p class="s-title">Frontend Placement Options</p>
         <div class="s-body">
-            <div style="display:flex; flex-wrap:wrap; gap:20px;">
+            <div style="display:flex; flex-wrap:wrap; gap:20px; max-height: 250px; overflow-y: auto; padding: 10px; border: 1.5px solid var(--border); border-radius: var(--r-sm); background: #fff;">
                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
                     <input type="checkbox" name="is_new_arrival" value="1" {{ old('is_new_arrival') ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
                     <span style="font-size:13.5px; font-weight:600; color:var(--dark);">New Arrival</span>
@@ -324,6 +324,15 @@
                     <input type="checkbox" name="is_popular" value="1" {{ old('is_popular') ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
                     <span style="font-size:13.5px; font-weight:600; color:var(--dark);">Popular Product</span>
                 </label>
+                
+                @foreach(config('placement.frontend_sections') as $section)
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <input type="checkbox" name="frontend_sections[]" value="{{ $section }}" 
+                            {{ (is_array(old('frontend_sections')) && in_array($section, old('frontend_sections'))) ? 'checked' : '' }} 
+                            style="width:16px;height:16px;accent-color:var(--brand);">
+                        <span style="font-size:13.5px; font-weight:600; color:var(--dark);">{{ $section }}</span>
+                    </label>
+                @endforeach
             </div>
             <p class="img-hint" style="margin-top:12px;">Toggle where this product will be displayed on the storefront home page.</p>
         </div>
@@ -392,12 +401,45 @@
                 </div>
             </div>
             <div style="max-width:340px;">
-                <label class="f-label">Stock Quantity</label>
-                <input type="number" name="stock_quantity" min="0" class="f-input"
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <label class="f-label" style="margin-bottom: 0;">Stock Quantity</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <input type="checkbox" id="unlimited_stock" onchange="toggleStockUnlimited(this)" style="cursor: pointer;">
+                        <label for="unlimited_stock" style="font-size: 13px; cursor: pointer; color: #555; margin-bottom:0;">Unlimited</label>
+                    </div>
+                </div>
+                <input type="number" id="stock_quantity_input" name="stock_quantity" min="0" class="f-input"
                        placeholder="0" value="{{ old('stock_quantity', 0) }}">
+                <input type="hidden" id="stock_quantity_hidden" value="999999">
             </div>
         </div>
     </div>
+
+    <script>
+        function toggleStockUnlimited(checkbox) {
+            const numberInput = document.getElementById('stock_quantity_input');
+            const hiddenInput = document.getElementById('stock_quantity_hidden');
+            
+            if (checkbox.checked) {
+                numberInput.dataset.oldValue = numberInput.value;
+                numberInput.type = 'text';
+                numberInput.value = 'Unlimited';
+                numberInput.setAttribute('readonly', 'readonly');
+                numberInput.style.backgroundColor = '#f0f0f0';
+                numberInput.removeAttribute('name');
+                
+                hiddenInput.name = 'stock_quantity';
+            } else {
+                numberInput.type = 'number';
+                numberInput.value = numberInput.dataset.oldValue || 0;
+                numberInput.removeAttribute('readonly');
+                numberInput.style.backgroundColor = '';
+                numberInput.setAttribute('name', 'stock_quantity');
+                
+                hiddenInput.removeAttribute('name');
+            }
+        }
+    </script>
 
     {{-- ══════════════ IMAGES — সব ছবি uploads/product এ সেভ হবে ══════════════ --}}
     <div class="s-card">

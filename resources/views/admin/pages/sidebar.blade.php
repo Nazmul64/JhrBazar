@@ -580,9 +580,33 @@
             <a class="nav-item-custom" href="{{ route('admin.orders.index', 'cancelled') }}">
                 <i class="bi bi-x-circle"></i> Cancelled
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.orders.incomplete') }}">
+            <a class="nav-item-custom {{ request()->routeIs('admin.orders.incomplete') ? 'active' : '' }}" href="{{ route('admin.orders.incomplete') }}">
                 <i class="bi bi-clipboard-x"></i> Incomplete Orders
             </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.customer-detector.*') ? 'active' : '' }}" href="{{ route('admin.customer-detector.index') }}">
+                <i class="bi bi-eye-fill"></i> Customer Detector 🚨
+            </a>
+            
+            {{-- Fraud Checker dropdown --}}
+            <div class="nav-item-custom has-sub {{ request()->routeIs('admin.cyber-alerts') || request()->routeIs('admin.Ipblockmanage.*') || request()->routeIs('admin.fraud.apis.index') ? 'active' : '' }}"
+                 data-sub="fraud-checker">
+                <i class="bi bi-shield-fill-exclamation text-primary"></i> Fraud Checker
+                <i class="bi bi-chevron-right arrow ms-auto"></i>
+            </div>
+            <div class="nav-submenu" id="sub-fraud-checker">
+                <a class="nav-item-custom {{ request()->routeIs('admin.cyber-alerts') ? 'active' : '' }}"
+                   href="{{ route('admin.cyber-alerts') }}">
+                    <i class="bi bi-exclamation-triangle-fill text-danger"></i> Cyber Alerts (Live)
+                </a>
+                <a class="nav-item-custom {{ request()->routeIs('admin.Ipblockmanage.index') ? 'active' : '' }}"
+                   href="{{ route('admin.Ipblockmanage.index') }}">
+                    <i class="bi bi-shield-slash-fill"></i> Blocked & Fake
+                </a>
+                <a class="nav-item-custom {{ request()->routeIs('admin.fraud.apis.index') ? 'active' : '' }}"
+                   href="{{ route('admin.fraud.apis.index') }}">
+                    <i class="bi bi-gear-fill"></i> Manage Fraud APIs
+                </a>
+            </div>
             <a class="nav-item-custom" href="{{ route('admin.pointofsalepos.index') }}">
                 <i class="bi bi-plus-lg"></i> Create Order
             </a>

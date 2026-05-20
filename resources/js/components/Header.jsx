@@ -180,9 +180,12 @@ const Header = () => {
     const { wishlist } = useWishlist();
 
     const location = useLocation();
-    const mainColor = settings?.primary_color || '#001fcc';
-    const topHeaderColor = settings?.top_header_color || '#001fcc';
-    const headerColor = settings?.header_color || '#ffffff';
+    
+    // Use initialSettings for immediate color application
+    const initial = window.initialSettings || {};
+    const mainColor = settings?.primary_color || initial.primary_color || '#57b500';
+    const topHeaderColor = settings?.top_header_color || initial.top_header_color || '#57b500';
+    const headerColor = settings?.header_color || initial.header_color || '#ffffff';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -215,7 +218,6 @@ const Header = () => {
                     <div style={{ fontWeight: 'bold' }}>⚡ Free shipping on orders over 5,000 BDT</div>
                     <div className="d-none d-lg-flex gap-4">
                         <Link to="/products" className="text-white text-decoration-none">All Products</Link>
-                        <Link to="/order-tracking" className="text-white text-decoration-none">Track Order</Link>
                         <a href="/seller/login" className="text-white text-decoration-none">Become a Seller</a>
                     </div>
                 </div>
@@ -234,7 +236,12 @@ const Header = () => {
                             {/* Logo & Toggle */}
                             <div className="col-4 col-lg-2 d-flex align-items-center gap-2">
                                 <button className="btn d-lg-none p-0 border-0" onClick={() => setIsMobileMenuOpen(true)} style={{ fontSize: '24px' }}>☰</button>
-                                <Link to="/">
+                                <Link to="/" onClick={(e) => {
+                                    if (window.location.pathname === '/') {
+                                        e.preventDefault();
+                                        window.location.reload();
+                                    }
+                                }}>
                                     <img
                                         src={settings?.logo || "https://demo.readyecommerce.app/public/assets/front-end/img/logo.png"}
                                         alt={settings?.website_name || "Logo"}
@@ -250,6 +257,12 @@ const Header = () => {
 
                             {/* Icons Row */}
                             <div className="col-8 col-lg-5 d-flex justify-content-end align-items-center gap-3 gap-md-4">
+                                <Link to="/order-tracking" className="text-decoration-none d-none d-md-flex flex-column align-items-center justify-content-center hover-primary" style={{ border: `1px solid ${mainColor}`, borderRadius: '6px', padding: '5px 12px', color: mainColor, backgroundColor: `${mainColor}08`, transition: 'all 0.3s' }}>
+                                    <div style={{ fontSize: '18px', lineHeight: '1' }}>
+                                        <i className="fas fa-truck"></i>
+                                    </div>
+                                    <span style={{ fontSize: '11px', fontWeight: 'bold', marginTop: '4px' }}>অর্ডার ট্র্যাকিং</span>
+                                </Link>
                                 <Link to={localStorage.getItem('auth_token') ? "/customer/dashboard" : "/customer/login"} className="text-decoration-none text-dark d-flex flex-column align-items-center hover-primary">
                                     <div style={{ fontSize: '22px' }}>👤</div>
                                     <span style={{ fontSize: '10px', fontWeight: 'bold' }}>{localStorage.getItem('auth_token') ? "Dashboard" : "Login"}</span>
@@ -285,16 +298,18 @@ const Header = () => {
                     <div className="container d-flex align-items-center justify-content-between">
                         <div className="d-flex align-items-center">
                             {!(settings?.sidebar_behavior === 'fixed' && location.pathname === '/') && (
-                                <div onMouseEnter={() => setIsCategoryOpen(true)} onMouseLeave={() => setIsCategoryOpen(false)} style={{ position: 'relative' }}>
-                                    <div style={{ padding: '12px 20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#333', fontWeight: 'bold', borderRight: '1px solid #eee' }}>
-                                        <span style={{ color: mainColor, fontSize: '18px' }}>⣿</span> Categories
+                                <div onMouseEnter={() => setIsCategoryOpen(true)} onMouseLeave={() => setIsCategoryOpen(false)} style={{ position: 'relative', height: '100%' }}>
+                                    <div style={{ padding: '12px 25px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', backgroundColor: mainColor, fontWeight: 'bold', borderRadius: '4px 4px 0 0', height: '100%' }}>
+                                        <i className="fas fa-th-large fs-6"></i>
+                                        <span style={{ fontSize: '15px' }}>সব ক্যাটাগরি</span>
+                                        <i className="fas fa-chevron-down ms-3" style={{ fontSize: '12px', opacity: 0.8 }}></i>
                                     </div>
                                     <CategoryDropdown isOpen={isCategoryOpen} />
                                 </div>
                             )}
                             <nav className={`d-flex ${settings?.sidebar_behavior === 'fixed' && location.pathname === '/' ? '' : 'ms-2'}`}>
                                 <Link to="/" style={navLinkStyle('/')} className="nav-item-custom">Home</Link>
-                                <Link to="/products-all/all" style={navLinkStyle('/products-all/all')} className="nav-item-custom">Products</Link>
+                                <Link to="/products-all/all" style={navLinkStyle('/products-all/all')} className="nav-item-custom">All Products</Link>
                                 <Link to="/products-all/digital" style={navLinkStyle('/products-all/digital')} className="nav-item-custom">Digital Products</Link>
                                 <Link to="/products-all/popular" style={navLinkStyle('/products-all/popular')} className="nav-item-custom">Popular Products</Link>
                                 <Link to="/products-all/best-deal" style={navLinkStyle('/products-all/best-deal')} className="nav-item-custom">Best Deals</Link>
@@ -355,7 +370,9 @@ const Header = () => {
                             <Link to="/products" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">All Products</Link>
                             <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">My Cart</Link>
                             <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">My Wishlist</Link>
-                            <Link to="/order-tracking" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">Track Order</Link>
+                            <Link to="/order-tracking" onClick={() => setIsMobileMenuOpen(false)} className="d-flex align-items-center p-3 px-4 text-decoration-none border-bottom" style={{ color: mainColor, backgroundColor: `${mainColor}08`, fontWeight: 'bold' }}>
+                                <i className="fas fa-truck me-3 fs-5"></i> অর্ডার ট্র্যাকিং
+                            </Link>
                             {localStorage.getItem('auth_token') ? (
                                 <Link to="/customer/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">Dashboard</Link>
                             ) : (

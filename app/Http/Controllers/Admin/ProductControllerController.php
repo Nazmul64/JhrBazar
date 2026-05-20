@@ -91,6 +91,7 @@ class ProductControllerController extends Controller
             'short_description' => 'required|string|max:1000',
             'description'       => 'nullable|string',
             'category_id'       => 'required|exists:categories,id',
+            'frontend_sections' => 'nullable|array',
             'sub_category_id'   => 'nullable|exists:sub_categories,id',
             'brand_id'          => 'nullable|exists:brands,id',
             'color'             => 'nullable|string|max:100',
@@ -165,14 +166,24 @@ class ProductControllerController extends Controller
             'cash_on_delivery'  => $request->has('cash_on_delivery'),
             'online_payment'    => $request->has('online_payment'),
             'is_shipping_charge' => $request->has('is_shipping_charge'),
+            'frontend_sections' => $request->frontend_sections ?? null,
             'is_active'         => true,
         ]);
 
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
 
         return redirect()->route('products.index')
 
             ->with('success', 'Product created successfully.');
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  Show
+    // ──────────────────────────────────────────────────────────────
+    public function show(Product $product)
+    {
+        return view('admin.product.show', compact('product'));
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -205,6 +216,7 @@ class ProductControllerController extends Controller
             'short_description' => 'required|string|max:1000',
             'description'       => 'nullable|string',
             'category_id'       => 'required|exists:categories,id',
+            'frontend_sections' => 'nullable|array',
             'sub_category_id'   => 'nullable|exists:sub_categories,id',
             'brand_id'          => 'nullable|exists:brands,id',
             'color'             => 'nullable|string|max:100',
@@ -302,9 +314,11 @@ class ProductControllerController extends Controller
             'cash_on_delivery'  => $request->has('cash_on_delivery'),
             'online_payment'    => $request->has('online_payment'),
             'is_shipping_charge' => $request->has('is_shipping_charge'),
+            'frontend_sections' => $request->frontend_sections ?? null,
         ]);
 
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
 
         return redirect()->route('products.index')
 
@@ -331,6 +345,7 @@ class ProductControllerController extends Controller
         $product->delete();
 
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
 
         return redirect()->route('products.index')
 
@@ -344,6 +359,7 @@ class ProductControllerController extends Controller
     {
         $product->update(['is_active' => !$product->is_active]);
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
         return redirect()->back()->with('success', 'Product status updated.');
 
     }

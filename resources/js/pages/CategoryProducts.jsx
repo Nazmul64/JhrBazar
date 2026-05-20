@@ -17,6 +17,12 @@ const CategoryProducts = () => {
     const [activeCategoryName, setActiveCategoryName] = useState("");
     const [priceRange, setPriceRange] = useState(5000);
 
+    const formatImagePath = (path) => {
+        if (!path) return '/placeholder.jpg';
+        if (path.startsWith('http')) return path;
+        return path.startsWith('/') ? path : '/' + path;
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
@@ -114,7 +120,7 @@ const CategoryProducts = () => {
                                                     style={{ transition: 'all 0.2s' }}
                                                 >
                                                     <div className="d-flex align-items-center gap-2">
-                                                        <img src={cat.thumbnail || '/placeholder.jpg'} alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+                                                        <img src={formatImagePath(cat.thumbnail)} alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
                                                         <span>{cat.name}</span>
                                                     </div>
                                                     <i className={`fas ${isActive ? 'fa-chevron-down' : 'fa-chevron-right'} small`}></i>
@@ -167,11 +173,7 @@ const CategoryProducts = () => {
                     {/* Right Product Grid */}
                     <div className="col-lg-9">
                         {loading ? (
-                            <div className="text-center py-5">
-                                <div className="spinner-border text-success" role="status">
-                                    <span className="visually-hidden">Loading...</span>
-                                </div>
-                            </div>
+                            <div className="py-5" style={{ minHeight: '60vh' }}></div>
                         ) : (
                             <>
                                 {/* Top Bar */}

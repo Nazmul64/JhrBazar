@@ -78,6 +78,7 @@ class SellerOrderHubController extends Controller
         $processingOrders= PosInvoice::where('seller_id', Auth::id())->whereHas('order', fn($q) => $q->where('status', 'processing'))->count();
         $shippedOrders   = PosInvoice::where('seller_id', Auth::id())->whereHas('order', fn($q) => $q->where('status', 'shipped'))->count();
         $deliveredOrders = PosInvoice::where('seller_id', Auth::id())->whereHas('order', fn($q) => $q->where('status', 'delivered'))->count();
+        $cancelledOrders = PosInvoice::where('seller_id', Auth::id())->whereHas('order', fn($q) => $q->where('status', 'cancelled'))->count();
 
         return view('seller.orders.index', compact(
             'orders', 
@@ -90,7 +91,8 @@ class SellerOrderHubController extends Controller
             'pendingOrders',
             'processingOrders',
             'shippedOrders',
-            'deliveredOrders'
+            'deliveredOrders',
+            'cancelledOrders'
         ));
     }
 

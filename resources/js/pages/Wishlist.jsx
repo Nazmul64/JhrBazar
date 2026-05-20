@@ -34,9 +34,7 @@ const Wishlist = () => {
                 </div>
 
                 {loading ? (
-                    <div className="text-center py-5">
-                        <div className="spinner-border text-success" role="status"></div>
-                    </div>
+                    <div className="py-5" style={{ minHeight: '60vh' }}></div>
                 ) : (
                     wishlist.length > 0 ? (
                         <div className="card border-0 shadow-sm overflow-hidden" style={{ borderRadius: '15px', border: '1px solid #f0f0f0' }}>

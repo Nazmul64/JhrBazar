@@ -16,7 +16,7 @@ class CategoryController extends Controller
     // ══════════════════════════════════════════
     public function index()
     {
-        $categories = Category::latest()->get();
+        $categories = Category::orderBy('name', 'asc')->get();
         return view('admin.category.index', compact('categories'));
     }
 
@@ -117,6 +117,34 @@ class CategoryController extends Controller
         return redirect()->route('admin.categories.index')
 
             ->with('success', 'Category deleted successfully.');
+    }
+
+    // ══════════════════════════════════════════
+    //  BULK DELETE
+    // ══════════════════════════════════════════
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:categories,id',
+        ]);
+
+        $ids = $request->input('ids');
+        $categories = Category::whereIn('id', $ids)->get();
+
+        foreach ($categories as $category) {
+            $this->deleteImage($category->thumbnail);
+            $category->delete();
+        }
+
+        Cache::forget('home_data_v2');
+        Cache::forget('categories_with_sub_v2');
+        Cache::forget('general_settings_with_cats');
+
+        return response()->json([
+            'success' => true,
+            'message' => count($ids) . ' categories deleted successfully.'
+        ]);
     }
 
     // ══════════════════════════════════════════

@@ -74,12 +74,7 @@ const SearchResults = () => {
 
             <div className="container pb-5" style={{ minHeight: '60vh' }}>
                 {loading ? (
-                    <div className="text-center py-5">
-                        <div className="spinner-border text-success" role="status">
-                            <span className="visually-hidden">Searching...</span>
-                        </div>
-                        <p className="mt-3 text-muted">Searching for "{searchTerm}"...</p>
-                    </div>
+                    <div className="py-5" style={{ minHeight: '60vh' }}></div>
                 ) : (
                     <>
                         {/* Results Count Bar */}

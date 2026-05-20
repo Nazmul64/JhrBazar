@@ -131,6 +131,140 @@
                                        placeholder="Enter Confirm Password">
                             </div>
 
+                            {{-- HRM details --}}
+                            <div class="col-md-6">
+                                <label class="emp-label">Basic Salary (BDT)</label>
+                                <input type="number" step="0.01" name="salary"
+                                       class="form-control emp-input @error('salary') is-invalid @enderror"
+                                       placeholder="Enter basic salary" value="{{ old('salary') }}">
+                                @error('salary')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="emp-label">Joining Date</label>
+                                <input type="date" name="joining_date"
+                                       class="form-control emp-input @error('joining_date') is-invalid @enderror"
+                                       value="{{ old('joining_date') }}">
+                                @error('joining_date')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="emp-label">Department Unit</label>
+                                <select name="department_id" id="department_id" class="form-select emp-input @error('department_id') is-invalid @enderror">
+                                    <option value="">No Department</option>
+                                    @foreach($departments as $dept)
+                                        <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>
+                                            {{ $dept->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('department_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="emp-label">Job Designation / Role</label>
+                                <select name="designation_id" id="designation_id" class="form-select emp-input @error('designation_id') is-invalid @enderror">
+                                    <option value="">Select Designation</option>
+                                </select>
+                                @error('designation_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- Divider for Parents Details --}}
+                            <div class="col-12 mt-4 mb-2">
+                                <hr class="my-2" style="border-color:#e2e8f0;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-users" style="color:#aaa; font-size:14px;"></i>
+                                    <span style="font-size:13px; font-weight:600; color:#555;">Parent's & NID Details</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="emp-label">Father's Name</label>
+                                <input type="text" name="father_name"
+                                       class="form-control emp-input @error('father_name') is-invalid @enderror"
+                                       placeholder="Father's Name" value="{{ old('father_name') }}">
+                                @error('father_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="emp-label">Mother's Name</label>
+                                <input type="text" name="mother_name"
+                                       class="form-control emp-input @error('mother_name') is-invalid @enderror"
+                                       placeholder="Mother's Name" value="{{ old('mother_name') }}">
+                                @error('mother_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="emp-label">Father's NID Number</label>
+                                <input type="text" name="father_nid"
+                                       class="form-control emp-input @error('father_nid') is-invalid @enderror"
+                                       placeholder="Father's NID" value="{{ old('father_nid') }}">
+                                @error('father_nid')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="emp-label">Mother's NID Number</label>
+                                <input type="text" name="mother_nid"
+                                       class="form-control emp-input @error('mother_nid') is-invalid @enderror"
+                                       placeholder="Mother's NID" value="{{ old('mother_nid') }}">
+                                @error('mother_nid')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- Divider for Address Details --}}
+                            <div class="col-12 mt-4 mb-2">
+                                <hr class="my-2" style="border-color:#e2e8f0;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-map-marker-alt" style="color:#aaa; font-size:14px;"></i>
+                                    <span style="font-size:13px; font-weight:600; color:#555;">Address & Location</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="emp-label">District</label>
+                                <input type="text" name="district"
+                                       class="form-control emp-input @error('district') is-invalid @enderror"
+                                       placeholder="District" value="{{ old('district') }}">
+                                @error('district')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="emp-label">Thana</label>
+                                <input type="text" name="thana"
+                                       class="form-control emp-input @error('thana') is-invalid @enderror"
+                                       placeholder="Thana / Police Station" value="{{ old('thana') }}">
+                                @error('thana')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-12">
+                                <label class="emp-label">Full Address</label>
+                                <textarea name="address" rows="3"
+                                          class="form-control emp-input @error('address') is-invalid @enderror"
+                                          placeholder="Full Address...">{{ old('address') }}</textarea>
+                                @error('address')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
                         </div>
                     </div>
 
@@ -196,6 +330,28 @@
                             <input type="hidden" name="role" id="role_name_hidden"
                                    value="{{ old('role', 'admin') }}">
                             @error('role_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Father's NID Copy --}}
+                        <div class="mb-3">
+                            <label class="emp-label">Father's NID Copy</label>
+                            <input type="file" name="father_nid_copy"
+                                   class="form-control emp-input @error('father_nid_copy') is-invalid @enderror"
+                                   accept="image/*">
+                            @error('father_nid_copy')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Mother's NID Copy --}}
+                        <div class="mb-3">
+                            <label class="emp-label">Mother's NID Copy</label>
+                            <input type="file" name="mother_nid_copy"
+                                   class="form-control emp-input @error('mother_nid_copy') is-invalid @enderror"
+                                   accept="image/*">
+                            @error('mother_nid_copy')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -285,6 +441,38 @@ function syncRoleName(select) {
 document.addEventListener('DOMContentLoaded', function () {
     const sel = document.getElementById('role_id_select');
     if (sel.value) syncRoleName(sel);
+});
+
+// Dynamic Department & Designation logic
+const departmentsData = @json($departments);
+document.addEventListener('DOMContentLoaded', function () {
+    const deptSelect = document.getElementById('department_id');
+    const desigSelect = document.getElementById('designation_id');
+    const oldDesigId = "{{ old('designation_id') }}";
+
+    function populateDesignations(deptId) {
+        desigSelect.innerHTML = '<option value="">Select Designation</option>';
+        if (!deptId) return;
+
+        const dept = departmentsData.find(d => d.id == deptId);
+        if (dept && dept.designations) {
+            dept.designations.forEach(function(desig) {
+                const option = document.createElement('option');
+                option.value = desig.id;
+                option.textContent = desig.name + (desig.grade ? ' (' + desig.grade + ')' : '');
+                if (oldDesigId == desig.id) option.selected = true;
+                desigSelect.appendChild(option);
+            });
+        }
+    }
+
+    deptSelect.addEventListener('change', function() {
+        populateDesignations(this.value);
+    });
+
+    if (deptSelect.value) {
+        populateDesignations(deptSelect.value);
+    }
 });
 </script>
 @endsection

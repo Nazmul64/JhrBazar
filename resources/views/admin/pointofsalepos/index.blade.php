@@ -742,6 +742,15 @@
                 <button class="btn-apply" onclick="applyCoupon()">Apply</button>
             </div>
 
+            {{-- Manual Discount --}}
+            <div class="coupon-row mt-2" style="display:flex; gap:10px; margin-top:8px;">
+                <select id="manualDiscountType" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateTotals()">
+                    <option value="tk">Flat (৳)</option>
+                    <option value="percent">%</option>
+                </select>
+                <input type="number" id="manualDiscountInput" placeholder="Manual Discount" style="flex:1; padding: 6px; border: 1px solid #ccc; border-radius: 4px;" oninput="updateTotals()" min="0">
+            </div>
+
             {{-- Grand Total + Actions --}}
             <div class="grand-section">
                 <div class="pos-actions">
@@ -851,21 +860,16 @@
                     <span class="ferr">Phone is required.</span>
                 </div>
                 <div class="fg" id="fg_email">
-                    <label>Email <span style="color:var(--accent)">*</span></label>
-                    <input type="email" id="cm_email" placeholder="Email address">
-                    <span class="ferr">Valid email is required.</span>
+                    <label>Email</label>
+                    <input type="email" id="cm_email" placeholder="Email address (optional)">
+                    <span class="ferr"></span>
                 </div>
             </div>
-            <div class="form-grid">
-                <div class="fg" id="fg_password">
-                    <label>Password <span style="color:var(--accent)">*</span></label>
-                    <input type="password" id="cm_password" placeholder="Min. 6 characters">
-                    <span class="ferr">Minimum 6 characters.</span>
-                </div>
-                <div class="fg" id="fg_password_confirmation">
-                    <label>Confirm Password <span style="color:var(--accent)">*</span></label>
-                    <input type="password" id="cm_password_confirmation" placeholder="Repeat password">
-                    <span class="ferr">Passwords do not match.</span>
+            <div class="form-grid" style="grid-template-columns: 1fr;">
+                <div class="fg" id="fg_address">
+                    <label>Address <span style="color:var(--accent)">*</span></label>
+                    <input type="text" id="cm_address" placeholder="Customer address">
+                    <span class="ferr">Address is required.</span>
                 </div>
             </div>
             <div class="form-grid">
@@ -916,6 +920,7 @@ let debounceTimer    = null;
 let selectedCustomer = null;
 let appliedCoupon    = null;
 let selectedPayment  = 'cash';
+let manualDiscount   = 0;
 
 /* ════════════════════════════════════════════════════════════
    HELPERS
@@ -1196,8 +1201,15 @@ function calcSubTotal() {
 
 function updateTotals() {
     const subTotal  = calcSubTotal();
-    const discount  = appliedCoupon ? appliedCoupon.discount : 0;
-    const afterDisc = Math.max(0, subTotal - discount);
+    const couponDiscount  = appliedCoupon ? appliedCoupon.discount : 0;
+    
+    // Calculate Manual Discount
+    let manDiscVal = parseFloat(document.getElementById('manualDiscountInput').value) || 0;
+    let manDiscType = document.getElementById('manualDiscountType').value;
+    manualDiscount = manDiscType === 'percent' ? (subTotal * manDiscVal / 100) : manDiscVal;
+    
+    const totalDiscount = couponDiscount + manualDiscount;
+    const afterDisc = Math.max(0, subTotal - totalDiscount);
 
     let totalTax = 0;
     document.querySelectorAll('#taxRows .tax-row-item[data-rate]').forEach(row => {
@@ -1215,14 +1227,14 @@ function updateTotals() {
     document.getElementById('grandTotalBtn').textContent = CURRENCY + grand.toFixed(2);
 
     const dr = document.getElementById('discountRow');
-    if (discount > 0) {
-        document.getElementById('sumDiscount').textContent = '– ' + CURRENCY + discount.toFixed(2);
+    if (totalDiscount > 0) {
+        document.getElementById('sumDiscount').textContent = '– ' + CURRENCY + totalDiscount.toFixed(2);
         dr.style.display = 'flex';
     } else {
         dr.style.display = 'none';
     }
 
-    return { subTotal, discount, totalTax, grand };
+    return { subTotal, discount: totalDiscount, totalTax, grand };
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -1315,11 +1327,12 @@ function placeOrder(status = 'completed') {
 }
 
 function resetCart() {
-    cart = []; appliedCoupon = null; selectedCustomer = null; selectedPayment = 'cash';
+    cart = []; appliedCoupon = null; selectedCustomer = null; selectedPayment = 'cash'; manualDiscount = 0;
     clearCustomer();
     document.getElementById('couponInput').value       = '';
     document.getElementById('couponTag').classList.remove('show');
     document.getElementById('couponRow').style.display = 'flex';
+    document.getElementById('manualDiscountInput').value = '';
     const noteEl = document.getElementById('cdNote');
     if (noteEl) noteEl.value = '';
     document.querySelectorAll('.pm-btn').forEach(b => b.classList.remove('active'));
@@ -1374,7 +1387,7 @@ function removeCoupon() {
 ════════════════════════════════════════════════════════════ */
 function openCustomerModal() {
     ['cm_first_name','cm_last_name','cm_phone','cm_email',
-     'cm_password','cm_password_confirmation'].forEach(id => {
+     'cm_address'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
@@ -1402,15 +1415,12 @@ function saveCustomer() {
     const firstName = document.getElementById('cm_first_name').value.trim();
     const phone     = document.getElementById('cm_phone').value.trim();
     const email     = document.getElementById('cm_email').value.trim();
-    const password  = document.getElementById('cm_password').value;
-    const confirm   = document.getElementById('cm_password_confirmation').value;
+    const address   = document.getElementById('cm_address').value.trim();
 
     let hasErr = false;
-    if (!firstName)          { setFgError('fg_first_name', 'First name is required.');             hasErr = true; }
-    if (!phone)               { setFgError('fg_phone', 'Phone is required.');                      hasErr = true; }
-    if (!email)               { setFgError('fg_email', 'Email is required.');                      hasErr = true; }
-    if (password.length < 6) { setFgError('fg_password', 'Minimum 6 characters.');                 hasErr = true; }
-    if (password !== confirm) { setFgError('fg_password_confirmation', 'Passwords do not match.'); hasErr = true; }
+    if (!firstName) { setFgError('fg_first_name', 'First name is required.'); hasErr = true; }
+    if (!phone)     { setFgError('fg_phone', 'Phone is required.');           hasErr = true; }
+    if (!address)   { setFgError('fg_address', 'Address is required.');       hasErr = true; }
     if (hasErr) return;
 
     const btn = document.getElementById('btnSaveCust');
@@ -1423,8 +1433,9 @@ function saveCustomer() {
         body: JSON.stringify({
             first_name:            firstName,
             last_name:             document.getElementById('cm_last_name').value.trim(),
-            phone, email, password,
-            password_confirmation: confirm,
+            phone, 
+            email, 
+            address,
             gender:                document.getElementById('cm_gender').value    || null,
             date_of_birth:         document.getElementById('cm_dob').value       || null,
         }),
@@ -1452,8 +1463,7 @@ function saveCustomer() {
                 last_name:             'fg_last_name',
                 phone:                 'fg_phone',
                 email:                 'fg_email',
-                password:              'fg_password',
-                password_confirmation: 'fg_password_confirmation',
+                address:               'fg_address',
             };
             Object.entries(res.errors).forEach(([f, msgs]) => {
                 if (map[f]) setFgError(map[f], msgs[0]);

@@ -348,7 +348,7 @@
     <div class="section-card">
         <p class="section-head"><i class="bi bi-star"></i> Frontend Placement Options</p>
         <div class="section-body">
-            <div style="display:flex; flex-wrap:wrap; gap:20px;">
+            <div style="display:flex; flex-wrap:wrap; gap:20px; max-height: 250px; overflow-y: auto; padding: 15px; border: 1.5px solid var(--border); border-radius: var(--r-sm); background: #fff;">
                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
                     <input type="checkbox" name="is_new_arrival" value="1" {{ old('is_new_arrival', $product->is_new_arrival) ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
                     <span style="font-size:13.5px; font-weight:600; color:var(--dark);">New Arrival</span>
@@ -373,6 +373,15 @@
                     <input type="checkbox" name="is_popular" value="1" {{ old('is_popular', $product->is_popular) ? 'checked' : '' }} style="width:16px;height:16px;accent-color:var(--brand);">
                     <span style="font-size:13.5px; font-weight:600; color:var(--dark);">Popular Product</span>
                 </label>
+
+                @foreach(config('placement.frontend_sections') as $section)
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <input type="checkbox" name="frontend_sections[]" value="{{ $section }}" 
+                            {{ (is_array(old('frontend_sections', $product->frontend_sections)) && in_array($section, old('frontend_sections', $product->frontend_sections))) ? 'checked' : '' }} 
+                            style="width:16px;height:16px;accent-color:var(--brand);">
+                        <span style="font-size:13.5px; font-weight:600; color:var(--dark);">{{ $section }}</span>
+                    </label>
+                @endforeach
             </div>
             <p class="field-hint" style="margin-top:12px;margin-left:0;">Toggle where this product will be displayed on the storefront home page.</p>
         </div>
@@ -451,15 +460,58 @@
             </div>
 
             <div style="max-width:320px;">
-                <label class="field-label">Stock Quantity</label>
-                <input type="number" name="stock_quantity" min="0"
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <label class="field-label" style="margin-bottom: 0;">Stock Quantity</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <input type="checkbox" id="unlimited_stock" onchange="toggleStockUnlimited(this)" style="cursor: pointer;" {{ old('stock_quantity', $product->stock_quantity) >= 999999 ? 'checked' : '' }}>
+                        <label for="unlimited_stock" style="font-size: 13px; cursor: pointer; color: #555; margin-bottom:0;">Unlimited</label>
+                    </div>
+                </div>
+                
+                @php
+                    $isUnlimited = old('stock_quantity', $product->stock_quantity) >= 999999;
+                    $stockVal = old('stock_quantity', $product->stock_quantity);
+                @endphp
+                <input type="{{ $isUnlimited ? 'text' : 'number' }}" id="stock_quantity_input" name="{{ $isUnlimited ? '' : 'stock_quantity' }}" min="0"
                        class="field-input"
                        placeholder="0"
-                       value="{{ old('stock_quantity', $product->stock_quantity) }}">
+                       value="{{ $isUnlimited ? 'Unlimited' : $stockVal }}"
+                       {{ $isUnlimited ? 'readonly' : '' }}
+                       style="{{ $isUnlimited ? 'background-color: #f0f0f0;' : '' }}">
+                       
+                <input type="hidden" id="stock_quantity_hidden" name="{{ $isUnlimited ? 'stock_quantity' : '' }}" value="999999">
             </div>
 
         </div>
     </div>
+
+    <script>
+        function toggleStockUnlimited(checkbox) {
+            const numberInput = document.getElementById('stock_quantity_input');
+            const hiddenInput = document.getElementById('stock_quantity_hidden');
+            
+            if (checkbox.checked) {
+                if(numberInput.type === 'number') {
+                    numberInput.dataset.oldValue = numberInput.value;
+                }
+                numberInput.type = 'text';
+                numberInput.value = 'Unlimited';
+                numberInput.setAttribute('readonly', 'readonly');
+                numberInput.style.backgroundColor = '#f0f0f0';
+                numberInput.removeAttribute('name');
+                
+                hiddenInput.name = 'stock_quantity';
+            } else {
+                numberInput.type = 'number';
+                numberInput.value = numberInput.dataset.oldValue || 0;
+                numberInput.removeAttribute('readonly');
+                numberInput.style.backgroundColor = '';
+                numberInput.setAttribute('name', 'stock_quantity');
+                
+                hiddenInput.removeAttribute('name');
+            }
+        }
+    </script>
 
     {{-- ════ IMAGES ════ --}}
     <div class="section-card">
@@ -482,7 +534,7 @@
                             <img src="{{ asset($product->thumbnail) }}"
                                  class="current-thumb" id="currentThumbnailImg"
                                  alt="Current thumbnail"
-                                 onerror="this.src='https://via.placeholder.com/90?text=No+Image'">
+                                 onerror="this.src='https://placehold.co/90x90/f3f4f6/6b7280?text=No+Image'">
                             <span class="current-label">Current</span>
                         </div>
                         <div class="thumb-arrow"><i class="bi bi-arrow-right"></i></div>
@@ -529,7 +581,7 @@
                                 {{-- ★ FIX: path is already "uploads/product/filename.ext" → use asset() directly --}}
                                 <img src="{{ asset($img) }}"
                                      alt="Gallery image"
-                                     onerror="this.src='https://via.placeholder.com/100?text=Error'">
+                                     onerror="this.src='https://placehold.co/100x100/f3f4f6/6b7280?text=Error'">
                                 <button type="button" class="rm-btn"
                                         onclick="markRemoveExisting('{{ $img }}','{{ md5($img) }}')">×</button>
                             </div>

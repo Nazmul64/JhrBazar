@@ -141,7 +141,7 @@
                 </tr>
             </thead>
             <tbody id="ipTableBody">
-                @forelse($ipblocks->where('is_active', false) as $index => $ipblock)
+                @forelse($ipblocks as $index => $ipblock)
                     <tr>
                         <td>{{ $index + 1 }}</td>
                         <td><code style="background:#f5f5f5; padding:2px 8px; border-radius:4px;">{{ $ipblock->ip_address }}</code></td>

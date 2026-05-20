@@ -82,3 +82,9 @@ Route::get('/chat/unread-count', [App\Http\Controllers\Api\ChatApiController::cl
 
 // Lead Generation (Incomplete Orders)
 Route::post('/leads/save', [LeadController::class, 'store']);
+
+// Customer visit tracking API (public client-side react hook)
+Route::post('track-visit', [App\Http\Controllers\Admin\CustomerDetectorController::class, 'trackVisit']);
+
+// Blocked IP Check API for cyber security warning page
+Route::get('check-ip-blocked', [App\Http\Controllers\Admin\FraudCheckerController::class, 'checkIpBlocked']);

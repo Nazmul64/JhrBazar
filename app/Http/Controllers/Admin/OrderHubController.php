@@ -74,6 +74,7 @@ class OrderHubController extends Controller
         $processingOrders= PosInvoice::whereHas('order', fn($q) => $q->where('status', 'processing'))->count();
         $shippedOrders   = PosInvoice::whereHas('order', fn($q) => $q->where('status', 'shipped'))->count();
         $deliveredOrders = PosInvoice::whereHas('order', fn($q) => $q->where('status', 'delivered'))->count();
+        $cancelledOrders = PosInvoice::whereHas('order', fn($q) => $q->where('status', 'cancelled'))->count();
 
         return view('admin.orders.index', compact(
             'orders', 
@@ -86,7 +87,8 @@ class OrderHubController extends Controller
             'pendingOrders',
             'processingOrders',
             'shippedOrders',
-            'deliveredOrders'
+            'deliveredOrders',
+            'cancelledOrders'
         ));
     }
 
@@ -625,15 +627,16 @@ class OrderHubController extends Controller
         }
 
         $orders = $query->paginate(20)->withQueryString();
-        $staffs = User::whereIn('role', ['employee', 'manager', 'staff'])->get();
+        $staffs = User::whereIn('role', ['employee', 'manager', 'staff', 'admin'])->get();
         $settings = GenaralSetting::first();
 
-        return view('admin.orders.index', [
+        return view('admin.orders.staff_assignments', [
             'orders' => $orders,
             'status' => 'assigned',
             'staffs' => $staffs,
             'settings' => $settings,
-            'title' => 'Staff Assignments'
+            'title' => 'Staff Assignments',
+            'currentStaffId' => $request->staff_id
         ]);
     }
 
@@ -642,17 +645,28 @@ class OrderHubController extends Controller
      */
     public function activityHistory(Request $request)
     {
-        $orders = PosInvoice::with(['customer.user', 'order.staff', 'seller'])
-            ->orderBy('updated_at', 'desc')
-            ->paginate(30);
+        $staffs = User::whereIn('role', ['employee', 'manager', 'staff', 'admin'])
+            ->withCount([
+                'posOrders as total_orders',
+                'posOrders as pending_orders' => function($q) {
+                    $q->where('status', 'pending');
+                },
+                'posOrders as processing_orders' => function($q) {
+                    $q->where('status', 'processing');
+                },
+                'posOrders as delivered_orders' => function($q) {
+                    $q->where('status', 'delivered');
+                }
+            ])
+            ->get();
 
         $settings = GenaralSetting::first();
 
-        return view('admin.orders.index', [
-            'orders' => $orders,
+        return view('admin.orders.activity_history', [
+            'staffs' => $staffs,
             'status' => 'activity',
             'settings' => $settings,
-            'title' => 'Recent Activity'
+            'title' => 'Staff Activity Analytics'
         ]);
     }
 }

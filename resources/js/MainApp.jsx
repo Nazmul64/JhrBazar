@@ -1,5 +1,6 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import Home from './pages/Home';
 import ShopDetails from './pages/ShopDetails';
 import ProductDetails from './pages/ProductDetails';
@@ -29,12 +30,39 @@ import { WishlistProvider } from './context/WishlistContext';
 import { Toaster } from 'react-hot-toast';
 import LiveChatWidget from './components/LiveChatWidget';
 
+const RouteTracker = () => {
+    const location = useLocation();
+
+    useEffect(() => {
+        let pageName = 'Home Page';
+        const path = location.pathname;
+
+        if (path === '/') pageName = 'Home Page';
+        else if (path.startsWith('/product/')) pageName = 'Product Details';
+        else if (path.startsWith('/shop/')) pageName = 'Shop Page';
+        else if (path === '/checkout') pageName = 'Checkout Page';
+        else if (path === '/cart') pageName = 'Cart Page';
+        else if (path === '/wishlist') pageName = 'Wishlist Page';
+        else if (path.startsWith('/category/')) pageName = 'Category Page';
+        else if (path.startsWith('/subcategory/')) pageName = 'Subcategory Page';
+        else if (path === '/search') pageName = 'Search Page';
+        else if (path === '/customer/dashboard') pageName = 'Customer Dashboard';
+        else pageName = path;
+
+        axios.post('/api/track-visit', { page: pageName })
+            .catch(err => console.log('Tracking error:', err));
+    }, [location]);
+
+    return null;
+};
+
 const MainApp = () => {
     return (
         <SettingsProvider>
             <WishlistProvider>
                 <CartProvider>
                     <Router>
+                        <RouteTracker />
                         <Toaster position="top-right" reverseOrder={false} />
                         <LiveChatWidget />
                         <Routes>

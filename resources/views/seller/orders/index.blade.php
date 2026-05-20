@@ -284,6 +284,9 @@
         <a href="{{ route('seller.orders.index', 'delivered') }}" class="pill {{ $status == 'delivered' ? 'active' : '' }}">
             Delivered <span class="badge-count">{{ $deliveredOrders }}</span>
         </a>
+        <a href="{{ route('seller.orders.index', 'cancelled') }}" class="pill {{ $status == 'cancelled' ? 'active' : '' }}">
+            Cancelled <span class="badge-count">{{ $cancelledOrders ?? 0 }}</span>
+        </a>
     </div>
 
     <div class="order-hub-card">

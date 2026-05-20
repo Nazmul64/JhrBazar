@@ -1,31 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useSettings } from '../context/SettingsContext';
 
 const CategoryDropdown = ({ isOpen }) => {
-    const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const res = await axios.get('/api/categories');
-                if (res.data.success) {
-                    setCategories(res.data.data);
-                }
-            } catch (error) {
-                console.error("Error fetching categories:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        if (isOpen) {
-            fetchCategories();
-        }
-    }, [isOpen]);
-
+    const { categories, loading } = useSettings();
     const [activeCatId, setActiveCatId] = useState(null);
     const activeCategory = categories.find(c => c.id === activeCatId);
+
+    const formatImagePath = (path) => {
+        if (!path) return '/placeholder.jpg';
+        if (path.startsWith('http')) return path;
+        return path.startsWith('/') ? path : '/' + path;
+    };
 
     if (!isOpen) return null;
 
@@ -70,7 +56,7 @@ const CategoryDropdown = ({ isOpen }) => {
                                     className="category-dropdown-item"
                                 >
                                     <img 
-                                        src={cat.thumbnail ? (cat.thumbnail.startsWith('http') ? cat.thumbnail : '/' + cat.thumbnail) : '/placeholder.jpg'} 
+                                        src={formatImagePath(cat.thumbnail)} 
                                         alt="" 
                                         style={{ width: '20px', height: '20px', objectFit: 'contain' }} 
                                     />
@@ -102,7 +88,7 @@ const CategoryDropdown = ({ isOpen }) => {
                                             onMouseLeave={(e) => e.target.style.color = 'inherit'}
                                         >
                                             <img 
-                                                src={sub.thumbnail ? (sub.thumbnail.startsWith('http') ? sub.thumbnail : sub.thumbnail) : '/placeholder.jpg'} 
+                                                src={formatImagePath(sub.thumbnail)} 
                                                 alt="" 
                                                 style={{ width: '18px', height: '18px', objectFit: 'contain', borderRadius: '3px' }} 
                                             />

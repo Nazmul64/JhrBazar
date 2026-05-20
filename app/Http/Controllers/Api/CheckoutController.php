@@ -277,7 +277,7 @@ class CheckoutController extends Controller
                     'payment_method' => $request->payment_method,
                     'coupon_code'    => $request->coupon_code,
                     'note'           => "Online Order\nName: " . $request->name . "\nPhone: " . $request->phone . "\nAddress: " . $request->address . ", " . $request->city . ($request->email ? "\nEmail: " . $request->email : ""),
-                    'status'         => 'draft',
+                    'status'         => 'pending',
                     'ip_address'     => $request->ip(),
                     'phone'          => $request->phone,
                 ]);
@@ -298,30 +298,35 @@ class CheckoutController extends Controller
                     'coupon_code'     => $request->coupon_code,
                 ]);
 
-                $order->invoice_number = $invoice->invoice_number;
                 $orders[] = $order;
-
-                // Send Email Notification to Admin
-                try {
-                    $setting = GenaralSetting::first();
-                    if ($setting && $setting->email_address) {
-                        Mail::to($setting->email_address)->send(new OrderPlacedNotification($order, $invoice));
-                    }
-                } catch (\Exception $e) {
-                    \Log::error("Failed to send order notification email: " . $e->getMessage());
-                }
             }
 
             DB::commit();
 
-            // 4. Send SMS Notification to Customer
+            // Set persistent tracking cookie for returning customer detector (1 year)
+            \Illuminate\Support\Facades\Cookie::queue('customer_tracker_phone', $request->phone, 525600);
+            \Illuminate\Support\Facades\Cookie::queue('customer_tracker_name', $request->name, 525600);
+
+            // Send Email & SMS notifications
+            try {
+                $setting = GenaralSetting::first();
+                if ($setting && $setting->email_address && count($orders) > 0) {
+                    $firstOrder = $orders[0];
+                    $firstInvoice = \App\Models\PosInvoice::where('pointofsalepo_id', $firstOrder->id)->first();
+                    if ($firstInvoice) {
+                        \Illuminate\Support\Facades\Mail::to($setting->email_address)->send(new \App\Mail\OrderPlacedNotification($firstOrder, $firstInvoice));
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::error("Failed to send order notification email: " . $e->getMessage());
+            }
+
             try {
                 $smsGateway = SmsGateway::first();
                 if ($smsGateway && $smsGateway->status && $smsGateway->order_confirm) {
                     $invoiceNumber = $orders[0]->invoice_number ?? '';
                     $shopName = GenaralSetting::first()->shop_name ?? 'Our Shop';
                     $message = "প্রিয় গ্রাহক, " . $shopName . "-এ আপনার অর্ডারটি সফলভাবে সম্পন্ন হয়েছে। ইনভয়েস নং: #" . $invoiceNumber . "। আমাদের সাথে কেনাকাটার জন্য ধন্যবাদ।";
-                    
                     SmsService::send($request->phone, $message);
                 }
             } catch (\Exception $e) {

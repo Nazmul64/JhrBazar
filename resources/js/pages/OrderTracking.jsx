@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 
 const OrderTracking = () => {
     const { settings } = useSettings();
-    const mainColor = settings?.primary_color || '#001fcc';
+    const mainColor = settings?.primary_color || window.initialSettings?.primary_color || '#57b500';
     const [invoiceNo, setInvoiceNo] = useState('');
     const [orderInfo, setOrderInfo] = useState(null);
     const [loading, setLoading] = useState(false);

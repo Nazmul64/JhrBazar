@@ -28,7 +28,8 @@ class EmployeeController extends Controller
     public function create()
     {
         $roles = Role::whereIn('user_type', [Role::TYPE_ADMIN, Role::TYPE_MANAGER, Role::TYPE_EMPLOYEE])->get();
-        return view('admin.employee.create', compact('roles'));
+        $departments = \App\Models\Department::with('designations')->get();
+        return view('admin.employee.create', compact('roles', 'departments'));
     }
 
     /**
@@ -37,34 +38,70 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'first_name'    => 'required|string|max:255',
-            'last_name'     => 'nullable|string|max:255',
-            'phone'         => 'required|string|max:20',
-            'gender'        => 'required|in:Male,Female,Other',
-            'email'         => 'required|email|unique:users,email',
-            'password'      => ['required', 'confirmed', Password::min(6)],
-            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'role'          => 'required|string|max:100',
-            'role_id'       => 'nullable|exists:roles,id',
+            'first_name'      => 'required|string|max:255',
+            'last_name'       => 'nullable|string|max:255',
+            'phone'           => 'required|string|max:20',
+            'gender'          => 'required|in:Male,Female,Other',
+            'email'           => 'required|email|unique:users,email',
+            'password'        => ['required', 'confirmed', Password::min(6)],
+            'profile_image'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'role'            => 'required|string|max:100',
+            'role_id'         => 'nullable|exists:roles,id',
+            'joining_date'    => 'nullable|date',
+            'salary'          => 'nullable|numeric',
+            'father_name'     => 'nullable|string|max:255',
+            'mother_name'     => 'nullable|string|max:255',
+            'father_nid'      => 'nullable|string|max:50',
+            'mother_nid'      => 'nullable|string|max:50',
+            'father_nid_copy' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'mother_nid_copy' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'address'         => 'nullable|string',
+            'district'        => 'nullable|string|max:255',
+            'thana'           => 'nullable|string|max:255',
+            'department_id'   => 'nullable|exists:departments,id',
+            'designation_id'  => 'nullable|exists:designations,id',
         ]);
 
-        // Handle profile image upload → public/uploads/employee/
+        // Handle profile image upload → public/uploads/hrm/
         if ($request->hasFile('profile_image')) {
             $validated['profile_image'] = $this->uploadImage($request->file('profile_image'));
+        }
+
+        // Handle Father's NID copy
+        if ($request->hasFile('father_nid_copy')) {
+            $validated['father_nid_copy'] = $this->uploadImage($request->file('father_nid_copy'));
+        }
+
+        // Handle Mother's NID copy
+        if ($request->hasFile('mother_nid_copy')) {
+            $validated['mother_nid_copy'] = $this->uploadImage($request->file('mother_nid_copy'));
         }
 
         $validated['password'] = Hash::make($validated['password']);
         $validated['name'] = $validated['first_name'] . ' ' . ($validated['last_name'] ?? '');
 
         $employee = \App\Models\User::create([
-            'name'          => $validated['name'],
-            'email'         => $validated['email'],
-            'password'      => $validated['password'],
-            'phone'         => $validated['phone'],
-            'gender'        => $validated['gender'],
-            'profile_image' => $validated['profile_image'] ?? null,
-            'role'          => $validated['role'],
-            'role_id'       => $validated['role_id'],
+            'name'            => $validated['name'],
+            'email'           => $validated['email'],
+            'password'        => $validated['password'],
+            'phone'           => $validated['phone'],
+            'gender'          => $validated['gender'],
+            'profile_image'   => $validated['profile_image'] ?? null,
+            'role'            => $validated['role'],
+            'role_id'         => $validated['role_id'],
+            'joining_date'    => $validated['joining_date'] ?? null,
+            'salary'          => $validated['salary'] ?? null,
+            'father_name'     => $validated['father_name'] ?? null,
+            'mother_name'     => $validated['mother_name'] ?? null,
+            'father_nid'      => $validated['father_nid'] ?? null,
+            'mother_nid'      => $validated['mother_nid'] ?? null,
+            'father_nid_copy' => $validated['father_nid_copy'] ?? null,
+            'mother_nid_copy' => $validated['mother_nid_copy'] ?? null,
+            'address'         => $validated['address'] ?? null,
+            'district'        => $validated['district'] ?? null,
+            'thana'           => $validated['thana'] ?? null,
+            'department_id'   => $validated['department_id'] ?? null,
+            'designation_id'  => $validated['designation_id'] ?? null,
         ]);
 
         // Auto-assign role's default permissions
@@ -87,8 +124,9 @@ public function edit(\App\Models\User $employee)
 {
     $roles              = Role::whereIn('user_type', [Role::TYPE_ADMIN, Role::TYPE_MANAGER, Role::TYPE_EMPLOYEE])->get();
     $groupedPermissions = Permission::groupedPermissions();
+    $departments        = \App\Models\Department::with('designations')->get();
 
-    return view('admin.employee.edit', compact('employee', 'roles', 'groupedPermissions'));
+    return view('admin.employee.edit', compact('employee', 'roles', 'groupedPermissions', 'departments'));
 }
 
     /**
@@ -97,22 +135,47 @@ public function edit(\App\Models\User $employee)
     public function update(Request $request, \App\Models\User $employee)
     {
         $validated = $request->validate([
-            'first_name'    => 'required|string|max:255',
-            'last_name'     => 'nullable|string|max:255',
-            'phone'         => 'required|string|max:20',
-            'gender'        => 'required|in:Male,Female,Other',
-            'email'         => 'required|email|unique:users,email,' . $employee->id,
-            'password'      => ['nullable', 'confirmed', Password::min(6)],
-            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'role'          => 'required|string|max:100',
-            'role_id'       => 'nullable|exists:roles,id',
+            'first_name'      => 'required|string|max:255',
+            'last_name'       => 'nullable|string|max:255',
+            'phone'           => 'required|string|max:20',
+            'gender'          => 'required|in:Male,Female,Other',
+            'email'           => 'required|email|unique:users,email,' . $employee->id,
+            'password'        => ['nullable', 'confirmed', Password::min(6)],
+            'profile_image'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'role'            => 'required|string|max:100',
+            'role_id'         => 'nullable|exists:roles,id',
+            'joining_date'    => 'nullable|date',
+            'salary'          => 'nullable|numeric',
+            'father_name'     => 'nullable|string|max:255',
+            'mother_name'     => 'nullable|string|max:255',
+            'father_nid'      => 'nullable|string|max:50',
+            'mother_nid'      => 'nullable|string|max:50',
+            'father_nid_copy' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'mother_nid_copy' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'address'         => 'nullable|string',
+            'district'        => 'nullable|string|max:255',
+            'thana'           => 'nullable|string|max:255',
+            'department_id'   => 'nullable|exists:departments,id',
+            'designation_id'  => 'nullable|exists:designations,id',
         ]);
 
         // Handle new profile image upload
         if ($request->hasFile('profile_image')) {
-            // Delete old image from public/uploads/employee/
+            // Delete old image
             $this->deleteImage($employee->profile_image);
             $validated['profile_image'] = $this->uploadImage($request->file('profile_image'));
+        }
+
+        // Handle new Father's NID copy upload
+        if ($request->hasFile('father_nid_copy')) {
+            $this->deleteImage($employee->father_nid_copy);
+            $validated['father_nid_copy'] = $this->uploadImage($request->file('father_nid_copy'));
+        }
+
+        // Handle new Mother's NID copy upload
+        if ($request->hasFile('mother_nid_copy')) {
+            $this->deleteImage($employee->mother_nid_copy);
+            $validated['mother_nid_copy'] = $this->uploadImage($request->file('mother_nid_copy'));
         }
 
         if (!empty($validated['password'])) {
@@ -123,13 +186,26 @@ public function edit(\App\Models\User $employee)
 
         $validated['name'] = $validated['first_name'] . ' ' . ($validated['last_name'] ?? '');
         $employee->update([
-            'name'          => $validated['name'],
-            'email'         => $validated['email'],
-            'phone'         => $validated['phone'],
-            'gender'        => $validated['gender'],
-            'profile_image' => $validated['profile_image'] ?? $employee->profile_image,
-            'role'          => $validated['role'],
-            'role_id'       => $validated['role_id'],
+            'name'            => $validated['name'],
+            'email'           => $validated['email'],
+            'phone'           => $validated['phone'],
+            'gender'          => $validated['gender'],
+            'profile_image'   => $validated['profile_image'] ?? $employee->profile_image,
+            'role'            => $validated['role'],
+            'role_id'         => $validated['role_id'],
+            'joining_date'    => $validated['joining_date'] ?? $employee->joining_date,
+            'salary'          => $validated['salary'] ?? $employee->salary,
+            'father_name'     => $validated['father_name'] ?? $employee->father_name,
+            'mother_name'     => $validated['mother_name'] ?? $employee->mother_name,
+            'father_nid'      => $validated['father_nid'] ?? $employee->father_nid,
+            'mother_nid'      => $validated['mother_nid'] ?? $employee->mother_nid,
+            'father_nid_copy' => $validated['father_nid_copy'] ?? $employee->father_nid_copy,
+            'mother_nid_copy' => $validated['mother_nid_copy'] ?? $employee->mother_nid_copy,
+            'address'         => $validated['address'] ?? $employee->address,
+            'district'        => $validated['district'] ?? $employee->district,
+            'thana'           => $validated['thana'] ?? $employee->thana,
+            'department_id'   => $validated['department_id'] ?? $employee->department_id,
+            'designation_id'  => $validated['designation_id'] ?? $employee->designation_id,
         ]);
         if (isset($validated['password'])) {
             $employee->update(['password' => $validated['password']]);
@@ -217,7 +293,7 @@ public function edit(\App\Models\User $employee)
      */
     private function uploadImage($file): string
     {
-        $uploadPath = public_path('uploads/rolephoto');
+        $uploadPath = public_path('uploads/hrm');
 
         // Create folder if it doesn't exist
         if (!File::exists($uploadPath)) {
@@ -227,7 +303,7 @@ public function edit(\App\Models\User $employee)
         $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
         $file->move($uploadPath, $fileName);
 
-        return 'uploads/rolephoto/' . $fileName;
+        return 'uploads/hrm/' . $fileName;
     }
 
     /**

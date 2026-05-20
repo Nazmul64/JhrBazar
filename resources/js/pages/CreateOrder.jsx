@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 const CreateOrder = () => {
   const { settings } = useSettings();
-  const mainColor = settings?.primary_color || '#001fcc';
+  const mainColor = settings?.primary_color || window.initialSettings?.primary_color || '#57b500';
   const navigate = useNavigate();
 
   const [products, setProducts] = useState([]);

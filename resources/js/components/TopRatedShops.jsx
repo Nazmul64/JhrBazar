@@ -1,29 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 
-const TopRatedShops = () => {
+const TopRatedShops = ({ shops = [], loading = false }) => {
     const mainColor = '#57b500';
-    const [shops, setShops] = useState([]);
-    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchShops = async () => {
-            try {
-                const res = await axios.get('/api/top-shops');
-                if (res.data.success) {
-                    setShops(res.data.data);
-                }
-            } catch (error) {
-                console.error("Error fetching shops:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchShops();
-    }, []);
-
-    if (!loading && shops.length === 0) return null;
+    if (!loading && (!shops || shops.length === 0)) return null;
 
     return (
         <section className="container mb-5">

@@ -19,6 +19,7 @@ class Product extends Model
         'is_active', 'rating',
         'is_new_arrival', 'is_best_seller', 'is_hot_product', 'is_flash_sale', 'is_just_for_you', 'is_popular',
         'cash_on_delivery', 'online_payment', 'is_shipping_charge',
+        'frontend_sections',
     ];
 
     protected $casts = [
@@ -33,6 +34,7 @@ class Product extends Model
         'online_payment'  => 'boolean',
         'is_shipping_charge' => 'boolean',
         'gallery_images' => 'array',
+        'frontend_sections' => 'array',
         'buying_price'   => 'decimal:2',
         'selling_price'  => 'decimal:2',
         'discount_price' => 'decimal:2',
@@ -52,6 +54,11 @@ class Product extends Model
     public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'product_id')->where('product_type', 'admin')->where('status', 1);
     }
 
     // ── Barcode display value ──────────────────────────────

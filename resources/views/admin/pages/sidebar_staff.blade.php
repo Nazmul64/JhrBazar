@@ -107,6 +107,9 @@
                href="{{ route('admin.orders.incomplete') }}">
                 <i class="bi bi-clipboard-x"></i> Incomplete Orders
             </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.customer-detector.*') ? 'active' : '' }}" href="{{ route('admin.customer-detector.index') }}">
+                <i class="bi bi-eye-fill"></i> Customer Detector 🚨
+            </a>
         </div>
         @endif
 

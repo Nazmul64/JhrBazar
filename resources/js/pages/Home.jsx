@@ -10,18 +10,35 @@ import { useSettings } from '../context/SettingsContext';
 import SEO from '../components/SEO';
 
 const Home = () => {
-    const { settings } = useSettings();
-    const mainColor = settings?.primary_color || '#001fcc';
-    const [popularProducts, setPopularProducts] = useState([]);
-    const [newArrivals, setNewArrivals] = useState([]);
-    const [justForYouProducts, setJustForYouProducts] = useState([]);
-    const [digitalProducts, setDigitalProducts] = useState([]);
-    const [bestDeals, setBestDeals] = useState([]);
-    const [allProducts, setAllProducts] = useState([]);
-    const [banners, setBanners] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [recentReviews, setRecentReviews] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { settings, homeData, setHomeData } = useSettings();
+    const mainColor = settings?.primary_color || window.initialSettings?.primary_color || '#57b500';
+    
+    const [popularProducts, setPopularProducts] = useState(homeData?.popularProducts || []);
+    const [newArrivals, setNewArrivals] = useState(homeData?.newArrivals || []);
+    const [justForYouProducts, setJustForYouProducts] = useState(homeData?.justForYouProducts || []);
+    const [digitalProducts, setDigitalProducts] = useState(homeData?.digitalProducts || []);
+    const [bestDeals, setBestDeals] = useState(homeData?.bestDeals || []);
+    const [allProducts, setAllProducts] = useState(homeData?.allProducts || []);
+    const [banners, setBanners] = useState(homeData?.banners || []);
+    const [categories, setCategories] = useState(homeData?.categories || []);
+    const [topShops, setTopShops] = useState(homeData?.topShops || []);
+    const [recentReviews, setRecentReviews] = useState(homeData?.recentReviews || []);
+    const [frontendSections, setFrontendSections] = useState(homeData?.frontendSections || []);
+    const [loading, setLoading] = useState(!homeData);
+
+    const applyData = (data) => {
+        setPopularProducts(data.popularProducts || []);
+        setNewArrivals(data.newArrivals || []);
+        setJustForYouProducts(data.justForYouProducts || []);
+        setDigitalProducts(data.digitalProducts || []);
+        setBestDeals(data.bestDeals || []);
+        setAllProducts(data.allProducts || []);
+        setBanners(data.banners || []);
+        setCategories(data.categories || []);
+        setTopShops(data.topShops || []);
+        setRecentReviews(data.recentReviews || []);
+        setFrontendSections(data.frontendSections || []);
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -29,28 +46,8 @@ const Home = () => {
                 const res = await axios.get('/api/home-data');
                 if (res.data.success) {
                     const data = res.data.data;
-                    setPopularProducts(data.popularProducts);
-                    setNewArrivals(data.newArrivals);
-                    setJustForYouProducts(data.justForYouProducts);
-                    setDigitalProducts(data.digitalProducts);
-                    setBestDeals(data.bestDeals);
-                    setAllProducts(data.allProducts);
-                    setBanners(data.banners);
-                    setCategories(data.categories);
-                    setRecentReviews(data.recentReviews || []);
-
-                    // Force set CSS variables immediately to fix colors and logo
-                    const root = document.documentElement;
-                    if (data.settings) {
-                        const s = data.settings;
-                        if (s.primary_color) root.style.setProperty('--main-color', s.primary_color);
-                        if (s.primary_color) root.style.setProperty('--primary-color', s.primary_color);
-                        if (s.button_color) root.style.setProperty('--button-color', s.button_color);
-                        else if (s.primary_color) root.style.setProperty('--button-color', s.primary_color);
-
-                        if (s.top_header_color) root.style.setProperty('--top-header-color', s.top_header_color);
-                        if (s.header_color) root.style.setProperty('--header-color', s.header_color);
-                    }
+                    setHomeData(data);
+                    applyData(data);
                 }
             } catch (error) {
                 console.error("Error fetching homepage data:", error);
@@ -58,7 +55,6 @@ const Home = () => {
                 setLoading(false);
             }
         };
-
         fetchData();
     }, []);
 
@@ -214,7 +210,7 @@ const Home = () => {
             )}
 
             {/* ===== Top Rated Shops ===== */}
-            {!loading && <TopRatedShops />}
+            <TopRatedShops shops={topShops} loading={loading} />
 
             {/* ===== Customer Reviews ===== */}
             {!loading && recentReviews.length > 0 && (
@@ -258,7 +254,7 @@ const Home = () => {
                         <Link to="/products-all/just-for-you" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
                     </div>
                     <>
-                        {renderProductGrid(justForYouProducts, 'col-6 col-md-4 col-lg-3')}
+                        {renderProductGrid(justForYouProducts, 'col-4 col-md-4 col-lg-3')}
                         <div className="text-center mt-5">
                             <Link to="/products-all/just-for-you" style={{
                                 padding: '12px 50px',
@@ -280,19 +276,19 @@ const Home = () => {
                 </section>
             )}
 
-            {/* ===== All Products (Moved to Bottom) ===== */}
-            {!loading && allProducts.length > 0 && (
-                <section className="container mb-4 mt-4">
+            {/* ===== Dynamic Category-wise Sections (frontendSections) ===== */}
+            {!loading && frontendSections && frontendSections.map(section => (
+                <section key={section.title} className="container mb-4 mt-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <div className="d-flex align-items-center gap-2">
-                            <h4 className="fw-bold mb-0" style={{ color: '#333' }}>সকল পণ্য</h4>
-                            <span className="badge rounded-pill text-white" style={{ backgroundColor: mainColor, fontSize: '10px' }}>ALL PRODUCTS</span>
+                            <h4 className="fw-bold mb-0" style={{ color: '#333' }}>{section.title}</h4>
+                            <span className="badge rounded-pill text-white" style={{ backgroundColor: mainColor, fontSize: '10px' }}>FEATURED</span>
                         </div>
-                        <Link to="/products-all/all" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>সব দেখুন →</Link>
                     </div>
-                    {renderProductGrid(allProducts)}
+                    {renderProductGrid(section.products)}
                 </section>
-            )}
+            ))}
+
 
             <style>{`
                 .load-more-btn:hover {

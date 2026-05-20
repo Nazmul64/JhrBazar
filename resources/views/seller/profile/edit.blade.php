@@ -195,7 +195,7 @@
                         <h6 class="fw-bold mb-4 text-start border-bottom pb-2">Shop Logo</h6>
                         <div class="mb-4 mx-auto" style="width: 150px; height: 150px;">
                             <img id="logoPreview" 
-                                 src="{{ ($shop && $shop->logo) ? asset($shop->logo) : 'https://via.placeholder.com/150?text=No+Logo' }}" 
+                                 src="{{ ($shop && $shop->logo) ? asset($shop->logo) : 'https://placehold.co/150x150/f3f4f6/6b7280?text=No+Logo' }}" 
                                  class="w-100 h-100 border rounded-3 shadow-sm" style="object-fit: cover;">
                         </div>
                         <input type="file" name="logo" class="form-control" accept="image/*" onchange="previewImage(this,'logoPreview')">
@@ -211,7 +211,7 @@
                             @if($shop && $shop->banner)
                                 <img id="bannerPreview" src="{{ asset($shop->banner) }}" class="w-100 h-100" style="object-fit: cover;">
                             @else
-                                <img id="bannerPreview" src="https://via.placeholder.com/800x200?text=No+Banner" class="w-100 h-100" style="object-fit: cover;">
+                                <img id="bannerPreview" src="https://placehold.co/800x200/f3f4f6/6b7280?text=No+Banner" class="w-100 h-100" style="object-fit: cover;">
                             @endif
                         </div>
                         <input type="file" name="banner" class="form-control" accept="image/*" onchange="previewImage(this,'bannerPreview')">

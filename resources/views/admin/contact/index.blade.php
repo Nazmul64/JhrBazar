@@ -38,7 +38,7 @@
 
                 <a href="{{ route('admin.contact.edit', $contact->id) }}"
                    class="btn btn-pink px-4">
-                    Save And Update
+                    Edit Contact Info
                 </a>
             @else
                 {{-- No record yet — show create link --}}

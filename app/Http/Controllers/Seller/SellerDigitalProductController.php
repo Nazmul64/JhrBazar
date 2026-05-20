@@ -24,9 +24,9 @@ class SellerDigitalProductController extends Controller
 
     public function create()
     {
-        $categories = Category::all();
-        $subcategories = SubCategory::all();
-        $brands = Brand::all();
+        $categories = Category::orderBy('name', 'asc')->get();
+        $subcategories = SubCategory::orderBy('name', 'asc')->get();
+        $brands = Brand::orderBy('name', 'asc')->get();
         return view('seller.digital_product.create', compact('categories', 'subcategories', 'brands'));
     }
 
@@ -95,6 +95,7 @@ class SellerDigitalProductController extends Controller
         ]);
 
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
         return redirect()->route('seller.digital_product.index')->with('success', 'Digital Product Created Successfully');
 
     }
@@ -108,9 +109,9 @@ class SellerDigitalProductController extends Controller
     public function edit($id)
     {
         $product = SellerDigitalProduct::where('seller_id', Auth::id())->findOrFail($id);
-        $categories = Category::all();
-        $subcategories = SubCategory::all();
-        $brands = Brand::all();
+        $categories = Category::orderBy('name', 'asc')->get();
+        $subcategories = SubCategory::orderBy('name', 'asc')->get();
+        $brands = Brand::orderBy('name', 'asc')->get();
         return view('seller.digital_product.edit', compact('product', 'categories', 'subcategories', 'brands'));
     }
 
@@ -193,6 +194,7 @@ class SellerDigitalProductController extends Controller
         ]);
 
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
         return redirect()->route('seller.digital_product.index')->with('success', 'Digital Product Updated Successfully');
 
     }
@@ -206,6 +208,7 @@ class SellerDigitalProductController extends Controller
         if($product->video_type === 'upload') $this->deleteFile($product->video);
         $product->delete();
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
         return redirect()->back()->with('success', 'Product Deleted Successfully');
 
     }
@@ -215,6 +218,7 @@ class SellerDigitalProductController extends Controller
         $product = SellerDigitalProduct::where('seller_id', Auth::id())->findOrFail($id);
         $product->update(['is_active' => !$product->is_active]);
         Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
         return redirect()->back()->with('success', 'Status Updated');
 
     }

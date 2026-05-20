@@ -158,7 +158,7 @@
                         </div>
                     </form>
                     <div class="action-group">
-                        <a href="#" class="btn-act btn-act-view" title="View"><i class="bi bi-eye"></i></a>
+                        <a href="{{ route('products.show', $product->id) }}" class="btn-act btn-act-view" title="View"><i class="bi bi-eye"></i></a>
                         <a href="{{ route('products.barcode', $product->id) }}"
                            class="btn-act btn-act-barcode" title="Barcode">
                             <i class="bi bi-upc-scan"></i>
@@ -268,6 +268,9 @@
                         </td>
                         <td style="text-align:right;">
                             <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;">
+                                <a href="{{ route('products.show', $product->id) }}" class="btn-act btn-act-view" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
                                 <a href="{{ route('products.barcode', $product->id) }}"
                                    class="btn-act btn-act-barcode" title="Barcode">
                                     <i class="bi bi-upc-scan"></i>

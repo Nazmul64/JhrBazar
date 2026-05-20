@@ -28,20 +28,39 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
 
     useEffect(() => {
         if (slides.length > 1) {
+            const speed = (settings?.slider_speed || 5) * 1000;
             const timer = setInterval(() => {
                 setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-            }, 3500); // Slightly faster for better engagement
+            }, speed);
             return () => clearInterval(timer);
         }
-    }, [slides.length]); // Use length to be safer
+    }, [slides.length, settings?.slider_speed]);
 
     if (loading) {
+        const hasCategories = !window.initialHomeData || (window.initialHomeData?.data?.categories?.length > 0) || (initialCategories?.length > 0);
         return (
             <div className="container my-4">
                 <div className="row g-3">
-                    <div className="col-lg-3 d-none d-lg-block"><div className="bg-light rounded-4 w-100 shadow-sm" style={{ height: '420px' }}></div></div>
-                    <div className="col-lg-9 col-md-12"><div className="bg-light rounded-4 w-100 shadow-sm" style={{ height: '420px' }}></div></div>
+                    {hasCategories && (
+                        <div className="col-lg-3 d-none d-lg-block">
+                            <div className="rounded-4 w-100 shimmer" style={{ height: '420px', backgroundColor: '#f0f0f0' }}></div>
+                        </div>
+                    )}
+                    <div className={hasCategories ? "col-lg-9 col-md-12" : "col-lg-12 col-md-12"}>
+                        <div className="rounded-4 w-100 shimmer" style={{ height: '420px', backgroundColor: '#f0f0f0' }}></div>
+                    </div>
                 </div>
+                <style>{`
+                    .shimmer {
+                        background: linear-gradient(90deg, #f9f9f9 25%, #f0f0f0 50%, #f9f9f9 75%);
+                        background-size: 200% 100%;
+                        animation: shimmer 1.5s infinite;
+                    }
+                    @keyframes shimmer {
+                        0% { background-position: -200% 0; }
+                        100% { background-position: 200% 0; }
+                    }
+                `}</style>
             </div>
         );
     }
@@ -52,7 +71,7 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
         <section className="container mb-3 mt-4">
             <div className="row g-3">
                 {/* Column 1: Vertical Categories Sidebar */}
-                {settings && behavior === 'fixed' && (
+                {settings && behavior === 'fixed' && categories.length > 0 && (
                     <div className="col-lg-3 d-none d-lg-block">
                         <div 
                             className="bg-white shadow-sm border overflow-hidden hero-sidebar-container" 
@@ -125,7 +144,7 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                 )}
 
                 {/* Column 2: Main Slider */}
-                <div className={behavior === 'fixed' ? 'col-lg-9 col-md-12' : 'col-lg-12 col-md-12'}>
+                <div className={(behavior === 'fixed' && categories.length > 0) ? 'col-lg-9 col-md-12' : 'col-lg-12 col-md-12'}>
                     <div className="hero-slider-container" style={{
                         position: 'relative',
                         borderRadius: '12px',

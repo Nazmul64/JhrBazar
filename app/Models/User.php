@@ -30,6 +30,19 @@ class User extends Authenticatable
         'balance',
         'is_blocked',
         'last_ip',
+        'joining_date',
+        'salary',
+        'father_name',
+        'mother_name',
+        'father_nid',
+        'mother_nid',
+        'father_nid_copy',
+        'mother_nid_copy',
+        'address',
+        'district',
+        'thana',
+        'department_id',
+        'designation_id',
     ];
 
     public function transactions()
@@ -165,5 +178,45 @@ class User extends Authenticatable
     public function supplier()
     {
         return $this->hasOne(Supplier::class);
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class, 'employee_id');
+    }
+
+    public function leaves()
+    {
+        return $this->hasMany(Leave::class, 'employee_id');
+    }
+
+    public function salaryAdvances()
+    {
+        return $this->hasMany(SalaryAdvance::class, 'employee_id');
+    }
+
+    public function payrolls()
+    {
+        return $this->hasMany(Payroll::class, 'employee_id');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+
+    public function designation()
+    {
+        return $this->belongsTo(Designation::class, 'designation_id');
+    }
+
+    public function posOrders()
+    {
+        return $this->hasMany(Pointofsalepo::class, 'staff_id');
+    }
+
+    public function leaveBalances()
+    {
+        return $this->hasMany(LeaveBalance::class, 'employee_id');
     }
 }

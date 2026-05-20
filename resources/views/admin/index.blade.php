@@ -1,5 +1,10 @@
 @extends('admin.master')
 @section('content')
+<script>
+    window.adminChartMonths = @json($chartMonths);
+    window.adminChartData = @json($chartOrderData);
+    window.adminUserOverviewData = @json($userOverviewData);
+</script>
 <style>
     :root {
         --accent: #6366f1;
@@ -181,7 +186,9 @@
             <div style="position: absolute; top: -50px; right: -50px; width: 300px; height: 300px; background: rgba(255,255,255,0.05); border-radius: 50%;"></div>
             <div class="card-body p-4 p-lg-5 d-flex align-items-center justify-content-between position-relative" style="z-index: 1;">
                 <div>
-                    <span class="badge bg-white bg-opacity-20 text-white mb-3 px-3 py-2 rounded-pill fw-bold" style="letter-spacing: 1px; font-size: 10px; text-transform: uppercase;">Marketplace Intelligence</span>
+                    <span class="badge mb-3 px-3 py-2 rounded-pill fw-bold" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); color: white; border: 1px solid rgba(255,255,255,0.2); letter-spacing: 1px; font-size: 10px; text-transform: uppercase;">
+                        <i class="bi bi-shield-check-fill me-1 text-info"></i> System Live: Marketplace Intelligence
+                    </span>
                     <h1 class="fw-bold mb-3" style="font-family: 'Sora', sans-serif; font-size: clamp(24px, 5vw, 36px);">Jhr Bazar <span class="text-white-50">Command Center</span></h1>
                     <p class="opacity-75 mb-4 fw-medium" style="max-width: 580px; font-size: 15px; line-height: 1.6;">Monitor your ecosystem in real-time. Manage sellers, analyze customer behavior, and optimize your revenue streams with our unified dashboard.</p>
                     <div class="d-flex flex-wrap gap-3">
@@ -516,8 +523,12 @@
           @foreach($trendingShops as $shop)
             <div class="d-flex align-items-center justify-content-between p-2 rounded-3 hover-bg" style="transition: background 0.2s;">
               <div class="d-flex align-items-center gap-3">
-                <div class="rounded-3 bg-light d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; overflow: hidden;">
-                  <img src="{{ $shop->image_url ?? 'https://via.placeholder.com/48' }}" alt="{{ $shop->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                <div class="rounded-3 bg-light d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; overflow: hidden; border: 1px solid var(--border-color);">
+                  @if($shop->image_url)
+                    <img src="{{ $shop->image_url }}" alt="{{ $shop->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                  @else
+                    <i class="bi bi-shop text-muted" style="font-size: 20px;"></i>
+                  @endif
                 </div>
                 <div>
                   <div class="fw-bold small">{{ $shop->name }}</div>

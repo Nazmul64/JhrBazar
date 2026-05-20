@@ -931,6 +931,10 @@
                 <label class="gs-label">Main Slider Height (Mobile)</label>
                 <input type="text" name="slider_height_mobile" class="gs-input" value="{{ old('slider_height_mobile', $setting->slider_height_mobile ?? '200px') }}" placeholder="e.g. 200px">
             </div>
+            <div class="gs-col">
+                <label class="gs-label">Main Slider Auto-Slide Speed (Seconds)</label>
+                <input type="number" name="slider_speed" class="gs-input" value="{{ old('slider_speed', $setting->slider_speed ?? 5) }}" placeholder="e.g. 5">
+            </div>
         </div>
 
         <div class="gs-row" style="margin-top: 20px;">
@@ -953,17 +957,13 @@
                 <label class="gs-label">Category Image Height</label>
                 <input type="text" name="category_img_height" class="gs-input" value="{{ old('category_img_height', $setting->category_img_height ?? '100px') }}" placeholder="e.g. 100px or 120px">
             </div>
+            <div class="gs-col">
+                <label class="gs-label">Category Slider Auto-Slide Speed (Seconds)</label>
+                <input type="number" name="category_slide_speed" class="gs-input" value="{{ old('category_slide_speed', $setting->category_slide_speed ?? 4) }}" placeholder="e.g. 4">
+            </div>
         </div>
 
         <div class="gs-row" style="margin-top: 20px;">
-            <div class="gs-col">
-                <label class="gs-label">Products per row (Desktop)</label>
-                <input type="number" name="products_per_row_desktop" class="gs-input" value="{{ old('products_per_row_desktop', $setting->products_per_row_desktop ?? 6) }}" placeholder="e.g. 4, 5, 6">
-            </div>
-            <div class="gs-col">
-                <label class="gs-label">Products per row (Mobile)</label>
-                <input type="number" name="products_per_row_mobile" class="gs-input" value="{{ old('products_per_row_mobile', $setting->products_per_row_mobile ?? 2) }}" placeholder="e.g. 1, 2">
-            </div>
             <div class="gs-col">
                 <label class="gs-label">Category Menu Behavior (Homepage Sidebar)</label>
                 <select name="sidebar_behavior" class="gs-input">
@@ -971,6 +971,12 @@
                     <option value="fixed" {{ $currentSidebarBehavior == 'fixed' ? 'selected' : '' }}>Fixed (Always Open on Home)</option>
                     <option value="hover" {{ $currentSidebarBehavior == 'hover' ? 'selected' : '' }}>Dropdown (Hover/Click to Open)</option>
                 </select>
+            </div>
+            <div class="gs-col">
+                {{-- Spacer --}}
+            </div>
+            <div class="gs-col">
+                {{-- Spacer --}}
             </div>
         </div>
 

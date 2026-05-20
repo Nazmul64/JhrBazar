@@ -94,9 +94,6 @@
     </style>
 </head>
 <body>
-    {{-- ── Custom Admin JS ── --}}
-    <script src="{{ asset('admin/assets/js/app.js') }}"></script>
-
     {{-- ── Global Flash Messages (SweetAlert2) ── --}}
     @if(session('success'))
     <script>

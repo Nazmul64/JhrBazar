@@ -13,6 +13,24 @@ const Checkout = () => {
     const [shippingCharges, setShippingCharges] = useState([]);
     const [availableGateways, setAvailableGateways] = useState([]);
     const [selectedShipping, setSelectedShipping] = useState(null);
+
+    const [isBlocked, setIsBlocked] = useState(false);
+    const [blockedData, setBlockedData] = useState(null);
+
+    useEffect(() => {
+        const checkBlock = async () => {
+            try {
+                const res = await axios.get('/api/check-ip-blocked');
+                if (res.data.blocked) {
+                    setIsBlocked(true);
+                    setBlockedData(res.data.data);
+                }
+            } catch (err) {
+                console.error("Block check error", err);
+            }
+        };
+        checkBlock();
+    }, []);
     
     const [couponCode, setCouponCode] = useState('');
     const [couponDiscount, setCouponDiscount] = useState(0);
@@ -230,6 +248,185 @@ const Checkout = () => {
             setLoading(false);
         }
     };
+
+    if (isBlocked && blockedData) {
+        return (
+            <div style={{
+                background: '#070c14',
+                color: '#ffffff',
+                minHeight: '100vh',
+                padding: '40px 20px',
+                fontFamily: "'Hind Siliguri', 'Outfit', sans-serif",
+                position: 'relative',
+                overflowX: 'hidden'
+            }}>
+                {/* Visual Carbon/Grid lines background overlay */}
+                <div style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundImage: 'linear-gradient(rgba(18, 30, 49, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(18, 30, 49, 0.3) 1px, transparent 1px)',
+                    backgroundSize: '20px 20px',
+                    pointerEvents: 'none',
+                    opacity: 0.8
+                }}></div>
+
+                <div style={{ maxWidth: '600px', margin: '0 auto', position: 'relative', zIndex: 2 }}>
+                    
+                    {/* Pulsing Cancel Shield Logo */}
+                    <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                        <div className="pulsing-shield-container" style={{
+                            display: 'inline-flex',
+                            position: 'relative',
+                            width: '90px',
+                            height: '90px',
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '2px solid #ef4444',
+                            borderRadius: '50%',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 0 25px rgba(239, 68, 68, 0.3)',
+                            animation: 'pulseShield 2s infinite ease-in-out'
+                        }}>
+                            <span style={{ fontSize: '40px', color: '#ef4444' }}>🚫</span>
+                        </div>
+                        <h2 style={{
+                            marginTop: '20px',
+                            fontWeight: 800,
+                            fontSize: '1.8rem',
+                            color: '#ffffff',
+                            letterSpacing: '0.5px'
+                        }}>আইপি ব্লক করা হয়েছে</h2>
+                        <div style={{
+                            color: '#ef4444',
+                            fontSize: '0.85rem',
+                            fontWeight: 700,
+                            letterSpacing: '2px',
+                            textTransform: 'uppercase',
+                            marginTop: '4px'
+                        }}>SECURITY SYSTEM VIOLATION</div>
+                    </div>
+
+                    {/* Red Warning Message Box */}
+                    <div style={{
+                        border: '1.5px solid #ef4444',
+                        background: 'rgba(239, 68, 68, 0.05)',
+                        borderRadius: '12px',
+                        padding: '20px',
+                        marginBottom: '25px',
+                        boxShadow: '0 8px 20px rgba(239, 68, 68, 0.05)'
+                    }}>
+                        <p style={{
+                            margin: 0,
+                            fontSize: '0.92rem',
+                            lineHeight: 1.6,
+                            textAlign: 'justify',
+                            color: '#f8fafc',
+                            fontWeight: 500
+                        }}>
+                            আমাদের অটোমেটেড সিকিউরিটি সিস্টেম আপনাকে সনাক্ত করেছে! আপনি যদি ফেক, ট্রল বা উদ্দেশ্যপ্রণোদিত অর্ডার দিয়ে আমাদের ব্যবসার ক্ষতি করার চেষ্টা করেন, তবে আপনার বিরুদ্ধে আইনগত ব্যবস্থা গ্রহণ করা হবে। আপনার লোকেশন, আইপি অ্যাড্রেস এবং ইন্টারনেট প্রোভাইডারের (ওয়াইফাই) সকল তথ্য আমাদের ডাটাবেজে প্রমাণসহ সম্পূর্ণ সংরক্ষণ করা হয়েছে। আপনার কোনো প্রকার অসাধু চেষ্টা প্রমাণ হলে আপনার বিরুদ্ধে বাংলাদেশ সাইবার ক্রাইম আইন ও আইন প্রয়োগকারী সংস্থার মাধ্যমে আইনানুগ মামলা দিতে আমরা বাধ্য থাকিব।
+                        </p>
+                    </div>
+
+                    {/* Terminal Connection Tracker box */}
+                    <div style={{
+                        background: '#09101d',
+                        border: '1px solid #1e293b',
+                        borderRadius: '12px',
+                        padding: '20px',
+                        fontFamily: "'Courier New', monospace",
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                        marginBottom: '25px',
+                        position: 'relative'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: '1px solid #1e293b', paddingBottom: '8px' }}>
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }}></div>
+                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b' }}></div>
+                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }}></div>
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 'bold' }}>CONNECTION_TRACKER.SH</div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.85rem' }}>
+                            <div>
+                                <span style={{ color: '#ef4444', marginRight: '10px' }}>[IP_ADDRESS]:</span>
+                                <span style={{ color: '#22c55e', fontWeight: 'bold' }}>{blockedData.ip}</span>
+                            </div>
+                            <div>
+                                <span style={{ color: '#ef4444', marginRight: '10px' }}>[WIFI_PROVIDER]:</span>
+                                <span style={{ color: '#22c55e', fontWeight: 'bold' }}>{blockedData.wifi_provider}</span>
+                            </div>
+                            <div>
+                                <span style={{ color: '#ef4444', marginRight: '10px' }}>[LOCATION]:</span>
+                                <span style={{ color: '#22c55e', fontWeight: 'bold' }}>{blockedData.location}</span>
+                            </div>
+                            <div>
+                                <span style={{ color: '#ef4444', marginRight: '10px' }}>[DEVICE_AGENT]:</span>
+                                <span style={{ color: '#22c55e', fontSize: '0.75rem', wordBreak: 'break-all' }}>{blockedData.device_agent}</span>
+                            </div>
+                            <div>
+                                <span style={{ color: '#ef4444', marginRight: '10px' }}>[TRACKING_TIME]:</span>
+                                <span style={{ color: '#22c55e', fontWeight: 'bold' }}>{blockedData.time}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Styled Dark Map Box */}
+                    <div style={{
+                        position: 'relative',
+                        border: '1.5px solid #ef4444',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        boxShadow: '0 10px 35px rgba(239, 68, 68, 0.1)',
+                        marginBottom: '20px'
+                    }}>
+                        <iframe 
+                            width="100%" 
+                            height="280" 
+                            frameBorder="0" 
+                            scrolling="no" 
+                            marginHeight="0" 
+                            marginWidth="0" 
+                            src={`https://maps.google.com/maps?q=${blockedData.lat},${blockedData.lon}&z=14&output=embed`}
+                            style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg) brightness(95%) contrast(90%)', display: 'block' }}
+                        ></iframe>
+                        <div style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            background: 'rgba(239, 68, 68, 0.9)',
+                            border: '1.5px solid #ffffff',
+                            color: '#ffffff',
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold',
+                            boxShadow: '0 5px 15px rgba(0,0,0,0.5)',
+                            pointerEvents: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}>
+                            <span>⚠️</span> ফেক অর্ডারকারীর লোকেশন!
+                        </div>
+                    </div>
+
+                    {/* Disclaimer Footer Text */}
+                    <div style={{ textAlign: 'center', fontSize: '0.75rem', color: '#64748b', marginTop: '15px', lineHeight: 1.5 }}>
+                        যদি এটি ভুলবশত হয়ে থাকে অথবা আপনার অর্ডার জেনুইন হয়ে থাকে, তবে তাৎক্ষণিকভাবে আমাদের কাস্টমার সার্ভিসের সাথে যোগাযোগ করুন।
+                    </div>
+                </div>
+
+                <style>{`
+                    @keyframes pulseShield {
+                        0% { transform: scale(1); box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+                        50% { transform: scale(1.05); box-shadow: 0 0 35px rgba(239, 68, 68, 0.6); }
+                        100% { transform: scale(1); box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+                    }
+                `}</style>
+            </div>
+        );
+    }
 
     if (cartItems.length === 0) {
         return (

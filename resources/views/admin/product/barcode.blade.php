@@ -299,7 +299,7 @@
             <p class="product-name">{{ $product->name }}</p>
 
             <div class="product-meta-row">
-                <span class="p-price">${{ number_format($product->selling_price, 0) }}</span>
+                <span class="p-price">৳{{ number_format($product->selling_price, 0) }}</span>
 
                 <span class="p-rating">
                     <i class="bi bi-star-fill"></i>
@@ -329,7 +329,7 @@
             <input type="number"
                    id="qtyInput"
                    class="ctrl-qty-input"
-                   value="4"
+                   value="1"
                    min="1"
                    max="100"
                    onchange="renderBarcodes()">
@@ -376,7 +376,7 @@
 ══════════════════════════════════════ */
 var CFG = {
     name:  @json($product->name),
-    price: '${{ number_format($product->selling_price, 2) }}',
+    price: '৳{{ number_format($product->selling_price, 2) }}',
     code:  @json($product->barcode ?? $product->sku),
     shop:  'Jhr Bazar'
 };
