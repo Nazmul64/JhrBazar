@@ -11,7 +11,7 @@ class PageCategoryController extends Controller
 {
     public function index()
     {
-        $categories = PageCategory::latest()->get();
+        $categories = PageCategory::orderBy('created_at', 'asc')->get();
         return view('admin.page_category.index', compact('categories'));
     }
 

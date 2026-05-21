@@ -16,8 +16,8 @@
         font-size: 1.25rem !important;
         letter-spacing: -0.5px;
     }
-    .sidebar-inner { 
-        height: calc(100% - 100px); 
+    .sidebar-inner {
+        height: calc(100% - 100px);
         overflow-y: auto;
         padding: 10px 0 80px 0;
     }
@@ -65,7 +65,7 @@
     .nav-submenu.open {
         display: block !important;
     }
-    
+
     .nav-submenu .nav-item-custom {
         margin: 2px 10px 2px 5px !important;
         padding: 10px 15px !important;
@@ -224,12 +224,8 @@
             <a class="nav-item-custom" href="{{ route('seller.pos.index') }}">
                 <i class="bi bi-plus-lg"></i> Create Order
             </a>
-            <a class="nav-item-custom" href="#">
-                <i class="bi bi-person-gear"></i> Staff Assignments
-            </a>
-            <a class="nav-item-custom" href="#">
-                <i class="bi bi-clock-history"></i> Activity History
-            </a>
+
+
         </div>
 
         {{-- POS Management --}}
@@ -245,13 +241,9 @@
         </div>
 
         {{-- Refund Management --}}
-        <div class="nav-item-custom has-sub" data-sub="refund">
-            <i class="bi bi-arrow-return-left"></i> Refund Management
-            <i class="bi bi-chevron-down ms-auto"></i>
-        </div>
-        <div class="nav-submenu" id="sub-refund">
-            <a class="nav-item-custom" href="#">Refund Requests</a>
-        </div>
+        <a class="nav-item-custom" href="{{ route('seller.refunds.index') }}">
+            <i class="bi bi-arrow-return-left"></i> Refund Requests
+        </a>
 
         {{-- Messages --}}
         <a class="nav-item-custom {{ request()->routeIs('seller.messages.*') ? 'active' : '' }}" href="{{ route('seller.messages.index') }}">
@@ -261,7 +253,7 @@
         {{-- Admin Chat --}}
         <a class="nav-item-custom {{ request()->routeIs('seller.admin_chat.*') ? 'active' : '' }}" href="{{ route('seller.admin_chat.index') }}">
             <i class="bi bi-headset"></i> Chat with Admin
-            @php 
+            @php
                 $unreadAdminMsg = \App\Models\ChatSession::where('user_id', auth()->id())
                     ->where('is_read_by_user', false)
                     ->where(function($q) { $q->whereNull('receiver_id')->orWhere('receiver_id', 0); })
@@ -309,7 +301,7 @@
 
         {{-- Purchase Management --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('seller.purchase.*') ? 'active' : '' }}" data-sub="purchase">
-            <i class="bi bi-bag-check-fill"></i> 
+            <i class="bi bi-bag-check-fill"></i>
             <span class="me-auto ms-2">Purchase</span>
             <i class="bi bi-gift text-primary me-2"></i>
             <i class="bi bi-chevron-down"></i>

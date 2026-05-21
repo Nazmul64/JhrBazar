@@ -265,6 +265,9 @@ select.filter-input{appearance:none;background-image:url("data:image/svg+xml,%3C
 
                             <td>
                                 <div class="action-cell">
+                                    <a href="{{ route('admin.landingpages.preview', $lp->id) }}" target="_blank" class="btn-edit" style="background:#f8fafc;color:#1f2937;">
+                                        <i class="bi bi-eye"></i> Preview
+                                    </a>
                                     <a href="{{ route('admin.landingpages.edit', $lp->id) }}" class="btn-edit">
                                         <i class="bi bi-pencil"></i> Edit
                                     </a>

@@ -125,9 +125,7 @@
                href="{{ route('admin.pointofsalepos.index') }}">
                 <i class="bi bi-dot"></i> POS
             </a>
-            <a class="nav-item-custom" href="#">
-                <i class="bi bi-dot"></i> POS Orders
-            </a>
+
             <a class="nav-item-custom {{ request()->routeIs('admin.pointofsalepos.sales.*') ? 'active' : '' }}"
                href="{{ route('admin.pointofsalepos.sales.index') }}">
                 <i class="bi bi-dot"></i> POS Sales History
@@ -140,7 +138,7 @@
         @endif
 
         @if(auth()->user()->hasPermission('return_order.list'))
-        <a class="nav-item-custom" href="#">
+        <a class="nav-item-custom {{ request()->routeIs('admin.refunds.*') ? 'active' : '' }}" href="{{ route('admin.refunds.index') }}">
             <i class="bi bi-arrow-return-left"></i> Refund Management
         </a>
         @endif
@@ -432,9 +430,7 @@
         @if(auth()->user()->hasPermission('subscription.list'))
         <a class="nav-item-custom" href="#"><i class="bi bi-journal-bookmark"></i> Subscription Management</a>
         @endif
-        @if(auth()->user()->hasPermission('support.list'))
-        <a class="nav-item-custom" href="#"><i class="bi bi-headset"></i> Support Management</a>
-        @endif
+
         @if(auth()->user()->hasPermission('withdrawal.list'))
         <a class="nav-item-custom {{ request()->routeIs('admin.withdraws.*') ? 'active' : '' }}" href="{{ route('admin.withdraws.index') }}">
             <i class="bi bi-wallet2"></i> Withdrawal Management
@@ -522,66 +518,103 @@
                href="{{ route('admin.landingpages.index') }}">
                 <i class="bi bi-dot"></i> Campaign List
             </a>
+        </div>
+        @endif
+
+        {{-- Footer Management --}}
+        @if(auth()->user()->hasPermission('landing_page.list'))
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.page_categories.*') || request()->routeIs('admin.pages.*') ? 'active' : '' }}"
+             data-sub="footer-management">
+            <i class="bi bi-layout-text-sidebar-reverse"></i> Footer Management
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-footer-management">
             <a class="nav-item-custom {{ request()->routeIs('admin.page_categories.*') ? 'active' : '' }}"
                href="{{ route('admin.page_categories.index') }}">
-                <i class="bi bi-dot"></i> Page Categories
+                <i class="bi bi-dot"></i> Footer Category
             </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}"
                href="{{ route('admin.pages.index') }}">
-                <i class="bi bi-dot"></i> Page Manage
+                <i class="bi bi-dot"></i> Footer Page
+            </a>
+        </div>
+        @endif
+
+        {{-- BD Management --}}
+        @if(auth()->user()->hasPermission('third_party.list'))
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.settings.gateways') || request()->routeIs('admin.settings.gateways.bd') || request()->routeIs('admin.bkash.*') || request()->routeIs('admin.aamarpay.*') || request()->routeIs('admin.bkash-pay.*') || request()->routeIs('admin.shurjopay.*') || request()->routeIs('admin.sslcommerz.*') ? 'active' : '' }}"
+             data-sub="bd-management">
+            <i class="bi bi-cash-stack"></i> BD Management
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-bd-management">
+            <a class="nav-item-custom {{ request()->routeIs('admin.settings.gateways.bd') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways.bd') }}">
+                <i class="bi bi-dot"></i> BD Gateways
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.bd') }}#bkash">
+                <i class="bi bi-dot"></i> BKash
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.bd') }}#nagad">
+                <i class="bi bi-dot"></i> Nagad
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.bd') }}#shurjopay">
+                <i class="bi bi-dot"></i> Shurjopay
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.bd') }}#sslcommerz">
+                <i class="bi bi-dot"></i> SSLCommerz
+            </a>
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}">
+                <i class="bi bi-dot"></i> International Gateways
             </a>
         </div>
         @endif
 
         {{-- 3rd Party Configuration --}}
         @if(auth()->user()->hasPermission('third_party.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.settings.gateways') || request()->routeIs('admin.stripe.*') || request()->routeIs('admin.paypal.*') || request()->routeIs('admin.razorpay.*') || request()->routeIs('admin.paystack.*') || request()->routeIs('admin.aamarpay.*') || request()->routeIs('admin.bkash.*') || request()->routeIs('admin.paytabs.*') || request()->routeIs('admin.qicard.*') || request()->routeIs('admin.jazzcash.*') || request()->routeIs('admin.steadfast.*') || request()->routeIs('admin.pathao.*') || request()->routeIs('admin.bkash-pay.*') || request()->routeIs('admin.shurjopay.*') || request()->routeIs('admin.sms.*') || request()->routeIs('admin.twilio.*') || request()->routeIs('admin.nexmo.*') || request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.settings.gateways') || request()->routeIs('admin.settings.gateways.international') || request()->routeIs('admin.stripe.*') || request()->routeIs('admin.paypal.*') || request()->routeIs('admin.razorpay.*') || request()->routeIs('admin.paystack.*') || request()->routeIs('admin.paytabs.*') || request()->routeIs('admin.qicard.*') || request()->routeIs('admin.jazzcash.*') || request()->routeIs('admin.steadfast.*') || request()->routeIs('admin.pathao.*') || request()->routeIs('admin.sms.*') || request()->routeIs('admin.twilio.*') || request()->routeIs('admin.nexmo.*') || request()->routeIs('admin.messagebird.*') || request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
              data-sub="third-party">
             <i class="bi bi-plug"></i> 3rd Party Configuration
             <i class="bi bi-chevron-right arrow ms-auto"></i>
         </div>
         <div class="nav-submenu" id="sub-third-party">
-            <a class="nav-item-custom {{ request()->routeIs('admin.settings.gateways') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways') }}">
+            <a class="nav-item-custom {{ request()->routeIs('admin.settings.gateways.international') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways.international') }}">
                 <i class="bi bi-dot"></i> Payment Gateways
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#stripe">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}#stripe">
                 <i class="bi bi-dot"></i> Stripe
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paypal">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}#paypal">
                 <i class="bi bi-dot"></i> PayPal
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#razorpay">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}#razorpay">
                 <i class="bi bi-dot"></i> Razorpay
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paystack">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}#paystack">
                 <i class="bi bi-dot"></i> Paystack
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#aamarpay">
-                <i class="bi bi-dot"></i> AamarPay
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#bkash">
-                <i class="bi bi-dot"></i> BKash
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#paytabs">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}#paytabs">
                 <i class="bi bi-dot"></i> PayTabs
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#qicard">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}#qicard">
                 <i class="bi bi-dot"></i> QiCard
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#jazzcash">
+            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}#jazzcash">
                 <i class="bi bi-dot"></i> JazzCash
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#bkash-pay">
-                <i class="bi bi-dot"></i> Bkash Payment
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#shurjopay">
-                <i class="bi bi-dot"></i> Shurjopay
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#sslcommerz">
-                <i class="bi bi-dot"></i> SSLCommerz
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways') }}#sms">
+        </div>
+        @endif
+
+        @if(auth()->user()->hasPermission('third_party.list'))
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.settings.gateways.international') || request()->routeIs('admin.sms.configuration') || request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
+             data-sub="sms-management">
+            <i class="bi bi-chat-left-text"></i> SMS Management
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-sms-management">
+            <a class="nav-item-custom {{ request()->routeIs('admin.settings.gateways.international') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways.international') }}#sms">
                 <i class="bi bi-dot"></i> SMS Gateway
             </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.sms.configuration') ? 'active' : '' }}"

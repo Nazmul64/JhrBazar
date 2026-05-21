@@ -33,38 +33,48 @@ const CategoryDropdown = ({ isOpen }) => {
             ) : (
                 categories.length > 0 ? (
                     <>
-                        {categories.map(cat => (
-                            <div 
-                                key={cat.id}
-                                onMouseEnter={() => setActiveCatId(cat.id)}
-                                style={{ position: 'relative' }}
-                            >
-                                <Link 
-                                    to={`/category/${cat.id}`}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '12px',
-                                        padding: '10px 20px',
-                                        textDecoration: 'none',
-                                        color: activeCatId === cat.id ? 'var(--button-color, #57b500)' : '#333',
-                                        fontSize: '14px',
-                                        transition: 'all 0.2s',
-                                        backgroundColor: activeCatId === cat.id ? '#f8f9fa' : 'transparent',
-                                        borderLeft: activeCatId === cat.id ? '3px solid var(--button-color, #57b500)' : '3px solid transparent'
-                                    }}
-                                    className="category-dropdown-item"
+                        <div 
+                            className="custom-dropdown-scrollbar" 
+                            style={{ 
+                                maxHeight: '400px', 
+                                overflowY: 'auto',
+                                borderBottomLeftRadius: '10px',
+                                borderBottomRightRadius: '10px'
+                            }}
+                        >
+                            {categories.map(cat => (
+                                <div 
+                                    key={cat.id}
+                                    onMouseEnter={() => setActiveCatId(cat.id)}
+                                    style={{ position: 'relative' }}
                                 >
-                                    <img 
-                                        src={formatImagePath(cat.thumbnail)} 
-                                        alt="" 
-                                        style={{ width: '20px', height: '20px', objectFit: 'contain' }} 
-                                    />
-                                    <span style={{ flexGrow: 1 }}>{cat.name}</span>
-                                    {(cat.sub_categories?.length > 0 || cat.subCategories?.length > 0) && <span style={{ fontSize: '10px' }}>▶</span>}
-                                </Link>
-                            </div>
-                        ))}
+                                    <Link 
+                                        to={`/category/${cat.id}`}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '12px',
+                                            padding: '10px 20px',
+                                            textDecoration: 'none',
+                                            color: activeCatId === cat.id ? 'var(--button-color, #57b500)' : '#333',
+                                            fontSize: '14px',
+                                            transition: 'all 0.2s',
+                                            backgroundColor: activeCatId === cat.id ? '#f8f9fa' : 'transparent',
+                                            borderLeft: activeCatId === cat.id ? '3px solid var(--button-color, #57b500)' : '3px solid transparent'
+                                        }}
+                                        className="category-dropdown-item"
+                                    >
+                                        <img 
+                                            src={formatImagePath(cat.thumbnail)} 
+                                            alt="" 
+                                            style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '6px' }} 
+                                        />
+                                        <span style={{ flexGrow: 1 }}>{cat.name}</span>
+                                        {(cat.sub_categories?.length > 0 || cat.subCategories?.length > 0) && <span style={{ fontSize: '10px' }}>▶</span>}
+                                    </Link>
+                                </div>
+                            ))}
+                        </div>
 
                         {/* Subcategories Side Panel */}
                         {activeCatId && (activeCategory?.sub_categories?.length > 0 || activeCategory?.subCategories?.length > 0) && (
@@ -90,7 +100,7 @@ const CategoryDropdown = ({ isOpen }) => {
                                             <img 
                                                 src={formatImagePath(sub.thumbnail)} 
                                                 alt="" 
-                                                style={{ width: '18px', height: '18px', objectFit: 'contain', borderRadius: '3px' }} 
+                                                style={{ width: '26px', height: '26px', objectFit: 'cover', borderRadius: '5px' }} 
                                             />
                                             <span>{sub.name}</span>
                                         </Link>
@@ -108,6 +118,27 @@ const CategoryDropdown = ({ isOpen }) => {
                     background-color: #f8f9fa;
                     color: var(--button-color, #57b500) !important;
                     border-left: 3px solid var(--button-color, #57b500);
+                }
+                
+                /* Premium thin scrollbar for category dropdown */
+                .custom-dropdown-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .custom-dropdown-scrollbar::-webkit-scrollbar-track {
+                    background: #f8f9fa;
+                    border-radius: 10px;
+                }
+                .custom-dropdown-scrollbar::-webkit-scrollbar-thumb {
+                    background: #dcdcdc;
+                    border-radius: 10px;
+                    transition: background 0.3s;
+                }
+                .custom-dropdown-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: var(--button-color, #57b500);
+                }
+                .custom-dropdown-scrollbar {
+                    scrollbar-width: thin;
+                    scrollbar-color: #dcdcdc #f8f9fa;
                 }
             `}</style>
         </div>

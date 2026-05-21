@@ -26,7 +26,7 @@ class FrontendApiController extends Controller
     {
         return Cache::remember('home_data_v2', 60, function() {
             $settings = GenaralSetting::first();
-            
+
             if ($settings) {
                 $settings->logo = $settings->logo ? (str_starts_with($settings->logo, 'http') ? $settings->logo : '/' . ltrim($settings->logo, '/')) : null;
                 $settings->footer_logo = $settings->footer_logo ? (str_starts_with($settings->footer_logo, 'http') ? $settings->footer_logo : '/' . ltrim($settings->footer_logo, '/')) : null;
@@ -59,12 +59,12 @@ class FrontendApiController extends Controller
                 });
 
             $productColumns = ['id', 'name', 'slug', 'thumbnail', 'selling_price', 'discount_price', 'is_active', 'created_at', 'seller_id', 'cash_on_delivery', 'online_payment', 'frontend_sections', 'stock_quantity'];
-            
+
             $popular = $this->getCombinedProducts('is_popular', 10, $productColumns);
             $newArrivals = $this->getCombinedProducts('is_new_arrival', 10, $productColumns);
             $justForYou = $this->getCombinedProducts('is_just_for_you', 12, $productColumns);
             $bestDeals = $this->getCombinedProducts('is_best_seller', 6, $productColumns);
-            
+
             $digitalAdmin = DigitalProduct::where('is_active', 1)->withCount('reviews')->withAvg('reviews', 'rating')->latest()->limit(6)->get()->map(fn($p) => $this->mapProduct($p, 'digital_admin'));
             $digitalSeller = SellerDigitalProduct::where('is_active', 1)->withCount('reviews')->withAvg('reviews', 'rating')->latest()->limit(6)->get()->map(fn($p) => $this->mapProduct($p, 'digital_seller'));
             $digital = $digitalAdmin->concat($digitalSeller)->sortByDesc('created_at')->take(6)->values();
@@ -157,7 +157,7 @@ class FrontendApiController extends Controller
     {
         $adminColumns = array_filter($columns, fn($c) => $c !== 'seller_id');
         $adminColumns[] = 'rating';
-        
+
         // Featured flags to exclude from "All Products" if no specific field is provided
         $featuredFlags = ['is_new_arrival', 'is_popular', 'is_best_seller', 'is_just_for_you', 'is_hot_product', 'is_flash_sale'];
 
@@ -180,7 +180,7 @@ class FrontendApiController extends Controller
                 $sellerQuery->where($flag, 0);
             }
         }
-        
+
         $adminProducts = $adminQuery->latest()->limit($limit)->get()->map(fn($p) => $this->mapProduct($p, 'admin'));
         $sellerProducts = $sellerQuery->latest()->limit($limit)->get()->map(fn($p) => $this->mapProduct($p, 'seller'));
 
@@ -201,7 +201,7 @@ class FrontendApiController extends Controller
                 $s->app_logo = $s->app_logo ? (str_starts_with($s->app_logo, 'http') ? $s->app_logo : '/' . ltrim($s->app_logo, '/')) : null;
                 $s->og_image = $s->og_image ? (str_starts_with($s->og_image, 'http') ? $s->og_image : '/' . ltrim($s->og_image, '/')) : null;
             }
-            
+
             $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('name', 'asc')])
                 ->where('is_active', 1)
                 ->orderBy('name', 'asc')
@@ -369,7 +369,7 @@ class FrontendApiController extends Controller
     public function getPopularProducts(Request $request)
     {
         $limit = $request->query('limit', 10);
-        
+
         $adminQuery = Product::where('is_active', 1)->where('is_popular', 1)->latest();
         $sellerQuery = SellerProduct::where('is_active', 1)->where('is_popular', 1)->latest();
 
@@ -555,7 +555,7 @@ class FrontendApiController extends Controller
             ->where('status', 1)
             ->latest()
             ->get();
-        
+
         $avgRating = $reviews->avg('rating') ?: 0;
         $reviewCount = $reviews->count();
 
@@ -659,7 +659,7 @@ class FrontendApiController extends Controller
                 ->take(12)
                 ->get()
                 ->map(fn($p) => $this->mapProduct($p, 'seller'));
-            
+
             return response()->json([
                 'success' => true,
                 'data'    => $sellerRelated->values()
@@ -864,7 +864,7 @@ class FrontendApiController extends Controller
     public function getDigitalProducts(Request $request)
     {
         $limit = $request->query('limit', 10);
-        
+
         $adminProducts = DigitalProduct::where('is_active', 1)
             ->withCount('reviews')->withAvg('reviews', 'rating')
             ->latest()
@@ -880,7 +880,7 @@ class FrontendApiController extends Controller
             ->map(fn($p) => $this->mapProduct($p, 'digital_seller'));
 
         $all = $adminProducts->concat($sellerProducts)->sortByDesc('created_at');
-        
+
         if ($limit !== 'all') {
             $all = $all->take($limit);
         }
@@ -934,9 +934,9 @@ class FrontendApiController extends Controller
         $productCategories = Category::where('is_active', 1)->select('id', 'name')->orderBy('name', 'asc')->get();
 
         $pageCategories = \App\Models\PageCategory::with(['pages' => function($q) {
-                $q->where('status', 1)->select('id', 'page_category_id', 'name', 'slug')->orderBy('name', 'asc');
+                $q->where('status', 1)->select('id', 'page_category_id', 'name', 'slug')->orderBy('created_at', 'asc');
             }])
-            ->where('status', 1)->select('id', 'name')->orderBy('name', 'asc')->get();
+            ->where('status', 1)->select('id', 'name')->orderBy('created_at', 'asc')->get();
 
         $settings = GenaralSetting::first();
         if ($settings) {
@@ -1049,19 +1049,19 @@ class FrontendApiController extends Controller
             'slug'                => $product->slug ?: $product->id,
             'uid'                 => $type . '_' . $product->id,
             'product_type'        => $type,
-            'seller_id'           => ($type === 'seller' || $type === 'digital_seller') ? ($product->seller_id ?? 0) : 0, 
+            'seller_id'           => ($type === 'seller' || $type === 'digital_seller') ? ($product->seller_id ?? 0) : 0,
             'title'               => $product->name,
             'image'               => (
                                         $product->thumbnail ? (
-                                            str_starts_with($product->thumbnail, 'http') 
-                                            ? $product->thumbnail 
+                                            str_starts_with($product->thumbnail, 'http')
+                                            ? $product->thumbnail
                                             : '/' . ltrim(str_starts_with($product->thumbnail, 'uploads/') ? $product->thumbnail : 'uploads/product/' . ltrim($product->thumbnail, '/'), '/')
                                         ) : '/placeholder.jpg'
                                      ) . '?v=' . self::ASSET_VERSION,
             'price'               => $sellingPrice,
             'oldPrice'            => $originalPrice,
             'discount'            => $discountPercentage,
-            'discount_percentage' => $discountPercentage, 
+            'discount_percentage' => $discountPercentage,
             'rating'              => round($product->reviews_avg_rating ?? ($product->rating ?? 0), 1),
             'reviews'             => $product->reviews_count ?? 0,
             'sold'                => 0,

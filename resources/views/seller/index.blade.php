@@ -321,16 +321,16 @@
                 <div class="col-md-6">
                     <div class="wallet-stat-item shadow-sm">
                         <div>
-                            <h5 class="fw-bold mb-0">$104</h5>
-                            <p class="small text-muted mb-0">Delivery Charge</p>
+                            <h5 class="fw-bold mb-0">{{ $totalReviews }}</h5>
+                            <p class="small text-muted mb-0">Total Reviews</p>
                         </div>
-                        <i class="bi bi-truck text-muted"></i>
+                        <i class="bi bi-star text-muted"></i>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="wallet-stat-item shadow-sm">
                         <div>
-                            <h5 class="fw-bold mb-0">$32604</h5>
+                            <h5 class="fw-bold mb-0">৳{{ number_format($totalPosSales, 2) }}</h5>
                             <p class="small text-muted mb-0">Total POS Sales</p>
                         </div>
                         <i class="bi bi-display text-muted"></i>

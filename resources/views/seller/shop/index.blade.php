@@ -28,7 +28,7 @@
                                 <i class="bi bi-star-fill"></i>
                                 <i class="bi bi-star-fill"></i>
                                 <i class="bi bi-star-fill"></i>
-                                <span class="text-muted ms-1">(0 Reviews)</span>
+                                <span class="text-muted ms-1">({{ $totalReviews }} {{ $totalReviews == 1 ? 'Review' : 'Reviews' }})</span>
                             </div>
                             <a href="#" class="btn btn-outline-danger btn-sm px-4 rounded-pill">View Live</a>
                         </div>

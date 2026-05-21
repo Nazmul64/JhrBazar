@@ -297,7 +297,7 @@
                     <input class="form-check-input" type="checkbox" id="selectAll">
                     <label class="form-check-label fw-bold" for="selectAll">Select All</label>
                 </div>
-                
+
                 <select class="form-select form-select-sm w-auto" id="bulkStatus">
                     <option value="">Change Status</option>
                     <option value="status:pending">Pending</option>
@@ -356,17 +356,17 @@
                             $orderData = $order->order;
                             $customerName = $order->customer?->user?->name;
                             $customerPhone = $order->customer?->user?->phone;
-                            
+
                             if (!$customerPhone && $orderData) {
                                 $customerPhone = $orderData->phone;
                             }
-                            
+
                             if (!$customerName && $orderData && $orderData->note) {
                                 if (preg_match('/Name: (.*)/', $orderData->note, $matches)) {
                                     $customerName = trim($matches[1]);
                                 }
                             }
-                            
+
                             $customerName = $customerName ?? 'Guest';
                             $customerPhone = $customerPhone ?? 'N/A';
 
@@ -392,6 +392,15 @@
                             <td>
                                 <span class="fw-bold text-primary">#{{ $order->invoice_number }}</span>
                                 <div class="text-muted small">{{ $order->created_at->format('d M, h:i A') }}</div>
+                                @if($firstItem)
+                                    <div class="d-flex align-items-center gap-2 mt-2">
+                                        <img src="{{ $firstItem['thumbnail'] ?? $firstItem['image'] ?? asset('assets/images/default-product.png') }}" alt="Product" width="40" height="40" class="rounded">
+                                        <div>
+                                            <div class="small text-muted">{{ $firstItem['name'] ?? $firstItem['title'] ?? 'Product item' }}</div>
+                                            <div class="small text-muted">Qty: {{ $firstItem['qty'] ?? 1 }}</div>
+                                        </div>
+                                    </div>
+                                @endif
                             </td>
                             <td>
                                 <div class="customer-info" style="min-width: 180px;">
@@ -401,7 +410,7 @@
                                         <span class="text-muted mb-1" style="font-size: 11px;"><i class="bi bi-envelope-fill me-1"></i>{{ $customerEmail }}</span>
                                     @endif
                                     <span class="text-muted mb-2" style="font-size: 11px; display:block; line-height:1.4;"><i class="bi bi-geo-alt-fill me-1 text-danger"></i>{{ $customerAddress }}</span>
-                                    
+
                                     <div class="mt-1 d-flex align-items-center justify-content-between p-2 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0;">
                                         <div title="IP Address" style="font-size: 11px; font-weight: 600; color: #475569;">
                                             <i class="bi bi-globe me-1 text-primary"></i>{{ $customerIp }}
@@ -701,7 +710,7 @@
     function openPathaoModal() {
         const modal = new bootstrap.Modal(document.getElementById('pathaoModal'));
         modal.show();
-        
+
         // Load Stores & Cities
         fetchPathaoData('stores', 'pathaoStore');
         fetchPathaoData('cities', 'pathaoCity');
@@ -828,7 +837,7 @@
         form.method = 'POST';
         form.action = `{{ route('seller.orders.bulk-invoice') }}`;
         form.target = '_blank';
-        
+
         const csrf = document.createElement('input');
         csrf.type = 'hidden';
         csrf.name = '_token';

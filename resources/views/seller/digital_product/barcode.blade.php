@@ -48,7 +48,7 @@
                     <div>
                         <h5 class="fw-bold mb-1">{{ $product->name }}</h5>
                         <p class="text-muted small mb-2">{{ Str::limit($product->short_description, 100) }}</p>
-                        <div class="fw-bold text-dark">${{ number_format($product->selling_price, 2) }}</div>
+                        <div class="fw-bold text-dark">৳{{ number_format($product->selling_price, 0) }}</div>
                         <div class="mt-2 small text-muted">SKU: <span class="fw-bold text-dark">{{ $product->sku }}</span></div>
                     </div>
                 </div>
@@ -74,7 +74,7 @@
                             </div>
                             <div class="barcode-label">JHR Bazar (Digital)</div>
                             <div class="barcode-sub">{{ Str::limit($product->name, 20) }}</div>
-                            <div class="barcode-price">${{ number_format($product->selling_price, 2) }}</div>
+                            <div class="barcode-price">৳{{ number_format($product->selling_price, 0) }}</div>
                             <img class="barcode-img-gen" data-value="{{ $product->sku }}">
                             <div class="barcode-code">Code: {{ $product->sku }}</div>
                         </div>
@@ -124,7 +124,7 @@
                     </div>
                     <div class="barcode-label">JHR Bazar (Digital)</div>
                     <div class="barcode-sub">{{ Str::limit($product->name, 20) }}</div>
-                    <div class="barcode-price">${{ number_format($product->selling_price, 2) }}</div>
+                    <div class="barcode-price">৳{{ number_format($product->selling_price, 0) }}</div>
                     <img class="barcode-img-gen" data-value="{{ $product->sku }}">
                     <div class="barcode-code">Code: {{ $product->sku }}</div>
                 </div>`;

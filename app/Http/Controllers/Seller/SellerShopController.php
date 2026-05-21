@@ -19,13 +19,12 @@ class SellerShopController extends Controller
         $shop = Shop::where('user_id', $user->id)->first();
         
         // Dynamic counts
-        $normalProductCount = Product::where('shop_id', $shop->id ?? 0)->count();
+        $normalProductCount = \App\Models\SellerProduct::where('seller_id', $user->id)->count();
         $digitalProductCount = SellerDigitalProduct::where('seller_id', $user->id)->count();
         $totalProducts = $normalProductCount + $digitalProductCount;
         
-        // Hardcoded for now as requested
-        $totalOrders = 0; 
-        $totalReviews = 0;
+        $totalOrders = \App\Models\Pointofsalepo::where('seller_id', $user->id)->count(); 
+        $totalReviews = \App\Models\Review::where('shop_id', $shop->id ?? 0)->count();
 
         return view('seller.shop.index', compact('user', 'shop', 'totalProducts', 'totalOrders', 'totalReviews'));
     }

@@ -3,9 +3,11 @@ import { useLocation, Link } from 'react-router-dom';
 import MasterLayout from '../layouts/MasterLayout';
 import ProductCard from '../components/ProductCard';
 import axios from 'axios';
+import { useSettings } from '../context/SettingsContext';
 
 const SearchResults = () => {
     const location = useLocation();
+    const { settings } = useSettings();
     const queryParams = new URLSearchParams(location.search);
     const searchTerm = queryParams.get('q') || "";
 
@@ -57,6 +59,24 @@ const SearchResults = () => {
         }
     }, [products, searchTerm]);
 
+    let mobileCol = 6;
+    if (settings?.products_per_row_mobile) {
+        mobileCol = Math.max(1, Math.floor(12 / parseInt(settings.products_per_row_mobile)));
+    }
+
+    let desktopCol = 2;
+    let customDesktopClass = '';
+    if (settings?.products_per_row_desktop) {
+        const perRow = parseInt(settings.products_per_row_desktop);
+        if ([1, 2, 3, 4, 6, 12].includes(perRow)) {
+            desktopCol = 12 / perRow;
+        } else {
+            customDesktopClass = `custom-desktop-col-${perRow}`;
+            desktopCol = 2; // fallback
+        }
+    }
+    const finalColClass = `col-${mobileCol} col-md-4 col-lg-${desktopCol} ${customDesktopClass}`;
+
     return (
         <MasterLayout>
             {/* Page Header */}
@@ -96,7 +116,7 @@ const SearchResults = () => {
                         <div className="row g-3 g-md-4">
                             {products.length > 0 ? (
                                 products.map(product => (
-                                    <div key={product.uid} className="col-6 col-md-4 col-lg-2">
+                                    <div key={product.uid} className={finalColClass}>
                                         <ProductCard product={product} />
                                     </div>
                                 ))
@@ -114,6 +134,12 @@ const SearchResults = () => {
                     </>
                 )}
             </div>
+            <style>{`
+                @media (min-width: 992px) {
+                    .custom-desktop-col-5 { width: 20%; flex: 0 0 20%; }
+                    .custom-desktop-col-8 { width: 12.5%; flex: 0 0 12.5%; }
+                }
+            `}</style>
         </MasterLayout>
     );
 };

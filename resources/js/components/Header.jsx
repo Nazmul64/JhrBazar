@@ -338,7 +338,7 @@ const Header = () => {
                                 <div key={cat.id} className="border-bottom">
                                     <div onClick={() => toggleCategory(cat.id)} style={{ padding: '15px 20px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
                                         <div className="d-flex align-items-center gap-2">
-                                            <img src={cat.thumbnail || '/placeholder.jpg'} alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+                                            <img src={cat.thumbnail || '/placeholder.jpg'} alt="" style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '6px' }} />
                                             <Link to={`/category/${cat.id}`} onClick={() => setIsMobileMenuOpen(false)} className="text-decoration-none text-dark">{cat.name}</Link>
                                         </div>
                                         {(cat.sub_categories?.length > 0 || cat.subCategories?.length > 0) && <span>{expandedCategory === cat.id ? '▼' : '▶'}</span>}
@@ -356,7 +356,7 @@ const Header = () => {
                                                     <img 
                                                         src={sub.thumbnail ? (sub.thumbnail.startsWith('http') ? sub.thumbnail : sub.thumbnail) : '/placeholder.jpg'} 
                                                         alt="" 
-                                                        style={{ width: '16px', height: '16px', objectFit: 'contain' }} 
+                                                        style={{ width: '26px', height: '26px', objectFit: 'cover', borderRadius: '5px' }} 
                                                     />
                                                     <span>{sub.name}</span>
                                                 </Link>

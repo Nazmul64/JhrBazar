@@ -48,6 +48,7 @@ use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\FlashsaleController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProductBrandController;
+use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SizeController;
 use App\Http\Controllers\Admin\SubCategoryController;
@@ -215,6 +216,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         Route::patch('/{withdraw}/status', [App\Http\Controllers\Admin\WithdrawController::class, 'updateStatus'])->name('status');
         Route::get('/settings',         [App\Http\Controllers\Admin\WithdrawController::class, 'settings'])->name('settings');
         Route::post('/settings',        [App\Http\Controllers\Admin\WithdrawController::class, 'updateSettings'])->name('settings.update');
+        Route::get('/commission-settings', [App\Http\Controllers\Admin\CommissionSetupController::class, 'index'])->name('commission.index');
+        Route::post('/commission-settings', [App\Http\Controllers\Admin\CommissionSetupController::class, 'store'])->name('commission.store');
     });
 
     // ── Unified Users ─────────────────────────────────────────────────────────
@@ -379,6 +382,26 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         Route::get('/pathao/stores',          [OrderHubController::class, 'getPathaoStores'])->name('pathao.stores');
     });
 
+    // ── Refund Management ──────────────────────────────────────────────────────
+    Route::prefix('refunds')->name('admin.refunds.')->group(function () {
+        Route::middleware(['permission:return_order.list'])->group(function () {
+            Route::get('/',                     [RefundController::class, 'index'])->name('index');
+            Route::get('/create',               [RefundController::class, 'create'])->name('create');
+            Route::post('/store',               [RefundController::class, 'store'])->name('store');
+            Route::get('/{refund}',             [RefundController::class, 'show'])->name('show');
+            Route::post('/{refund}/status',     [RefundController::class, 'updateStatus'])->name('update-status');
+            Route::post('/{refund}/approve',    [RefundController::class, 'approve'])->name('approve');
+            Route::post('/{refund}/reject',     [RefundController::class, 'reject'])->name('reject');
+            Route::post('/bulk-status',         [RefundController::class, 'bulkUpdateStatus'])->name('bulk-status');
+            Route::delete('/{refund}',          [RefundController::class, 'destroy'])->name('destroy');
+            Route::get('/export/csv',           [RefundController::class, 'export'])->name('export');
+
+            // API endpoints for autocomplete
+            Route::get('/api/products',         [RefundController::class, 'getProducts'])->name('api.products');
+            Route::get('/api/couriers',         [RefundController::class, 'getCouriers'])->name('api.couriers');
+        });
+    });
+
     // ── Contact ───────────────────────────────────────────────────────────────
     Route::post('contact/{contact}/toggle', [ContactController::class, 'toggleStatus'])->name('admin.contact.toggle');
     Route::resource('contact', ContactController::class)->names('admin.contact')->except(['show']);
@@ -404,6 +427,30 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         ];
         return view('admin.settings.gateways', $data);
     })->name('admin.settings.gateways');
+
+    Route::get('/settings/gateways/bd', function () {
+        $data = [
+            'aamarpay'  => \App\Models\AamarpayGateway::first(),
+            'bkash'     => \App\Models\BkashGateway::first(),
+            'bkashPay'  => \App\Models\BkashPayment::first(),
+            'shurjopay' => \App\Models\ShurjopayGateway::first(),
+            'sslcommerz' => \App\Models\SslcommerzGateway::first(),
+        ];
+        return view('admin.settings.gateways_bd', $data);
+    })->name('admin.settings.gateways.bd');
+
+    Route::get('/settings/gateways/international', function () {
+        $data = [
+            'stripe'   => \App\Models\StripeGateway::first(),
+            'paypal'   => \App\Models\PaypalGateway::first(),
+            'razorpay' => \App\Models\RazorpayGateway::first(),
+            'paystack' => \App\Models\PaystackGateway::first(),
+            'paytabs'  => \App\Models\PaytabsGateway::first(),
+            'qicard'   => \App\Models\QicardGateway::first(),
+            'jazzcash' => \App\Models\JazzcashGateway::first(),
+        ];
+        return view('admin.settings.gateways_international', $data);
+    })->name('admin.settings.gateways.international');
 
     // ── Payment Gateways ──────────────────────────────────────────────────────
     Route::post('/settings/stripe/update',   [StripeGatewayController::class,   'update'])      ->name('admin.stripe.update');
@@ -481,6 +528,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
     // ── Landing Pages ─────────────────────────────────────────────────────────
     Route::resource('landingpages', LandingPageController::class)->names('admin.landingpages')->except(['show']);
+    Route::get('landingpages/{landingpage}/preview', [LandingPageController::class, 'preview'])->name('admin.landingpages.preview');
     Route::patch('landingpages/{landingpage}/toggle-status', [LandingPageController::class, 'toggleStatus'])->name('admin.landingpages.toggle-status');
 
     // ── Google Tag Manager ────────────────────────────────────────────────────
@@ -584,7 +632,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['role:manager'])->prefix('manager')->name('manager.')->group(function () {
         Route::get('/dashboard', [ManagerDashboardController::class, 'index'])->name('dashboard');
-        
+
         // Orders Hub (Manager - uses Admin controller for global view)
         Route::prefix('orders')->name('orders.')->group(function () {
             Route::get('/{status?}',       [OrderHubController::class, 'index'])       ->name('index');
@@ -682,6 +730,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/banners/{id}', [App\Http\Controllers\Seller\SellerBannerController::class, 'update'])->name('banner.update');
         Route::delete('/banners/{id}', [App\Http\Controllers\Seller\SellerBannerController::class, 'destroy'])->name('banner.destroy');
         Route::post('/banners/{id}/toggle', [App\Http\Controllers\Seller\SellerBannerController::class, 'toggleStatus'])->name('banner.toggle');
+
+        // Refund Management (Read-Only + Note Addition)
+        Route::prefix('refunds')->name('refunds.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Seller\RefundController::class, 'index'])->name('index');
+            Route::get('/{refund}', [App\Http\Controllers\Seller\RefundController::class, 'show'])->name('show');
+            Route::post('/{refund}/note', [App\Http\Controllers\Seller\RefundController::class, 'addNote'])->name('note');
+        });
 
         // My Shop (Seller)
         Route::prefix('my-shop')->name('shop.')->group(function () {
@@ -801,4 +856,4 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('cyber-alerts/{id}', [App\Http\Controllers\Admin\FraudCheckerController::class, 'destroy'])->name('admin.cyber-alerts.destroy');
     });
 });
- 
+

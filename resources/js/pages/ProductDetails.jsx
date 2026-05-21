@@ -195,6 +195,24 @@ const ProductDetails = () => {
     }
 
 
+    let mobileCol = 6;
+    if (settings?.products_per_row_mobile) {
+        mobileCol = Math.max(1, Math.floor(12 / parseInt(settings.products_per_row_mobile)));
+    }
+
+    let desktopCol = 2;
+    let customDesktopClass = '';
+    if (settings?.products_per_row_desktop) {
+        const perRow = parseInt(settings.products_per_row_desktop);
+        if ([1, 2, 3, 4, 6, 12].includes(perRow)) {
+            desktopCol = 12 / perRow;
+        } else {
+            customDesktopClass = `custom-desktop-col-${perRow}`;
+            desktopCol = 2; // fallback
+        }
+    }
+    const finalColClass = `col-${mobileCol} col-md-4 col-lg-${desktopCol} ${customDesktopClass}`;
+
     return (
         <MasterLayout>
             <SEO 
@@ -292,6 +310,10 @@ const ProductDetails = () => {
                         height: 55px !important;
                         min-width: 55px !important;
                     }
+                }
+                @media (min-width: 992px) {
+                    .custom-desktop-col-5 { width: 20%; flex: 0 0 20%; }
+                    .custom-desktop-col-8 { width: 12.5%; flex: 0 0 12.5%; }
                 }
             `}</style>
 
@@ -770,7 +792,7 @@ const ProductDetails = () => {
                         </div>
                         <div className="row g-3 g-md-4">
                             {relatedProducts.map(prod => (
-                                <div key={prod.uid} className="col-6 col-md-4 col-lg-2">
+                                <div key={prod.uid} className={finalColClass}>
                                     <ProductCard product={prod} />
                                 </div>
                             ))}

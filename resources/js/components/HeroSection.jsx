@@ -74,18 +74,38 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                 {settings && behavior === 'fixed' && categories.length > 0 && (
                     <div className="col-lg-3 d-none d-lg-block">
                         <div 
-                            className="bg-white shadow-sm border overflow-hidden hero-sidebar-container" 
+                            className="bg-white shadow-sm border hero-sidebar-container" 
+                            onMouseLeave={() => setActiveCatId(null)}
                             style={{ 
                                 borderRadius: '12px', 
                                 position: 'relative',
-                                zIndex: 1000
+                                zIndex: 1000,
+                                display: 'flex',
+                                flexDirection: 'column'
                             }}
                         >
-                            <div className="p-3 text-white fw-bold d-flex align-items-center gap-2" style={{ backgroundColor: '#2c2c2c' }}>
+                            <div 
+                                className="p-3 text-white fw-bold d-flex align-items-center gap-2" 
+                                onMouseEnter={() => setActiveCatId(null)}
+                                style={{ 
+                                    backgroundColor: '#2c2c2c',
+                                    borderTopLeftRadius: '12px',
+                                    borderTopRightRadius: '12px',
+                                    cursor: 'default'
+                                }}
+                            >
                                 <span style={{ fontSize: '18px' }}>☰</span> সব ক্যাটাগরি
                             </div>
                             
-                            <div className="py-1" onMouseLeave={() => setActiveCatId(null)}>
+                            <div 
+                                className="py-1 custom-sidebar-scrollbar" 
+                                style={{ 
+                                    flex: 1, 
+                                    overflowY: 'auto',
+                                    borderBottomLeftRadius: '12px',
+                                    borderBottomRightRadius: '12px'
+                                }}
+                            >
                                 {categories.map(cat => (
                                     <div 
                                         key={cat.id} 
@@ -103,42 +123,42 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                                         }}
                                     >
                                         <div className="d-flex align-items-center gap-2">
-                                            <img src={cat.thumbnail || '/placeholder.jpg'} alt="" loading="lazy" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+                                            <img src={cat.thumbnail || '/placeholder.jpg'} alt="" loading="lazy" style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '6px' }} />
                                             <Link to={`/category/${cat.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>{cat.name}</Link>
                                         </div>
                                         {(cat.sub_categories?.length > 0 || cat.subCategories?.length > 0) && <span style={{ fontSize: '10px' }}>▶</span>}
                                     </div>
                                 ))}
-
-                                {/* Subcategories Panel (Appears on Hover) */}
-                                {activeCatId && (activeCategory?.sub_categories?.length > 0 || activeCategory?.subCategories?.length > 0) && (
-                                    <div className="position-absolute bg-white shadow-lg border" style={{ 
-                                        top: 0, 
-                                        left: '100%', 
-                                        width: '280px', 
-                                        height: '100%',
-                                        zIndex: 10,
-                                        borderRadius: '0 12px 12px 0',
-                                        padding: '20px',
-                                        overflowY: 'auto'
-                                    }}>
-                                        <h6 className="fw-bold mb-3 border-bottom pb-2" style={{ color: 'var(--button-color, #57b500)' }}>{activeCategory.name}</h6>
-                                        <div className="d-flex flex-column gap-2">
-                                            {(activeCategory.sub_categories || activeCategory.subCategories || []).map(sub => (
-                                                <Link 
-                                                    key={sub.id} 
-                                                    to={`/subcategory/${sub.id}`} 
-                                                    className="text-decoration-none text-muted small hover-primary d-flex align-items-center gap-2 py-1"
-                                                    style={{ transition: 'color 0.2s' }}
-                                                >
-                                                    <img src={sub.thumbnail || '/placeholder.jpg'} alt="" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
-                                                    <span>{sub.name}</span>
-                                                </Link>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
+
+                            {/* Subcategories Panel (Appears on Hover) */}
+                            {activeCatId && (activeCategory?.sub_categories?.length > 0 || activeCategory?.subCategories?.length > 0) && (
+                                <div className="position-absolute bg-white shadow-lg border" style={{ 
+                                    top: 0, 
+                                    left: '100%', 
+                                    width: '280px', 
+                                    height: '100%',
+                                    zIndex: 10,
+                                    borderRadius: '0 12px 12px 0',
+                                    padding: '20px',
+                                    overflowY: 'auto'
+                                }}>
+                                    <h6 className="fw-bold mb-3 border-bottom pb-2" style={{ color: 'var(--button-color, #57b500)' }}>{activeCategory.name}</h6>
+                                    <div className="d-flex flex-column gap-2">
+                                        {(activeCategory.sub_categories || activeCategory.subCategories || []).map(sub => (
+                                            <Link 
+                                                key={sub.id} 
+                                                to={`/subcategory/${sub.id}`} 
+                                                className="text-decoration-none text-muted small hover-primary d-flex align-items-center gap-2 py-1"
+                                                style={{ transition: 'color 0.2s' }}
+                                            >
+                                                <img src={sub.thumbnail || '/placeholder.jpg'} alt="" style={{ width: '26px', height: '26px', objectFit: 'cover', borderRadius: '5px' }} />
+                                                <span>{sub.name}</span>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
@@ -237,6 +257,27 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                     color: var(--button-color, #57b500) !important;
                 }
                 
+                /* Premium thin scrollbar for categories sidebar */
+                .custom-sidebar-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .custom-sidebar-scrollbar::-webkit-scrollbar-track {
+                    background: #f8f9fa;
+                    border-radius: 10px;
+                }
+                .custom-sidebar-scrollbar::-webkit-scrollbar-thumb {
+                    background: #dcdcdc;
+                    border-radius: 10px;
+                    transition: background 0.3s;
+                }
+                .custom-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: var(--button-color, #57b500);
+                }
+                .custom-sidebar-scrollbar {
+                    scrollbar-width: thin;
+                    scrollbar-color: #dcdcdc #f8f9fa;
+                }
+                
                 .slider-nav-btn {
                     position: absolute;
                     top: 50%;
@@ -251,7 +292,7 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                     font-size: 24px;
                     display: flex;
                     align-items: center;
-                    justify-content: center;
+                    justifyContent: center;
                     cursor: pointer;
                     transition: all 0.3s;
                     z-index: 5;

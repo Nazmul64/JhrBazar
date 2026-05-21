@@ -57,9 +57,9 @@
                                 <span class="badge bg-light text-dark fw-medium">{{ $product->category->name ?? 'N/A' }}</span>
                             </td>
                             <td>
-                                <div class="fw-bold text-dark">${{ number_format($product->selling_price, 2) }}</div>
+                                <div class="fw-bold text-dark">৳{{ number_format($product->selling_price, 0) }}</div>
                                 @if($product->discount_price > 0)
-                                    <small class="text-danger text-decoration-line-through">${{ number_format($product->discount_price, 2) }}</small>
+                                    <small class="text-danger text-decoration-line-through">৳{{ number_format($product->discount_price, 0) }}</small>
                                 @endif
                             </td>
                             <td>

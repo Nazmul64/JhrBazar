@@ -70,7 +70,7 @@
                     <div class="text-muted small mb-2">SKU: {{ $product->sku }}</div>
                     
                     <div class="product-price-row mb-3">
-                        <span class="fw-bold text-dark">${{ number_format($product->selling_price, 2) }}</span>
+                        <span class="fw-bold text-dark">৳{{ number_format($product->selling_price, 0) }}</span>
                     </div>
 
                     <div class="product-actions">
