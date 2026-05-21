@@ -116,6 +116,14 @@ class LandingPageController extends Controller
     }
 
     // ──────────────────────────────────────────────────────────────
+    //  PREVIEW
+    // ──────────────────────────────────────────────────────────────
+    public function preview(Landingpage $landingpage)
+    {
+        return view('admin.landingpages.preview', compact('landingpage'));
+    }
+
+    // ──────────────────────────────────────────────────────────────
     //  UPDATE
     // ──────────────────────────────────────────────────────────────
     public function update(Request $request, Landingpage $landingpage)

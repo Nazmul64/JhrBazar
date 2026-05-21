@@ -374,10 +374,18 @@
                     <span style="font-size:13.5px; font-weight:600; color:var(--dark);">Popular Product</span>
                 </label>
 
+                @php
+                    $savedSections = old('frontend_sections', $product->frontend_sections);
+                    if (is_string($savedSections)) {
+                        $savedSections = json_decode($savedSections, true);
+                    }
+                    $savedSections = is_array($savedSections) ? $savedSections : [];
+                @endphp
+
                 @foreach(config('placement.frontend_sections') as $section)
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
                         <input type="checkbox" name="frontend_sections[]" value="{{ $section }}" 
-                            {{ (is_array(old('frontend_sections', $product->frontend_sections)) && in_array($section, old('frontend_sections', $product->frontend_sections))) ? 'checked' : '' }} 
+                            {{ in_array($section, $savedSections) ? 'checked' : '' }} 
                             style="width:16px;height:16px;accent-color:var(--brand);">
                         <span style="font-size:13.5px; font-weight:600; color:var(--dark);">{{ $section }}</span>
                     </label>

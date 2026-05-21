@@ -28,7 +28,7 @@ class CustomAuthController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Password::min(8)],
-            'phone'    => 'nullable|string|max:20',
+            'phone'    => 'required|string|max:20|unique:users,phone',
         ]);
 
         $role = Role::where('name', 'customer')->first();
@@ -40,6 +40,12 @@ class CustomAuthController extends Controller
             'phone'    => $request->phone,
             'role'     => 'customer',
             'role_id'  => $role ? $role->id : null,
+        ]);
+
+        // Create associated Customer record
+        \App\Models\Customer::create([
+            'user_id'    => $user->id,
+            'first_name' => $request->name,
         ]);
 
         Auth::login($user);

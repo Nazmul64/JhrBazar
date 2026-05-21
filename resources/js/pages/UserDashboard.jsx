@@ -14,7 +14,7 @@ const UserDashboard = () => {
     const [activeTab, setActiveTab] = useState('overview');
     
     // Profile Update State
-    const [profileData, setProfileData] = useState({ name: '', email: '', phone: '' });
+    const [profileData, setProfileData] = useState({ name: '', email: '', phone: '', address: '' });
     const [updatingProfile, setUpdatingProfile] = useState(false);
 
     // Password Update State
@@ -27,6 +27,9 @@ const UserDashboard = () => {
     const [reviewRating, setReviewRating] = useState(5);
     const [reviewComment, setReviewComment] = useState('');
     const [submittingReview, setSubmittingReview] = useState(false);
+
+    const pendingOrdersCount = orders.filter(o => o.status === 'pending' || o.status === 'processing').length;
+    const deliveredOrdersCount = orders.filter(o => o.status === 'completed' || o.status === 'delivered').length;
 
     useEffect(() => {
         const token = localStorage.getItem('auth_token');
@@ -45,7 +48,8 @@ const UserDashboard = () => {
                 setProfileData({
                     name: userRes.data.name || '',
                     email: userRes.data.email || '',
-                    phone: userRes.data.phone || ''
+                    phone: userRes.data.phone || '',
+                    address: userRes.data.address || ''
                 });
 
                 // Fetch Full Dashboard Data (Stats + Recent Orders)
@@ -108,6 +112,7 @@ const UserDashboard = () => {
             formData.append('name', profileData.name);
             formData.append('email', profileData.email);
             formData.append('phone', profileData.phone);
+            formData.append('address', profileData.address || '');
             if (profileData.profile_image) {
                 formData.append('profile_image', profileData.profile_image);
             }
@@ -277,16 +282,47 @@ const UserDashboard = () => {
                         {activeTab === 'overview' && (
                             <div className="animate-fade-in">
                                 <div className="row g-4 mb-4">
-                                    <div className="col-md-6 col-xl-4">
-                                        <div className="card border-0 shadow-sm p-4 text-center" style={{ borderRadius: '20px', background: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)', color: '#fff' }}>
-                                            <div className="display-5 fw-bold mb-1">{stats.order_count}</div>
-                                            <div className="small opacity-75">মোট অর্ডার</div>
+                                    {/* Total Orders */}
+                                    <div className="col-sm-6 col-xl-3">
+                                        <div className="card border-0 shadow-sm p-4 text-center h-100 position-relative overflow-hidden transition-all hover-translate-y" style={{ borderRadius: '20px', background: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)', color: '#fff' }}>
+                                            <div className="position-absolute opacity-10 end-0 bottom-0 mb-n2 me-n2" style={{ fontSize: '90px', pointerEvents: 'none' }}>
+                                                <i className="bi bi-cart3"></i>
+                                            </div>
+                                            <div className="display-5 fw-bold mb-1 position-relative z-1">{stats.order_count || orders.length}</div>
+                                            <div className="small opacity-75 position-relative z-1" style={{ fontWeight: '600' }}>মোট অর্ডার</div>
                                         </div>
                                     </div>
-                                    <div className="col-md-6 col-xl-4">
-                                        <div className="card border-0 shadow-sm p-4 text-center" style={{ borderRadius: '20px', background: 'linear-gradient(135deg, #ff9966 0%, #ff5e62 100%)', color: '#fff' }}>
-                                            <div className="display-5 fw-bold mb-1">{stats.wishlist_count}</div>
-                                            <div className="small opacity-75">উইশলিস্ট</div>
+                                    
+                                    {/* Pending Orders */}
+                                    <div className="col-sm-6 col-xl-3">
+                                        <div className="card border-0 shadow-sm p-4 text-center h-100 position-relative overflow-hidden transition-all hover-translate-y" style={{ borderRadius: '20px', background: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)', color: '#fff' }}>
+                                            <div className="position-absolute opacity-10 end-0 bottom-0 mb-n2 me-n2" style={{ fontSize: '90px', pointerEvents: 'none' }}>
+                                                <i className="bi bi-clock-history"></i>
+                                            </div>
+                                            <div className="display-5 fw-bold mb-1 position-relative z-1">{pendingOrdersCount}</div>
+                                            <div className="small opacity-75 position-relative z-1" style={{ fontWeight: '600' }}>পেন্ডিং অর্ডার</div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Delivered Orders */}
+                                    <div className="col-sm-6 col-xl-3">
+                                        <div className="card border-0 shadow-sm p-4 text-center h-100 position-relative overflow-hidden transition-all hover-translate-y" style={{ borderRadius: '20px', background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)', color: '#fff' }}>
+                                            <div className="position-absolute opacity-10 end-0 bottom-0 mb-n2 me-n2" style={{ fontSize: '90px', pointerEvents: 'none' }}>
+                                                <i className="bi bi-check2-circle"></i>
+                                            </div>
+                                            <div className="display-5 fw-bold mb-1 position-relative z-1">{deliveredOrdersCount}</div>
+                                            <div className="small opacity-75 position-relative z-1" style={{ fontWeight: '600' }}>ডেলিভারি সম্পন্ন</div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Saved Items */}
+                                    <div className="col-sm-6 col-xl-3">
+                                        <div className="card border-0 shadow-sm p-4 text-center h-100 position-relative overflow-hidden transition-all hover-translate-y" style={{ borderRadius: '20px', background: 'linear-gradient(135deg, #ff9966 0%, #ff5e62 100%)', color: '#fff' }}>
+                                            <div className="position-absolute opacity-10 end-0 bottom-0 mb-n2 me-n2" style={{ fontSize: '90px', pointerEvents: 'none' }}>
+                                                <i className="bi bi-heart"></i>
+                                            </div>
+                                            <div className="display-5 fw-bold mb-1 position-relative z-1">{stats.wishlist_count || wishlist.length}</div>
+                                            <div className="small opacity-75 position-relative z-1" style={{ fontWeight: '600' }}>উইশলিস্ট</div>
                                         </div>
                                     </div>
                                 </div>
@@ -474,15 +510,26 @@ const UserDashboard = () => {
                                                     required
                                                 />
                                             </div>
-                                            <div class="col-12">
+                                            <div className="col-12">
                                                 <label className="form-label small fw-bold text-muted mb-2">ফোন নাম্বার</label>
                                                 <input 
                                                     type="text" 
-                                                    className="form-control form-control-lg border-secondary-subtle px-3 mb-4" 
+                                                    className="form-control form-control-lg border-secondary-subtle px-3" 
                                                     style={{ borderRadius: '12px', fontSize: '15px' }}
                                                     value={profileData.phone} 
                                                     onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
                                                 />
+                                            </div>
+                                            <div className="col-12">
+                                                <label className="form-label small fw-bold text-muted mb-2">ঠিকানা (Address)</label>
+                                                <textarea 
+                                                    className="form-control border-secondary-subtle px-3" 
+                                                    rows="3"
+                                                    placeholder="আপনার পূর্ণাঙ্গ ঠিকানা লিখুন..."
+                                                    style={{ borderRadius: '12px', fontSize: '15px' }}
+                                                    value={profileData.address || ''} 
+                                                    onChange={(e) => setProfileData({...profileData, address: e.target.value})}
+                                                ></textarea>
                                             </div>
                                             <div className="col-12">
                                                 <label className="form-label small fw-bold text-muted mb-2">প্রোফাইল ছবি</label>
@@ -625,6 +672,8 @@ const UserDashboard = () => {
                 }
                 .star-hover:hover { transform: scale(1.2); }
                 .dashboard-nav .nav-link { transition: all 0.2s; font-weight: 600; }
+                .hover-translate-y { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+                .hover-translate-y:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important; }
                 @media (max-width: 991px) {
                     .dashboard-nav { flex-direction: row !important; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 10px; }
                     .dashboard-nav .nav-link { white-space: nowrap; padding: 10px 20px !important; margin-right: 10px; font-size: 13px; }

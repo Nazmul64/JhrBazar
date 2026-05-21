@@ -104,9 +104,9 @@
                     </div>
 
                     <div class="price-wrap">
-                        <span class="curr-price">${{ number_format($product->selling_price, 2) }}</span>
+                        <span class="curr-price">৳{{ number_format($product->selling_price, 0) }}</span>
                         @if($product->discount_price > 0)
-                            <span class="old-price">${{ number_format($product->discount_price + $product->selling_price, 2) }}</span>
+                            <span class="old-price">৳{{ number_format($product->discount_price + $product->selling_price, 0) }}</span>
                             <span class="save-perc">Save {{ round(($product->discount_price / ($product->discount_price + $product->selling_price)) * 100) }}%</span>
                         @endif
                     </div>

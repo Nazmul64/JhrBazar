@@ -224,12 +224,8 @@
             <a class="nav-item-custom" href="{{ route('seller.pos.index') }}">
                 <i class="bi bi-plus-lg"></i> Create Order
             </a>
-            <a class="nav-item-custom" href="#">
-                <i class="bi bi-person-gear"></i> Staff Assignments
-            </a>
-            <a class="nav-item-custom" href="#">
-                <i class="bi bi-clock-history"></i> Activity History
-            </a>
+
+
         </div>
 
         {{-- POS Management --}}
@@ -245,13 +241,9 @@
         </div>
 
         {{-- Refund Management --}}
-        <div class="nav-item-custom has-sub" data-sub="refund">
-            <i class="bi bi-arrow-return-left"></i> Refund Management
-            <i class="bi bi-chevron-down ms-auto"></i>
-        </div>
-        <div class="nav-submenu" id="sub-refund">
-            <a class="nav-item-custom" href="#">Refund Requests</a>
-        </div>
+        <a class="nav-item-custom" href="{{ route('seller.refunds.index') }}">
+            <i class="bi bi-arrow-return-left"></i> Refund Requests
+        </a>
 
         {{-- Messages --}}
         <a class="nav-item-custom {{ request()->routeIs('seller.messages.*') ? 'active' : '' }}" href="{{ route('seller.messages.index') }}">

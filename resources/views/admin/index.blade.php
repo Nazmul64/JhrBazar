@@ -131,6 +131,11 @@
         background: rgba(0,0,0,0.01);
     }
 
+    .custom-table-premium {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
     .custom-table-premium thead th {
         background: var(--bg-body);
         padding: 20px 28px;
@@ -177,6 +182,35 @@
     [data-theme="dark"] .table-card-premium {
         box-shadow: 0 10px 40px -10px rgba(0,0,0,0.4);
     }
+
+    /* ── Editable Status Badge for Select ── */
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 700;
+        border: none;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .status-badge.status-pending   { background: #fff4e5 !important; color: #ff9800 !important; }
+    .status-badge.status-processing{ background: #e8f0fe !important; color: #1a73e8 !important; }
+    .status-badge.status-shipped   { background: #e6fcf5 !important; color: #0ca678 !important; }
+    .status-badge.status-delivered { background: #f0fdf4 !important; color: #15803d !important; }
+    .status-badge.status-cancelled { background: #fff5f5 !important; color: #fa5252 !important; }
+    .status-badge.status-confirmed { background: #e8f0fe !important; color: #1a73e8 !important; }
+    .status-badge.status-pickup    { background: #f1f3f9 !important; color: #475569 !important; }
+
+    /* ── Recent Orders Highlight Animation ── */
+    @keyframes highlightGlow {
+        0%   { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+        40%  { box-shadow: 0 0 20px 8px rgba(99, 102, 241, 0.3); }
+        100% { box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); }
+    }
+    .highlight-section {
+        animation: highlightGlow 1.5s ease-out;
+    }
 </style>
 
   <!-- ── WELCOME BANNER ── -->
@@ -195,7 +229,7 @@
                         <button class="btn btn-light rounded-pill px-4 py-2 fw-bold text-primary shadow-sm border-0 transition-all hover-scale" style="font-size: 14px;">
                             <i class="bi bi-graph-up-arrow me-2"></i> Analytics Hub
                         </button>
-                        <button class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold hover-bg-white hover-text-primary" style="font-size: 14px;">
+                        <button onclick="scrollToRecentOrders()" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold hover-bg-white hover-text-primary" style="font-size: 14px;">
                             Recent Activity
                         </button>
                     </div>
@@ -293,46 +327,60 @@
     <div class="section-title-premium">Order Analytics</div>
     <div class="row g-3">
       <div class="col-6 col-md-4 col-lg-3 col-xl">
-        <div class="order-mini-premium">
-          <div class="text-muted small mb-1"><i class="bi bi-clock text-warning"></i> Pending</div>
-          <div class="fw-bold h4 mb-0" style="color:var(--orange)">{{ $pendingCount }}</div>
-        </div>
+        <a href="{{ route('admin.orders.index', 'pending') }}" class="text-decoration-none d-block">
+          <div class="order-mini-premium">
+            <div class="text-muted small mb-1"><i class="bi bi-clock text-warning"></i> Pending</div>
+            <div class="fw-bold h4 mb-0" style="color:var(--orange)">{{ $pendingCount }}</div>
+          </div>
+        </a>
       </div>
       <div class="col-6 col-md-4 col-lg-3 col-xl">
-        <div class="order-mini-premium">
-          <div class="text-muted small mb-1"><i class="bi bi-check2-circle text-primary"></i> Confirm</div>
-          <div class="fw-bold h4 mb-0" style="color:var(--blue)">{{ $confirmedCount }}</div>
-        </div>
+        <a href="{{ route('admin.orders.index', 'confirmed') }}" class="text-decoration-none d-block">
+          <div class="order-mini-premium">
+            <div class="text-muted small mb-1"><i class="bi bi-check2-circle text-primary"></i> Confirm</div>
+            <div class="fw-bold h4 mb-0" style="color:var(--blue)">{{ $confirmedCount }}</div>
+          </div>
+        </a>
       </div>
       <div class="col-6 col-md-4 col-lg-3 col-xl">
-        <div class="order-mini-premium">
-          <div class="text-muted small mb-1"><i class="bi bi-gear text-info"></i> Processing</div>
-          <div class="fw-bold h4 mb-0" style="color:#0ea5e9">{{ $processingCount }}</div>
-        </div>
+        <a href="{{ route('admin.orders.index', 'processing') }}" class="text-decoration-none d-block">
+          <div class="order-mini-premium">
+            <div class="text-muted small mb-1"><i class="bi bi-gear text-info"></i> Processing</div>
+            <div class="fw-bold h4 mb-0" style="color:#0ea5e9">{{ $processingCount }}</div>
+          </div>
+        </a>
       </div>
       <div class="col-6 col-md-4 col-lg-3 col-xl">
-        <div class="order-mini-premium">
-          <div class="text-muted small mb-1"><i class="bi bi-bag-check text-purple"></i> Pickup</div>
-          <div class="fw-bold h4 mb-0" style="color:var(--purple)">{{ $pickupCount }}</div>
-        </div>
+        <a href="{{ route('admin.orders.index', 'pickup') }}" class="text-decoration-none d-block">
+          <div class="order-mini-premium">
+            <div class="text-muted small mb-1"><i class="bi bi-bag-check text-purple"></i> Pickup</div>
+            <div class="fw-bold h4 mb-0" style="color:var(--purple)">{{ $pickupCount }}</div>
+          </div>
+        </a>
       </div>
       <div class="col-6 col-md-4 col-lg-3 col-xl">
-        <div class="order-mini-premium">
-          <div class="text-muted small mb-1"><i class="bi bi-truck text-secondary"></i> On The Way</div>
-          <div class="fw-bold h4 mb-0" style="color:var(--muted)">{{ $onthewayCount }}</div>
-        </div>
+        <a href="{{ route('admin.orders.index', 'shipped') }}" class="text-decoration-none d-block">
+          <div class="order-mini-premium">
+            <div class="text-muted small mb-1"><i class="bi bi-truck text-secondary"></i> On The Way</div>
+            <div class="fw-bold h4 mb-0" style="color:var(--muted)">{{ $onthewayCount }}</div>
+          </div>
+        </a>
       </div>
       <div class="col-6 col-md-4 col-lg-3 col-xl">
-        <div class="order-mini-premium">
-          <div class="text-muted small mb-1"><i class="bi bi-check-circle-fill text-success"></i> Delivered</div>
-          <div class="fw-bold h4 mb-0" style="color:var(--green)">{{ $deliveredCount }}</div>
-        </div>
+        <a href="{{ route('admin.orders.index', 'delivered') }}" class="text-decoration-none d-block">
+          <div class="order-mini-premium">
+            <div class="text-muted small mb-1"><i class="bi bi-check-circle-fill text-success"></i> Delivered</div>
+            <div class="fw-bold h4 mb-0" style="color:var(--green)">{{ $deliveredCount }}</div>
+          </div>
+        </a>
       </div>
       <div class="col-6 col-md-4 col-lg-3 col-xl">
-        <div class="order-mini-premium">
-          <div class="text-muted small mb-1"><i class="bi bi-x-circle text-danger"></i> Cancelled</div>
-          <div class="fw-bold h4 mb-0" style="color:var(--red)">{{ $cancelledCount }}</div>
-        </div>
+        <a href="{{ route('admin.orders.index', 'cancelled') }}" class="text-decoration-none d-block">
+          <div class="order-mini-premium">
+            <div class="text-muted small mb-1"><i class="bi bi-x-circle text-danger"></i> Cancelled</div>
+            <div class="fw-bold h4 mb-0" style="color:var(--red)">{{ $cancelledCount }}</div>
+          </div>
+        </a>
       </div>
     </div>
   </div>
@@ -436,7 +484,7 @@
   </div>
 
   <!-- ── ORDER SUMMARY TABLE ── -->
-  <div class="row mb-5 anim anim-8">
+  <div id="recentOrdersSection" class="row mb-5 anim anim-8">
     <div class="col-12">
       <div class="table-card-premium">
         <div class="table-header-premium">
@@ -444,7 +492,7 @@
             <h5 class="fw-bold mb-1">Order Summary</h5>
             <p class="text-muted mb-0 small">Overview of the latest 5 orders</p>
           </div>
-          <a href="#" class="btn btn-light btn-sm rounded-pill px-3 fw-bold border">View All →</a>
+          <a href="{{ route('admin.orders.index') }}" class="btn btn-light btn-sm rounded-pill px-3 fw-bold border">View All →</a>
         </div>
         <div class="table-responsive">
           <table class="custom-table-premium">
@@ -479,25 +527,21 @@
                 </td>
                 <td>{{ $invoice->created_at->format('d M, Y') }}</td>
                 <td>
-                  @php
-                    $status = $invoice->order?->status ?? 'pending';
-                    $statusClass = match($status) {
-                        'pending' => 'status-pending',
-                        'delivered' => 'status-delivered',
-                        'cancelled' => 'bg-danger bg-opacity-10 text-danger',
-                        'confirmed' => 'bg-primary bg-opacity-10 text-primary',
-                        'processing' => 'bg-info bg-opacity-10 text-info',
-                        'pickup' => 'bg-secondary bg-opacity-10 text-secondary',
-                        'shipped' => 'bg-dark bg-opacity-10 text-dark',
-                        default => 'bg-secondary bg-opacity-10 text-secondary'
-                    };
-                  @endphp
-                  <span class="status-pill {{ $statusClass }}">{{ ucfirst($status) }}</span>
+                  @php $s = $invoice->order?->status ?? 'pending'; @endphp
+                  <select class="form-select form-select-sm status-badge status-{{ $s }}" onchange="updateDashboardStatus({{ $invoice->id }}, this.value)" style="font-size: 13px; font-weight: 700; border-radius: 50px; border: none; padding: 0.4rem 0.8rem; width: auto; display: inline-block;">
+                      <option value="pending" {{ $s == 'pending' ? 'selected' : '' }}>Pending</option>
+                      <option value="confirmed" {{ $s == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                      <option value="processing" {{ $s == 'processing' ? 'selected' : '' }}>Processing</option>
+                      <option value="pickup" {{ $s == 'pickup' ? 'selected' : '' }}>Pickup</option>
+                      <option value="shipped" {{ $s == 'shipped' ? 'selected' : '' }}>Shipped</option>
+                      <option value="delivered" {{ $s == 'delivered' ? 'selected' : '' }}>Delivered</option>
+                      <option value="cancelled" {{ $s == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                  </select>
                 </td>
                 <td>
                   <div class="d-flex gap-1">
-                    <button class="btn btn-sm btn-light border"><i class="bi bi-eye"></i></button>
-                    <button class="btn btn-sm btn-light border"><i class="bi bi-download"></i></button>
+                    <a href="{{ route('admin.orders.show', $invoice->id) }}" class="btn btn-sm btn-light border" title="View Order Details"><i class="bi bi-eye"></i></a>
+                    <a href="{{ route('admin.pointofsalepos.invoice', $invoice->id) }}" target="_blank" class="btn btn-sm btn-light border" title="Download Invoice"><i class="bi bi-download"></i></a>
                   </div>
                 </td>
               </tr>
@@ -590,4 +634,71 @@
       </div>
     </div>
   </div>
+
+  <script>
+      function scrollToRecentOrders() {
+          const section = document.getElementById('recentOrdersSection');
+          if (section) {
+              section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              // Add highlight glow after scroll completes
+              setTimeout(() => {
+                  section.querySelector('.table-card-premium').classList.add('highlight-section');
+                  setTimeout(() => {
+                      section.querySelector('.table-card-premium').classList.remove('highlight-section');
+                  }, 1500);
+              }, 500);
+          }
+      }
+
+      function updateDashboardStatus(id, status) {
+          fetch(`{{ url('admin/orders/status') }}/${id}`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRF-TOKEN': '{{ csrf_token() }}'
+              },
+              body: JSON.stringify({ status: status })
+          })
+          .then(res => res.json())
+          .then(data => {
+              if (data.success) {
+                  // Find the select element and update its classes
+                  const select = event.target;
+                  select.className = `form-select form-select-sm status-badge status-${status}`;
+                  
+                  // Use premium SweetAlert toast
+                  if (typeof Toast !== 'undefined') {
+                      Toast.fire({
+                          icon: 'success',
+                          title: 'Success',
+                          text: data.message
+                      });
+                  } else {
+                      Swal.fire({
+                          icon: 'success',
+                          title: 'Success',
+                          text: data.message,
+                          toast: true,
+                          position: 'top-end',
+                          showConfirmButton: false,
+                          timer: 3000
+                      });
+                  }
+              } else {
+                  Swal.fire({
+                      icon: 'error',
+                      title: 'Oops...',
+                      text: data.message || 'Failed to update order status'
+                  });
+              }
+          })
+          .catch(err => {
+              Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: 'Something went wrong!'
+              });
+          });
+      }
+  </script>
 @endsection

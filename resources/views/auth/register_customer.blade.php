@@ -131,7 +131,7 @@
 
     <div class="mb-3">
       <label class="form-label">Phone Number</label>
-      <input type="text" name="phone" class="form-control" placeholder="+880..." value="{{ old('phone') }}">
+      <input type="text" name="phone" class="form-control" placeholder="+880..." required value="{{ old('phone') }}">
       @error('phone') <small class="text-danger">{{ $message }}</small> @enderror
     </div>
 

@@ -185,9 +185,9 @@
                     <div class="product-desc">{{ $product->short_description ?? 'No description provided.' }}</div>
                     
                     <div class="product-price-row">
-                        <span class="price-main">${{ number_format($product->selling_price, 2) }}</span>
+                        <span class="price-main">৳{{ number_format($product->selling_price, 0) }}</span>
                         @if($product->discount_price > 0)
-                            <span class="price-discount">${{ number_format($product->discount_price, 2) }}</span>
+                            <span class="price-discount">৳{{ number_format($product->discount_price, 0) }}</span>
                         @endif
                     </div>
 

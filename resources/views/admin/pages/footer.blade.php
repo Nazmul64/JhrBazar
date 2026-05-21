@@ -2,7 +2,7 @@
 <!-- Bootstrap JS -->
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
 /* ── SIDEBAR TOGGLE ── */
 const sidebar = document.getElementById('sidebar');
@@ -223,7 +223,7 @@ if (donutChartEl) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     {{-- ── Chart.js 4.4.3 ── --}}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
 
     {{-- ── SweetAlert2 ── --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>

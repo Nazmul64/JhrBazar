@@ -3,37 +3,60 @@
 namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
-use App\Models\Withdraw;
 use App\Models\Bank;
+use App\Models\CommissionSetup;
 use App\Models\GenaralSetting;
-use App\Models\User;
+use App\Models\Withdraw;
+use App\Models\SellerTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class SellerWithdrawController extends Controller
 {
+    protected function commissionSettings()
+    {
+        return CommissionSetup::latest()->first();
+    }
+
+    protected function getWithdrawConfig()
+    {
+        $commission = $this->commissionSettings();
+        $settings = GenaralSetting::first();
+
+        return [
+            'min' => optional($commission)->min_withdraw_amount ?? $settings->min_withdraw ?? 0,
+            'max' => optional($commission)->max_withdraw_amount ?? $settings->max_withdraw ?? 1000000,
+            'commission_percent' => optional($commission)->withdraw_commission_percent ?? $settings->withdraw_commission ?? 0,
+            'charge' => optional($commission)->withdraw_charge ?? 0,
+            'rules' => optional($commission)->seller_withdraw_rules ?? [],
+            'daily_limit' => optional($commission)->daily_limit,
+            'verification_required' => optional($commission)->verification_required ?? false,
+            'settings' => $settings,
+        ];
+    }
+
     public function index()
     {
         $seller = Auth::user();
         $balance = $seller->balance;
-        
+
         $withdraws = Withdraw::where('seller_id', $seller->id)->with('bank')->latest()->paginate(10);
         $banks = Bank::where('status', 'active')->orderBy('name')->get();
-        $settings = GenaralSetting::first();
-        
-        return view('seller.withdraws.index', compact('withdraws', 'banks', 'balance', 'settings'));
+        $withdrawConfig = $this->getWithdrawConfig();
+
+        return view('seller.withdraws.index', compact('withdraws', 'banks', 'balance', 'withdrawConfig'));
     }
 
     public function store(Request $request)
     {
-        $settings = GenaralSetting::first();
         $seller = Auth::user();
         $balance = $seller->balance;
+        $config = $this->getWithdrawConfig();
 
-        $min = $settings->min_withdraw ?? 0;
-        $max = $settings->max_withdraw ?? 1000000;
+        $min = $config['min'];
+        $max = $config['max'];
 
         $request->validate([
             'amount' => "required|numeric|min:$min|max:$max",
@@ -51,17 +74,15 @@ class SellerWithdrawController extends Controller
             return back()->with('error', 'Insufficient balance! You cannot withdraw more than ৳' . number_format($balance, 2));
         }
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        $commissionPercent = $config['commission_percent'];
+        $withdrawCharge = $config['charge'];
+        $commissionAmount = ($request->amount * $commissionPercent) / 100;
+        $netPayable = $request->amount - $commissionAmount - $withdrawCharge;
+
+        DB::beginTransaction();
         try {
-            // Calculate Commission (if any)
-            $commissionPercent = $settings->withdraw_commission ?? 0;
-            $commissionAmount = ($request->amount * $commissionPercent) / 100;
-            $netPayable = $request->amount - $commissionAmount;
+            // Balance deduction deferred until admin approval
 
-            // Deduct Balance
-            $seller->decrement('balance', $request->amount);
-
-            // Create Withdraw Record
             $withdraw = Withdraw::create([
                 'seller_id' => $seller->id,
                 'bank_id' => $request->bank_id,
@@ -73,22 +94,21 @@ class SellerWithdrawController extends Controller
                 'seller_note' => $request->seller_note,
             ]);
 
-            // Create Transaction Log
-            \App\Models\SellerTransaction::create([
-                'seller_id'      => $seller->id,
+            SellerTransaction::create([
+                'seller_id' => $seller->id,
                 'transaction_id' => 'WITH-' . strtoupper(Str::random(10)),
-                'type'           => 'withdrawal',
-                'amount'         => $request->amount,
-                'commission'     => $commissionAmount,
-                'net_amount'     => $netPayable,
-                'status'         => 'pending',
-                'description'    => 'Withdrawal request to ' . Bank::find($request->bank_id)->name,
+                'type' => 'withdrawal',
+                'amount' => $request->amount,
+                'commission' => $commissionAmount + $withdrawCharge,
+                'net_amount' => $netPayable,
+                'status' => 'pending',
+                'description' => 'Withdrawal request to ' . Bank::find($request->bank_id)->name,
             ]);
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
             return redirect()->route('seller.withdraws.index')->with('success', 'Withdraw request submitted successfully!');
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             return back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }

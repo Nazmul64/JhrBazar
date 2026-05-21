@@ -107,6 +107,7 @@ class CustomerDashboardController extends Controller
             'name'          => 'required|string|max:255',
             'email'         => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'phone'         => 'nullable|string|max:20',
+            'address'       => 'nullable|string|max:1000',
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
         ]);
 
@@ -118,9 +119,10 @@ class CustomerDashboardController extends Controller
         }
 
         $data = [
-            'name'  => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
+            'name'    => $request->name,
+            'email'   => $request->email,
+            'phone'   => $request->phone,
+            'address' => $request->address,
         ];
 
         if ($request->hasFile('profile_image')) {

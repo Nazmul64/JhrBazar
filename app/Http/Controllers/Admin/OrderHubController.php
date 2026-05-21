@@ -13,7 +13,8 @@ use App\Models\GenaralSetting;
 use App\Models\OrderStatusLog;
 use Illuminate\Support\Facades\DB;
 use App\Services\FraudDetectionService;
-
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 class OrderHubController extends Controller
 {
     public function __construct(private readonly FraudDetectionService $fraudService) {}
@@ -64,7 +65,7 @@ class OrderHubController extends Controller
         $orders = $query->paginate(15)->withQueryString();
         $settings = GenaralSetting::first();
         $staffs = User::whereIn('role', ['employee', 'manager'])->get();
-        
+
         $steadfast = SteadfastCourier::first();
         $pathao = PathaoCourier::first();
 
@@ -77,8 +78,8 @@ class OrderHubController extends Controller
         $cancelledOrders = PosInvoice::whereHas('order', fn($q) => $q->where('status', 'cancelled'))->count();
 
         return view('admin.orders.index', compact(
-            'orders', 
-            'status', 
+            'orders',
+            'status',
             'settings',
             'staffs',
             'steadfast',
@@ -101,7 +102,7 @@ class OrderHubController extends Controller
         $customers = \App\Models\Customer::with('user')->get();
         $shippingCharges = \App\Models\ShippingCharge::where('status', 1)->get();
         $settings = GenaralSetting::first();
-        
+
         return view('admin.orders.create', compact('products', 'customers', 'shippingCharges', 'settings'));
     }
 
@@ -117,7 +118,7 @@ class OrderHubController extends Controller
             'items'            => 'required|array|min:1',
         ]);
 
-        \DB::beginTransaction();
+        DB::beginTransaction();
         try {
             // 1. Handle Customer
             $user = User::where('phone', $request->customer_phone)->first();
@@ -127,10 +128,10 @@ class OrderHubController extends Controller
                     'phone'    => $request->customer_phone,
                     'email'    => $request->customer_phone . '@jhrbazar.com', // Dummy email to satisfy DB constraint
                     'role'     => 'customer',
-                    'password' => \Hash::make($request->customer_phone),
+                    'password' =>Hash::make($request->customer_phone),
                 ]);
             }
-            
+
             $customer = \App\Models\Customer::where('user_id', $user->id)->first();
             if (!$customer) {
                 $customer = \App\Models\Customer::create([
@@ -203,7 +204,7 @@ class OrderHubController extends Controller
                 'note'             => $request->trx_id ? "TrxID: " . $request->trx_id : null,
             ]);
 
-            \DB::commit();
+            DB::commit();
 
             return response()->json([
                 'success' => true,
@@ -212,7 +213,7 @@ class OrderHubController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \DB::rollBack();
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
@@ -228,8 +229,19 @@ class OrderHubController extends Controller
         $invoice = PosInvoice::with(['customer.user', 'order.staff', 'seller', 'order.statusLogs.changedBy'])->findOrFail($id);
         $settings = GenaralSetting::first();
         $staffs = \App\Models\User::whereIn('role', ['employee', 'manager', 'staff'])->get();
-        
+
         return view('admin.pointofsalepos.show', compact('invoice', 'settings', 'staffs'));
+    }
+
+    protected function getSellerOrderTransactionNet(PosInvoice $invoice)
+    {
+        if (!$invoice->seller) {
+            return 0;
+        }
+
+        return \App\Models\SellerTransaction::where('seller_id', $invoice->seller->id)
+            ->where('description', 'like', '%Order #' . $invoice->invoice_number . '%')
+            ->sum('net_amount');
     }
 
     /**
@@ -237,12 +249,20 @@ class OrderHubController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
+        if (!auth()->check() || !in_array(auth()->user()->role, ['admin', 'manager'])) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
         $request->validate(['status' => 'required|string']);
+        // Map UI 'complete' to internal 'delivered' status
+        if ($request->status === 'complete') {
+            $request->merge(['status' => 'delivered']);
+        }
         $invoice = PosInvoice::with('order', 'seller')->findOrFail($id);
-        
+
         if ($invoice->order) {
             $previousStatus = $invoice->order->status;
-            
+
             DB::beginTransaction();
             try {
                 // Update Order Status
@@ -260,26 +280,26 @@ class OrderHubController extends Controller
                 // Handle Delivered Status for Seller Balance
                 if ($request->status === 'delivered' && $previousStatus !== 'delivered') {
                     if ($invoice->seller) {
-                        // Calculate net amount (total - admin commission) from settings
-                        $settings = GenaralSetting::first();
-                        $commissionPercent = $settings->seller_commission ?? 10;
-                        $commissionAmount = ($invoice->grand_total * $commissionPercent) / 100;
-                        $netAmount = $invoice->grand_total - $commissionAmount;
+                        $existingNet = $this->getSellerOrderTransactionNet($invoice);
+                        if ($existingNet <= 0) {
+                            $settings = GenaralSetting::first();
+                            $commissionPercent = $settings->seller_commission ?? 10;
+                            $commissionAmount = ($invoice->grand_total * $commissionPercent) / 100;
+                            $netAmount = $invoice->grand_total - $commissionAmount;
 
-                        // Update Seller Balance
-                        $invoice->seller->increment('balance', $netAmount);
+                            $invoice->seller->increment('balance', $netAmount);
 
-                        // Log Earning Transaction
-                        \App\Models\SellerTransaction::create([
-                            'seller_id'      => $invoice->seller->id,
-                            'transaction_id' => 'EARN-' . strtoupper(str_random(10)),
-                            'type'           => 'earning',
-                            'amount'         => $invoice->grand_total,
-                            'commission'     => $commissionAmount,
-                            'net_amount'     => $netAmount,
-                            'status'         => 'completed',
-                            'description'    => 'Earning from Order #' . $invoice->invoice_number,
-                        ]);
+                            \App\Models\SellerTransaction::create([
+                                'seller_id'      => $invoice->seller->id,
+                                'transaction_id' => 'EARN-' . strtoupper(Str::random(10)),
+                                'type'           => 'earning',
+                                'amount'         => $invoice->grand_total,
+                                'commission'     => $commissionAmount,
+                                'net_amount'     => $netAmount,
+                                'status'         => 'completed',
+                                'description'    => 'Earning from Order #' . $invoice->invoice_number,
+                            ]);
+                        }
                     }
                 }
 
@@ -295,7 +315,7 @@ class OrderHubController extends Controller
 
                         \App\Models\SellerTransaction::create([
                             'seller_id'      => $invoice->seller->id,
-                            'transaction_id' => 'REV-' . strtoupper(str_random(10)),
+                            'transaction_id' => 'REV-' . strtoupper(Str::random(10)),
                             'type'           => 'adjustment', // Reversal/Adjustment
                             'amount'         => -$invoice->grand_total,
                             'commission'     => -$commissionAmount,
@@ -307,7 +327,13 @@ class OrderHubController extends Controller
                 }
 
                 DB::commit();
-                return response()->json(['success' => true, 'message' => 'Status updated to ' . ucfirst($request->status)]);
+                // Determine success message
+                if ($request->status === 'delivered') {
+                    $msg = 'Order Completed & Seller Balance Added Successfully';
+                } else {
+                    $msg = 'Status updated to ' . ucfirst($request->status);
+                }
+                return response()->json(['success' => true, 'message' => $msg]);
             } catch (\Exception $e) {
                 DB::rollBack();
                 return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
@@ -325,7 +351,7 @@ class OrderHubController extends Controller
     {
         $request->validate(['staff_id' => 'required|exists:users,id']);
         $invoice = PosInvoice::findOrFail($id);
-        
+
         if ($invoice->order) {
             $invoice->order->update(['staff_id' => $request->staff_id]);
             $staffName = User::find($request->staff_id)->name;
@@ -341,7 +367,7 @@ class OrderHubController extends Controller
     {
         $request->validate(['payment_status' => 'required|string']);
         $invoice = PosInvoice::findOrFail($id);
-        
+
         if ($invoice->order) {
             $invoice->order->update(['payment_status' => $request->payment_status]);
             return response()->json(['success' => true, 'message' => 'Payment status updated to ' . ucfirst($request->payment_status)]);
@@ -381,7 +407,7 @@ class OrderHubController extends Controller
                 // For bulk status updates (e.g. status:pending, status:delivered)
                 if (str_starts_with($action, 'status:')) {
                     $newStatus = str_replace('status:', '', $action);
-                    
+
                     DB::beginTransaction();
                     try {
                         foreach ($invoices as $inv) {
@@ -401,23 +427,26 @@ class OrderHubController extends Controller
 
                                 if ($newStatus === 'delivered' && $previousStatus !== 'delivered') {
                                     if ($inv->seller) {
-                                        $settings = GenaralSetting::first();
-                                        $commissionPercent = $settings->seller_commission ?? 10;
-                                        $commissionAmount = ($inv->grand_total * $commissionPercent) / 100;
-                                        $netAmount = $inv->grand_total - $commissionAmount;
+                                        $existingNet = $this->getSellerOrderTransactionNet($inv);
+                                        if ($existingNet <= 0) {
+                                            $settings = GenaralSetting::first();
+                                            $commissionPercent = $settings->seller_commission ?? 10;
+                                            $commissionAmount = ($inv->grand_total * $commissionPercent) / 100;
+                                            $netAmount = $inv->grand_total - $commissionAmount;
 
-                                        $inv->seller->increment('balance', $netAmount);
+                                            $inv->seller->increment('balance', $netAmount);
 
-                                        \App\Models\SellerTransaction::create([
-                                            'seller_id'      => $inv->seller->id,
-                                            'transaction_id' => 'EARN-' . strtoupper(str_random(10)),
-                                            'type'           => 'earning',
-                                            'amount'         => $inv->grand_total,
-                                            'commission'     => $commissionAmount,
-                                            'net_amount'     => $netAmount,
-                                            'status'         => 'completed',
-                                            'description'    => 'Bulk earning from Order #' . $inv->invoice_number,
-                                        ]);
+                                            \App\Models\SellerTransaction::create([
+                                                'seller_id'      => $inv->seller->id,
+                                                'transaction_id' => 'EARN-' . strtoupper(str_random(10)),
+                                                'type'           => 'earning',
+                                                'amount'         => $inv->grand_total,
+                                                'commission'     => $commissionAmount,
+                                                'net_amount'     => $netAmount,
+                                                'status'         => 'completed',
+                                                'description'    => 'Bulk earning from Order #' . $inv->invoice_number,
+                                            ]);
+                                        }
                                     }
                                 }
                             }
@@ -449,7 +478,7 @@ class OrderHubController extends Controller
 
         foreach ($invoices as $inv) {
             if (!$inv->order) continue;
-            
+
             // Skip if already sent
             if ($inv->order->steadfast_order_id) continue;
 
@@ -479,7 +508,7 @@ class OrderHubController extends Controller
         }
 
         return response()->json([
-            'success' => true, 
+            'success' => true,
             'message' => "Successfully sent {$successCount} orders to Steadfast.",
             'errors' => $errors
         ]);
@@ -557,7 +586,7 @@ class OrderHubController extends Controller
         $ids = explode(',', $request->ids);
         $invoices = PosInvoice::with(['customer.user', 'order', 'seller'])->whereIn('id', $ids)->get();
         $settings = GenaralSetting::first();
-        
+
         return view('admin.invoice.bulk_invoice', compact('invoices', 'settings'));
     }
 

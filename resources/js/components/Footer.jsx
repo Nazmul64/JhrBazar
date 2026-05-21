@@ -64,27 +64,25 @@ const Footer = () => {
                                 style={{ maxHeight: '55px' }}
                             />
                         </div>
-                        {/* Trade License & DBID */}
-                        {(footerData.settings?.trade_license_number || footerData.settings?.dbid_number) && (
-                            <div style={{ marginBottom: '16px', fontSize: '12px', color: 'var(--footer-text-color, #333)', opacity: 0.7, lineHeight: '1.8' }}>
-                                {footerData.settings?.trade_license_number && (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <i className="fas fa-certificate" style={{ color: '#e67e22', fontSize: '11px' }}></i>
-                                        <span><strong>Trade License:</strong> {footerData.settings.trade_license_number}</span>
-                                    </div>
-                                )}
-                                {footerData.settings?.dbid_number && (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <i className="fas fa-id-badge" style={{ color: '#e67e22', fontSize: '11px' }}></i>
-                                        <span><strong>DBID:</strong> {footerData.settings.dbid_number}</span>
-                                    </div>
-                                )}
-                            </div>
-                        )}
                         <div>
                         <p style={{ color: 'var(--footer-text-color, #333)', opacity: 0.8, lineHeight: '1.8', fontSize: '13px', marginBottom: '25px', maxWidth: '340px' }}>
                             {footerData.settings?.footer_text || "Ghorer Bazar is an e-commerce platform dedicated to providing safe and reliable food to every home."}
                         </p>
+
+                        {(footerData.settings?.trade_license_number || footerData.settings?.dbid_number) && (
+                            <div style={{ marginBottom: '20px', maxWidth: '340px' }}>
+                                {footerData.settings?.trade_license_number && (
+                                    <p className="mb-1" style={{ fontSize: '13px', color: 'var(--footer-text-color, #333)' }}>
+                                        <strong>Trade License:</strong> {footerData.settings.trade_license_number}
+                                    </p>
+                                )}
+                                {footerData.settings?.dbid_number && (
+                                    <p className="mb-0" style={{ fontSize: '13px', color: 'var(--footer-text-color, #333)' }}>
+                                        <strong>DBID:</strong> {footerData.settings.dbid_number}
+                                    </p>
+                                )}
+                            </div>
+                        )}
 
                         <div className="d-flex flex-column gap-3 mb-4" style={{ fontSize: '13px', color: 'var(--footer-text-color, #333)', opacity: 0.85 }}>
                             {footerData.settings?.address && (
@@ -170,7 +168,7 @@ const Footer = () => {
 
                 {/* Membership Section */}
                 {footerData.settings?.show_membership_section && (
-                    (footerData.membership_logos && footerData.membership_logos.length > 0) || 
+                    (footerData.membership_logos && footerData.membership_logos.length > 0) ||
                     footerData.settings?.payment_methods_logo
                 ) && (
                     <div className="row mb-5 py-4 border-top border-bottom align-items-center">

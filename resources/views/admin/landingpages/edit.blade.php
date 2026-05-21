@@ -266,6 +266,9 @@ select.form-control{appearance:none;background-image:url("data:image/svg+xml,%3C
                         </div>
                     </div>
                     <div class="form-footer">
+                        <a href="{{ route('admin.landingpages.preview', $landingpage->id) }}" target="_blank" class="btn-cancel" style="background:#f8fafc;color:#1f2937;">
+                            <i class="bi bi-eye"></i> Preview
+                        </a>
                         <button type="submit" class="btn-submit">
                             <i class="bi bi-check-circle"></i> Update
                         </button>

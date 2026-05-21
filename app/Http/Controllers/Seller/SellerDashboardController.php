@@ -22,8 +22,13 @@ class SellerDashboardController extends Controller
         }
 
         // Isolated Statistics
-        $totalProducts = Product::where('shop_id', $shop->id)->count();
-        $totalOrders   = \App\Models\PosInvoice::where('seller_id', $user->id)->count();
+        $totalProducts = \App\Models\SellerProduct::where('seller_id', $user->id)->count() + \App\Models\SellerDigitalProduct::where('seller_id', $user->id)->count();
+        $totalOrders   = \App\Models\Pointofsalepo::where('seller_id', $user->id)->count();
+        
+        $totalCategories = Category::count();
+        $totalBrands     = Brand::count();
+        $totalReviews    = \App\Models\Review::where('shop_id', $shop->id ?? 0)->count();
+        $totalPosSales   = \App\Models\PosInvoice::where('seller_id', $user->id)->sum('grand_total');
         
         // Detailed Stats
         $totalEarnings = $user->balance;
@@ -84,7 +89,11 @@ class SellerDashboardController extends Controller
             'rejectedWithdraw',
             'totalWithdraw',
             'recentOrders',
-            'topProducts'
+            'topProducts',
+            'totalCategories',
+            'totalBrands',
+            'totalReviews',
+            'totalPosSales'
         ));
     }
 }

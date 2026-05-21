@@ -53,9 +53,9 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($categories as $i => $cat)
+                @forelse($categories as $cat)
                 <tr>
-                    <td>{{ $i + 1 }}</td>
+                    <td>{{ $loop->iteration }}</td>
                     <td style="font-weight:700;">{{ $cat->name }}</td>
                     <td style="color:var(--muted);">{{ $cat->slug }}</td>
                     <td>

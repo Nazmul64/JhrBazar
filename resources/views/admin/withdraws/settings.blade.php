@@ -9,6 +9,7 @@
                 <div class="page-title-box d-sm-flex align-items-center justify-content-between">
                     <h4 class="mb-sm-0">Withdraw Settings</h4>
                     <div class="page-title-right">
+                        <a href="{{ route('admin.withdraws.commission.index') }}" class="btn btn-info me-2"><i class="ri-settings-3-line me-1"></i> Commission Setup</a>
                         <a href="{{ route('admin.withdraws.index') }}" class="btn btn-secondary"><i class="ri-arrow-left-line me-1"></i> Back to Requests</a>
                     </div>
                 </div>

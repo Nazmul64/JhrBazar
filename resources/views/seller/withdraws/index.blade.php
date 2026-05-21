@@ -41,11 +41,19 @@
                     <div class="limit-info">
                         <div>
                             <span>Min Withdraw:</span>
-                            <strong>৳{{ number_format($settings->min_withdraw ?? 100, 2) }}</strong>
+                            <strong>৳{{ number_format($withdrawConfig['min'] ?? 0, 2) }}</strong>
                         </div>
                         <div>
                             <span>Max Withdraw:</span>
-                            <strong>৳{{ number_format($settings->max_withdraw ?? 10000, 2) }}</strong>
+                            <strong>৳{{ number_format($withdrawConfig['max'] ?? 10000, 2) }}</strong>
+                        </div>
+                        <div>
+                            <span>Commission:</span>
+                            <strong>{{ number_format($withdrawConfig['commission_percent'] ?? 0, 2) }}%</strong>
+                        </div>
+                        <div>
+                            <span>Withdraw Fee:</span>
+                            <strong>৳{{ number_format($withdrawConfig['charge'] ?? 0, 2) }}</strong>
                         </div>
                     </div>
                 </div>
@@ -115,6 +123,17 @@
                         <div class="mt-3">
                             {{ $withdraws->links() }}
                         </div>
+
+                        @if(!empty($withdrawConfig['rules']))
+                            <div class="alert alert-info mt-3">
+                                <h5 class="fs-6 mb-2">Withdraw Rules</h5>
+                                <ul class="mb-0">
+                                    @foreach($withdrawConfig['rules'] as $rule)
+                                        <li>{{ $rule }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -135,12 +154,12 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Withdraw Amount <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="amount" class="form-control" 
-                               placeholder="Min: {{ $settings->min_withdraw ?? 0 }} | Max: {{ $settings->max_withdraw ?? 1000000 }}" 
-                               min="{{ $settings->min_withdraw ?? 0 }}" 
-                               max="{{ $settings->max_withdraw ?? 1000000 }}" 
+                        <input type="number" step="0.01" name="amount" class="form-control"
+                               placeholder="Min: {{ $withdrawConfig['min'] ?? 0 }} | Max: {{ $withdrawConfig['max'] ?? 1000000 }}"
+                               min="{{ $withdrawConfig['min'] ?? 0 }}"
+                               max="{{ $withdrawConfig['max'] ?? 1000000 }}"
                                required>
-                        <div class="form-text small">Admin Limit: ৳{{ number_format($settings->min_withdraw ?? 0, 2) }} - ৳{{ number_format($settings->max_withdraw ?? 1000000, 2) }}</div>
+                        <div class="form-text small">Admin Limit: ৳{{ number_format($withdrawConfig['min'] ?? 0, 2) }} - ৳{{ number_format($withdrawConfig['max'] ?? 1000000, 2) }}</div>
                     </div>
 
                     <div class="mb-3">

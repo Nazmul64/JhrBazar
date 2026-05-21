@@ -73,9 +73,9 @@
                 <div class="text-muted small mb-3">Category: {{ $product->category->name ?? 'N/A' }} | SKU: {{ $product->sku }}</div>
 
                 <div class="price-wrap">
-                    <span class="curr-price">${{ number_format($product->selling_price, 2) }}</span>
+                    <span class="curr-price">৳{{ number_format($product->selling_price, 0) }}</span>
                     @if($product->discount_price > 0)
-                        <span class="text-muted text-decoration-line-through">${{ number_format($product->selling_price + $product->discount_price, 2) }}</span>
+                        <span class="text-muted text-decoration-line-through">৳{{ number_format($product->selling_price + $product->discount_price, 0) }}</span>
                     @endif
                 </div>
 

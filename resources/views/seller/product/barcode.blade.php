@@ -51,9 +51,9 @@
                         <h5 class="fw-bold mb-1">{{ $product->name }}</h5>
                         <p class="text-muted small mb-2">{{ Str::limit($product->short_description, 100) }}</p>
                         <div class="d-flex align-items-center gap-2">
-                            <span class="fw-bold text-dark">${{ number_format($product->selling_price, 2) }}</span>
+                            <span class="fw-bold text-dark">৳{{ number_format($product->selling_price, 0) }}</span>
                             @if($product->discount_price > 0)
-                                <span class="badge bg-danger">-${{ number_format($product->discount_price, 2) }}</span>
+                                <span class="badge bg-danger">-৳{{ number_format($product->discount_price, 0) }}</span>
                             @endif
                         </div>
                         <div class="mt-2 small text-muted">Code: <span class="fw-bold text-dark">{{ $product->sku }}</span></div>
@@ -81,7 +81,7 @@
                         <div class="barcode-item">
                             <div class="barcode-label">JHR Bazar</div>
                             <div class="barcode-sub">{{ Str::limit($product->name, 20) }}</div>
-                            <div class="barcode-price">${{ number_format($product->selling_price, 2) }}</div>
+                            <div class="barcode-price">৳{{ number_format($product->selling_price, 0) }}</div>
                             <img class="barcode-img-gen" data-value="{{ $product->sku }}">
                             <div class="barcode-code">Code: {{ $product->sku }}</div>
                         </div>
@@ -113,7 +113,7 @@
         const grid = document.getElementById('barcode_grid');
         const sku = "{{ $product->sku }}";
         const name = "{{ Str::limit($product->name, 20) }}";
-        const price = "{{ number_format($product->selling_price, 2) }}";
+        const price = "{{ number_format($product->selling_price, 0) }}";
         
         let html = '';
         for (let i = 0; i < qty; i++) {
@@ -121,7 +121,7 @@
                 <div class="barcode-item">
                     <div class="barcode-label">JHR Bazar</div>
                     <div class="barcode-sub">${name}</div>
-                    <div class="barcode-price">$${price}</div>
+                    <div class="barcode-price">৳${price}</div>
                     <img class="barcode-img-gen" data-value="${sku}">
                     <div class="barcode-code">Code: ${sku}</div>
                 </div>

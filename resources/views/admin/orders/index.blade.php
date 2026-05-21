@@ -491,7 +491,7 @@
                                     <option value="pending" {{ $s == 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="processing" {{ $s == 'processing' ? 'selected' : '' }}>Processing</option>
                                     <option value="shipped" {{ $s == 'shipped' ? 'selected' : '' }}>Shipped</option>
-                                    <option value="delivered" {{ $s == 'delivered' ? 'selected' : '' }}>Delivered</option>
+                                    <option value="complete" {{ $s == 'complete' ? 'selected' : '' }}>Complete</option>
                                     <option value="cancelled" {{ $s == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                                 </select>
                             </td>
@@ -536,7 +536,8 @@
                                     @if(!$order->order->pathao_consignment_id)
                                         <a href="javascript:void(0)" onclick="sendIndividualCourier({{ $order->id }}, 'pathao')" class="action-btn btn-pathao" title="Pathao"><i class="bi bi-send"></i></a>
                                     @endif
-                                    <a href="javascript:void(0)" onclick="deleteOrder({{ $order->id }})" class="action-btn btn-delete" title="Delete"><i class="bi bi-trash"></i></a>
+                                    <button onclick="updateStatus({{ $order->id }}, 'complete')" class="action-btn btn-complete" title="Complete" style="background:#28a745; border:none;"><i class="bi bi-check2"></i></button>
+<a href="javascript:void(0)" onclick="deleteOrder({{ $order->id }})" class="action-btn btn-delete" title="Delete"><i class="bi bi-trash"></i></a>
                                 </div>
                             </td>
                         </tr>
