@@ -16,8 +16,8 @@
         font-size: 1.25rem !important;
         letter-spacing: -0.5px;
     }
-    .sidebar-inner { 
-        height: calc(100% - 100px); 
+    .sidebar-inner {
+        height: calc(100% - 100px);
         overflow-y: auto;
         padding: 10px 0 80px 0;
     }
@@ -65,7 +65,7 @@
     .nav-submenu.open {
         display: block !important;
     }
-    
+
     .nav-submenu .nav-item-custom {
         margin: 2px 10px 2px 5px !important;
         padding: 10px 15px !important;
@@ -261,7 +261,7 @@
         {{-- Admin Chat --}}
         <a class="nav-item-custom {{ request()->routeIs('seller.admin_chat.*') ? 'active' : '' }}" href="{{ route('seller.admin_chat.index') }}">
             <i class="bi bi-headset"></i> Chat with Admin
-            @php 
+            @php
                 $unreadAdminMsg = \App\Models\ChatSession::where('user_id', auth()->id())
                     ->where('is_read_by_user', false)
                     ->where(function($q) { $q->whereNull('receiver_id')->orWhere('receiver_id', 0); })
@@ -309,7 +309,7 @@
 
         {{-- Purchase Management --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('seller.purchase.*') ? 'active' : '' }}" data-sub="purchase">
-            <i class="bi bi-bag-check-fill"></i> 
+            <i class="bi bi-bag-check-fill"></i>
             <span class="me-auto ms-2">Purchase</span>
             <i class="bi bi-gift text-primary me-2"></i>
             <i class="bi bi-chevron-down"></i>
