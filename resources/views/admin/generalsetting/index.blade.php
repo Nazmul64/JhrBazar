@@ -655,6 +655,22 @@
         </div>
         <div class="gs-row" style="margin-bottom:22px;">
             <div class="gs-col">
+                <label class="gs-label">Tax Header Background Color</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="color" value="{{ old('tax_header_color', $setting->tax_header_color ?? '#f8f9fa') }}" oninput="this.nextElementSibling.value=this.value" style="height:40px;width:50px;border:none;border-radius:4px;cursor:pointer;">
+                    <input type="text" name="tax_header_color" class="gs-input" value="{{ old('tax_header_color', $setting->tax_header_color ?? '#f8f9fa') }}" oninput="this.previousElementSibling.value=this.value" style="flex:1;">
+                </div>
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Tax Header Text Color</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="color" value="{{ old('tax_header_text_color', $setting->tax_header_text_color ?? '#1a1a2e') }}" oninput="this.nextElementSibling.value=this.value" style="height:40px;width:50px;border:none;border-radius:4px;cursor:pointer;">
+                    <input type="text" name="tax_header_text_color" class="gs-input" value="{{ old('tax_header_text_color', $setting->tax_header_text_color ?? '#1a1a2e') }}" oninput="this.previousElementSibling.value=this.value" style="flex:1;">
+                </div>
+            </div>
+        </div>
+        <div class="gs-row" style="margin-bottom:22px;">
+            <div class="gs-col">
                 <label class="gs-label">Button Background Color</label>
                 <div style="display: flex; gap: 10px;">
                     <input type="color" value="{{ old('button_color', $setting->button_color ?? '#57b500') }}" oninput="this.nextElementSibling.value=this.value" style="height:40px;width:50px;border:none;border-radius:4px;cursor:pointer;">
@@ -687,7 +703,7 @@
             <div class="gs-col">
                 <label class="gs-label">Font Family</label>
                 <select name="font_family" class="gs-input">
-                    @php 
+                    @php
                         $currentFont = old('font_family', $setting->font_family ?? 'Arial, sans-serif');
                         $fonts = [
                             'Arial, sans-serif' => 'Arial (System)',
@@ -747,7 +763,7 @@
             </div>
         </div>
     </div>
-    
+
     {{-- =============================================
          SECTION 5.5 – Tracking & Analytics
     ============================================= --}}
@@ -766,7 +782,7 @@
                 <input type="text" name="google_analytics_id" class="gs-input mb-3"
                        placeholder="UA-XXXXX-Y or G-XXXXXXX"
                        value="{{ old('google_analytics_id', $setting->google_analytics_id ?? '') }}">
-                
+
                 <div style="display:flex;align-items:center;gap:10px;">
                     <label class="toggle-switch">
                         <input type="checkbox" name="enable_analytics"
@@ -784,7 +800,7 @@
                 <input type="text" name="facebook_pixel_id" class="gs-input mb-3"
                        placeholder="Enter Pixel ID"
                        value="{{ old('facebook_pixel_id', $setting->facebook_pixel_id ?? '') }}">
-                
+
                 <div style="display:flex;align-items:center;gap:10px;">
                     <label class="toggle-switch">
                         <input type="checkbox" name="enable_pixel"
@@ -804,7 +820,7 @@
                 <input type="text" name="gtm_id" class="gs-input mb-3"
                        placeholder="GTM-XXXXXXX"
                        value="{{ old('gtm_id', $setting->gtm_id ?? '') }}">
-                
+
                 <div style="display:flex;align-items:center;gap:10px;">
                     <label class="toggle-switch">
                         <input type="checkbox" name="enable_gtm"
@@ -1068,12 +1084,12 @@
     {{-- ===== Save Button ===== --}}
         <div class="reset-buttons" style="overflow:hidden; padding-bottom:30px;">
             <button type="reset" class="reset-btn" style="margin-right:10px;">Reset Form</button>
-            
-            <button type="button" class="reset-btn" style="margin-right:10px; background-color: #f39c12;" 
+
+            <button type="button" class="reset-btn" style="margin-right:10px; background-color: #f39c12;"
                 onclick="submitResetForm()">
                 Reset to Defaults
             </button>
-            
+
             <button type="submit" class="btn-save">Save And Update</button>
         </div>
     </form>

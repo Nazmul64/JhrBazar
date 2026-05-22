@@ -210,7 +210,9 @@ const Home = () => {
             )}
 
             {/* ===== Top Rated Shops ===== */}
-            <TopRatedShops shops={topShops} loading={loading} />
+            {(!settings || settings.top_rated_shops_status === undefined || settings.top_rated_shops_status == 1) && (
+                <TopRatedShops shops={topShops} loading={loading} />
+            )}
 
             {/* ===== Customer Reviews ===== */}
             {!loading && recentReviews.length > 0 && (

@@ -37,6 +37,8 @@ class GenaralSetting extends Model
         'top_header_color',
         'header_color',
         'footer_color',
+        'tax_header_color',
+        'tax_header_text_color',
         'font_family',
         'font_size',
         'product_title_size_desktop',

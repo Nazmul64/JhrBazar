@@ -34,6 +34,8 @@ class GeneralSettingController extends Controller
             'footer_text'           => 'nullable|string|max:500',
             'footer_logo'           => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
             'footer_qr'             => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:1024',
+            'tax_header_color'      => 'nullable|string|max:20',
+            'tax_header_text_color' => 'nullable|string|max:20',
             'membership_logo_3'     => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:1024',
             'payment_methods_logo'  => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
             'google_analytics_id'   => 'nullable|string|max:255',
@@ -73,6 +75,7 @@ class GeneralSettingController extends Controller
         GenaralSetting::create($data);
 
         // Clear cache
+        \Illuminate\Support\Facades\Cache::forget('home_data_v2');
         \Illuminate\Support\Facades\Cache::forget('homepage_data');
         \Illuminate\Support\Facades\Cache::forget('homepage_data_v2');
         \Illuminate\Support\Facades\Cache::forget('footer_data_v2');
@@ -109,6 +112,8 @@ class GeneralSettingController extends Controller
             'footer_text'           => 'nullable|string|max:500',
             'footer_logo'           => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
             'footer_qr'             => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:1024',
+            'tax_header_color'      => 'nullable|string|max:20',
+            'tax_header_text_color' => 'nullable|string|max:20',
             'membership_logo_3'     => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:1024',
             'payment_methods_logo'  => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
             'google_analytics_id'   => 'nullable|string|max:255',
@@ -153,6 +158,7 @@ class GeneralSettingController extends Controller
         $setting->update($data);
 
         // Clear cache
+        \Illuminate\Support\Facades\Cache::forget('home_data_v2');
         \Illuminate\Support\Facades\Cache::forget('homepage_data');
         \Illuminate\Support\Facades\Cache::forget('homepage_data_v2');
         \Illuminate\Support\Facades\Cache::forget('footer_data_v2');
@@ -184,6 +190,8 @@ class GeneralSettingController extends Controller
             'layout_style'        => 'container',
             'button_color'        => '#001fcc',
             'button_hover_color'  => '#0018a8',
+            'tax_header_color'    => '#f8f9fa',
+            'tax_header_text_color' => '#1a1a2e',
             'show_download_app'   => 1,
             'show_footer_section' => 1,
             'top_rated_shops_status' => 1,
@@ -204,6 +212,14 @@ class GeneralSettingController extends Controller
             'show_membership_section' => 1,
         ];
         $setting->update($defaults);
+
+        // Clear cache
+        \Illuminate\Support\Facades\Cache::forget('home_data_v2');
+        \Illuminate\Support\Facades\Cache::forget('homepage_data');
+        \Illuminate\Support\Facades\Cache::forget('homepage_data_v2');
+        \Illuminate\Support\Facades\Cache::forget('footer_data_v2');
+        \Illuminate\Support\Facades\Cache::forget('general_settings_with_cats');
+
         return redirect()->route('admin.generalsettings.index')
             ->with('success', 'Settings have been reset to defaults.');
     }
@@ -216,6 +232,14 @@ class GeneralSettingController extends Controller
         if (in_array($field, ['show_download_app', 'show_footer_section', 'top_rated_shops_status', 'show_product_stats', 'show_marquee', 'show_membership_section', 'enable_analytics', 'enable_pixel', 'enable_gtm'])) {
             $setting->$field = !$setting->$field;
             $setting->save();
+
+            // Clear cache
+            \Illuminate\Support\Facades\Cache::forget('home_data_v2');
+            \Illuminate\Support\Facades\Cache::forget('homepage_data');
+            \Illuminate\Support\Facades\Cache::forget('homepage_data_v2');
+            \Illuminate\Support\Facades\Cache::forget('footer_data_v2');
+            \Illuminate\Support\Facades\Cache::forget('general_settings_with_cats');
+
             return response()->json(['success' => true, 'status' => $setting->$field]);
         }
 

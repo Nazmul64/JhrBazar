@@ -3,6 +3,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import MobileBottomNav from '../components/MobileBottomNav';
 import { useSettings } from '../context/SettingsContext';
+import FloatingCart from '../components/FloatingCart';
 
 const MasterLayout = ({ children }) => {
     const { settings } = useSettings();
@@ -95,6 +96,9 @@ const MasterLayout = ({ children }) => {
 
             {/* Mobile Bottom Navigation (Only on mobile) */}
             <MobileBottomNav />
+
+            {/* Floating Cart Widget (Only on desktop) */}
+            <FloatingCart />
 
             {/* Footer Part */}
             <Footer />

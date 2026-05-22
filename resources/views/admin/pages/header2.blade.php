@@ -4,19 +4,29 @@
     <h6>{{ Auth::user()->name }}</h6>
   </div>
 
-  {{-- Search removed per user request --}}
-  {{-- mobileSidebarToggle removed per user request --}}
-  {{-- Notification removed per user request --}}
-  
-  <button class="header-action" id="darkToggleBtn" title="Toggle Dark/Light Mode">
-    <i class="bi {{ ($setting->admin_theme ?? 'light') === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill' }}"></i>
+  <button class="header-action">
+    <i class="bi bi-search"></i>
   </button>
-
-  {{-- Language selector removed per user request --}}
+  <button class="header-action" id="mobileSidebarToggle" title="Menu">
+    <i class="bi bi-list"></i>
+  </button>
+  <button class="header-action" style="position:relative;">
+    <i class="bi bi-bell"></i>
+    <span class="header-notif-badge">9+</span>
+  </button>
+  <button class="lang-btn">
+    <i class="bi bi-globe2"></i>
+    <span>English</span>
+    <i class="bi bi-chevron-down" style="font-size:10px;"></i>
+  </button>
   <div class="avatar-wrap dropdown">
     <div class="d-flex align-items-center gap-2 cursor-pointer dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
         <div class="avatar">
-            <img src="{{ Auth::user()->profile_image_url }}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+            @if(Auth::user()->profile_image)
+                <img src="{{ asset(Auth::user()->profile_image) }}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+            @else
+                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+            @endif
         </div>
         <div class="avatar-info d-none d-md-block">
             <span class="name">{{ Auth::user()->name }}</span>
@@ -41,10 +51,10 @@
         </li>
         <li><hr class="dropdown-divider"></li>
         <li>
-            <form action="{{ 
-                Auth::user()->role === 'admin' ? route('admin.logout') : 
-                (Auth::user()->role === 'manager' ? route('manager.logout') : 
-                (Auth::user()->role === 'seller' ? route('seller.logout') : route('employee.logout'))) 
+            <form action="{{
+                Auth::user()->role === 'admin' ? route('admin.logout') :
+                (Auth::user()->role === 'manager' ? route('manager.logout') :
+                (Auth::user()->role === 'seller' ? route('seller.logout') : route('employee.logout')))
             }}" method="POST">
                 @csrf
                 <button type="submit" class="dropdown-item py-2 px-3 d-flex align-items-center gap-2 text-danger">

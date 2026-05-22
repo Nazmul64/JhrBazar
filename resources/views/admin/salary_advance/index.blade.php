@@ -58,10 +58,10 @@
         <div class="card-body py-3">
             <div class="d-flex gap-2 align-items-center flex-wrap">
                 <span class="text-muted fw-bold" style="font-size:13px;"><i class="fas fa-filter me-1"></i> Filter Status:</span>
-                <a href="{{ route('admin.salary-advance.index') }}" class="btn btn-sm {{ !$status ? 'btn-hrm-active' : 'btn-hrm-outline' }}">All</a>
-                <a href="{{ route('admin.salary-advance.index', ['status' => 'Pending']) }}" class="btn btn-sm {{ $status == 'Pending' ? 'btn-hrm-active' : 'btn-hrm-outline' }}">Pending</a>
-                <a href="{{ route('admin.salary-advance.index', ['status' => 'Approved']) }}" class="btn btn-sm {{ $status == 'Approved' ? 'btn-hrm-active' : 'btn-hrm-outline' }}">Approved</a>
-                <a href="{{ route('admin.salary-advance.index', ['status' => 'Rejected']) }}" class="btn btn-sm {{ $status == 'Rejected' ? 'btn-hrm-active' : 'btn-hrm-outline' }}">Rejected</a>
+                <a href="{{ route('admin.hrm.salary-advance.index') }}" class="btn btn-sm {{ !$status ? 'btn-hrm-active' : 'btn-hrm-outline' }}">All</a>
+                <a href="{{ route('admin.hrm.salary-advance.index', ['status' => 'Pending']) }}" class="btn btn-sm {{ $status == 'Pending' ? 'btn-hrm-active' : 'btn-hrm-outline' }}">Pending</a>
+                <a href="{{ route('admin.hrm.salary-advance.index', ['status' => 'Approved']) }}" class="btn btn-sm {{ $status == 'Approved' ? 'btn-hrm-active' : 'btn-hrm-outline' }}">Approved</a>
+                <a href="{{ route('admin.hrm.salary-advance.index', ['status' => 'Rejected']) }}" class="btn btn-sm {{ $status == 'Rejected' ? 'btn-hrm-active' : 'btn-hrm-outline' }}">Rejected</a>
             </div>
         </div>
     </div>
@@ -125,7 +125,7 @@
                                     @if($advance->paid_status === 'Paid')
                                         <span class="badge bg-success px-3 py-2" style="font-size:11px;">Disbursed / Paid</span>
                                     @else
-                                        <form action="{{ route('admin.salary-advance.toggle-paid', $advance->id) }}" method="POST">
+                                        <form action="{{ route('admin.hrm.salary-advance.pay', $advance->id) }}" method="POST">
                                             @csrf
                                             <input type="hidden" name="paid_status" value="Paid">
                                             <button type="submit" class="btn btn-sm btn-hrm-action px-3 py-1">Disburse Now</button>
@@ -139,7 +139,7 @@
                                 <div class="d-flex justify-content-center gap-2">
                                     @if($advance->status === 'Pending')
                                         {{-- Approve --}}
-                                        <form action="{{ route('admin.salary-advance.status', $advance->id) }}" method="POST">
+                                        <form action="{{ route('admin.hrm.salary-advance.approve', $advance->id) }}" method="POST">
                                             @csrf
                                             <input type="hidden" name="status" value="Approved">
                                             <button type="submit" class="btn btn-sm btn-success-hrm" title="Approve Request">
@@ -147,7 +147,7 @@
                                             </button>
                                         </form>
                                         {{-- Reject --}}
-                                        <form action="{{ route('admin.salary-advance.status', $advance->id) }}" method="POST">
+                                        <form action="{{ route('admin.hrm.salary-advance.reject', $advance->id) }}" method="POST">
                                             @csrf
                                             <input type="hidden" name="status" value="Rejected">
                                             <button type="submit" class="btn btn-sm btn-danger-hrm" title="Reject Request">
@@ -155,9 +155,9 @@
                                             </button>
                                         </form>
                                     @endif
-                                    
+
                                     {{-- Delete --}}
-                                    <form action="{{ route('admin.salary-advance.destroy', $advance->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this record?')">
+                                    <form action="{{ route('admin.hrm.salary-advance.destroy', $advance->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this record?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Log">
@@ -189,7 +189,7 @@
                     <h5 class="fw-bold" style="color:#1a1a2e; font-size:18px;">Log Advance Request</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form action="{{ route('admin.salary-advance.store') }}" method="POST">
+                <form action="{{ route('admin.hrm.salary-advance.store') }}" method="POST">
                     @csrf
                     <div class="modal-body p-4">
                         <div class="row g-3">

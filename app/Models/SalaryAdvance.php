@@ -12,16 +12,25 @@ class SalaryAdvance extends Model
     protected $fillable = [
         'employee_id',
         'amount',
-        'advance_date',
-        'deduction_type',
-        'monthly_deduction_amount',
+        'installments',
+        'per_installment',
+        'request_date',
+        'deducted_amount',
         'status',
         'paid_status',
-        'reason'
+        'reason',
+        'approved_by',
+        'approved_date',
+        'admin_note'
     ];
 
     public function employee()
     {
         return $this->belongsTo(User::class, 'employee_id');
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }

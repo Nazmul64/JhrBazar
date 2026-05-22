@@ -151,10 +151,59 @@ Route::post('seller/logout', [App\Http\Controllers\Seller\SellerAuthController::
 
 // ── Admin Protected Routes ──────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    // ══════════════════════════════════════════════════════════════════
+// এই routes গুলো web.php এ admin middleware group এর ভেতরে
+// HRM Dashboard routes এর নিচে paste করুন
+// ══════════════════════════════════════════════════════════════════
+
+// ── Leave Management ─────────────────────────────────────────────
+Route::get('hrm/leaves', [App\Http\Controllers\Admin\LeaveController::class, 'index'])->name('admin.hrm.leave.index');
+Route::get('hrm/leaves/create', [App\Http\Controllers\Admin\LeaveController::class, 'create'])->name('admin.hrm.leave.create');
+Route::post('hrm/leaves', [App\Http\Controllers\Admin\LeaveController::class, 'store'])->name('admin.hrm.leave.store');
+Route::post('hrm/leaves/{id}/approve', [App\Http\Controllers\Admin\LeaveController::class, 'approve'])->name('admin.hrm.leave.approve');
+Route::post('hrm/leaves/{id}/reject', [App\Http\Controllers\Admin\LeaveController::class, 'reject'])->name('admin.hrm.leave.reject');
+Route::delete('hrm/leaves/{id}', [App\Http\Controllers\Admin\LeaveController::class, 'destroy'])->name('admin.hrm.leave.destroy');
+
+// ── Salary Advance ───────────────────────────────────────────────
+Route::get('hrm/salary-advance', [App\Http\Controllers\Admin\SalaryAdvanceController::class, 'index'])->name('admin.hrm.salary-advance.index');
+Route::get('hrm/salary-advance/create', [App\Http\Controllers\Admin\SalaryAdvanceController::class, 'create'])->name('admin.hrm.salary-advance.create');
+Route::post('hrm/salary-advance', [App\Http\Controllers\Admin\SalaryAdvanceController::class, 'store'])->name('admin.hrm.salary-advance.store');
+Route::post('hrm/salary-advance/{id}/approve', [App\Http\Controllers\Admin\SalaryAdvanceController::class, 'approve'])->name('admin.hrm.salary-advance.approve');
+Route::post('hrm/salary-advance/{id}/reject', [App\Http\Controllers\Admin\SalaryAdvanceController::class, 'reject'])->name('admin.hrm.salary-advance.reject');
+Route::post('hrm/salary-advance/{id}/pay', [App\Http\Controllers\Admin\SalaryAdvanceController::class, 'pay'])->name('admin.hrm.salary-advance.pay');
+Route::post('hrm/salary-advance/{id}/deduct', [App\Http\Controllers\Admin\SalaryAdvanceController::class, 'deduct'])->name('admin.hrm.salary-advance.deduct');
+Route::delete('hrm/salary-advance/{id}', [App\Http\Controllers\Admin\SalaryAdvanceController::class, 'destroy'])->name('admin.hrm.salary-advance.destroy');
+
+// ── Office Expenses ──────────────────────────────────────────────
+Route::get('hrm/expenses', [App\Http\Controllers\Admin\OfficeExpenseController::class, 'index'])->name('admin.hrm.expense.index');
+Route::get('hrm/expenses/create', [App\Http\Controllers\Admin\OfficeExpenseController::class, 'create'])->name('admin.hrm.expense.create');
+Route::post('hrm/expenses', [App\Http\Controllers\Admin\OfficeExpenseController::class, 'store'])->name('admin.hrm.expense.store');
+Route::get('hrm/expenses/{id}/edit', [App\Http\Controllers\Admin\OfficeExpenseController::class, 'edit'])->name('admin.hrm.expense.edit');
+Route::put('hrm/expenses/{id}', [App\Http\Controllers\Admin\OfficeExpenseController::class, 'update'])->name('admin.hrm.expense.update');
+Route::delete('hrm/expenses/{id}', [App\Http\Controllers\Admin\OfficeExpenseController::class, 'destroy'])->name('admin.hrm.expense.destroy');
+// Expense Categories
+Route::get('hrm/expense-categories', [App\Http\Controllers\Admin\OfficeExpenseController::class, 'categoryIndex'])->name('admin.hrm.expense.categories');
+Route::post('hrm/expense-categories', [App\Http\Controllers\Admin\OfficeExpenseController::class, 'categoryStore'])->name('admin.hrm.expense.category.store');
+Route::delete('hrm/expense-categories/{id}', [App\Http\Controllers\Admin\OfficeExpenseController::class, 'categoryDestroy'])->name('admin.hrm.expense.category.destroy');
+
+// ── Payroll ──────────────────────────────────────────────────────
+Route::get('hrm/payroll', [App\Http\Controllers\Admin\PayrollController::class, 'index'])->name('admin.hrm.payroll.index');
+Route::post('hrm/payroll/generate', [App\Http\Controllers\Admin\PayrollController::class, 'generate'])->name('admin.hrm.payroll.generate');
+Route::post('hrm/payroll/bulk-pay', [App\Http\Controllers\Admin\PayrollController::class, 'bulkPay'])->name('admin.hrm.payroll.bulk-pay');
+Route::get('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'show'])->name('admin.hrm.payroll.show');
+Route::get('hrm/payroll/{id}/edit', [App\Http\Controllers\Admin\PayrollController::class, 'edit'])->name('admin.hrm.payroll.edit');
+Route::put('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'update'])->name('admin.hrm.payroll.update');
+Route::post('hrm/payroll/{id}/pay', [App\Http\Controllers\Admin\PayrollController::class, 'pay'])->name('admin.hrm.payroll.pay');
+Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'destroy'])->name('admin.hrm.payroll.destroy');
 
     // ── Dashboard ────────────────────────────────────────────────────────────
-    Route::get('dashboard', [Admincontroller::class, 'dashboard'])->name('admin.dashboard');
-
+        Route::get('dashboard', [Admincontroller::class, 'dashboard'])->name('admin.dashboard');
+        Route::get('hrm/dashboard', [App\Http\Controllers\Admin\HRMDashboardController::class, 'index'])->name('admin.hrm.dashboard');
+// ── Attendance ────────────────────────────────────────────────────────
+    Route::get('attendance', [App\Http\Controllers\Admin\AttendanceController::class, 'index'])->name('admin.attendance.index');
+    Route::post('attendance/toggle', [App\Http\Controllers\Admin\AttendanceController::class, 'toggle'])->name('admin.attendance.toggle');
+    Route::get('attendance/punch-details', [App\Http\Controllers\Admin\AttendanceController::class, 'getPunchDetails'])->name('admin.attendance.punchDetails');
+    Route::post('attendance/update-punch', [App\Http\Controllers\Admin\AttendanceController::class, 'updatePunch'])->name('admin.attendance.updatePunch');
     // ── Customers ────────────────────────────────────────────────────────────
 
     // ── Customers ────────────────────────────────────────────────────────────
@@ -695,7 +744,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/products/{id}', [App\Http\Controllers\Seller\SellerProductController::class, 'update'])->name('product.update');
         Route::delete('/products/{id}', [App\Http\Controllers\Seller\SellerProductController::class, 'destroy'])->name('product.destroy');
         Route::post('/products/{id}/toggle', [App\Http\Controllers\Seller\SellerProductController::class, 'toggleStatus'])->name('product.toggle');
-        Route::get('/products/{id}/show', [App\Http\Controllers\Seller\SellerProductController::class, 'show'])->name('product.show');
+        Route::get('/products/{slug}/show', [App\Http\Controllers\Seller\SellerProductController::class, 'show'])->name('product.show');
         Route::get('/products/{id}/barcode', [App\Http\Controllers\Seller\SellerProductController::class, 'barcode'])->name('product.barcode');
 
         // Digital Product Management (Seller Digital Product)

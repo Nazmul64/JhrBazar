@@ -279,12 +279,13 @@ class SellerProductController extends Controller
 
     }
 
-    public function show($id)
+    public function show($slug)
     {
         $product = SellerProduct::where('seller_id', Auth::id())
+            ->where('slug', $slug)
             ->with(['category', 'brand'])
-            ->findOrFail($id);
-            
+            ->firstOrFail();
+
         return view('seller.product.show', compact('product'));
     }
 

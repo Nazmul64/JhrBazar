@@ -69,19 +69,23 @@ class FrontendApiController extends Controller
             $digitalSeller = SellerDigitalProduct::where('is_active', 1)->withCount('reviews')->withAvg('reviews', 'rating')->latest()->limit(6)->get()->map(fn($p) => $this->mapProduct($p, 'digital_seller'));
             $digital = $digitalAdmin->concat($digitalSeller)->sortByDesc('created_at')->take(6)->values();
 
-            $topShops = Shop::whereHas('user', fn($q) => $q->where('status', 'active'))
-                ->withCount(['sellerProducts as item_count' => fn($q) => $q->where('is_active', 1)])
-                ->latest()->limit(8)->get()
-                ->map(fn($shop) => [
-                    'id'          => $shop->id,
-                    'seller_id'   => $shop->user_id,
-                    'name'        => $shop->name,
-                    'logo'        => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : '/' . ltrim($shop->logo, '/')) : '/assets/admin/images/default-avatar.png',
-                    'banner'      => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : '/' . ltrim($shop->banner, '/')) : '/placeholder.jpg',
-                    'item_count'  => $shop->item_count,
-                    'rating'      => '5.0',
-                    'description' => $shop->description,
-                ]);
+            $topShops = [];
+            if ($settings && $settings->top_rated_shops_status) {
+                $topShops = Shop::whereHas('user', fn($q) => $q->where('status', 'active'))
+                    ->withCount(['sellerProducts as item_count' => fn($q) => $q->where('is_active', 1)])
+                    ->latest()->limit(8)->get()
+                    ->map(fn($shop) => [
+                        'id'          => $shop->id,
+                        'seller_id'   => $shop->user_id,
+                        'name'        => $shop->name,
+                        'logo'        => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : '/' . ltrim($shop->logo, '/')) : '/assets/admin/images/default-avatar.png',
+                        'banner'      => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : '/' . ltrim($shop->banner, '/')) : '/placeholder.jpg',
+                        'item_count'  => $shop->item_count,
+                        'rating'      => '5.0',
+                        'description' => $shop->description,
+                    ]);
+            }
+
 
             $allProducts = $this->getCombinedProducts(null, 20, $productColumns);
             $recentReviews = \App\Models\Review::with('user:id,name')->where('status', 1)->latest()->take(6)->get();

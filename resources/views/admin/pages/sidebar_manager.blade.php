@@ -613,18 +613,14 @@
         @if(auth()->user()->hasPermission('shop_product.list'))
         <a class="nav-item-custom" href="#"><i class="bi bi-box"></i> Shop Product Management</a>
         @endif
-        @if(auth()->user()->hasPermission('subscription.list'))
-        <a class="nav-item-custom" href="#"><i class="bi bi-journal-bookmark"></i> Subscription Management</a>
-        @endif
+
 
         @if(auth()->user()->hasPermission('withdrawal.list'))
         <a class="nav-item-custom {{ request()->routeIs('admin.withdraws.*') ? 'active' : '' }}" href="{{ route('admin.withdraws.index') }}">
             <i class="bi bi-wallet2"></i> Withdrawal Management
         </a>
         @endif
-        @if(auth()->user()->hasPermission('import_export.list'))
-        <a class="nav-item-custom" href="#"><i class="bi bi-arrow-left-right"></i> Import / Export</a>
-        @endif
+
 
         {{-- Business Settings --}}
         @if(auth()->user()->hasPermission('business_setting.list'))

@@ -3,100 +3,169 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\SalaryAdvance;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class SalaryAdvanceController extends Controller
 {
-    /**
-     * Display a listing of salary advances.
-     */
+    /** List with filters */
     public function index(Request $request)
     {
-        $status = $request->get('status');
-        $query = SalaryAdvance::with('employee')->latest();
+        $query = SalaryAdvance::with('employee', 'approver')->latest();
 
-        if ($status) {
-            $query->where('status', $status);
+        // Filter by Employee
+        if ($request->filled('employee_id')) {
+            $query->where('employee_id', $request->employee_id);
         }
 
-        $advances = $query->get();
-        $employees = User::whereIn('role', ['employee', 'manager'])->orderBy('name')->get();
+        // Filter by Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
 
-        // Calculate summary cards
-        $totalApprovedAmount = SalaryAdvance::where('status', 'Approved')->sum('amount');
-        $totalPendingRequests = SalaryAdvance::where('status', 'Pending')->count();
+        // Filter by Paid Status
+        if ($request->filled('paid_status')) {
+            $query->where('paid_status', $request->paid_status);
+        }
 
-        return view('admin.salary_advance.index', compact('advances', 'employees', 'status', 'totalApprovedAmount', 'totalPendingRequests'));
+        // Filter by Month/Year
+        if ($request->filled('month') && $request->filled('year')) {
+            $query->whereMonth('request_date', $request->month)
+                  ->whereYear('request_date', $request->year);
+        }
+
+        $advances = $query->paginate(20)->withQueryString();
+
+        $status = $request->get('status', null);
+
+        // Summary Stats
+        $totalAdvanced  = SalaryAdvance::where('status', 'Approved')->sum('amount');
+        $totalDeducted  = SalaryAdvance::where('status', 'Approved')->sum('deducted_amount');
+        $totalPending   = SalaryAdvance::where('status', 'Pending')->count();
+        $netOutstanding = max(0, $totalAdvanced - $totalDeducted);
+
+        // Compatibility variables for existing views
+        $totalApprovedAmount = $netOutstanding;
+        $totalPendingRequests = $totalPending;
+
+        $employees = User::where('role', 'employee')->orderBy('name')->get();
+
+        return view('admin/salary_advance.index', compact(
+            'advances', 'employees', 'totalAdvanced',
+            'totalDeducted', 'netOutstanding', 'totalPending',
+            'totalApprovedAmount', 'totalPendingRequests'
+        ,'status'
+        ));
     }
 
-    /**
-     * Store a newly created salary advance request.
-     */
+    /** Show create form */
+    public function create()
+    {
+        $employees = User::where('role', 'employee')->orderBy('name')->get();
+        return view('admin/salary_advance.create', compact('employees'));
+    }
+
+    /** Store new advance */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'employee_id'              => 'required|exists:users,id',
-            'amount'                   => 'required|numeric|min:1',
-            'advance_date'             => 'required|date',
-            'deduction_type'           => 'required|in:Monthly Deduct,One Time Deduct,Manual Payback',
-            'monthly_deduction_amount' => 'required_if:deduction_type,Monthly Deduct|nullable|numeric|min:0',
-            'status'                   => 'required|in:Pending,Approved,Rejected',
-            'reason'                   => 'nullable|string',
+        $request->validate([
+            'employee_id'  => 'required|exists:users,id',
+            'amount'       => 'required|numeric|min:1',
+            'installments' => 'required|integer|min:1|max:24',
+            'reason'       => 'nullable|string|max:500',
+            'request_date' => 'required|date',
         ]);
 
-        if ($validated['deduction_type'] !== 'Monthly Deduct') {
-            $validated['monthly_deduction_amount'] = 0.00;
+        SalaryAdvance::create([
+            'employee_id'     => $request->employee_id,
+            'amount'          => $request->amount,
+            'installments'    => $request->installments,
+            'per_installment' => round($request->amount / $request->installments, 2),
+            'reason'          => $request->reason,
+            'request_date'    => $request->request_date,
+            // also populate legacy advance_date column if exists
+            'advance_date'    => $request->request_date,
+            'status'          => 'Pending',
+            'paid_status'     => 'Unpaid',
+        ]);
+
+        return redirect()->route('admin.hrm.salary-advance.index')
+            ->with('success', 'Salary advance request created successfully.');
+    }
+
+    /** Approve */
+    public function approve(Request $request, $id)
+    {
+        $advance = SalaryAdvance::findOrFail($id);
+
+        $advance->update([
+            'status'        => 'Approved',
+            'approved_by'   => auth()->id(),
+            'approved_date' => now()->toDateString(),
+            'admin_note'    => $request->admin_note,
+            'paid_status'   => 'Unpaid',
+        ]);
+
+        return back()->with('success', 'Advance approved successfully.');
+    }
+
+    /** Reject */
+    public function reject(Request $request, $id)
+    {
+        $advance = SalaryAdvance::findOrFail($id);
+        $advance->update([
+            'status'     => 'Rejected',
+            'admin_note' => $request->admin_note,
+        ]);
+
+        return back()->with('success', 'Advance rejected.');
+    }
+
+    /** Manual deduction update */
+    public function deduct(Request $request, $id)
+    {
+        $request->validate([
+            'deduct_amount' => 'required|numeric|min:0.01',
+        ]);
+
+        $advance = SalaryAdvance::findOrFail($id);
+        $newDeducted = $advance->deducted_amount + $request->deduct_amount;
+
+        $paidStatus = 'Partial';
+        $status     = 'Approved';
+        if ($newDeducted >= $advance->amount) {
+            $newDeducted = $advance->amount;
+            $paidStatus  = 'Paid';
+            $status      = 'Completed';
         }
 
-        SalaryAdvance::create($validated);
-
-        return redirect()->route('admin.salary-advance.index')
-            ->with('success', 'Salary advance recorded successfully.');
-    }
-
-    /**
-     * Update the approval status of an advance request.
-     */
-    public function updateStatus(Request $request, SalaryAdvance $advance)
-    {
-        $request->validate([
-            'status' => 'required|in:Approved,Rejected'
-        ]);
-
         $advance->update([
-            'status' => $request->status
+            'deducted_amount' => $newDeducted,
+            'paid_status'     => $paidStatus,
+            'status'          => $status,
         ]);
 
-        return redirect()->route('admin.salary-advance.index')
-            ->with('success', 'Salary advance request status updated successfully.');
+        return back()->with('success', 'Deduction recorded successfully.');
     }
 
-    /**
-     * Mark an approved advance as paid/disbursed or unpaid.
-     */
-    public function togglePaid(Request $request, SalaryAdvance $advance)
+    /** Mark as paid/disbursed */
+    public function pay(Request $request, $id)
     {
-        $request->validate([
-            'paid_status' => 'required|in:Unpaid,Paid'
-        ]);
-
+        $advance = SalaryAdvance::findOrFail($id);
         $advance->update([
-            'paid_status' => $request->paid_status
+            'paid_status' => 'Paid',
+            'status' => $advance->status === 'Approved' ? 'Completed' : $advance->status,
         ]);
 
-        return redirect()->route('admin.salary-advance.index')
-            ->with('success', 'Salary advance disbursement status updated successfully.');
+        return back()->with('success', 'Advance marked as paid.');
     }
 
-    /**
-     * Remove an advance log.
-     */
-    public function destroy(SalaryAdvance $advance)
+    /** Delete */
+    public function destroy($id)
     {
-        $advance->delete();
-        return redirect()->route('admin.salary-advance.index')
-            ->with('success', 'Salary advance record deleted successfully.');
+        SalaryAdvance::findOrFail($id)->delete();
+        return back()->with('success', 'Record deleted.');
     }
 }

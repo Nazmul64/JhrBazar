@@ -8,7 +8,7 @@ import { toast } from 'react-hot-toast';
 const Checkout = () => {
     const navigate = useNavigate();
     const mainColor = '#57b500';
-    const { cartItems, cartTotal, clearCart } = useCart();
+    const { cartItems, cartTotal, clearCart, removeFromCart } = useCart();
     const [loading, setLoading] = useState(false);
     const [shippingCharges, setShippingCharges] = useState([]);
     const [availableGateways, setAvailableGateways] = useState([]);
@@ -31,7 +31,7 @@ const Checkout = () => {
         };
         checkBlock();
     }, []);
-    
+
     const [couponCode, setCouponCode] = useState('');
     const [couponDiscount, setCouponDiscount] = useState(0);
     const [couponApplied, setCouponApplied] = useState(false);
@@ -113,7 +113,7 @@ const Checkout = () => {
 
         const timer = setTimeout(() => {
             saveLead();
-        }, 1500); 
+        }, 1500);
 
         return () => clearTimeout(timer);
     }, [formData.phone, formData.name]);
@@ -123,7 +123,7 @@ const Checkout = () => {
             setSaveStatus('saving');
             // Group items by shop/seller to save separate leads if necessary
             const shops = [...new Set(cartItems.map(item => item.seller_id))];
-            
+
             for (const shopId of shops) {
                 const shopTotal = cartItems
                     .filter(item => item.seller_id === shopId)
@@ -210,6 +210,11 @@ const Checkout = () => {
 
     const shippingAmount = selectedShipping ? Number(selectedShipping.charge) : 0;
     const finalTotal = (cartTotal + shippingAmount) - couponDiscount;
+    const selectedGateway = availableGateways.find(gateway => gateway.key === formData.online_gateway);
+    const submitButtonLabel = formData.payment_method === 'online'
+        ? (selectedGateway ? `Pay with ${selectedGateway.title}` : 'Select Online Gateway')
+        : 'Confirm Order (Cash on Delivery)';
+    const isSubmitDisabled = loading || (formData.payment_method === 'online' && !formData.online_gateway);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -271,7 +276,7 @@ const Checkout = () => {
                 }}></div>
 
                 <div style={{ maxWidth: '600px', margin: '0 auto', position: 'relative', zIndex: 2 }}>
-                    
+
                     {/* Pulsing Cancel Shield Logo */}
                     <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                         <div className="pulsing-shield-container" style={{
@@ -379,13 +384,13 @@ const Checkout = () => {
                         boxShadow: '0 10px 35px rgba(239, 68, 68, 0.1)',
                         marginBottom: '20px'
                     }}>
-                        <iframe 
-                            width="100%" 
-                            height="280" 
-                            frameBorder="0" 
-                            scrolling="no" 
-                            marginHeight="0" 
-                            marginWidth="0" 
+                        <iframe
+                            width="100%"
+                            height="280"
+                            frameBorder="0"
+                            scrolling="no"
+                            marginHeight="0"
+                            marginWidth="0"
                             src={`https://maps.google.com/maps?q=${blockedData.lat},${blockedData.lon}&z=14&output=embed`}
                             style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg) brightness(95%) contrast(90%)', display: 'block' }}
                         ></iframe>
@@ -462,8 +467,8 @@ const Checkout = () => {
                                             <label className="form-label small fw-bold text-muted uppercase">Full Name</label>
                                             <div className="input-group border rounded-3 p-1 bg-light shadow-sm">
                                                 <span className="input-group-text bg-transparent border-0"><i className="far fa-user text-muted"></i></span>
-                                                <input 
-                                                    type="text" name="name" required className="form-control bg-transparent border-0" 
+                                                <input
+                                                    type="text" name="name" required className="form-control bg-transparent border-0"
                                                     placeholder="Enter your full name" value={formData.name} onChange={handleChange}
                                                 />
                                             </div>
@@ -473,8 +478,8 @@ const Checkout = () => {
                                             <label className="form-label small fw-bold text-muted uppercase">Mobile Number</label>
                                             <div className="input-group border rounded-3 p-1 bg-light shadow-sm">
                                                 <span className="input-group-text bg-transparent border-0"><i className="fas fa-phone-alt text-muted"></i></span>
-                                                <input 
-                                                    type="tel" name="phone" required className="form-control bg-transparent border-0" 
+                                                <input
+                                                    type="tel" name="phone" required className="form-control bg-transparent border-0"
                                                     placeholder="018XXXXXXXX" value={formData.phone} onChange={handleChange}
                                                 />
                                             </div>
@@ -494,8 +499,8 @@ const Checkout = () => {
                                             <label className="form-label small fw-bold text-muted uppercase">Email (Optional)</label>
                                             <div className="input-group border rounded-3 p-1 bg-light shadow-sm">
                                                 <span className="input-group-text bg-transparent border-0"><i className="far fa-envelope text-muted"></i></span>
-                                                <input 
-                                                    type="email" name="email" className="form-control bg-transparent border-0" 
+                                                <input
+                                                    type="email" name="email" className="form-control bg-transparent border-0"
                                                     placeholder="Your email address" value={formData.email} onChange={handleChange}
                                                 />
                                             </div>
@@ -515,8 +520,8 @@ const Checkout = () => {
 
                                         <div className="col-12">
                                             <label className="form-label small fw-bold text-muted uppercase">Detailed Address</label>
-                                            <textarea 
-                                                name="address" required rows="2" className="form-control border bg-light p-3 shadow-sm" 
+                                            <textarea
+                                                name="address" required rows="2" className="form-control border bg-light p-3 shadow-sm"
                                                 placeholder="House no, Road no, Area details..." style={{ borderRadius: '12px' }}
                                                 value={formData.address} onChange={handleChange}
                                             ></textarea>
@@ -528,17 +533,17 @@ const Checkout = () => {
                                             <div style={{ width: '4px', height: '24px', backgroundColor: mainColor, borderRadius: '2px' }}></div>
                                             <h4 className="fw-bold m-0">Payment Method</h4>
                                         </div>
-                                        
+
                                         <div className="row g-3">
                                             {/* COD Option */}
                                             {cartItems.every(item => item.cash_on_delivery ?? true) ? (
                                                 <div className="col-md-6">
                                                     <label className={`card border p-3 h-100 transition-all ${formData.payment_method === 'cod' ? 'border-success bg-light' : ''}`} style={{ borderRadius: '15px', cursor: 'pointer' }}>
                                                         <div className="d-flex align-items-center gap-3">
-                                                            <input 
-                                                                type="radio" name="payment_method" value="cod" 
+                                                            <input
+                                                                type="radio" name="payment_method" value="cod"
                                                                 checked={formData.payment_method === 'cod'} onChange={handleChange}
-                                                                className="form-check-input mt-0" 
+                                                                className="form-check-input mt-0"
                                                             />
                                                             <div>
                                                                 <div className="fw-bold">Cash On Delivery</div>
@@ -566,10 +571,10 @@ const Checkout = () => {
                                                 <div className="col-md-6">
                                                     <label className={`card border p-3 h-100 transition-all ${formData.payment_method === 'online' ? 'border-success bg-light' : ''}`} style={{ borderRadius: '15px', cursor: 'pointer' }}>
                                                         <div className="d-flex align-items-center gap-3">
-                                                            <input 
-                                                                type="radio" name="payment_method" value="online" 
+                                                            <input
+                                                                type="radio" name="payment_method" value="online"
                                                                 checked={formData.payment_method === 'online'} onChange={handleChange}
-                                                                className="form-check-input mt-0" 
+                                                                className="form-check-input mt-0"
                                                             />
                                                             <div>
                                                                 <div className="fw-bold">Online Payment</div>
@@ -599,10 +604,10 @@ const Checkout = () => {
                                                 <div className="d-flex flex-wrap gap-2">
                                                     {availableGateways.map(gateway => (
                                                         <label key={gateway.key} className={`gateway-box ${formData.online_gateway === gateway.key ? 'active' : ''}`}>
-                                                            <input 
-                                                                type="radio" name="online_gateway" value={gateway.key} 
+                                                            <input
+                                                                type="radio" name="online_gateway" value={gateway.key}
                                                                 checked={formData.online_gateway === gateway.key} onChange={handleChange}
-                                                                className="d-none" 
+                                                                className="d-none"
                                                             />
                                                             <div className="gateway-content">
                                                                 {gateway.logo ? (
@@ -621,8 +626,8 @@ const Checkout = () => {
                                         )}
                                     </div>
 
-                                    <button 
-                                        type="submit" disabled={loading}
+                                    <button
+                                        type="submit" disabled={isSubmitDisabled}
                                         className="btn btn-lg w-100 text-white fw-bold py-3 mt-5 shadow confirm-btn"
                                         style={{ backgroundColor: mainColor, borderRadius: '15px' }}
                                     >
@@ -631,8 +636,13 @@ const Checkout = () => {
                                         ) : (
                                             <i className="fas fa-shopping-bag me-2"></i>
                                         )}
-                                        {formData.payment_method === 'online' ? 'Pay and Confirm Order' : 'Confirm Order'}
+                                        {submitButtonLabel}
                                     </button>
+                                    {formData.payment_method === 'online' && !formData.online_gateway && (
+                                        <div className="small text-danger mt-2">
+                                            অনুগ্রহ করে প্রথমে একটি অনলাইন পেমেন্ট গেটওয়ে নির্বাচন করুন।
+                                        </div>
+                                    )}
                                 </form>
                             </div>
                         </div>
@@ -642,15 +652,15 @@ const Checkout = () => {
                             <div className="card border-0 shadow-sm sticky-top" style={{ borderRadius: '20px', top: '100px' }}>
                                 <div className="card-body p-4">
                                     <h5 className="fw-bold mb-4">Order Summary</h5>
-                                    
+
                                     <div className="order-items-list mb-4 overflow-auto" style={{ maxHeight: '300px' }}>
                                         {cartItems.map(item => (
                                             <div key={item.uid} className="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom border-light">
                                                 <div className="rounded border overflow-hidden position-relative" style={{ width: '50px', height: '50px', flexShrink: 0 }}>
-                                                    <img 
-                                                        src={item.image?.startsWith('http') ? item.image : (item.image?.startsWith('/') ? item.image : (item.image?.startsWith('uploads/') ? `/${item.image}` : `/uploads/product/${item.image}`))} 
-                                                        alt={item.title} 
-                                                        className="w-100 h-100 object-fit-cover" 
+                                                    <img
+                                                        src={item.image?.startsWith('http') ? item.image : (item.image?.startsWith('/') ? item.image : (item.image?.startsWith('uploads/') ? `/${item.image}` : `/uploads/product/${item.image}`))}
+                                                        alt={item.title}
+                                                        className="w-100 h-100 object-fit-cover"
                                                         onError={(e) => { e.target.src = '/assets/admin/images/no-image.png'; }}
                                                     />
                                                     <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark border border-light" style={{ fontSize: '10px' }}>
@@ -667,8 +677,18 @@ const Checkout = () => {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div className="fw-bold small">
-                                                    ৳{Number(item.price * item.qty).toLocaleString()}
+                                                <div className="d-flex flex-column align-items-end gap-2">
+                                                    <div className="fw-bold small">
+                                                        ৳{Number(item.price * item.qty).toLocaleString()}
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm btn-outline-danger"
+                                                        onClick={() => removeFromCart(item.uid)}
+                                                        style={{ minWidth: '80px' }}
+                                                    >
+                                                        Remove
+                                                    </button>
                                                 </div>
                                             </div>
                                         ))}
@@ -678,15 +698,15 @@ const Checkout = () => {
                                     <div className="mb-4">
                                         <label className="form-label small fw-bold text-muted uppercase">Have a coupon?</label>
                                         <div className="input-group">
-                                            <input 
-                                                type="text" className="form-control border shadow-none" 
-                                                placeholder="Enter code" value={couponCode} 
+                                            <input
+                                                type="text" className="form-control border shadow-none"
+                                                placeholder="Enter code" value={couponCode}
                                                 disabled={couponApplied}
-                                                onChange={(e) => setCouponCode(e.target.value)} 
+                                                onChange={(e) => setCouponCode(e.target.value)}
                                             />
-                                            <button 
-                                                className="btn btn-dark fw-bold px-3" 
-                                                type="button" 
+                                            <button
+                                                className="btn btn-dark fw-bold px-3"
+                                                type="button"
                                                 disabled={couponApplied || applyingCoupon}
                                                 onClick={handleApplyCoupon}
                                             >

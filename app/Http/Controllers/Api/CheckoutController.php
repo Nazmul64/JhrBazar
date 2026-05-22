@@ -183,19 +183,102 @@ class CheckoutController extends Controller
             'phone'          => 'required|string',
             'address'        => 'required|string',
             'city'           => 'required|string',
-            'items'          => 'required|array',
+            'shipping_id'    => 'required|integer',
+            'items'          => 'required|array|min:1',
+            'items.*.id'     => 'required|integer',
+            'items.*.qty'    => 'required|integer|min:1',
+            'items.*.product_type' => 'required|string',
+            'items.*.uid'    => 'nullable|string',
+            'items.*.color'  => 'nullable|string',
+            'items.*.size'   => 'nullable|string',
             'payment_method' => 'required|string',
             'online_gateway' => 'nullable|string|required_if:payment_method,online',
-            'shipping_charge'=> 'required|numeric',
-            'discount'       => 'nullable|numeric',
             'coupon_code'    => 'nullable|string',
         ]);
+
+        $shipping = ShippingCharge::where('id', $request->shipping_id)->where('status', 1)->first();
+        if (!$shipping) {
+            return response()->json([
+                'success' => false,
+                'message' => 'অবৈধ শিপিং জোন নির্বাচন করা হয়েছে। দয়া করে আবার চেষ্টা করুন।'
+            ], 422);
+        }
+
+        $validatedItems = [];
+        foreach ($request->items as $item) {
+            $productType = strtolower($item['product_type'] ?? 'admin');
+            $product = $this->findOrderProduct($item['id'], $productType);
+
+            if (!$product || !($product->is_active ?? true)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'কার্টের একটি পণ্যের তথ্য আর পাওয়া যাচ্ছে না বা আর উপলব্ধ নেই। অনুগ্রহ করে কার্ট রিফ্রেশ করুন এবং আবার চেষ্টা করুন।'
+                ], 422);
+            }
+
+            if (isset($product->stock_quantity) && $product->stock_quantity < $item['qty']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'পণ্যের স্টক সীমা পেরিয়ে গেছেন: ' . ($product->name ?? $product->title ?? 'Unknown Product')
+                ], 422);
+            }
+
+            $unitPrice = $this->getProductOrderPrice($product);
+            if ($unitPrice <= 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'পণ্যের মূল্যটি সঠিক নয়। অনুগ্রহ করে অন্য পণ্য নির্বাচন করুন।'
+                ], 422);
+            }
+
+            $validatedItems[] = [
+                'uid'              => $item['uid'] ?? (string) Str::uuid(),
+                'id'               => $product->id,
+                'product_type'     => $productType,
+                'seller_id'        => $productType === 'seller' ? ($product->seller_id ?? 0) : 0,
+                'title'            => $product->name ?? $product->title ?? 'Product',
+                'price'            => $unitPrice,
+                'qty'              => $item['qty'],
+                'color'            => $item['color'] ?? null,
+                'size'             => $item['size'] ?? null,
+                'cash_on_delivery' => $product->cash_on_delivery ?? true,
+                'online_payment'   => $product->online_payment ?? true,
+            ];
+        }
+
+        $couponDiscount = 0;
+        if ($request->coupon_code) {
+            $coupon = Promocode::where('coupon_code', $request->coupon_code)
+                ->where('status', 1)
+                ->where('start_date', '<=', now())
+                ->where('expired_date', '>=', now())
+                ->first();
+
+            if (!$coupon) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'অবৈধ বা মেয়াদোত্তীর্ণ কুপন কোড।'
+                ], 422);
+            }
+
+            $subTotalForCoupon = collect($validatedItems)->sum(fn($item) => $item['price'] * $item['qty']);
+            if ($subTotalForCoupon < $coupon->minimum_order_amount) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'এই কুপন কোডের জন্য কমপক্ষে ৳' . number_format($coupon->minimum_order_amount) . ' অর্ডার করতে হবে।'
+                ], 422);
+            }
+
+            $couponDiscount = $this->calculateCouponDiscount($coupon, $subTotalForCoupon);
+        }
+
+        $shippingCharge = (float) $shipping->charge;
 
         // IP Block & Fraud Blacklist Check
         $isIpBlocked = Ipblockmanage::where('ip_address', $request->ip())
             ->where('is_active', true)
             ->exists();
-            
+
         $isBlacklisted = FraudBlacklist::isBlacklisted('ip', $request->ip()) ||
                          FraudBlacklist::isBlacklisted('phone', $request->phone) ||
                          ($request->email && FraudBlacklist::isBlacklisted('email', $request->email));
@@ -219,7 +302,7 @@ class CheckoutController extends Controller
         // Duplicate Order Check
         $duplicateSetting = Duplicateordersetting::instance();
         if ($duplicateSetting->allow_duplicate_orders == false) {
-            $duplicateCheck = $this->checkDuplicateOrder($request, $duplicateSetting);
+            $duplicateCheck = $this->checkDuplicateOrder($request, $duplicateSetting, $validatedItems);
             if ($duplicateCheck['is_duplicate']) {
                 return response()->json([
                     'success' => false,
@@ -231,35 +314,26 @@ class CheckoutController extends Controller
         try {
             DB::beginTransaction();
 
-            // 1. Group items by seller_id
+// 1. Group validated items by seller_id
             $groupedItems = [];
-            foreach ($request->items as $item) {
+            foreach ($validatedItems as $item) {
                 $sellerId = $item['seller_id'] ?? 0; // 0 for Admin
                 $groupedItems[$sellerId][] = $item;
             }
 
             $orders = [];
-            $totalItems = count($request->items);
-            
+            $totalItems = count($validatedItems);
+
             // 2. Create an order for each seller
             foreach ($groupedItems as $sellerId => $items) {
                 $subTotal = collect($items)->sum(function($item) {
                     return $item['price'] * $item['qty'];
                 });
 
-                // Pro-rate discount and shipping if multiple sellers
-                // For simplicity, we can apply full shipping to the first order 
-                // and split discount proportionally if needed, or apply to Admin order.
-                // Here we'll apply proportional discount and only one shipping charge for the whole transaction.
-                
-                $sellerItemsCount = count($items);
-                $proportion = $sellerItemsCount / $totalItems;
-                
-                $orderDiscount = ($request->discount ?? 0) * ($subTotal / collect($request->items)->sum(fn($i) => $i['price'] * $i['qty']));
-                
-                // If this is the first group, we can put the full shipping charge here, or split it.
-                // We'll split it proportionally to be "fair" to sellers.
-                $orderShipping = $request->shipping_charge * ($subTotal / collect($request->items)->sum(fn($i) => $i['price'] * $i['qty']));
+                // Pro-rate discount and shipping across seller orders.
+                $totalOrderAmount = collect($validatedItems)->sum(fn($i) => $i['price'] * $i['qty']);
+                $orderDiscount = $totalOrderAmount > 0 ? $couponDiscount * ($subTotal / $totalOrderAmount) : 0;
+                $orderShipping = $totalOrderAmount > 0 ? $shippingCharge * ($subTotal / $totalOrderAmount) : 0;
 
                 $grandTotal = ($subTotal + $orderShipping) - $orderDiscount;
 
@@ -372,10 +446,52 @@ class CheckoutController extends Controller
             ]
         ]);
     }
+
+    private function findOrderProduct(int $id, string $productType)
+    {
+        if (in_array(strtolower($productType), ['seller', 'seller_product'], true)) {
+            return SellerProduct::find($id);
+        }
+
+        return Product::find($id);
+    }
+
+    private function getProductOrderPrice($product): float
+    {
+        if (isset($product->discount_price) && $product->discount_price > 0) {
+            return (float) $product->discount_price;
+        }
+
+        if (isset($product->selling_price) && $product->selling_price > 0) {
+            return (float) $product->selling_price;
+        }
+
+        if (isset($product->price) && $product->price > 0) {
+            return (float) $product->price;
+        }
+
+        return 0.0;
+    }
+
+    private function calculateCouponDiscount(Promocode $coupon, float $subTotal): float
+    {
+        $discount = 0;
+        if ($coupon->discount_type === 'percentage') {
+            $discount = ($subTotal * $coupon->discount) / 100;
+            if ($coupon->maximum_discount_amount > 0 && $discount > $coupon->maximum_discount_amount) {
+                $discount = $coupon->maximum_discount_amount;
+            }
+        } else {
+            $discount = $coupon->discount;
+        }
+
+        return max(0, min($discount, $subTotal));
+    }
+
     /**
      * Check for duplicate order based on settings.
      */
-    private function checkDuplicateOrder($request, $setting)
+    private function checkDuplicateOrder($request, $setting, $validatedItems)
     {
         $timeLimit = $setting->duplicate_time_limit ?: 1;
         $checkType = $setting->duplicate_check_type ?: 'Product + IP + Phone';
@@ -394,9 +510,9 @@ class CheckoutController extends Controller
 
         // For Product check, we need to see if any item in the new order matches an item in recent orders
         if (Str::contains($checkType, 'Product')) {
-            $newProductIds = collect($request->items)->pluck('id')->toArray();
-            
-            // This is a bit complex since items is JSON. 
+            $newProductIds = collect($validatedItems)->pluck('id')->toArray();
+
+            // This is a bit complex since items is JSON.
             // We'll fetch the recent orders and check manually or use JSON search if supported.
             $recentOrders = $query->get();
             foreach ($recentOrders as $recentOrder) {
@@ -475,7 +591,7 @@ class CheckoutController extends Controller
             'shurjopay' => 'https://shurjopay.com.bd/logo/shurjopay-logo.png',
             'sslcommerz' => 'https://securepay.sslcommerz.com/gw/asset/img/sslcommerz-logo.png',
         ];
-        
+
         // Manual override for bkash if the above fails
         if ($key === 'bkash') return 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/BKash_Logo.svg/512px-BKash_Logo.svg.png';
 

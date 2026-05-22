@@ -3,13 +3,19 @@
 @section('content')
 <div class="container-fluid px-4 py-4">
 
+    @php
+        $setting = \App\Models\GenaralSetting::first();
+        $taxHeaderBg = $setting->tax_header_color ?? '#f8f9fa';
+        $taxHeaderText = $setting->tax_header_text_color ?? '#1a1a2e';
+    @endphp
+
     {{-- ── Important Information Banner ── --}}
     <div class="tax-info-banner mb-4">
         <div class="d-flex align-items-start gap-2">
             <span style="font-size:20px;">💥</span>
             <div>
-                <div class="fw-semibold mb-1" style="font-size:15px; color:#1a1a2e;">Important Information</div>
-                <div style="font-size:13.5px; color:#444; line-height:1.6;">
+                <div class="fw-semibold mb-1" style="font-size:15px; color: {{ $taxHeaderText }};">Important Information</div>
+                <div style="font-size:13.5px; color: {{ $taxHeaderText }}; line-height:1.6;">
                     Just a quick note: <strong>VAT and Taxes are calculated based on your order.</strong>
                     If you have multiple VAT and Tax rates active, your total VAT and Tax amount will be
                     clearly displayed on the checkout page for your convenience.
@@ -161,10 +167,21 @@
 
 <style>
 .tax-info-banner {
-    background: #e8f4fd;
-    border: 1px solid #bee3f8;
+    background: {{ $taxHeaderBg }};
+    border: 1px solid rgba(0,0,0,.08);
     border-radius: 10px;
     padding: 16px 20px;
+    color: {{ $taxHeaderText }};
+}
+.tax-info-banner .fw-semibold,
+.tax-info-banner div {
+    color: {{ $taxHeaderText }};
+}
+#taxTable thead tr {
+    background: {{ $taxHeaderBg }} !important;
+}
+#taxTable thead th {
+    color: {{ $taxHeaderText }};
 }
 .btn-add-tax {
     background: linear-gradient(135deg, #e91e63, #c2185b);

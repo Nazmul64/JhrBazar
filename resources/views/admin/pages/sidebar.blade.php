@@ -1,1276 +1,1362 @@
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-    :root {
-        --sb-bg:            var(--bg-card);
-        --sb-surface:       var(--bg-body);
-        --sb-border:        var(--border-color);
-        --sb-text:          var(--text-muted);
-        --sb-text-hover:    var(--text-main);
-        --sb-active-color:  #6366f1;
-        --sb-active-bg:     rgba(99,102,241,0.1);
-        --sb-active-border: #6366f1;
-        --sb-section-text:  var(--text-muted);
-        --sb-hover-bg:      var(--border-color);
-        --brand-start:      #4f46e5;
-        --brand-end:        #8b5cf6;
-        --danger-color:     #ef4444;
-        --sb-width:         280px;
-    }
+:root {
+    --sb-width: 272px;
+    --sb-bg: #0a0d14;
+    --sb-surface: #111520;
+    --sb-surface-hover: #161b29;
+    --sb-border: rgba(255,255,255,0.07);
+    --sb-text: #8892a4;
+    --sb-text-hover: #dde3ef;
+    --sb-section-color: #3d4760;
+    --sb-accent: #6366f1;
+    --sb-accent-glow: rgba(99,102,241,0.15);
+    --sb-accent-border: rgba(99,102,241,0.25);
+    --sb-danger: #ef4444;
+    --brand-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%);
+    --icon-size: 32px;
+    --item-radius: 8px;
+    --font: 'Plus Jakarta Sans', sans-serif;
+}
 
-    [data-theme="dark"] {
-        --sb-bg:            #090b10;
-        --sb-surface:       #151921;
-    }
+[data-theme="light"] {
+    --sb-bg: #f8f9fc;
+    --sb-surface: #ffffff;
+    --sb-surface-hover: #f1f3f9;
+    --sb-border: rgba(0,0,0,0.07);
+    --sb-text: #64748b;
+    --sb-text-hover: #1e293b;
+    --sb-section-color: #94a3b8;
+    --sb-accent-glow: rgba(99,102,241,0.08);
+}
 
-    #sidebar {
-        width: var(--sb-width) !important;
-        background: var(--sb-bg) !important;
-        border-right: 1px solid var(--sb-border) !important;
-        box-shadow: 10px 0 30px rgba(0,0,0,0.5) !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        font-family: 'Inter', sans-serif !important;
-        transition: width 0.3s cubic-bezier(0.4,0,0.2,1) !important;
-        position: fixed;
-        top: 0; left: 0; bottom: 0;
-        z-index: 1030;
-        display: flex;
-        flex-direction: column;
-    }
+#sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px);
+    z-index: 1029;
+}
+#sidebar-overlay.show { display: block; }
 
-    #sidebar::-webkit-scrollbar { width: 4px; }
-    #sidebar::-webkit-scrollbar-track { background: transparent; }
-    #sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-    #sidebar::-webkit-scrollbar-thumb:hover { background: var(--sb-active-color); }
+#sidebar {
+    width: var(--sb-width) !important;
+    background: var(--sb-bg) !important;
+    border-right: 1px solid var(--sb-border) !important;
+    font-family: var(--font) !important;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 1030;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
 
-    .sidebar-brand {
-        display: flex !important;
-        align-items: center !important;
-        gap: 14px !important;
-        padding: 28px 24px !important;
-        text-decoration: none !important;
-        transition: all 0.3s ease !important;
-    }
+/* ── Scrollable inner ── */
+.sb-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px 12px 16px;
+}
+.sb-scroll::-webkit-scrollbar { width: 3px; }
+.sb-scroll::-webkit-scrollbar-track { background: transparent; }
+.sb-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 99px; }
+.sb-scroll::-webkit-scrollbar-thumb:hover { background: var(--sb-accent); }
 
-    .brand-logo-wrap {
-        width: 44px;
-        height: 44px;
-        background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 22px;
-        color: white;
-        box-shadow: 0 8px 16px -4px rgba(79, 70, 229, 0.5);
-        position: relative;
-    }
+/* ── Brand ── */
+.sb-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 16px 16px;
+    text-decoration: none;
+    border-bottom: 1px solid var(--sb-border);
+    flex-shrink: 0;
+}
+.sb-logo {
+    width: 40px; height: 40px;
+    background: var(--brand-gradient);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: white;
+    flex-shrink: 0;
+}
+.sb-brand-text { flex: 1; min-width: 0; }
+.sb-brand-name {
+    display: block;
+    color: var(--sb-text-hover);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sb-brand-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 3px;
+}
+.sb-status-dot {
+    width: 5px; height: 5px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #10b981;
+    animation: pulse-dot 2.5s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:0.4; transform:scale(1.3); }
+}
+.sb-brand-tag {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--sb-section-color);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
 
-    .brand-logo-wrap::after {
-        content: '';
-        position: absolute;
-        inset: -2px;
-        border: 2px solid rgba(255,255,255,0.1);
-        border-radius: 14px;
-    }
+/* ── Section labels ── */
+.sb-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 8px 6px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--sb-section-color);
+}
+.sb-section::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--sb-border);
+}
 
-    .brand-text-wrap {
-        display: flex;
-        flex-direction: column;
-    }
+/* ── Nav items ── */
+.sb-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    margin-bottom: 2px;
+    border-radius: var(--item-radius);
+    color: var(--sb-text);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.18s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+    position: relative;
+}
+.sb-item:hover {
+    background: var(--sb-surface-hover);
+    color: var(--sb-text-hover);
+    border-color: var(--sb-border);
+    text-decoration: none;
+}
+.sb-item.active {
+    background: var(--sb-accent-glow);
+    color: var(--sb-accent);
+    border-color: var(--sb-accent-border);
+}
+.sb-item.danger {
+    color: #f87171;
+}
+.sb-item.danger:hover {
+    background: rgba(239,68,68,0.08);
+    border-color: rgba(239,68,68,0.15);
+    color: var(--sb-danger);
+}
 
-    .brand-name-main {
-        color: var(--text-main);
-        font-weight: 800;
-        font-size: 18px;
-        letter-spacing: -0.5px;
-        line-height: 1;
-    }
+/* ── Icons ── */
+.sb-icon {
+    width: var(--icon-size);
+    height: var(--icon-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    background: rgba(255,255,255,0.04);
+    font-size: 14px;
+    color: inherit;
+    flex-shrink: 0;
+    transition: all 0.18s;
+}
+.sb-item:hover .sb-icon {
+    background: rgba(99,102,241,0.1);
+    color: var(--sb-accent);
+}
+.sb-item.active .sb-icon {
+    background: var(--sb-accent);
+    color: white;
+}
+.sb-item.danger .sb-icon {
+    background: rgba(239,68,68,0.1);
+    color: #f87171;
+}
+.sb-item.danger:hover .sb-icon {
+    background: rgba(239,68,68,0.15);
+    color: var(--sb-danger);
+}
 
-    [data-theme="dark"] .brand-name-main {
-        color: #f8fafc;
-    }
+/* Special gradient icon for Orders Hub */
+.sb-icon.gradient {
+    background: var(--brand-gradient) !important;
+    color: white !important;
+}
 
-    .brand-status {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin-top: 4px;
-    }
+/* ── Arrow & collapse ── */
+.sb-arrow {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--sb-section-color);
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+    flex-shrink: 0;
+}
+.sb-item.open > .sb-arrow {
+    transform: rotate(90deg);
+}
 
-    .status-dot {
-        width: 6px;
-        height: 6px;
-        background: #10b981;
-        border-radius: 50%;
-        box-shadow: 0 0 8px #10b981;
-        animation: pulseStatus 2s infinite;
-    }
+/* ── Badge ── */
+.sb-badge {
+    margin-left: auto;
+    background: var(--sb-danger);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 20px;
+    line-height: 1.4;
+}
 
-    @keyframes pulseStatus {
-        0% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.5; transform: scale(1.2); }
-        100% { opacity: 1; transform: scale(1); }
-    }
+/* ── Submenu ── */
+.sb-sub {
+    display: none;
+    margin: 2px 0 4px 17px;
+    padding-left: 12px;
+    border-left: 1px solid var(--sb-accent-border);
+    overflow: hidden;
+}
+.sb-sub.open {
+    display: block;
+    animation: sb-drop 0.2s ease-out;
+}
+@keyframes sb-drop {
+    from { opacity:0; transform:translateY(-4px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+.sb-sub .sb-item {
+    padding: 7px 10px;
+    font-size: 12.5px;
+    margin-bottom: 1px;
+}
+.sb-sub .sb-icon {
+    width: 22px; height: 22px;
+    font-size: 11px;
+    background: transparent !important;
+    border-radius: 4px;
+}
+.sb-sub .sb-item:hover .sb-icon {
+    background: rgba(99,102,241,0.08) !important;
+}
+.sb-sub .sb-item.active .sb-icon {
+    background: rgba(99,102,241,0.12) !important;
+    color: var(--sb-accent) !important;
+}
 
-    .status-text {
-        color: #64748b;
-        font-size: 10px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
+/* ── Footer ── */
+.sb-footer {
+    border-top: 1px solid var(--sb-border);
+    padding: 12px;
+    flex-shrink: 0;
+}
+.sb-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--sb-surface);
+    border-radius: 10px;
+    border: 1px solid var(--sb-border);
+    text-decoration: none;
+    transition: all 0.18s;
+    margin-bottom: 8px;
+}
+.sb-profile:hover {
+    background: var(--sb-surface-hover);
+    border-color: var(--sb-accent-border);
+    text-decoration: none;
+}
+.sb-avatar {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--brand-gradient);
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+.sb-profile-info { flex: 1; min-width: 0; }
+.sb-profile-name {
+    display: block;
+    color: var(--sb-text-hover);
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sb-profile-role {
+    display: block;
+    color: var(--sb-section-color);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+.sb-profile-gear {
+    color: var(--sb-section-color);
+    font-size: 15px;
+}
 
-    .sidebar-inner {
-        flex: 1;
-        padding: 0 12px 30px !important;
-    }
+/* ── Header & Main Layout ── */
+#header {
+    position: fixed;
+    top: 0; right: 0;
+    left: var(--sb-width);
+    height: 64px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    z-index: 1020;
+    gap: 12px;
+    transition: left 0.3s ease;
+}
+[data-theme="dark"] #header {
+    background: rgba(10,13,20,0.95);
+    border-bottom-color: rgba(255,255,255,0.06);
+}
+#main {
+    margin-left: var(--sb-width) !important;
+    margin-top: 64px !important;
+    min-height: calc(100vh - 64px);
+    padding: 28px !important;
+    background: #f0f2f8;
+    transition: margin-left 0.3s ease;
+}
+[data-theme="dark"] #main { background: #070a10; }
 
-    .nav-section-title {
-        padding: 24px 16px 8px !important;
-        font-size: 10px !important;
-        font-weight: 800 !important;
-        letter-spacing: 1.5px !important;
-        text-transform: uppercase !important;
-        color: var(--sb-section-text) !important;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
+.header-toggle {
+    background: transparent;
+    border: 1px solid rgba(0,0,0,0.08);
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: #64748b;
+    cursor: pointer;
+    transition: all 0.18s;
+}
+.header-toggle:hover { background: #f1f5f9; color: #4f46e5; }
 
-    .nav-section-title::after {
-        content: '';
-        height: 1px;
-        background: var(--sb-border);
-        flex: 1;
-    }
+.header-title h6 { margin: 0; font-weight: 700; font-size: 14px; color: #1e293b; font-family: var(--font); }
+.header-title small { font-size: 11px; color: #94a3b8; font-weight: 400; }
 
-    .nav-item-custom {
-        display: flex !important;
-        align-items: center !important;
-        padding: 10px 14px !important;
-        margin-bottom: 4px !important;
-        border-radius: 12px !important;
-        color: var(--sb-text) !important;
-        text-decoration: none !important;
-        font-size: 14px !important;
-        font-weight: 500 !important;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        position: relative;
-        border: 1px solid transparent !important;
-    }
+.header-action {
+    background: transparent;
+    border: none;
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; color: #64748b;
+    transition: all 0.18s;
+    position: relative;
+    cursor: pointer;
+}
+.header-action:hover { background: #f1f5f9; color: #4f46e5; }
+.header-notif-badge {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 8px; height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+.header-divider { width: 1px; height: 24px; background: rgba(0,0,0,0.08); }
+.header-avatar {
+    width: 36px; height: 36px;
+    background: var(--brand-gradient, linear-gradient(135deg,#4f46e5,#a855f7));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 12px; cursor: pointer;
+}
+.avatar-info .name { display: block; font-size: 13px; font-weight: 600; color: #1e293b; line-height: 1.2; }
+.avatar-info .role { font-size: 11px; color: #94a3b8; }
 
-    .nav-item-custom i:not(.arrow) {
-        width: 34px !important;
-        height: 34px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        border-radius: 10px !important;
-        background: rgba(255,255,255,0.03) !important;
-        margin-right: 12px !important;
-        font-size: 16px !important;
-        transition: all 0.2s !important;
-        color: var(--sb-text) !important;
-    }
-
-    .nav-item-custom:hover {
-        background: var(--sb-hover-bg) !important;
-        color: var(--sb-text-hover) !important;
-        transform: translateX(4px);
-    }
-
-    .nav-item-custom:hover i:not(.arrow) {
-        background: rgba(99,102,241,0.1) !important;
-        color: var(--sb-active-color) !important;
-    }
-
-    .nav-item-custom.active {
-        background: var(--sb-active-bg) !important;
-        color: var(--sb-active-color) !important;
-        border-color: rgba(99,102,241,0.1) !important;
-    }
-
-    .nav-item-custom.active i:not(.arrow) {
-        background: var(--sb-active-color) !important;
-        color: white !important;
-        box-shadow: 0 4px 12px rgba(99,102,241,0.3) !important;
-    }
-
-    .orders-hub-icon {
-        width: 34px !important;
-        height: 34px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        border-radius: 10px !important;
-        background: linear-gradient(135deg, #4f46e5, #8b5cf6) !important;
-        margin-right: 12px !important;
-        font-size: 16px !important;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4) !important;
-    }
-
-    .arrow {
-        font-size: 10px !important;
-        transition: transform 0.3s !important;
-        opacity: 0.5 !important;
-    }
-
-    .nav-item-custom.open .arrow {
-        transform: rotate(90deg) !important;
-        opacity: 1 !important;
-    }
-
-    .nav-submenu {
-        margin-left: 31px !important;
-        padding-left: 15px !important;
-        border-left: 1.5px solid var(--sb-border) !important;
-        margin-bottom: 10px !important;
-        display: none;
-    }
-
-    .nav-submenu.open { display: block; }
-
-    .nav-submenu .nav-item-custom {
-        padding: 8px 12px !important;
-        font-size: 13.5px !important;
-        background: transparent !important;
-        margin-bottom: 2px !important;
-    }
-
-    .nav-submenu .nav-item-custom i:not(.arrow) {
-        width: auto !important;
-        height: auto !important;
-        background: transparent !important;
-        margin-right: 10px !important;
-        font-size: 12px !important;
-        opacity: 0.5;
-    }
-
-    .nav-submenu .nav-item-custom:hover i:not(.arrow) {
-        opacity: 1;
-    }
-
-    /* ── Bottom Profile ── */
-    .sidebar-footer {
-        padding: 20px !important;
-        border-top: 1px solid var(--sb-border) !important;
-        background: rgba(0,0,0,0.2) !important;
-    }
-
-    .profile-card {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px;
-        background: var(--sb-surface);
-        border-radius: 16px;
-        border: 1px solid var(--sb-border);
-        text-decoration: none;
-        transition: all 0.2s;
-    }
-
-    .profile-card:hover {
-        background: var(--sb-hover-bg);
-        border-color: var(--sb-active-border);
-    }
-
-    .profile-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #1e293b, #0f172a);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 700;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .profile-info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .profile-name {
-        display: block;
-        color: #f1f5f9;
-        font-size: 13px;
-        font-weight: 700;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .profile-role {
-        display: block;
-        color: #64748b;
-        font-size: 11px;
-        font-weight: 500;
-        text-transform: capitalize;
-    }
-
-    .profile-action {
-        color: var(--sb-text);
-        font-size: 16px;
-        opacity: 0.5;
-    }
-
-    /* ── Orders Hub special ── */
-    .orders-hub-icon {
-        width: 32px !important;
-        height: 32px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        border-radius: 8px !important;
-        background: linear-gradient(135deg, var(--brand-start), var(--brand-end)) !important;
-        margin-right: 10px !important;
-        font-size: 14px !important;
-        flex-shrink: 0 !important;
-        box-shadow: 0 3px 8px -2px rgba(99,102,241,0.5) !important;
-    }
-
-    /* ── Submenus ── */
-    .nav-submenu {
-        display: none;
-        overflow: hidden;
-        margin: 2px 4px 2px 24px !important;
-        padding: 2px 0 !important;
-        border-left: 1px solid rgba(99,102,241,0.15) !important;
-    }
-    .nav-submenu.open {
-        display: block;
-        animation: sbSlideDown 0.2s ease-out;
-    }
-    @keyframes sbSlideDown {
-        from { opacity: 0; transform: translateY(-6px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .nav-submenu .nav-item-custom {
-        margin: 1px 0 1px 8px !important;
-        padding: 8px 12px !important;
-        font-size: 13px !important;
-        border-radius: 8px !important;
-        border: 1px solid transparent !important;
-    }
-    .nav-submenu .nav-item-custom i:not(.arrow) {
-        width: 22px !important;
-        height: 22px !important;
-        font-size: 12px !important;
-        background: transparent !important;
-        border-radius: 4px !important;
-        margin-right: 8px !important;
-    }
-    .nav-submenu .nav-item-custom:hover i:not(.arrow) {
-        background: transparent !important;
-    }
-    .nav-submenu .nav-item-custom.active {
-        background: rgba(99,102,241,0.1) !important;
-        border-color: rgba(99,102,241,0.15) !important;
-    }
-    .nav-submenu .nav-item-custom.active::before {
-        display: none;
-    }
-
-    /* ── Danger (logout) ── */
-    .nav-item-custom.text-danger {
-        color: var(--danger-color) !important;
-    }
-    .nav-item-custom.text-danger i:not(.arrow) {
-        color: var(--danger-color) !important;
-        background: rgba(244,63,94,0.08) !important;
-    }
-    .nav-item-custom.text-danger:hover {
-        background: rgba(244,63,94,0.08) !important;
-        border-color: rgba(244,63,94,0.15) !important;
-    }
-
-    /* ── Sidebar overlay (mobile) ── */
-    #sidebar-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.6);
-        backdrop-filter: blur(2px);
-        z-index: 1029;
-    }
-    #sidebar-overlay.show { display: block; }
-
-    /* ── Layout Fixes ── */
-    #header {
-        position: fixed;
-        top: 0; right: 0; left: 0;
-        height: 70px;
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(12px);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        display: flex;
-        align-items: center;
-        padding: 0 30px 0 calc(var(--sb-width) + 30px);
-        z-index: 1020;
-        gap: 15px;
-        transition: all 0.3s ease !important;
-    }
-
-    #main {
-        margin-left: var(--sb-width) !important;
-        margin-top: 70px !important;
-        min-height: calc(100vh - 70px);
-        padding: 30px !important;
-        background: #f8fafc;
-        transition: margin-left 0.3s ease !important;
-    }
-
-    .header-toggle {
-        background: #f1f5f9;
-        border: none;
-        width: 40px; height: 40px;
-        border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 20px; color: var(--sb-text);
-        transition: all 0.2s;
-    }
-    .header-toggle:hover { background: #e2e8f0; color: var(--sb-active-color); }
-
-    .header-title h6 { margin: 0; font-weight: 700; color: #1e293b; font-size: 15px; }
-
-    .header-action {
-        background: transparent;
-        border: none;
-        width: 40px; height: 40px;
-        border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 18px; color: #64748b;
-        transition: all 0.2s;
-        margin-left: auto;
-    }
-    .header-action:hover { background: #f1f5f9; color: var(--sb-active-color); }
-
-    .header-notif-badge {
-        position: absolute;
-        top: 8px; right: 8px;
-        background: var(--danger-color);
-        color: white;
-        font-size: 9px;
-        padding: 2px 5px;
-        border-radius: 10px;
-        font-weight: 700;
-        border: 2px solid white;
-    }
-
-    .lang-btn {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        padding: 6px 12px;
-        border-radius: 10px;
-        display: flex; align-items: center; gap: 8px;
-        font-size: 13px; font-weight: 600; color: #475569;
-    }
-
-    .avatar-wrap {
-        position: relative;
-    }
-
-    .avatar-wrap .avatar {
-        width: 38px; height: 38px;
-        background: var(--sb-active-bg);
-        color: var(--sb-active-color);
-        border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        font-weight: 700;
-        border: 1px solid rgba(99,102,241,0.1);
-    }
-    .avatar-info .name { display: block; font-size: 13px; font-weight: 700; color: #1e293b; line-height: 1; }
-    .avatar-info .role { font-size: 11px; color: #94a3b8; font-weight: 500; }
-
-    .avatar-wrap .dropdown-menu {
-        top: 100% !important;
-        margin-top: 5px !important;
-        transform: none !important;
-        right: 0 !important;
-        left: auto !important;
-    }
-
-    #main {
-        margin-top: 70px !important;
-        min-height: calc(100vh - 70px);
-        padding: 30px !important;
-        background: #f8fafc;
-    }
-
-    /* ── Mobile ── */
-    @media (max-width: 991px) {
-        #sidebar {
-            left: -302px !important;
-            transform: none !important;
-            transition: left 0.3s cubic-bezier(0.4,0,0.2,1) !important;
-        }
-        #sidebar.show {
-            left: 0 !important;
-        }
-        #main, #header {
-            margin-left: 0 !important;
-            padding-left: 30px !important;
-        }
-    }
+/* ── Mobile ── */
+@media (max-width: 991px) {
+    #sidebar { left: -300px !important; transition: left 0.3s cubic-bezier(0.4,0,0.2,1) !important; }
+    #sidebar.show { left: 0 !important; }
+    #main, #header { margin-left: 0 !important; left: 0 !important; }
+}
 </style>
 
 <div id="sidebar-overlay"></div>
 
 @php $setting = \App\Models\GenaralSetting::first(); @endphp
+
 <aside id="sidebar">
 
-    {{-- ── Brand ── --}}
-    <a class="sidebar-brand" href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : (auth()->user()->role === 'employee' ? route('employee.dashboard') : '#') }}">
-        <div class="brand-logo-wrap">
+    {{-- ══ BRAND ══ --}}
+    <a class="sb-brand" href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : (auth()->user()->role === 'employee' ? route('employee.dashboard') : '#') }}">
+        <div class="sb-logo">
             @if($setting && $setting->logo_url)
-                <img src="{{ $setting->logo_url }}" style="width:100%; height:100%; object-fit:contain; border-radius:10px;">
+                <img src="{{ $setting->logo_url }}" style="width:100%;height:100%;object-fit:contain;border-radius:8px;">
             @else
                 <i class="bi bi-rocket-takeoff-fill"></i>
             @endif
         </div>
-        <div class="brand-text-wrap">
-            <span class="brand-name-main">{{ $setting->website_name ?? 'JHR BAZAR' }}</span>
-            <div class="brand-status">
-                <span class="status-dot"></span>
-                <span class="status-text">System Live</span>
+        <div class="sb-brand-text">
+            <span class="sb-brand-name">{{ $setting->website_name ?? 'JHR BAZAR' }}</span>
+            <div class="sb-brand-status">
+                <span class="sb-status-dot"></span>
+                <span class="sb-brand-tag">System Live</span>
             </div>
         </div>
     </a>
 
-    <div class="sidebar-inner">
+    <div class="sb-scroll">
 
-        {{-- ══════════════ MAIN ══════════════ --}}
-        <div class="nav-section-title">Main</div>
+        {{-- ══════════════════════════════════════════
+             SECTION 1 · MAIN
+        ══════════════════════════════════════════ --}}
+        <div class="sb-section">Main</div>
 
-        <a class="nav-item-custom {{ request()->routeIs('admin.dashboard') || request()->routeIs('employee.dashboard') ? 'active' : '' }}"
+        <a class="sb-item {{ request()->routeIs('admin.dashboard') || request()->routeIs('employee.dashboard') ? 'active' : '' }}"
            href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : route('employee.dashboard') }}">
-            <i class="bi bi-grid-fill"></i> Dashboard
+            <span class="sb-icon"><i class="bi bi-grid-fill"></i></span>
+            Dashboard
         </a>
 
-        {{-- ══════════════ ORDERS HUB ══════════════ --}}
+
+        {{-- ══════════════════════════════════════════
+             SECTION 2 · ORDERS
+        ══════════════════════════════════════════ --}}
         @if(auth()->user()->hasPermission('order.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}" data-sub="orders-hub">
-            <div class="orders-hub-icon">
-                <i class="bi bi-bag-fill" style="margin-right: 0 !important; color: white !important;"></i>
-            </div>
-            <span style="font-weight: 600;">Orders Hub</span>
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        <div class="sb-section">Orders</div>
+
+        {{-- Orders Hub (parent) --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.orders.*') ? 'active open' : '' }}" data-sub="orders-hub">
+            <span class="sb-icon gradient"><i class="bi bi-bag-fill" style="color:white;"></i></span>
+            <span style="font-weight:600;">Orders Hub</span>
+            <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="nav-submenu nav-submenu-orders" id="sub-orders-hub">
-            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'all') }}">
-                <i class="bi bi-basket"></i> All Orders
+        <div class="sb-sub {{ request()->routeIs('admin.orders.*') ? 'open' : '' }}" id="sub-orders-hub">
+            <a class="sb-item {{ request()->routeIs('admin.orders.index') && request()->route('status') == 'all' ? 'active' : '' }}"
+               href="{{ route('admin.orders.index', 'all') }}">
+                <span class="sb-icon"><i class="bi bi-basket"></i></span> All Orders
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'pending') }}">
-                <i class="bi bi-hourglass-split"></i> Pending
+            <a class="sb-item {{ request()->routeIs('admin.orders.index') && request()->route('status') == 'pending' ? 'active' : '' }}"
+               href="{{ route('admin.orders.index', 'pending') }}">
+                <span class="sb-icon"><i class="bi bi-hourglass-split"></i></span> Pending
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'processing') }}">
-                <i class="bi bi-arrow-repeat"></i> Processing
+            <a class="sb-item {{ request()->routeIs('admin.orders.index') && request()->route('status') == 'processing' ? 'active' : '' }}"
+               href="{{ route('admin.orders.index', 'processing') }}">
+                <span class="sb-icon"><i class="bi bi-arrow-repeat"></i></span> Processing
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'shipped') }}">
-                <i class="bi bi-truck"></i> Shipped
+            <a class="sb-item {{ request()->routeIs('admin.orders.index') && request()->route('status') == 'shipped' ? 'active' : '' }}"
+               href="{{ route('admin.orders.index', 'shipped') }}">
+                <span class="sb-icon"><i class="bi bi-truck"></i></span> Shipped
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'delivered') }}">
-                <i class="bi bi-check-circle"></i> Delivered
+            <a class="sb-item {{ request()->routeIs('admin.orders.index') && request()->route('status') == 'delivered' ? 'active' : '' }}"
+               href="{{ route('admin.orders.index', 'delivered') }}">
+                <span class="sb-icon"><i class="bi bi-check-circle"></i></span> Delivered
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.orders.index', 'cancelled') }}">
-                <i class="bi bi-x-circle"></i> Cancelled
+            <a class="sb-item {{ request()->routeIs('admin.orders.index') && request()->route('status') == 'cancelled' ? 'active' : '' }}"
+               href="{{ route('admin.orders.index', 'cancelled') }}">
+                <span class="sb-icon"><i class="bi bi-x-circle"></i></span> Cancelled
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.orders.incomplete') ? 'active' : '' }}" href="{{ route('admin.orders.incomplete') }}">
-                <i class="bi bi-clipboard-x"></i> Incomplete Orders
-            </a>
-
-            <!-- ── Special Tools ── -->
-            <div class="nav-section-title">Special Tools</div>
-            <a class="nav-item-custom" href="{{ route('admin.customer-detector.index') }}">
-                <i class="bi bi-eye-fill"></i> Customer Detector
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.fraud.apis.index') }}">
-                <i class="bi bi-shield-fill-exclamation text-primary"></i> Fraud Checker
-            </a>
-
-            <a class="nav-item-custom {{ request()->routeIs('admin.customer-detector.*') ? 'active' : '' }}" href="{{ route('admin.customer-detector.index') }}">
-                <i class="bi bi-eye-fill"></i> Customer Detector 🚨
-            </a>
-
-            {{-- Fraud Checker dropdown --}}
-            <div class="nav-item-custom has-sub {{ request()->routeIs('admin.cyber-alerts') || request()->routeIs('admin.Ipblockmanage.*') || request()->routeIs('admin.fraud.apis.index') ? 'active' : '' }}"
-                 data-sub="fraud-checker">
-                <i class="bi bi-shield-fill-exclamation text-primary"></i> Fraud Checker
-                <i class="bi bi-chevron-right arrow ms-auto"></i>
-            </div>
-            <div class="nav-submenu" id="sub-fraud-checker">
-                <a class="nav-item-custom {{ request()->routeIs('admin.cyber-alerts') ? 'active' : '' }}"
-                   href="{{ route('admin.cyber-alerts') }}">
-                    <i class="bi bi-exclamation-triangle-fill text-danger"></i> Cyber Alerts (Live)
-                </a>
-                <a class="nav-item-custom {{ request()->routeIs('admin.Ipblockmanage.index') ? 'active' : '' }}"
-                   href="{{ route('admin.Ipblockmanage.index') }}">
-                    <i class="bi bi-shield-slash-fill"></i> Blocked & Fake
-                </a>
-                <a class="nav-item-custom {{ request()->routeIs('admin.fraud.apis.index') ? 'active' : '' }}"
-                   href="{{ route('admin.fraud.apis.index') }}">
-                    <i class="bi bi-gear-fill"></i> Manage Fraud APIs
-                </a>
-            </div>
-            <a class="nav-item-custom" href="{{ route('admin.pointofsalepos.index') }}">
-                <i class="bi bi-plus-lg"></i> Create Order
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.orders.staff_assignments') ? 'active' : '' }}" href="{{ route('admin.orders.staff_assignments') }}">
-                <i class="bi bi-person-gear"></i> Staff Assignments
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.orders.activity_history') ? 'active' : '' }}" href="{{ route('admin.orders.activity_history') }}">
-                <i class="bi bi-clock-history"></i> Activity History
+            <a class="sb-item {{ request()->routeIs('admin.orders.incomplete') ? 'active' : '' }}"
+               href="{{ route('admin.orders.incomplete') }}">
+                <span class="sb-icon"><i class="bi bi-clipboard-x"></i></span> Incomplete Orders
             </a>
         </div>
-        @endif
 
-        {{-- POS Management (Permission Based) --}}
-        @if(auth()->user()->hasPermission('pos.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.pointofsalepos.*') ? 'active' : '' }}"
-             data-sub="pos">
-            <i class="bi bi-display"></i> POS Management
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        {{-- Order Tools --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.orders.staff_assignments') || request()->routeIs('admin.orders.activity_history') || request()->routeIs('admin.pointofsalepos.index') ? 'open' : '' }}" data-sub="order-tools">
+            <span class="sb-icon"><i class="bi bi-tools"></i></span>
+            <span>Order Tools</span>
+            <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="nav-submenu" id="sub-pos">
-            <a class="nav-item-custom {{ request()->routeIs('admin.pointofsalepos.index') ? 'active' : '' }}"
+        <div class="sb-sub {{ request()->routeIs('admin.orders.staff_assignments') || request()->routeIs('admin.orders.activity_history') || request()->routeIs('admin.pointofsalepos.index') ? 'open' : '' }}" id="sub-order-tools">
+            <a class="sb-item {{ request()->routeIs('admin.pointofsalepos.index') ? 'active' : '' }}"
                href="{{ route('admin.pointofsalepos.index') }}">
-                <i class="bi bi-dot"></i> POS
+                <span class="sb-icon"><i class="bi bi-plus-circle"></i></span> Create Order
             </a>
-
-            <a class="nav-item-custom {{ request()->routeIs('admin.pointofsalepos.sales.*') ? 'active' : '' }}"
-               href="{{ route('admin.pointofsalepos.sales.index') }}">
-                <i class="bi bi-dot"></i> POS Sales History
+            <a class="sb-item {{ request()->routeIs('admin.orders.staff_assignments') ? 'active' : '' }}"
+               href="{{ route('admin.orders.staff_assignments') }}">
+                <span class="sb-icon"><i class="bi bi-person-gear"></i></span> Staff Assignments
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.pointofsalepos.draft.*') ? 'active' : '' }}"
-               href="{{ route('admin.pointofsalepos.draft.index') }}">
-                <i class="bi bi-dot"></i> POS Sales Draft
+            <a class="sb-item {{ request()->routeIs('admin.orders.activity_history') ? 'active' : '' }}"
+               href="{{ route('admin.orders.activity_history') }}">
+                <span class="sb-icon"><i class="bi bi-clock-history"></i></span> Activity History
             </a>
         </div>
         @endif
 
+        {{-- Refund Management --}}
         @if(auth()->user()->hasPermission('return_order.list'))
-        <a class="nav-item-custom {{ request()->routeIs('admin.refunds.*') ? 'active' : '' }}"
+        <a class="sb-item {{ request()->routeIs('admin.refunds.*') ? 'active' : '' }}"
            href="{{ route('admin.refunds.index') }}">
-            <i class="bi bi-arrow-return-left"></i> Refund Management
+            <span class="sb-icon"><i class="bi bi-arrow-return-left"></i></span>
+            Refund Management
         </a>
         @endif
 
-        {{-- ══════════════ COURIER ══════════════ --}}
+        {{-- Courier Management --}}
         @if(auth()->user()->hasPermission('courier.list'))
-        <a class="nav-item-custom {{ request()->routeIs('admin.courier.*') ? 'active' : '' }}" href="{{ route('admin.courier.index') }}">
-            <i class="bi bi-truck-flatbed"></i> Courier Management
+        <a class="sb-item {{ request()->routeIs('admin.courier.*') ? 'active' : '' }}"
+           href="{{ route('admin.courier.index') }}">
+            <span class="sb-icon"><i class="bi bi-truck-flatbed"></i></span>
+            Courier Management
         </a>
         @endif
 
+
+        {{-- ══════════════════════════════════════════
+             SECTION 3 · POINT OF SALE
+        ══════════════════════════════════════════ --}}
+        @if(auth()->user()->hasPermission('pos.list'))
+        <div class="sb-section">Point of Sale</div>
+
+        <div class="sb-item has-sub {{ request()->routeIs('admin.pointofsalepos.*') ? 'active open' : '' }}" data-sub="pos">
+            <span class="sb-icon"><i class="bi bi-display"></i></span>
+            POS Management
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.pointofsalepos.*') ? 'open' : '' }}" id="sub-pos">
+            <a class="sb-item {{ request()->routeIs('admin.pointofsalepos.index') ? 'active' : '' }}"
+               href="{{ route('admin.pointofsalepos.index') }}">
+                <span class="sb-icon"><i class="bi bi-display"></i></span> POS Terminal
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.pointofsalepos.sales.*') ? 'active' : '' }}"
+               href="{{ route('admin.pointofsalepos.sales.index') }}">
+                <span class="sb-icon"><i class="bi bi-receipt"></i></span> Sales History
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.pointofsalepos.draft.*') ? 'active' : '' }}"
+               href="{{ route('admin.pointofsalepos.draft.index') }}">
+                <span class="sb-icon"><i class="bi bi-file-earmark-text"></i></span> Sales Drafts
+            </a>
+        </div>
+        @endif
+
+
+        {{-- ══════════════════════════════════════════
+             SECTION 4 · COMMUNICATIONS
+        ══════════════════════════════════════════ --}}
         @if(auth()->user()->hasPermission('chat.list'))
-        <a class="nav-item-custom {{ request()->routeIs('admin.chat.*') ? 'active' : '' }}" href="{{ route('admin.chat.index') }}">
-            <i class="bi bi-chat-left-dots"></i> Conversations
+        <div class="sb-section">Communications</div>
+
+        <a class="sb-item {{ request()->routeIs('admin.chat.*') ? 'active' : '' }}"
+           href="{{ route('admin.chat.index') }}">
+            <span class="sb-icon"><i class="bi bi-chat-left-dots-fill"></i></span>
+            Customer Chat
             @php $unreadChats = \App\Models\ChatSession::where('is_read_by_admin', false)->whereNotNull('user_id')->whereNull('receiver_id')->count(); @endphp
             @if($unreadChats > 0)
-                <span class="badge bg-danger ms-auto rounded-pill" style="font-size: 10px;">{{ $unreadChats }}</span>
+                <span class="sb-badge">{{ $unreadChats }}</span>
             @endif
         </a>
 
-        <a class="nav-item-custom {{ request()->routeIs('admin.seller_chat.*') ? 'active' : '' }}" href="{{ route('admin.seller_chat.index') }}">
-            <i class="bi bi-chat-square-dots-fill"></i> Seller Chat
-            @php
-                $unreadSellerChats = \App\Models\ChatSession::where('is_read_by_admin', false)
-                    ->whereHas('user', function($q) { $q->where('role', 'seller'); })
-                    ->count();
-            @endphp
+        <a class="sb-item {{ request()->routeIs('admin.seller_chat.*') ? 'active' : '' }}"
+           href="{{ route('admin.seller_chat.index') }}">
+            <span class="sb-icon"><i class="bi bi-chat-square-dots-fill"></i></span>
+            Seller Chat
+            @php $unreadSellerChats = \App\Models\ChatSession::where('is_read_by_admin', false)->whereHas('user', function($q) { $q->where('role', 'seller'); })->count(); @endphp
             @if($unreadSellerChats > 0)
-                <span class="badge bg-danger ms-auto rounded-pill" style="font-size: 10px;">{{ $unreadSellerChats }}</span>
+                <span class="sb-badge">{{ $unreadSellerChats }}</span>
             @endif
         </a>
-        @endif
 
-        {{-- ══════════════ FRAUD (Permission Based) ══════════════ --}}
-        @if(auth()->user()->hasPermission('fraud.dashboard'))
-        <div class="nav-section-title">Fraud Management</div>
-
-
-        <a class="nav-item-custom {{ request()->routeIs('admin.fraud.apis.index') ? 'active' : '' }}"
-           href="{{ route('admin.fraud.apis.index') }}">
-            <i class="bi bi-gear-fill"></i> Fraud APIs
+        @if(auth()->user()->hasPermission('contact.list'))
+        <a class="sb-item {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}"
+           href="{{ route('admin.contact.index') }}">
+            <span class="sb-icon"><i class="bi bi-envelope-fill"></i></span>
+            Contact Messages
         </a>
         @endif
-
-        {{-- Fraud Components (Protected) --}}
-
-
-
-        @if(auth()->user()->hasPermission('fraud.blacklist'))
-        {{-- Blacklist --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.fraud.blacklist.*') ? 'active' : '' }}"
-             data-sub="fraud-blacklist">
-            <i class="bi bi-ban"></i> Blacklist
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
-        </div>
-        <div class="nav-submenu" id="sub-fraud-blacklist">
-            <a class="nav-item-custom {{ request()->routeIs('admin.fraud.blacklist.index') ? 'active' : '' }}"
-               href="{{ route('admin.fraud.blacklist.index') }}">
-                <i class="bi bi-dot"></i> All Blacklists
-            </a>
-        </div>
         @endif
 
-        {{-- Catalog Section (Protected) --}}
+
+        {{-- ══════════════════════════════════════════
+             SECTION 5 · CATALOG
+        ══════════════════════════════════════════ --}}
         @if(auth()->user()->hasPermission('product.list'))
-        {{-- ══════════════ CATALOG ══════════════ --}}
-        <div class="nav-section-title">Catalog</div>
+        <div class="sb-section">Catalog</div>
 
-        {{-- Category Management --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.categories.*') || request()->routeIs('admin.subcategory.*') ? 'active' : '' }}"
-             data-sub="category">
-            <i class="bi bi-grid-3x3-gap"></i> Category Management
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        {{-- Categories --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.categories.*') || request()->routeIs('admin.subcategory.*') ? 'active open' : '' }}" data-sub="category">
+            <span class="sb-icon"><i class="bi bi-grid-3x3-gap"></i></span>
+            Categories
+            <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="nav-submenu" id="sub-category">
-            <a class="nav-item-custom {{ request()->routeIs('admin.categories.index') ? 'active' : '' }}"
+        <div class="sb-sub {{ request()->routeIs('admin.categories.*') || request()->routeIs('admin.subcategory.*') ? 'open' : '' }}" id="sub-category">
+            <a class="sb-item {{ request()->routeIs('admin.categories.index') ? 'active' : '' }}"
                href="{{ route('admin.categories.index') }}">
-                <i class="bi bi-dot"></i> All Categories
+                <span class="sb-icon"><i class="bi bi-list-ul"></i></span> All Categories
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.categories.create') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.categories.create') ? 'active' : '' }}"
                href="{{ route('admin.categories.create') }}">
-                <i class="bi bi-dot"></i> Add Category
+                <span class="sb-icon"><i class="bi bi-plus"></i></span> Add Category
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.subcategory.index') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.subcategory.index') ? 'active' : '' }}"
                href="{{ route('admin.subcategory.index') }}">
-                <i class="bi bi-dot"></i> All SubCategories
+                <span class="sb-icon"><i class="bi bi-list-nested"></i></span> All SubCategories
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.subcategory.create') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.subcategory.create') ? 'active' : '' }}"
                href="{{ route('admin.subcategory.create') }}">
-                <i class="bi bi-dot"></i> Add SubCategory
+                <span class="sb-icon"><i class="bi bi-plus"></i></span> Add SubCategory
             </a>
         </div>
 
-        {{-- Product Management --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('products.*') ? 'active' : '' }}"
-             data-sub="product">
-            <i class="bi bi-box-seam"></i> Product Management
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        {{-- Products --}}
+        <div class="sb-item has-sub {{ request()->routeIs('products.*') ? 'active open' : '' }}" data-sub="product">
+            <span class="sb-icon"><i class="bi bi-box-seam"></i></span>
+            Products
+            <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="nav-submenu" id="sub-product">
-            <a class="nav-item-custom {{ request()->routeIs('products.index') ? 'active' : '' }}"
+        <div class="sb-sub {{ request()->routeIs('products.*') ? 'open' : '' }}" id="sub-product">
+            <a class="sb-item {{ request()->routeIs('products.index') ? 'active' : '' }}"
                href="{{ route('products.index') }}">
-                <i class="bi bi-dot"></i> All Products
+                <span class="sb-icon"><i class="bi bi-boxes"></i></span> All Products
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('products.create') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('products.create') ? 'active' : '' }}"
                href="{{ route('products.create') }}">
-                <i class="bi bi-dot"></i> Add Product
+                <span class="sb-icon"><i class="bi bi-plus-circle"></i></span> Add Product
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.digital_product.*') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.digital_product.*') ? 'active' : '' }}"
                href="{{ route('admin.digital_product.index') }}">
-                <i class="bi bi-dot"></i> Digital Products
+                <span class="sb-icon"><i class="bi bi-file-earmark-zip"></i></span> Digital Products
             </a>
-
         </div>
         @endif
 
-        {{-- Product Variant Management --}}
+        {{-- Product Variants --}}
         @if(auth()->user()->hasPermission('brand.list') || auth()->user()->hasPermission('color.list') || auth()->user()->hasPermission('size.list') || auth()->user()->hasPermission('unit.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.productbrands.*') || request()->routeIs('admin.colors.*') || request()->routeIs('admin.sizes.*') || request()->routeIs('admin.units.*') ? 'active' : '' }}"
-             data-sub="variant">
-            <i class="bi bi-layers"></i> Product Variant Management
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        <div class="sb-item has-sub {{ request()->routeIs('admin.productbrands.*') || request()->routeIs('admin.colors.*') || request()->routeIs('admin.sizes.*') || request()->routeIs('admin.units.*') ? 'active open' : '' }}" data-sub="variant">
+            <span class="sb-icon"><i class="bi bi-layers"></i></span>
+            Product Variants
+            <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="nav-submenu" id="sub-variant">
+        <div class="sb-sub {{ request()->routeIs('admin.productbrands.*') || request()->routeIs('admin.colors.*') || request()->routeIs('admin.sizes.*') || request()->routeIs('admin.units.*') ? 'open' : '' }}" id="sub-variant">
             @if(auth()->user()->hasPermission('brand.list'))
-            <a class="nav-item-custom {{ request()->routeIs('admin.productbrands.*') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.productbrands.*') ? 'active' : '' }}"
                href="{{ route('admin.productbrands.index') }}">
-                <i class="bi bi-dot"></i> Brand
+                <span class="sb-icon"><i class="bi bi-bookmark"></i></span> Brands
             </a>
             @endif
             @if(auth()->user()->hasPermission('color.list'))
-            <a class="nav-item-custom {{ request()->routeIs('admin.colors.*') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.colors.*') ? 'active' : '' }}"
                href="{{ route('admin.colors.index') }}">
-                <i class="bi bi-dot"></i> Color
+                <span class="sb-icon"><i class="bi bi-palette"></i></span> Colors
             </a>
             @endif
             @if(auth()->user()->hasPermission('size.list'))
-            <a class="nav-item-custom {{ request()->routeIs('admin.sizes.*') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.sizes.*') ? 'active' : '' }}"
                href="{{ route('admin.sizes.index') }}">
-                <i class="bi bi-dot"></i> Size
+                <span class="sb-icon"><i class="bi bi-rulers"></i></span> Sizes
             </a>
             @endif
             @if(auth()->user()->hasPermission('unit.list'))
-            <a class="nav-item-custom {{ request()->routeIs('admin.units.*') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.units.*') ? 'active' : '' }}"
                href="{{ route('admin.units.index') }}">
-                <i class="bi bi-dot"></i> Unit
+                <span class="sb-icon"><i class="bi bi-123"></i></span> Units
             </a>
             @endif
         </div>
         @endif
 
-        {{-- ══════════════ SHOP MANAGEMENT ══════════════ --}}
-        <div class="nav-section-title">Shop Management</div>
 
-        @if(auth()->user()->hasPermission('seller_approval.list') || auth()->user()->hasPermission('bank.list'))
+        {{-- ══════════════════════════════════════════
+             SECTION 6 · SHOP & PROMOTIONS
+        ══════════════════════════════════════════ --}}
+        @if(auth()->user()->hasPermission('seller_approval.list') || auth()->user()->hasPermission('bank.list') || auth()->user()->hasPermission('shop.list') || auth()->user()->hasPermission('promo_code.list') || auth()->user()->hasPermission('flash_sale.list') || auth()->user()->hasPermission('banner.list'))
+        <div class="sb-section">Shop & Promotions</div>
+
+        {{-- Seller Approvals --}}
         @if(auth()->user()->hasPermission('seller_approval.list'))
-        <a class="nav-item-custom {{ request()->routeIs('admin.sellers.approvals') ? 'active' : '' }}"
+        <a class="sb-item {{ request()->routeIs('admin.sellers.approvals') ? 'active' : '' }}"
            href="{{ route('admin.sellers.approvals') }}">
-            <i class="bi bi-person-check"></i> Seller Approvals
-            @php $pendingCount = \App\Models\User::where('role', 'seller')->where('status', 'pending')->count(); @endphp
+            <span class="sb-icon"><i class="bi bi-person-check-fill"></i></span>
+            Seller Approvals
+            @php $pendingCount = \App\Models\User::where('role','seller')->where('status','pending')->count(); @endphp
             @if($pendingCount > 0)
-                <span class="badge bg-danger ms-auto rounded-pill" style="font-size: 10px;">{{ $pendingCount }}</span>
+                <span class="sb-badge">{{ $pendingCount }}</span>
             @endif
         </a>
         @endif
+
+        {{-- Shop Management --}}
+        @if(auth()->user()->hasPermission('shop.list'))
+        <div class="sb-item has-sub {{ request()->routeIs('admin.shops.*') ? 'active open' : '' }}" data-sub="shop">
+            <span class="sb-icon"><i class="bi bi-shop"></i></span>
+            Shop Management
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.shops.*') ? 'open' : '' }}" id="sub-shop">
+            <a class="sb-item {{ request()->routeIs('admin.shops.index') ? 'active' : '' }}"
+               href="{{ route('admin.shops.index') }}">
+                <span class="sb-icon"><i class="bi bi-list-ul"></i></span> All Shops
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.shops.create') ? 'active' : '' }}"
+               href="{{ route('admin.shops.create') }}">
+                <span class="sb-icon"><i class="bi bi-plus"></i></span> Add Shop
+            </a>
+        </div>
+        @endif
+
+        {{-- Bank Information --}}
         @if(auth()->user()->hasPermission('bank.list'))
-        <a class="nav-item-custom {{ request()->routeIs('admin.banks.*') ? 'active' : '' }}"
+        <a class="sb-item {{ request()->routeIs('admin.banks.*') ? 'active' : '' }}"
            href="{{ route('admin.banks.index') }}">
-            <i class="bi bi-bank"></i> BankInformation
+            <span class="sb-icon"><i class="bi bi-bank2"></i></span>
+            Bank Information
         </a>
         @endif
-        @endif
 
-        @if(auth()->user()->hasPermission('shop.list'))
-        {{-- Shops --}}
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.shops.*') ? 'active' : '' }}"
-             data-sub="shop">
-            <i class="bi bi-shop"></i> Shop Management
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
-        </div>
-        <div class="nav-submenu" id="sub-shop">
-            <a class="nav-item-custom {{ request()->routeIs('admin.shops.index') ? 'active' : '' }}"
-               href="{{ route('admin.shops.index') }}">
-                <i class="bi bi-dot"></i> All Shops
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.shops.create') ? 'active' : '' }}"
-               href="{{ route('admin.shops.create') }}">
-                <i class="bi bi-dot"></i> Add Shop
-            </a>
-        </div>
-        @endif
-
-        {{-- Promotion Management --}}
+        {{-- Promotions --}}
         @if(auth()->user()->hasPermission('promo_code.list') || auth()->user()->hasPermission('flash_sale.list') || auth()->user()->hasPermission('banner.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.flashsale.*') || request()->routeIs('admin.banner.*') || request()->routeIs('admin.promocode.*') ? 'active' : '' }}"
-             data-sub="promo">
-            <i class="bi bi-gift"></i> Promotion Management
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        <div class="sb-item has-sub {{ request()->routeIs('admin.flashsale.*') || request()->routeIs('admin.banner.*') || request()->routeIs('admin.promocode.*') ? 'active open' : '' }}" data-sub="promo">
+            <span class="sb-icon"><i class="bi bi-gift-fill"></i></span>
+            Promotions
+            <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="nav-submenu" id="sub-promo">
+        <div class="sb-sub {{ request()->routeIs('admin.flashsale.*') || request()->routeIs('admin.banner.*') || request()->routeIs('admin.promocode.*') ? 'open' : '' }}" id="sub-promo">
             @if(auth()->user()->hasPermission('promo_code.list'))
-            <a class="nav-item-custom {{ request()->routeIs('admin.promocode.*') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.promocode.*') ? 'active' : '' }}"
                href="{{ route('admin.promocode.index') }}">
-                <i class="bi bi-dot"></i> Coupons
+                <span class="sb-icon"><i class="bi bi-ticket-perforated"></i></span> Coupon Codes
             </a>
             @endif
             @if(auth()->user()->hasPermission('flash_sale.list'))
-            <a class="nav-item-custom {{ request()->routeIs('admin.flashsale.*') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.flashsale.*') ? 'active' : '' }}"
                href="{{ route('admin.flashsale.index') }}">
-                <i class="bi bi-dot"></i> Flash Sales
+                <span class="sb-icon"><i class="bi bi-lightning-fill"></i></span> Flash Sales
             </a>
             @endif
             @if(auth()->user()->hasPermission('banner.list'))
-            <a class="nav-item-custom {{ request()->routeIs('admin.banner.*') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.banner.*') ? 'active' : '' }}"
                href="{{ route('admin.banner.index') }}">
-                <i class="bi bi-dot"></i> Banners
+                <span class="sb-icon"><i class="bi bi-image"></i></span> Banners
             </a>
             @endif
         </div>
         @endif
 
-        @if(auth()->user()->hasPermission('profile.list'))
-        {{-- ✅ Profile — সরাসরি admin.profile.index রুট ব্যবহার করা হচ্ছে --}}
-        <a class="nav-item-custom {{ request()->routeIs('admin.profile.*') ? 'active' : '' }}"
-           href="{{ route('admin.profile.index') }}">
-            <i class="bi bi-person-circle"></i> Profile
+        {{-- Withdrawal Management --}}
+        @if(auth()->user()->hasPermission('withdrawal.list'))
+        <a class="sb-item {{ request()->routeIs('admin.withdraws.*') ? 'active' : '' }}"
+           href="{{ route('admin.withdraws.index') }}">
+            <span class="sb-icon"><i class="bi bi-wallet2"></i></span>
+            Withdrawal Management
         </a>
         @endif
+        @endif
 
-        {{-- Management Section (Protected) --}}
+
+        {{-- ══════════════════════════════════════════
+             SECTION 7 · FRAUD & SECURITY
+        ══════════════════════════════════════════ --}}
+        @if(auth()->user()->hasPermission('fraud.dashboard') || auth()->user()->hasPermission('fraud.blacklist'))
+        <div class="sb-section">Fraud & Security</div>
+
+        {{-- Customer Detector --}}
+        <a class="sb-item {{ request()->routeIs('admin.customer-detector.*') ? 'active' : '' }}"
+           href="{{ route('admin.customer-detector.index') }}">
+            <span class="sb-icon"><i class="bi bi-eye-fill"></i></span>
+            Customer Detector
+        </a>
+
+        {{-- Cyber Alerts --}}
+        <a class="sb-item {{ request()->routeIs('admin.cyber-alerts') ? 'active' : '' }}"
+           href="{{ route('admin.cyber-alerts') }}">
+            <span class="sb-icon"><i class="bi bi-exclamation-triangle-fill"></i></span>
+            Cyber Alerts (Live)
+        </a>
+
+        @if(auth()->user()->hasPermission('fraud.dashboard'))
+        {{-- Fraud Checks --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.fraud.checks.*') || request()->routeIs('admin.fraud.index') || request()->routeIs('admin.fraud.dashboard') ? 'active open' : '' }}" data-sub="fraud-checks">
+            <span class="sb-icon"><i class="bi bi-shield-exclamation"></i></span>
+            Fraud Checks
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.fraud.checks.*') || request()->routeIs('admin.fraud.dashboard') ? 'open' : '' }}" id="sub-fraud-checks">
+            <a class="sb-item {{ request()->routeIs('admin.fraud.dashboard') ? 'active' : '' }}"
+               href="{{ route('admin.fraud.dashboard') }}">
+                <span class="sb-icon"><i class="bi bi-speedometer2"></i></span> Fraud Dashboard
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.fraud.apis.index') ? 'active' : '' }}"
+               href="{{ route('admin.fraud.apis.index') }}">
+                <span class="sb-icon"><i class="bi bi-gear-fill"></i></span> Manage Fraud APIs
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.fraud.alerts.*') ? 'active' : '' }}"
+               href="{{ route('admin.fraud.alerts.index') }}">
+                <span class="sb-icon"><i class="bi bi-bell-fill"></i></span> Fraud Alerts
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.fraud.rules.*') ? 'active' : '' }}"
+               href="{{ route('admin.fraud.rules.index') }}">
+                <span class="sb-icon"><i class="bi bi-list-check"></i></span> Fraud Rules
+            </a>
+        </div>
+        @endif
+
+        {{-- Blacklist & IP Block --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.fraud.blacklist.*') || request()->routeIs('admin.Ipblockmanage.*') ? 'active open' : '' }}" data-sub="blocklist">
+            <span class="sb-icon"><i class="bi bi-ban"></i></span>
+            Blocklist & IP Block
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.fraud.blacklist.*') || request()->routeIs('admin.Ipblockmanage.*') ? 'open' : '' }}" id="sub-blocklist">
+            @if(auth()->user()->hasPermission('fraud.blacklist'))
+            <a class="sb-item {{ request()->routeIs('admin.fraud.blacklist.*') ? 'active' : '' }}"
+               href="{{ route('admin.fraud.blacklist.index') }}">
+                <span class="sb-icon"><i class="bi bi-slash-circle"></i></span> Fraud Blacklist
+            </a>
+            @endif
+            <a class="sb-item {{ request()->routeIs('admin.Ipblockmanage.*') ? 'active' : '' }}"
+               href="{{ route('admin.Ipblockmanage.index') }}">
+                <span class="sb-icon"><i class="bi bi-shield-slash-fill"></i></span> IP Block Manage
+            </a>
+        </div>
+        @endif
+
+
+        {{-- ══════════════════════════════════════════
+             SECTION 8 · HRM
+        ══════════════════════════════════════════ --}}
+        <div class="sb-section">HRM</div>
+
+        {{-- HRM Dashboard --}}
+        <a class="sb-item {{ request()->routeIs('admin.hrm.dashboard') ? 'active' : '' }}"
+           href="{{ route('admin.hrm.dashboard') }}">
+            <span class="sb-icon"><i class="bi bi-people-fill"></i></span>
+            HRM Dashboard
+        </a>
+
+        {{-- Attendance --}}
+        <a class="sb-item {{ request()->routeIs('admin.attendance.*') ? 'active' : '' }}"
+           href="{{ route('admin.attendance.index') }}">
+            <span class="sb-icon"><i class="bi bi-calendar-check-fill"></i></span>
+            Attendance
+        </a>
+
+        {{-- Leave Management --}}
+        <a class="sb-item {{ request()->routeIs('admin.hrm.leave.*') ? 'active' : '' }}"
+           href="{{ route('admin.hrm.leave.index') }}">
+            <span class="sb-icon"><i class="bi bi-calendar-x-fill"></i></span>
+            Leave Management
+            @php $pendingLeaveCount = \App\Models\Leave::where('status','Pending')->count(); @endphp
+            @if($pendingLeaveCount > 0)
+                <span class="sb-badge">{{ $pendingLeaveCount }}</span>
+            @endif
+        </a>
+
+        {{-- Salary Advance --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.hrm.salary-advance.*') ? 'active open' : '' }}" data-sub="salary-advance">
+            <span class="sb-icon"><i class="bi bi-cash-coin"></i></span>
+            Salary Advance
+            @php $pendingAdvCount = \App\Models\SalaryAdvance::where('status','Pending')->count(); @endphp
+            @if($pendingAdvCount > 0)
+                <span class="sb-badge">{{ $pendingAdvCount }}</span>
+            @endif
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.hrm.salary-advance.*') ? 'open' : '' }}" id="sub-salary-advance">
+            <a class="sb-item {{ request()->routeIs('admin.hrm.salary-advance.index') ? 'active' : '' }}"
+               href="{{ route('admin.hrm.salary-advance.index') }}">
+                <span class="sb-icon"><i class="bi bi-list-ul"></i></span> All Advances
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.hrm.salary-advance.create') ? 'active' : '' }}"
+               href="{{ route('admin.hrm.salary-advance.create') }}">
+                <span class="sb-icon"><i class="bi bi-plus-circle"></i></span> New Advance
+            </a>
+        </div>
+
+        {{-- Office Expenses --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.hrm.expense.*') ? 'active open' : '' }}" data-sub="office-expense">
+            <span class="sb-icon"><i class="bi bi-receipt-cutoff"></i></span>
+            Office Expenses
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.hrm.expense.*') ? 'open' : '' }}" id="sub-office-expense">
+            <a class="sb-item {{ request()->routeIs('admin.hrm.expense.index') ? 'active' : '' }}"
+               href="{{ route('admin.hrm.expense.index') }}">
+                <span class="sb-icon"><i class="bi bi-list-ul"></i></span> All Expenses
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.hrm.expense.create') ? 'active' : '' }}"
+               href="{{ route('admin.hrm.expense.create') }}">
+                <span class="sb-icon"><i class="bi bi-plus-circle"></i></span> Add Expense
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.hrm.expense.categories') ? 'active' : '' }}"
+               href="{{ route('admin.hrm.expense.categories') }}">
+                <span class="sb-icon"><i class="bi bi-tags"></i></span> Categories
+            </a>
+        </div>
+
+        {{-- Payroll --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.hrm.payroll.*') ? 'active open' : '' }}" data-sub="payroll">
+            <span class="sb-icon"><i class="bi bi-wallet2"></i></span>
+            Payroll
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.hrm.payroll.*') ? 'open' : '' }}" id="sub-payroll">
+            <a class="sb-item {{ request()->routeIs('admin.hrm.payroll.index') ? 'active' : '' }}"
+               href="{{ route('admin.hrm.payroll.index') }}">
+                <span class="sb-icon"><i class="bi bi-list-ul"></i></span> Payroll List
+            </a>
+            <a class="sb-item" href="#"
+               onclick="event.preventDefault(); document.getElementById('openGenerateModal')?.click();">
+                <span class="sb-icon"><i class="bi bi-gear"></i></span> Generate Payroll
+            </a>
+        </div>
+
+
+        {{-- ══════════════════════════════════════════
+             SECTION 9 · PEOPLE & ACCESS
+        ══════════════════════════════════════════ --}}
         @if(auth()->user()->hasPermission('customer.list') || auth()->user()->hasPermission('user.list') || auth()->user()->hasPermission('role.list') || auth()->user()->hasPermission('employee.list') || auth()->user()->hasPermission('supplier.list'))
-        {{-- ══════════════ MANAGEMENT ══════════════ --}}
-        <div class="nav-section-title">Management</div>
+        <div class="sb-section">People & Access</div>
 
         {{-- Customer Management --}}
         @if(auth()->user()->hasPermission('customer.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}"
-             data-sub="customer">
-            <i class="bi bi-people"></i> Customer Management
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        <div class="sb-item has-sub {{ request()->routeIs('admin.customers.*') ? 'active open' : '' }}" data-sub="customer">
+            <span class="sb-icon"><i class="bi bi-person-heart"></i></span>
+            Customers
+            <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="nav-submenu" id="sub-customer">
-            <a class="nav-item-custom {{ request()->routeIs('admin.customers.index') ? 'active' : '' }}"
+        <div class="sb-sub {{ request()->routeIs('admin.customers.*') ? 'open' : '' }}" id="sub-customer">
+            <a class="sb-item {{ request()->routeIs('admin.customers.index') ? 'active' : '' }}"
                href="{{ route('admin.customers.index') }}">
-                <i class="bi bi-dot"></i> All Customers
+                <span class="sb-icon"><i class="bi bi-list-ul"></i></span> All Customers
             </a>
         </div>
         @endif
 
-        {{-- Unified User Management --}}
+        {{-- User Management --}}
         @if(auth()->user()->hasPermission('user.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
-             data-sub="all-users">
-            <i class="bi bi-people-fill"></i> User Management
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        <div class="sb-item has-sub {{ request()->routeIs('admin.users.*') ? 'active open' : '' }}" data-sub="all-users">
+            <span class="sb-icon"><i class="bi bi-people"></i></span>
+            User Management
+            <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="nav-submenu" id="sub-all-users">
-            <a class="nav-item-custom {{ request()->routeIs('admin.users.index') ? 'active' : '' }}"
+        <div class="sb-sub {{ request()->routeIs('admin.users.*') ? 'open' : '' }}" id="sub-all-users">
+            <a class="sb-item {{ request()->routeIs('admin.users.index') ? 'active' : '' }}"
                href="{{ route('admin.users.index') }}">
-                <i class="bi bi-list-stars"></i> Users List
+                <span class="sb-icon"><i class="bi bi-list-ul"></i></span> Users List
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.users.create') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.users.create') ? 'active' : '' }}"
                href="{{ route('admin.users.create') }}">
-                <i class="bi bi-person-plus-fill"></i> Add New User
+                <span class="sb-icon"><i class="bi bi-person-plus"></i></span> Add New User
             </a>
         </div>
         @endif
 
         {{-- Roles & Permissions --}}
         @if(auth()->user()->hasPermission('role.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.role.*') ? 'active' : '' }}"
-             data-sub="roles">
-            <i class="bi bi-shield-lock"></i> Roles & Permissions
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        <div class="sb-item has-sub {{ request()->routeIs('admin.role.*') ? 'active open' : '' }}" data-sub="roles">
+            <span class="sb-icon"><i class="bi bi-shield-lock-fill"></i></span>
+            Roles & Permissions
+            <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="nav-submenu" id="sub-roles">
-            <a class="nav-item-custom {{ request()->routeIs('admin.role.index') ? 'active' : '' }}"
+        <div class="sb-sub {{ request()->routeIs('admin.role.*') ? 'open' : '' }}" id="sub-roles">
+            <a class="sb-item {{ request()->routeIs('admin.role.index') ? 'active' : '' }}"
                href="{{ route('admin.role.index') }}">
-                <i class="bi bi-dot"></i> All Roles & Permissions
+                <span class="sb-icon"><i class="bi bi-list-ul"></i></span> All Roles
             </a>
         </div>
         @endif
 
         {{-- Employee Management --}}
         @if(auth()->user()->hasPermission('employee.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}"
-             data-sub="employee">
-            <i class="bi bi-person-badge"></i> Employee Management
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        <div class="sb-item has-sub {{ request()->routeIs('admin.employees.*') ? 'active open' : '' }}" data-sub="employee">
+            <span class="sb-icon"><i class="bi bi-person-badge-fill"></i></span>
+            Employees
+            <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="nav-submenu" id="sub-employee">
-            <a class="nav-item-custom {{ request()->routeIs('admin.employees.index') ? 'active' : '' }}"
+        <div class="sb-sub {{ request()->routeIs('admin.employees.*') ? 'open' : '' }}" id="sub-employee">
+            <a class="sb-item {{ request()->routeIs('admin.employees.index') ? 'active' : '' }}"
                href="{{ route('admin.employees.index') }}">
-                <i class="bi bi-dot"></i> All Employees
+                <span class="sb-icon"><i class="bi bi-list-ul"></i></span> All Employees
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.employees.create') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.employees.create') ? 'active' : '' }}"
                href="{{ route('admin.employees.create') }}">
-                <i class="bi bi-dot"></i> Add Employee
+                <span class="sb-icon"><i class="bi bi-person-plus"></i></span> Add Employee
             </a>
         </div>
         @endif
 
         {{-- Supplier Management --}}
         @if(auth()->user()->hasPermission('supplier.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.supplier.*') ? 'active' : '' }}"
-             data-sub="supplier">
-            <i class="bi bi-truck"></i> Supplier Management
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        <div class="sb-item has-sub {{ request()->routeIs('admin.supplier.*') ? 'active open' : '' }}" data-sub="supplier">
+            <span class="sb-icon"><i class="bi bi-building"></i></span>
+            Suppliers
+            <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="nav-submenu" id="sub-supplier">
-            <a class="nav-item-custom {{ request()->routeIs('admin.supplier.index') ? 'active' : '' }}"
+        <div class="sb-sub {{ request()->routeIs('admin.supplier.*') ? 'open' : '' }}" id="sub-supplier">
+            <a class="sb-item {{ request()->routeIs('admin.supplier.index') ? 'active' : '' }}"
                href="{{ route('admin.supplier.index') }}">
-                <i class="bi bi-dot"></i> All Suppliers
+                <span class="sb-icon"><i class="bi bi-list-ul"></i></span> All Suppliers
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.supplier.create') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.supplier.create') ? 'active' : '' }}"
                href="{{ route('admin.supplier.create') }}">
-                <i class="bi bi-dot"></i> Add Supplier
+                <span class="sb-icon"><i class="bi bi-plus-circle"></i></span> Add Supplier
             </a>
         </div>
         @endif
         @endif
 
-        @if(auth()->user()->hasPermission('shop_product.list') || auth()->user()->hasPermission('subscription.list') || auth()->user()->hasPermission('support.list') || auth()->user()->hasPermission('withdrawal.list') || auth()->user()->hasPermission('import_export.list') || auth()->user()->hasPermission('business_setting.list') || auth()->user()->hasPermission('site_setting.list') || auth()->user()->hasPermission('landing_page.list') || auth()->user()->hasPermission('third_party.list') || auth()->user()->hasPermission('contact.list'))
-        {{-- ══════════════ SYSTEM ══════════════ --}}
-        <div class="nav-section-title">System</div>
 
-        @if(auth()->user()->hasPermission('shop_product.list'))
-        <a class="nav-item-custom" href="#"><i class="bi bi-box"></i> Shop Product Management</a>
+        {{-- ══════════════════════════════════════════
+             SECTION 10 · CONTENT
+        ══════════════════════════════════════════ --}}
+        @if(auth()->user()->hasPermission('landing_page.list'))
+        <div class="sb-section">Content</div>
+
+        {{-- Landing Pages --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.landingpages.*') ? 'active open' : '' }}" data-sub="landing">
+            <span class="sb-icon"><i class="bi bi-layout-text-window-reverse"></i></span>
+            Landing Pages
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.landingpages.*') ? 'open' : '' }}" id="sub-landing">
+            <a class="sb-item {{ request()->routeIs('admin.landingpages.create') ? 'active' : '' }}"
+               href="{{ route('admin.landingpages.create') }}">
+                <span class="sb-icon"><i class="bi bi-plus"></i></span> Create Landing Page
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.landingpages.index') ? 'active' : '' }}"
+               href="{{ route('admin.landingpages.index') }}">
+                <span class="sb-icon"><i class="bi bi-list-ul"></i></span> Campaign List
+            </a>
+        </div>
+
+        {{-- Footer Management --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.page_categories.*') || request()->routeIs('admin.pages.*') ? 'active open' : '' }}" data-sub="footer">
+            <span class="sb-icon"><i class="bi bi-layout-text-sidebar-reverse"></i></span>
+            Footer Management
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.page_categories.*') || request()->routeIs('admin.pages.*') ? 'open' : '' }}" id="sub-footer">
+            <a class="sb-item {{ request()->routeIs('admin.page_categories.*') ? 'active' : '' }}"
+               href="{{ route('admin.page_categories.index') }}">
+                <span class="sb-icon"><i class="bi bi-folder"></i></span> Footer Categories
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}"
+               href="{{ route('admin.pages.index') }}">
+                <span class="sb-icon"><i class="bi bi-file-earmark-text"></i></span> Footer Pages
+            </a>
+        </div>
         @endif
 
-        @if(auth()->user()->hasPermission('withdrawal.list'))
-        <a class="nav-item-custom {{ request()->routeIs('admin.withdraws.*') ? 'active' : '' }}" href="{{ route('admin.withdraws.index') }}">
-            <i class="bi bi-wallet2"></i> Withdrawal Management
+        {{-- Blog Management --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.blog*') ? 'active open' : '' }}" data-sub="blog">
+            <span class="sb-icon"><i class="bi bi-newspaper"></i></span>
+            Blog Management
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.blog*') ? 'open' : '' }}" id="sub-blog">
+            <a class="sb-item {{ request()->routeIs('admin.blog_categories.*') ? 'active' : '' }}"
+               href="{{ route('admin.blog_categories.index') }}">
+                <span class="sb-icon"><i class="bi bi-tags"></i></span> Blog Categories
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.blog.*') ? 'active' : '' }}"
+               href="{{ route('admin.blog.index') }}">
+                <span class="sb-icon"><i class="bi bi-file-earmark-richtext"></i></span> All Blogs
+            </a>
+        </div>
+
+        {{-- Company Pages --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.about.*') || request()->routeIs('admin.privacy.*') ? 'active open' : '' }}" data-sub="company-pages">
+            <span class="sb-icon"><i class="bi bi-file-earmark-check"></i></span>
+            Company Pages
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.about.*') || request()->routeIs('admin.privacy.*') ? 'open' : '' }}" id="sub-company-pages">
+            <a class="sb-item {{ request()->routeIs('admin.about.*') ? 'active' : '' }}"
+               href="{{ route('admin.about.index') }}">
+                <span class="sb-icon"><i class="bi bi-building-fill"></i></span> About Company
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.privacy.*') ? 'active' : '' }}"
+               href="{{ route('admin.privacy.index') }}">
+                <span class="sb-icon"><i class="bi bi-shield-check"></i></span> Privacy Policy
+            </a>
+        </div>
+
+        {{-- Membership Logos --}}
+        <a class="sb-item {{ request()->routeIs('admin.membership_logos.*') ? 'active' : '' }}"
+           href="{{ route('admin.membership_logos.index') }}">
+            <span class="sb-icon"><i class="bi bi-award"></i></span>
+            Membership Logos
         </a>
+
+
+        {{-- ══════════════════════════════════════════
+             SECTION 11 · PAYMENT & GATEWAYS
+        ══════════════════════════════════════════ --}}
+        @if(auth()->user()->hasPermission('third_party.list'))
+        <div class="sb-section">Payment & Gateways</div>
+
+        {{-- BD Gateways --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.settings.gateways.bd') ? 'active open' : '' }}" data-sub="bd-gateways">
+            <span class="sb-icon"><i class="bi bi-cash-stack"></i></span>
+            BD Gateways
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.settings.gateways.bd') ? 'open' : '' }}" id="sub-bd-gateways">
+            <a class="sb-item {{ request()->routeIs('admin.settings.gateways.bd') ? 'active' : '' }}"
+               href="{{ route('admin.settings.gateways.bd') }}">
+                <span class="sb-icon"><i class="bi bi-grid-1x2"></i></span> All BD Gateways
+            </a>
+            <a class="sb-item" href="{{ route('admin.settings.gateways.bd') }}#bkash">
+                <span class="sb-icon"><i class="bi bi-phone-fill"></i></span> BKash
+            </a>
+            <a class="sb-item" href="{{ route('admin.settings.gateways.bd') }}#nagad">
+                <span class="sb-icon"><i class="bi bi-phone"></i></span> Nagad
+            </a>
+            <a class="sb-item" href="{{ route('admin.settings.gateways.bd') }}#shurjopay">
+                <span class="sb-icon"><i class="bi bi-currency-exchange"></i></span> Shurjopay
+            </a>
+            <a class="sb-item" href="{{ route('admin.settings.gateways.bd') }}#sslcommerz">
+                <span class="sb-icon"><i class="bi bi-lock-fill"></i></span> SSLCommerz
+            </a>
+        </div>
+
+        {{-- International Gateways --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.settings.gateways.international') ? 'active open' : '' }}" data-sub="intl-gateways">
+            <span class="sb-icon"><i class="bi bi-globe2"></i></span>
+            International Gateways
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.settings.gateways.international') ? 'open' : '' }}" id="sub-intl-gateways">
+            <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}">
+                <span class="sb-icon"><i class="bi bi-grid-1x2"></i></span> All Gateways
+            </a>
+            <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}#stripe">
+                <span class="sb-icon"><i class="bi bi-credit-card-2-front"></i></span> Stripe
+            </a>
+            <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}#paypal">
+                <span class="sb-icon"><i class="bi bi-paypal"></i></span> PayPal
+            </a>
+            <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}#razorpay">
+                <span class="sb-icon"><i class="bi bi-credit-card"></i></span> Razorpay
+            </a>
+            <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}#paystack">
+                <span class="sb-icon"><i class="bi bi-credit-card"></i></span> Paystack
+            </a>
+            <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}#paytabs">
+                <span class="sb-icon"><i class="bi bi-credit-card"></i></span> PayTabs
+            </a>
+            <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}#qicard">
+                <span class="sb-icon"><i class="bi bi-credit-card"></i></span> QiCard
+            </a>
+            <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}#jazzcash">
+                <span class="sb-icon"><i class="bi bi-credit-card"></i></span> JazzCash
+            </a>
+        </div>
+
+        {{-- SMS & Mail Config --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.sms.*') || request()->routeIs('admin.mailconfiguration.*') ? 'active open' : '' }}" data-sub="sms-mail">
+            <span class="sb-icon"><i class="bi bi-chat-left-text-fill"></i></span>
+            SMS & Mail Config
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.sms.*') || request()->routeIs('admin.mailconfiguration.*') ? 'open' : '' }}" id="sub-sms-mail">
+            <a class="sb-item {{ request()->routeIs('admin.sms.configuration') ? 'active' : '' }}"
+               href="{{ route('admin.sms.configuration') }}">
+                <span class="sb-icon"><i class="bi bi-phone"></i></span> SMS Configuration
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
+               href="{{ route('admin.mailconfiguration.index') }}">
+                <span class="sb-icon"><i class="bi bi-envelope-at"></i></span> Mail Configuration
+            </a>
+        </div>
+
+        {{-- Pixels & Tracking --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.pixels.*') || request()->routeIs('admin.googletagmanager.*') ? 'active open' : '' }}" data-sub="tracking">
+            <span class="sb-icon"><i class="bi bi-graph-up-arrow"></i></span>
+            Pixels & Tracking
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.pixels.*') || request()->routeIs('admin.googletagmanager.*') ? 'open' : '' }}" id="sub-tracking">
+            <a class="sb-item {{ request()->routeIs('admin.pixels.*') ? 'active' : '' }}"
+               href="{{ route('admin.pixels.index') }}">
+                <span class="sb-icon"><i class="bi bi-meta"></i></span> Pixel Settings
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.googletagmanager.*') ? 'active' : '' }}"
+               href="{{ route('admin.googletagmanager.index') }}">
+                <span class="sb-icon"><i class="bi bi-google"></i></span> Google Tag Manager
+            </a>
+        </div>
         @endif
-        @if(auth()->user()->hasPermission('import_export.list'))
-        <a class="nav-item-custom" href="#"><i class="bi bi-arrow-left-right"></i> Import / Export</a>
-        @endif
+
+
+        {{-- ══════════════════════════════════════════
+             SECTION 12 · SYSTEM SETTINGS
+        ══════════════════════════════════════════ --}}
+        @if(auth()->user()->hasPermission('business_setting.list') || auth()->user()->hasPermission('site_setting.list'))
+        <div class="sb-section">System Settings</div>
 
         {{-- Business Settings --}}
         @if(auth()->user()->hasPermission('business_setting.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.generalsettings.*') || request()->routeIs('admin.businesssettings.*') || request()->routeIs('admin.verificationotpsettings.*') || request()->routeIs('admin.aiprompt.*') || request()->routeIs('admin.currencies.*') || request()->routeIs('admin.alltaxes.*') || request()->routeIs('admin.themecolorssettings.*') || request()->routeIs('admin.sociallinkList.*') ? 'active' : '' }}"
-             data-sub="business-settings">
-            <i class="bi bi-gear"></i> Business Settings
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        <div class="sb-item has-sub {{ request()->routeIs('admin.generalsettings.*') || request()->routeIs('admin.businesssettings.*') || request()->routeIs('admin.verificationotpsettings.*') || request()->routeIs('admin.aiprompt.*') || request()->routeIs('admin.currencies.*') || request()->routeIs('admin.alltaxes.*') || request()->routeIs('admin.sociallinkList.*') || request()->routeIs('admin.themecolorssettings.*') ? 'active open' : '' }}" data-sub="biz-settings">
+            <span class="sb-icon"><i class="bi bi-gear-wide-connected"></i></span>
+            Business Settings
+            <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="nav-submenu" id="sub-business-settings">
-            <a class="nav-item-custom {{ request()->routeIs('admin.generalsettings.*') ? 'active' : '' }}"
+        <div class="sb-sub {{ request()->routeIs('admin.generalsettings.*') || request()->routeIs('admin.businesssettings.*') || request()->routeIs('admin.verificationotpsettings.*') || request()->routeIs('admin.aiprompt.*') || request()->routeIs('admin.currencies.*') || request()->routeIs('admin.alltaxes.*') || request()->routeIs('admin.sociallinkList.*') || request()->routeIs('admin.themecolorssettings.*') ? 'open' : '' }}" id="sub-biz-settings">
+            <a class="sb-item {{ request()->routeIs('admin.generalsettings.*') ? 'active' : '' }}"
                href="{{ route('admin.generalsettings.index') }}">
-                <i class="bi bi-dot"></i> General Settings
+                <span class="sb-icon"><i class="bi bi-sliders"></i></span> General Settings
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.businesssettings.*') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.businesssettings.*') ? 'active' : '' }}"
                href="{{ route('admin.businesssettings.index') }}">
-                <i class="bi bi-dot"></i> Business Setup
+                <span class="sb-icon"><i class="bi bi-building-gear"></i></span> Business Setup
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.verificationotpsettings.*') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.verificationotpsettings.*') ? 'active' : '' }}"
                href="{{ route('admin.verificationotpsettings.index') }}">
-                <i class="bi bi-dot"></i> Manage Verification
+                <span class="sb-icon"><i class="bi bi-phone-vibrate"></i></span> Verification / OTP
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.aiprompt.*') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.aiprompt.*') ? 'active' : '' }}"
                href="{{ route('admin.aiprompt.index') }}">
-                <i class="bi bi-dot"></i> AI Prompt
+                <span class="sb-icon"><i class="bi bi-robot"></i></span> AI Prompt
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.currencies.*') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.currencies.*') ? 'active' : '' }}"
                href="{{ route('admin.currencies.index') }}">
-                <i class="bi bi-dot"></i> Currency
+                <span class="sb-icon"><i class="bi bi-currency-dollar"></i></span> Currencies
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.alltaxes.*') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.alltaxes.*') ? 'active' : '' }}"
                href="{{ route('admin.alltaxes.index') }}">
-                <i class="bi bi-dot"></i> VAT & Tax
+                <span class="sb-icon"><i class="bi bi-percent"></i></span> VAT & Taxes
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.sociallinkList.*') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.sociallinkList.*') ? 'active' : '' }}"
                href="{{ route('admin.sociallinkList.index') }}">
-                <i class="bi bi-dot"></i> Social Links
+                <span class="sb-icon"><i class="bi bi-share-fill"></i></span> Social Links
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.themecolorssettings.*') ? 'active' : '' }}"
+               href="{{ route('admin.themecolorssettings.index') }}">
+                <span class="sb-icon"><i class="bi bi-palette2"></i></span> Theme Colors
             </a>
         </div>
         @endif
 
         {{-- Site Settings --}}
         @if(auth()->user()->hasPermission('site_setting.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.pixels.*') || request()->routeIs('admin.googletagmanager.*') || request()->routeIs('admin.shippingcharge.*') || request()->routeIs('admin.duplicateordersetting.*') || request()->routeIs('admin.Ipblockmanage.*') ? 'active' : '' }}"
-             data-sub="site-settings">
-            <i class="bi bi-sliders"></i> Site Settings
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        <div class="sb-item has-sub {{ request()->routeIs('admin.shippingcharge.*') || request()->routeIs('admin.duplicateordersetting.*') || request()->routeIs('admin.support.*') ? 'active open' : '' }}" data-sub="site-settings">
+            <span class="sb-icon"><i class="bi bi-toggles"></i></span>
+            Site Settings
+            <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="nav-submenu" id="sub-site-settings">
-            <a class="nav-item-custom {{ request()->routeIs('admin.shippingcharge.*') ? 'active' : '' }}"
+        <div class="sb-sub {{ request()->routeIs('admin.shippingcharge.*') || request()->routeIs('admin.duplicateordersetting.*') || request()->routeIs('admin.support.*') ? 'open' : '' }}" id="sub-site-settings">
+            <a class="sb-item {{ request()->routeIs('admin.shippingcharge.*') ? 'active' : '' }}"
                href="{{ route('admin.shippingcharge.index') }}">
-                <i class="bi bi-dot"></i> Shipping Charge
+                <span class="sb-icon"><i class="bi bi-truck-front"></i></span> Shipping Charges
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.duplicateordersetting.*') ? 'active' : '' }}"
+            <a class="sb-item {{ request()->routeIs('admin.duplicateordersetting.*') ? 'active' : '' }}"
                href="{{ route('admin.duplicateordersetting.index') }}">
-                <i class="bi bi-dot"></i> Duplicate Order Setting
+                <span class="sb-icon"><i class="bi bi-copy"></i></span> Duplicate Order Setting
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.Ipblockmanage.*') ? 'active' : '' }}"
-               href="{{ route('admin.Ipblockmanage.index') }}">
-                <i class="bi bi-dot"></i> IP Block Manage
-            </a>
-        </div>
-        @endif
-
-        {{-- Landing Page Settings --}}
-        @if(auth()->user()->hasPermission('landing_page.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.landingpages.*') || request()->routeIs('admin.pages.*') ? 'active' : '' }}"
-             data-sub="landing-page-settings">
-            <i class="bi bi-layout-text-window-reverse"></i> Landing Page Settings
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
-        </div>
-        <div class="nav-submenu" id="sub-landing-page-settings">
-            <a class="nav-item-custom {{ request()->routeIs('admin.landingpages.create') ? 'active' : '' }}"
-               href="{{ route('admin.landingpages.create') }}">
-                <i class="bi bi-dot"></i> Create Landing Page
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.landingpages.index') ? 'active' : '' }}"
-               href="{{ route('admin.landingpages.index') }}">
-                <i class="bi bi-dot"></i> Campaign List
+            <a class="sb-item {{ request()->routeIs('admin.support.*') ? 'active' : '' }}"
+               href="{{ route('admin.support.index') }}">
+                <span class="sb-icon"><i class="bi bi-headset"></i></span> Admin Support
             </a>
         </div>
         @endif
-
-        {{-- Footer Management --}}
-        @if(auth()->user()->hasPermission('landing_page.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.page_categories.*') || request()->routeIs('admin.pages.*') ? 'active' : '' }}"
-             data-sub="footer-management">
-            <i class="bi bi-layout-text-sidebar-reverse"></i> Footer Management
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
-        </div>
-        <div class="nav-submenu" id="sub-footer-management">
-            <a class="nav-item-custom {{ request()->routeIs('admin.page_categories.*') ? 'active' : '' }}"
-               href="{{ route('admin.page_categories.index') }}">
-                <i class="bi bi-dot"></i> Footer Category
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}"
-               href="{{ route('admin.pages.index') }}">
-                <i class="bi bi-dot"></i> Footer Page
-            </a>
-        </div>
         @endif
 
-        {{-- BD Management --}}
-        @if(auth()->user()->hasPermission('third_party.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.settings.gateways') || request()->routeIs('admin.settings.gateways.bd') || request()->routeIs('admin.bkash.*') || request()->routeIs('admin.aamarpay.*') || request()->routeIs('admin.bkash-pay.*') || request()->routeIs('admin.shurjopay.*') || request()->routeIs('admin.sslcommerz.*') ? 'active' : '' }}"
-             data-sub="bd-management">
-            <i class="bi bi-cash-stack"></i> BD Management
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
-        </div>
-        <div class="nav-submenu" id="sub-bd-management">
-            <a class="nav-item-custom {{ request()->routeIs('admin.settings.gateways.bd') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways.bd') }}">
-                <i class="bi bi-dot"></i> BD Gateways
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.bd') }}#bkash">
-                <i class="bi bi-dot"></i> BKash
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.bd') }}#nagad">
-                <i class="bi bi-dot"></i> Nagad
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.bd') }}#shurjopay">
-                <i class="bi bi-dot"></i> Shurjopay
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.bd') }}#sslcommerz">
-                <i class="bi bi-dot"></i> SSLCommerz
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}">
-                <i class="bi bi-dot"></i> International Gateways
-            </a>
-        </div>
-        @endif
 
-        {{-- 3rd Party Configuration --}}
-        @if(auth()->user()->hasPermission('third_party.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.settings.gateways') || request()->routeIs('admin.settings.gateways.international') || request()->routeIs('admin.stripe.*') || request()->routeIs('admin.paypal.*') || request()->routeIs('admin.razorpay.*') || request()->routeIs('admin.paystack.*') || request()->routeIs('admin.paytabs.*') || request()->routeIs('admin.qicard.*') || request()->routeIs('admin.jazzcash.*') || request()->routeIs('admin.steadfast.*') || request()->routeIs('admin.pathao.*') || request()->routeIs('admin.sms.*') || request()->routeIs('admin.twilio.*') || request()->routeIs('admin.nexmo.*') || request()->routeIs('admin.messagebird.*') || request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
-             data-sub="third-party">
-            <i class="bi bi-plug"></i> 3rd Party Configuration
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
-        </div>
-        <div class="nav-submenu" id="sub-third-party">
-            <a class="nav-item-custom {{ request()->routeIs('admin.settings.gateways.international') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways.international') }}">
-                <i class="bi bi-dot"></i> Payment Gateways
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}#stripe">
-                <i class="bi bi-dot"></i> Stripe
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}#paypal">
-                <i class="bi bi-dot"></i> PayPal
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}#razorpay">
-                <i class="bi bi-dot"></i> Razorpay
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}#paystack">
-                <i class="bi bi-dot"></i> Paystack
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}#paytabs">
-                <i class="bi bi-dot"></i> PayTabs
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}#qicard">
-                <i class="bi bi-dot"></i> QiCard
-            </a>
-            <a class="nav-item-custom" href="{{ route('admin.settings.gateways.international') }}#jazzcash">
-                <i class="bi bi-dot"></i> JazzCash
-            </a>
-        </div>
-        @endif
-
-        @if(auth()->user()->hasPermission('third_party.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.settings.gateways.international') || request()->routeIs('admin.sms.configuration') || request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
-             data-sub="sms-management">
-            <i class="bi bi-chat-left-text"></i> SMS Management
-            <i class="bi bi-chevron-right arrow ms-auto"></i>
-        </div>
-        <div class="nav-submenu" id="sub-sms-management">
-            <a class="nav-item-custom {{ request()->routeIs('admin.settings.gateways.international') ? 'active' : '' }}"
-               href="{{ route('admin.settings.gateways.international') }}#sms">
-                <i class="bi bi-dot"></i> SMS Gateway
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.sms.configuration') ? 'active' : '' }}"
-               href="{{ route('admin.sms.configuration') }}">
-                <i class="bi bi-dot"></i> SMS Configuration
-            </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
-               href="{{ route('admin.mailconfiguration.index') }}">
-                <i class="bi bi-dot"></i> Mail Configuration
-            </a>
-        </div>
-        @endif
-
-        @if(auth()->user()->hasPermission('contact.list'))
-        <a class="nav-item-custom {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}"
-           href="{{ route('admin.contact.index') }}">
-            <i class="bi bi-envelope"></i> Contact Us
+        {{-- ══════════════════════════════════════════
+             SECTION 13 · ACCOUNT
+        ══════════════════════════════════════════ --}}
+        @if(auth()->user()->hasPermission('profile.list'))
+        <div class="sb-section">Account</div>
+        <a class="sb-item {{ request()->routeIs('admin.profile.*') ? 'active' : '' }}"
+           href="{{ route('admin.profile.index') }}">
+            <span class="sb-icon"><i class="bi bi-person-circle"></i></span>
+            My Profile
         </a>
         @endif
-        @endif
 
-    </div>{{-- /.sidebar-inner --}}
+    </div>{{-- /.sb-scroll --}}
 
-    {{-- ── Sidebar Footer Profile ── --}}
-    <div class="sidebar-footer">
-        <a href="{{ route('admin.profile.index') }}" class="profile-card">
-            <div class="profile-avatar">
-                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+
+    {{-- ══ FOOTER ══ --}}
+    <div class="sb-footer">
+        <a href="{{ route('admin.profile.index') }}" class="sb-profile">
+            <div class="sb-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
+            <div class="sb-profile-info">
+                <span class="sb-profile-name">{{ auth()->user()->name }}</span>
+                <span class="sb-profile-role">{{ auth()->user()->role }}</span>
             </div>
-            <div class="profile-info">
-                <span class="profile-name">{{ auth()->user()->name }}</span>
-                <span class="profile-role">{{ auth()->user()->role }}</span>
-            </div>
-            <div class="profile-action">
-                <i class="bi bi-gear"></i>
-            </div>
+            <i class="bi bi-gear sb-profile-gear"></i>
         </a>
 
-        <a class="nav-item-custom text-danger mt-3" href="#"
-           style="background: rgba(239, 68, 68, 0.05) !important;"
+        <a class="sb-item danger" href="#"
            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-            <i class="bi bi-box-arrow-right" style="background: rgba(239, 68, 68, 0.1) !important;"></i>
-            <span style="font-weight: 600;">Sign Out</span>
+            <span class="sb-icon"><i class="bi bi-box-arrow-right"></i></span>
+            <span style="font-weight:600;">Sign Out</span>
         </a>
         <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" style="display:none;">
             @csrf
         </form>
     </div>
+
 </aside>
+
 
 {{-- ══ JavaScript ══ --}}
 <script>
 (function () {
     'use strict';
 
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+
     /* ── Submenu toggle ── */
-    document.querySelectorAll('.nav-item-custom.has-sub').forEach(function (trigger) {
-        trigger.addEventListener('click', function () {
-            var key     = this.dataset.sub;
-            var submenu = document.getElementById('sub-' + key);
-            if (!submenu) return;
+    document.querySelectorAll('.sb-item.has-sub').forEach(function (trigger) {
+        trigger.addEventListener('click', function (e) {
+            e.preventDefault();
+            var key = this.dataset.sub;
+            var sub = document.getElementById('sub-' + key);
+            if (!sub) return;
 
-            var isOpen = submenu.classList.contains('open');
-
-            /* Toggle the clicked one without closing others */
-            if (isOpen) {
-                submenu.classList.remove('open');
-                this.classList.remove('open');
-            } else {
-                submenu.classList.add('open');
-                this.classList.add('open');
-            }
+            var isOpen = sub.classList.contains('open');
+            sub.classList.toggle('open', !isOpen);
+            this.classList.toggle('open', !isOpen);
         });
     });
 
-    /* ── Auto-open submenu when a child link is active ── */
-    document.querySelectorAll('.nav-submenu .nav-item-custom.active').forEach(function (activeLink) {
-        var submenu = activeLink.closest('.nav-submenu');
-        if (!submenu) return;
-        submenu.classList.add('open');
-        var trigger = submenu.previousElementSibling;
+    /* ── Auto-open active submenus ── */
+    document.querySelectorAll('.sb-sub .sb-item.active').forEach(function (activeLink) {
+        var sub = activeLink.closest('.sb-sub');
+        if (!sub) return;
+        sub.classList.add('open');
+        var trigger = sub.previousElementSibling;
         while (trigger && !trigger.classList.contains('has-sub')) {
             trigger = trigger.previousElementSibling;
         }
         if (trigger) trigger.classList.add('open');
     });
 
-    /* ── Auto-open submenu when parent trigger has active class ── */
-    document.querySelectorAll('.nav-item-custom.has-sub.active').forEach(function (trigger) {
-        var key     = trigger.dataset.sub;
-        var submenu = document.getElementById('sub-' + key);
-        if (submenu) {
-            submenu.classList.add('open');
-            trigger.classList.add('open');
-        }
-    });
-
-    /* ── Mobile: overlay closes sidebar ── */
-    var overlay = document.getElementById('sidebar-overlay');
-    var sidebar = document.getElementById('sidebar');
-
+    /* ── Mobile overlay ── */
     if (overlay && sidebar) {
         overlay.addEventListener('click', function () {
             sidebar.classList.remove('show');
@@ -1278,22 +1364,17 @@
         });
     }
 
-    /* ── Mobile toggle ── */
-    var toggleBtn = document.getElementById('sidebarToggle');
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', function() {
-            if (!sidebar || !overlay) return;
-            var open = sidebar.classList.toggle('show');
-            overlay.classList.toggle('show', open);
-        });
-    }
-
-    /* ── Mobile toggle function (exposed globally) ── */
+    /* ── Global toggle ── */
     window.sidebarToggle = function () {
         if (!sidebar || !overlay) return;
         var open = sidebar.classList.toggle('show');
         overlay.classList.toggle('show', open);
     };
+
+    var toggleBtn = document.getElementById('sidebarToggle');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', window.sidebarToggle);
+    }
 
 })();
 </script>

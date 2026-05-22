@@ -9,7 +9,7 @@
             <h4 class="fw-bold mb-1" style="color:#1a1a2e; font-size:22px;">Attendance Register</h4>
             <p class="text-muted mb-0" style="font-size:13px;">Manage daily attendance logs, work shifts, late minutes, and punch details.</p>
         </div>
-        
+
         {{-- Month/Year Filter Form --}}
         <form action="{{ route('admin.attendance.index') }}" method="GET" class="d-flex gap-2">
             <select name="month" class="form-select select-hrm">
@@ -85,7 +85,7 @@
                                 @php
                                     $dayStr = sprintf('%02d', $day);
                                     $fullDate = "$year-$month-$dayStr";
-                                    
+
                                     // Check status from grouped collection
                                     $status = 'Absent';
                                     $hasPunch = false;
@@ -95,7 +95,7 @@
                                         $hasPunch = true;
                                     }
                                     $checked = ($status === 'Present' || $status === 'Late' || $status === 'Leave');
-                                    
+
                                     // Colors based on Status
                                     $color = '#c62828';
                                     $char = 'A';
@@ -105,18 +105,18 @@
                                 @endphp
                                 <td class="text-center py-2 day-td-cell">
                                     <div class="form-check d-inline-block m-0">
-                                        <input class="form-check-input attendance-checkbox" 
-                                               type="checkbox" 
-                                               data-employee="{{ $employee->id }}" 
+                                        <input class="form-check-input attendance-checkbox"
+                                               type="checkbox"
+                                               data-employee="{{ $employee->id }}"
                                                data-date="{{ $fullDate }}"
                                                {{ $checked ? 'checked' : '' }}
                                                style="cursor: pointer; width: 1.2rem; height: 1.2rem;">
                                     </div>
-                                    <div class="cell-status-label" 
-                                         data-employee="{{ $employee->id }}" 
-                                         data-date="{{ $fullDate }}" 
+                                    <div class="cell-status-label"
+                                         data-employee="{{ $employee->id }}"
+                                         data-date="{{ $fullDate }}"
                                          data-name="{{ $employee->name }}"
-                                         style="font-size:10px; font-weight:bold; color: {{ $color }}; cursor: pointer; text-decoration: underline;" 
+                                         style="font-size:10px; font-weight:bold; color: {{ $color }}; cursor: pointer; text-decoration: underline;"
                                          onclick="openPunchModal(this)">
                                         {{ $char }}
                                     </div>
@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const date = this.dataset.date;
             const isChecked = this.checked;
             const status = isChecked ? 'Present' : 'Absent';
-            
+
             const cell = this.closest('.day-td-cell');
             const label = cell.querySelector('.cell-status-label');
 
@@ -336,12 +336,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         label.style.color = '#c62828';
                         this.checked = false;
                     }
-                    
+
                     const alertBox = document.getElementById('ajaxAlert');
                     const alertMsg = document.getElementById('ajaxAlertMsg');
                     alertMsg.textContent = `Attendance updated for date ${date}.`;
                     alertBox.classList.remove('d-none');
-                    
+
                     setTimeout(() => {
                         alertBox.classList.add('d-none');
                     }, 2000);

@@ -34,7 +34,7 @@ class HRMDashboardController extends Controller
             // outstanding is amount - amount deducted in paid payrolls,
             // for simplicity, let's sum total active advances that aren't fully completed
             ->sum('amount');
-        
+
         // Sum of deductions paid so far
         $totalDeductedSoFar = Payroll::where('payment_status', 'Paid')->sum('advances_deduction');
         $netOutstanding = max(0, $outstandingAdvances - $totalDeductedSoFar);

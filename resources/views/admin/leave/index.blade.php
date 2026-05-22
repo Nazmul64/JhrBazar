@@ -27,10 +27,10 @@
         <div class="card-body py-3">
             <div class="d-flex gap-2 align-items-center flex-wrap">
                 <span class="text-muted fw-bold" style="font-size:13px;"><i class="fas fa-filter me-1"></i> Filter:</span>
-                <a href="{{ route('admin.leave.index') }}" class="btn btn-sm {{ !$status ? 'btn-hrm-active' : 'btn-hrm-outline' }}">All</a>
-                <a href="{{ route('admin.leave.index', ['status' => 'Pending']) }}" class="btn btn-sm {{ $status == 'Pending' ? 'btn-hrm-active' : 'btn-hrm-outline' }}">Pending</a>
-                <a href="{{ route('admin.leave.index', ['status' => 'Approved']) }}" class="btn btn-sm {{ $status == 'Approved' ? 'btn-hrm-active' : 'btn-hrm-outline' }}">Approved</a>
-                <a href="{{ route('admin.leave.index', ['status' => 'Rejected']) }}" class="btn btn-sm {{ $status == 'Rejected' ? 'btn-hrm-active' : 'btn-hrm-outline' }}">Rejected</a>
+                <a href="{{ route('admin.hrm.leave.index') }}" class="btn btn-sm {{ !$status ? 'btn-hrm-active' : 'btn-hrm-outline' }}">All</a>
+                <a href="{{ route('admin.hrm.leave.index', ['status' => 'Pending']) }}" class="btn btn-sm {{ $status == 'Pending' ? 'btn-hrm-active' : 'btn-hrm-outline' }}">Pending</a>
+                <a href="{{ route('admin.hrm.leave.index', ['status' => 'Approved']) }}" class="btn btn-sm {{ $status == 'Approved' ? 'btn-hrm-active' : 'btn-hrm-outline' }}">Approved</a>
+                <a href="{{ route('admin.hrm.leave.index', ['status' => 'Rejected']) }}" class="btn btn-sm {{ $status == 'Rejected' ? 'btn-hrm-active' : 'btn-hrm-outline' }}">Rejected</a>
             </div>
         </div>
     </div>
@@ -99,7 +99,7 @@
                                 <div class="d-flex justify-content-center gap-2">
                                     @if($leave->status === 'Pending')
                                         {{-- Approve --}}
-                                        <form action="{{ route('admin.leave.status', $leave->id) }}" method="POST">
+                                                                <form action="{{ route('admin.hrm.leave.status', $leave->id) }}" method="POST">
                                             @csrf
                                             <input type="hidden" name="status" value="Approved">
                                             <button type="submit" class="btn btn-sm btn-success-hrm" title="Approve Leave">
@@ -107,7 +107,7 @@
                                             </button>
                                         </form>
                                         {{-- Reject --}}
-                                        <form action="{{ route('admin.leave.status', $leave->id) }}" method="POST">
+                                        <form action="{{ route('admin.hrm.leave.status', $leave->id) }}" method="POST">
                                             @csrf
                                             <input type="hidden" name="status" value="Rejected">
                                             <button type="submit" class="btn btn-sm btn-danger-hrm" title="Reject Leave">
@@ -115,9 +115,9 @@
                                             </button>
                                         </form>
                                     @endif
-                                    
+
                                     {{-- Delete --}}
-                                    <form action="{{ route('admin.leave.destroy', $leave->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this leave record?')">
+                                    <form action="{{ route('admin.hrm.leave.destroy', $leave->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this leave record?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Log">
@@ -149,7 +149,7 @@
                     <h5 class="fw-bold" style="color:#1a1a2e; font-size:18px;">Log Leave Records</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form action="{{ route('admin.leave.store') }}" method="POST">
+                <form action="{{ route('admin.hrm.leave.store') }}" method="POST">
                     @csrf
                     <div class="modal-body p-4">
                         <div class="row g-3">
