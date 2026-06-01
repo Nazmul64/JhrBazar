@@ -185,7 +185,7 @@
 
     /* ── Editable Status Badge for Select ── */
     .status-badge {
-        padding: 0.4rem 0.8rem;
+        padding: 0.4rem 2.2rem 0.4rem 0.8rem !important;
         border-radius: 50px;
         font-size: 13px;
         font-weight: 700;
@@ -528,7 +528,7 @@
                 <td>{{ $invoice->created_at->format('d M, Y') }}</td>
                 <td>
                   @php $s = $invoice->order?->status ?? 'pending'; @endphp
-                  <select class="form-select form-select-sm status-badge status-{{ $s }}" onchange="updateDashboardStatus({{ $invoice->id }}, this.value)" style="font-size: 13px; font-weight: 700; border-radius: 50px; border: none; padding: 0.4rem 0.8rem; width: auto; display: inline-block;">
+                  <select class="form-select form-select-sm status-badge status-{{ $s }}" onchange="updateDashboardStatus({{ $invoice->id }}, this.value, this)" style="font-size: 13px; font-weight: 700; border-radius: 50px; border: none; min-width: 140px; width: auto; display: inline-block;">
                       <option value="pending" {{ $s == 'pending' ? 'selected' : '' }}>Pending</option>
                       <option value="confirmed" {{ $s == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
                       <option value="processing" {{ $s == 'processing' ? 'selected' : '' }}>Processing</option>
@@ -650,7 +650,7 @@
           }
       }
 
-      function updateDashboardStatus(id, status) {
+      function updateDashboardStatus(id, status, element) {
           fetch(`{{ url('admin/orders/status') }}/${id}`, {
               method: 'POST',
               headers: {
@@ -662,9 +662,8 @@
           .then(res => res.json())
           .then(data => {
               if (data.success) {
-                  // Find the select element and update its classes
-                  const select = event.target;
-                  select.className = `form-select form-select-sm status-badge status-${status}`;
+                  // Update select element classes
+                  element.className = `form-select form-select-sm status-badge status-${status}`;
                   
                   // Use premium SweetAlert toast
                   if (typeof Toast !== 'undefined') {

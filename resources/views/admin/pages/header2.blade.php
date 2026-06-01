@@ -4,15 +4,9 @@
     <h6>{{ Auth::user()->name }}</h6>
   </div>
 
-  <button class="header-action">
-    <i class="bi bi-search"></i>
-  </button>
-  <button class="header-action" id="mobileSidebarToggle" title="Menu">
-    <i class="bi bi-list"></i>
-  </button>
-  <button class="header-action" style="position:relative;">
-    <i class="bi bi-bell"></i>
-    <span class="header-notif-badge">9+</span>
+
+  <button class="header-action" id="darkToggle" title="Toggle Theme">
+    <i class="bi {{ (settings() && settings()->admin_theme === 'dark') ? 'bi-sun-fill' : 'bi-moon-stars-fill' }}"></i>
   </button>
   <button class="lang-btn">
     <i class="bi bi-globe2"></i>

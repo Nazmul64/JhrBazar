@@ -113,7 +113,7 @@
                 <tbody>
                     @foreach($invoice->items as $item)
                     <tr>
-                        <td>{{ $item['name'] }}</td>
+                        <td>{{ $item['title'] ?? $item['name'] ?? 'Product' }}</td>
                         <td>{{ $item['qty'] }}</td>
                         <td>৳{{ number_format($item['price'], 2) }}</td>
                         <td>৳{{ number_format($item['price'] * $item['qty'], 2) }}</td>

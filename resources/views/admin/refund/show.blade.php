@@ -13,6 +13,14 @@
                         <a href="{{ route('admin.refunds.index') }}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left me-1"></i> Back
                         </a>
+                        <a href="{{ route('admin.refunds.index') }}" class="btn btn-primary ms-2 bg-gradient shadow-sm">
+                            <i class="bi bi-list-ul me-1"></i> Refund List
+                        </a>
+                        @if($refund->isPending())
+                        <a href="{{ route('admin.refunds.edit', $refund->id) }}" class="btn btn-warning ms-2 shadow-sm">
+                            <i class="bi bi-pencil me-1"></i> Edit Refund
+                        </a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -33,7 +41,7 @@
                                 <p class="fw-bold">
                                     <a href="{{ route('admin.orders.show', $refund->order->id) }}"
                                        class="text-decoration-none">
-                                        {{ $refund->order->order_no ?? 'N/A' }}
+                                        #{{ $refund->order->invoice->invoice_number ?? $refund->order->id }}
                                     </a>
                                 </p>
                             </div>
@@ -69,9 +77,25 @@
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col-md-3">
-                                @if($refund->product && $refund->product->primary_photo)
-                                <img src="{{ asset($refund->product->primary_photo) }}"
-                                     alt="{{ $refund->product_name }}" class="img-fluid rounded">
+                                @php
+                                    $orderItem = null;
+                                    if ($refund->order && is_array($refund->order->items)) {
+                                        foreach ($refund->order->items as $item) {
+                                            if (($item['id'] ?? null) == $refund->product_id || ($item['name'] ?? $item['title'] ?? '') === $refund->product_name) {
+                                                $orderItem = $item;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    $thumbnail = $orderItem['thumbnail'] ?? null;
+                                    if (!$thumbnail && $refund->product) {
+                                        $thumbnail = $refund->product->thumbnail;
+                                    }
+                                @endphp
+
+                                @if($thumbnail)
+                                <img src="{{ asset($thumbnail) }}"
+                                     alt="{{ $refund->product_name }}" class="img-fluid rounded border shadow-sm" style="max-height: 150px; object-fit: cover;">
                                 @else
                                 <div class="bg-light p-5 text-center rounded">
                                     <i class="bi bi-image" style="font-size: 2rem; color: #ccc;"></i>

@@ -801,22 +801,13 @@
             <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
         <div class="sb-sub {{ request()->routeIs('admin.fraud.checks.*') || request()->routeIs('admin.fraud.dashboard') ? 'open' : '' }}" id="sub-fraud-checks">
-            <a class="sb-item {{ request()->routeIs('admin.fraud.dashboard') ? 'active' : '' }}"
-               href="{{ route('admin.fraud.dashboard') }}">
-                <span class="sb-icon"><i class="bi bi-speedometer2"></i></span> Fraud Dashboard
-            </a>
+
             <a class="sb-item {{ request()->routeIs('admin.fraud.apis.index') ? 'active' : '' }}"
                href="{{ route('admin.fraud.apis.index') }}">
                 <span class="sb-icon"><i class="bi bi-gear-fill"></i></span> Manage Fraud APIs
             </a>
-            <a class="sb-item {{ request()->routeIs('admin.fraud.alerts.*') ? 'active' : '' }}"
-               href="{{ route('admin.fraud.alerts.index') }}">
-                <span class="sb-icon"><i class="bi bi-bell-fill"></i></span> Fraud Alerts
-            </a>
-            <a class="sb-item {{ request()->routeIs('admin.fraud.rules.*') ? 'active' : '' }}"
-               href="{{ route('admin.fraud.rules.index') }}">
-                <span class="sb-icon"><i class="bi bi-list-check"></i></span> Fraud Rules
-            </a>
+
+
         </div>
         @endif
 
@@ -956,7 +947,7 @@
         @if(auth()->user()->hasPermission('user.list'))
         <div class="sb-item has-sub {{ request()->routeIs('admin.users.*') ? 'active open' : '' }}" data-sub="all-users">
             <span class="sb-icon"><i class="bi bi-people"></i></span>
-            User Management
+            Administrator Management
             <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
         <div class="sb-sub {{ request()->routeIs('admin.users.*') ? 'open' : '' }}" id="sub-all-users">
@@ -1126,18 +1117,7 @@
                href="{{ route('admin.settings.gateways.bd') }}">
                 <span class="sb-icon"><i class="bi bi-grid-1x2"></i></span> All BD Gateways
             </a>
-            <a class="sb-item" href="{{ route('admin.settings.gateways.bd') }}#bkash">
-                <span class="sb-icon"><i class="bi bi-phone-fill"></i></span> BKash
-            </a>
-            <a class="sb-item" href="{{ route('admin.settings.gateways.bd') }}#nagad">
-                <span class="sb-icon"><i class="bi bi-phone"></i></span> Nagad
-            </a>
-            <a class="sb-item" href="{{ route('admin.settings.gateways.bd') }}#shurjopay">
-                <span class="sb-icon"><i class="bi bi-currency-exchange"></i></span> Shurjopay
-            </a>
-            <a class="sb-item" href="{{ route('admin.settings.gateways.bd') }}#sslcommerz">
-                <span class="sb-icon"><i class="bi bi-lock-fill"></i></span> SSLCommerz
-            </a>
+
         </div>
 
         {{-- International Gateways --}}
@@ -1150,27 +1130,7 @@
             <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}">
                 <span class="sb-icon"><i class="bi bi-grid-1x2"></i></span> All Gateways
             </a>
-            <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}#stripe">
-                <span class="sb-icon"><i class="bi bi-credit-card-2-front"></i></span> Stripe
-            </a>
-            <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}#paypal">
-                <span class="sb-icon"><i class="bi bi-paypal"></i></span> PayPal
-            </a>
-            <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}#razorpay">
-                <span class="sb-icon"><i class="bi bi-credit-card"></i></span> Razorpay
-            </a>
-            <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}#paystack">
-                <span class="sb-icon"><i class="bi bi-credit-card"></i></span> Paystack
-            </a>
-            <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}#paytabs">
-                <span class="sb-icon"><i class="bi bi-credit-card"></i></span> PayTabs
-            </a>
-            <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}#qicard">
-                <span class="sb-icon"><i class="bi bi-credit-card"></i></span> QiCard
-            </a>
-            <a class="sb-item" href="{{ route('admin.settings.gateways.international') }}#jazzcash">
-                <span class="sb-icon"><i class="bi bi-credit-card"></i></span> JazzCash
-            </a>
+
         </div>
 
         {{-- SMS & Mail Config --}}
@@ -1190,22 +1150,7 @@
             </a>
         </div>
 
-        {{-- Pixels & Tracking --}}
-        <div class="sb-item has-sub {{ request()->routeIs('admin.pixels.*') || request()->routeIs('admin.googletagmanager.*') ? 'active open' : '' }}" data-sub="tracking">
-            <span class="sb-icon"><i class="bi bi-graph-up-arrow"></i></span>
-            Pixels & Tracking
-            <i class="bi bi-chevron-right sb-arrow"></i>
-        </div>
-        <div class="sb-sub {{ request()->routeIs('admin.pixels.*') || request()->routeIs('admin.googletagmanager.*') ? 'open' : '' }}" id="sub-tracking">
-            <a class="sb-item {{ request()->routeIs('admin.pixels.*') ? 'active' : '' }}"
-               href="{{ route('admin.pixels.index') }}">
-                <span class="sb-icon"><i class="bi bi-meta"></i></span> Pixel Settings
-            </a>
-            <a class="sb-item {{ request()->routeIs('admin.googletagmanager.*') ? 'active' : '' }}"
-               href="{{ route('admin.googletagmanager.index') }}">
-                <span class="sb-icon"><i class="bi bi-google"></i></span> Google Tag Manager
-            </a>
-        </div>
+
         @endif
 
 

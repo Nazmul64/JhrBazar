@@ -15,6 +15,7 @@ class SalaryAdvance extends Model
         'installments',
         'per_installment',
         'request_date',
+        'advance_date',
         'deducted_amount',
         'status',
         'paid_status',

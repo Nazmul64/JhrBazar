@@ -30,7 +30,7 @@ class ShurjopayGatewayController extends Controller
 
         $gateway->save();
 
-        return redirect()->back()->with('shurjopay_success', 'Settings updated successfully!');
+        return redirect()->back()->with('success', 'Settings updated successfully!');
     }
 
     public function toggleStatus()

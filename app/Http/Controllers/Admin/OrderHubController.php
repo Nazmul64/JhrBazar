@@ -229,8 +229,148 @@ class OrderHubController extends Controller
         $invoice = PosInvoice::with(['customer.user', 'order.staff', 'seller', 'order.statusLogs.changedBy'])->findOrFail($id);
         $settings = GenaralSetting::first();
         $staffs = \App\Models\User::whereIn('role', ['employee', 'manager', 'staff'])->get();
+        $allProducts = \App\Models\Product::where('is_active', 1)->orderBy('name')->get();
+        $shippingCharges = \App\Models\ShippingCharge::where('status', 1)->orderBy('area_name')->get();
 
-        return view('admin.pointofsalepos.show', compact('invoice', 'settings', 'staffs'));
+        return view('admin.pointofsalepos.show', compact('invoice', 'settings', 'staffs', 'allProducts', 'shippingCharges'));
+    }
+
+    /**
+     * Update order details (A-Z details update including customer, items, shipping, discounts & stock).
+     */
+    public function updateOrder(Request $request, $id)
+    {
+        $request->validate([
+            'customer_name'    => 'required|string',
+            'customer_phone'   => 'required|string',
+            'customer_address' => 'required|string',
+            'delivery_charge'  => 'required|numeric|min:0',
+            'discount'         => 'required|numeric|min:0',
+            'items'            => 'required|array|min:1',
+            'items.*.id'       => 'required|integer',
+            'items.*.qty'      => 'required|integer|min:1',
+            'items.*.price'    => 'required|numeric|min:0',
+            'items.*.size'     => 'nullable|string',
+            'items.*.color'    => 'nullable|string',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $invoice = PosInvoice::with('order')->findOrFail($id);
+            $order = $invoice->order;
+
+            // 1. Update/Link Customer
+            $phone = trim($request->customer_phone);
+            $user = User::where('phone', $phone)->first();
+            if (!$user) {
+                $user = User::create([
+                    'name'     => $request->customer_name,
+                    'phone'    => $phone,
+                    'email'    => $phone . '@jhrbazar.com',
+                    'role'     => 'customer',
+                    'password' => Hash::make($phone),
+                ]);
+            } else {
+                $user->update([
+                    'name'    => $request->customer_name,
+                    'address' => $request->customer_address,
+                ]);
+            }
+
+            $customer = \App\Models\Customer::where('user_id', $user->id)->first();
+            if (!$customer) {
+                $customer = \App\Models\Customer::create([
+                    'user_id'    => $user->id,
+                    'first_name' => $request->customer_name,
+                    'last_name'  => '',
+                    'address'    => $request->customer_address,
+                ]);
+            } else {
+                $customer->update([
+                    'first_name' => $request->customer_name,
+                    'address'    => $request->customer_address,
+                ]);
+            }
+
+            // 2. Re-stock previous items
+            if ($order && is_array($order->items)) {
+                foreach ($order->items as $oldItem) {
+                    $prod = \App\Models\Product::find($oldItem['id']);
+                    if ($prod) {
+                        $prod->increment('stock_quantity', (int)$oldItem['qty']);
+                    }
+                }
+            }
+
+            // 3. Process new items and decrement stock
+            $subTotal = 0;
+            $itemSnapshots = [];
+            foreach ($request->items as $item) {
+                $product = \App\Models\Product::find($item['id']);
+                if (!$product) continue;
+
+                $qty = (int)$item['qty'];
+                $itemPrice = (float)$item['price'];
+                $lineTotal = $itemPrice * $qty;
+                $subTotal += $lineTotal;
+
+                $itemSnapshots[] = [
+                    'id'         => $product->id,
+                    'name'       => $product->name,
+                    'sku'        => $product->sku,
+                    'thumbnail'  => $product->thumbnail,
+                    'price'      => $itemPrice,
+                    'qty'        => $qty,
+                    'size'       => $item['size'] ?? null,
+                    'color'      => $item['color'] ?? null,
+                    'line_total' => $lineTotal,
+                ];
+
+                // Decrement Stock
+                $product->decrement('stock_quantity', $qty);
+            }
+
+            $shipping = (float)$request->delivery_charge;
+            $discount = (float)$request->discount;
+            $grandTotal = ($subTotal + $shipping) - $discount;
+
+            // 4. Update Parent Order
+            if ($order) {
+                $order->update([
+                    'customer_id'     => $customer->id,
+                    'items'           => $itemSnapshots,
+                    'sub_total'       => $subTotal,
+                    'discount'        => $discount,
+                    'delivery_charge' => $shipping,
+                    'grand_total'     => $grandTotal,
+                    'phone'           => $phone,
+                ]);
+            }
+
+            // 5. Update Invoice
+            $invoice->update([
+                'customer_id'     => $customer->id,
+                'items'           => $itemSnapshots,
+                'sub_total'       => $subTotal,
+                'discount'        => $discount,
+                'delivery_charge' => $shipping,
+                'grand_total'     => $grandTotal,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating order: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     protected function getSellerOrderTransactionNet(PosInvoice $invoice)

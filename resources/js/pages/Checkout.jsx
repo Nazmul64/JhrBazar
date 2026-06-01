@@ -8,7 +8,7 @@ import { toast } from 'react-hot-toast';
 const Checkout = () => {
     const navigate = useNavigate();
     const mainColor = '#57b500';
-    const { cartItems, cartTotal, clearCart, removeFromCart } = useCart();
+    const { cartItems, cartTotal, clearCart, removeFromCart, updateQuantity } = useCart();
     const [loading, setLoading] = useState(false);
     const [shippingCharges, setShippingCharges] = useState([]);
     const [availableGateways, setAvailableGateways] = useState([]);
@@ -30,6 +30,17 @@ const Checkout = () => {
             }
         };
         checkBlock();
+    }, []);
+
+    useEffect(() => {
+        const queryParams = new URLSearchParams(window.location.search);
+        if (queryParams.get('payment_error')) {
+            toast.error("পেমেন্ট ভ্যালিডেশন ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+        } else if (queryParams.get('payment_failed')) {
+            toast.error("পেমেন্ট করতে ব্যর্থ হয়েছে। দয়া করে আবার চেষ্টা করুন।");
+        } else if (queryParams.get('payment_cancelled')) {
+            toast.warning("পেমেন্টটি বাতিল করা হয়েছে।");
+        }
     }, []);
 
     const [couponCode, setCouponCode] = useState('');
@@ -240,8 +251,12 @@ const Checkout = () => {
             });
 
             if (res.data.success) {
-                clearCart();
-                navigate('/order-success', { state: { orders: res.data.orders } });
+                if (res.data.payment_url) {
+                    window.location.href = res.data.payment_url;
+                } else {
+                    clearCart();
+                    navigate('/order-success', { state: { orders: res.data.orders } });
+                }
             } else {
                 toast.error(res.data.message || "Failed to place order");
             }
@@ -681,13 +696,32 @@ const Checkout = () => {
                                                     <div className="fw-bold small">
                                                         ৳{Number(item.price * item.qty).toLocaleString()}
                                                     </div>
+                                                    <div className="d-flex align-items-center bg-light border rounded" style={{ height: '32px' }}>
+                                                        <button 
+                                                            type="button"
+                                                            className="btn btn-sm btn-light border-0 px-2 d-flex align-items-center justify-content-center"
+                                                            onClick={() => updateQuantity(item.uid, -1)}
+                                                            disabled={item.qty <= 1}
+                                                            style={{ height: '100%' }}
+                                                        >
+                                                            <i className="fas fa-minus" style={{ fontSize: '10px' }}></i>
+                                                        </button>
+                                                        <span className="fw-bold px-2 small">{item.qty}</span>
+                                                        <button 
+                                                            type="button"
+                                                            className="btn btn-sm btn-light border-0 px-2 d-flex align-items-center justify-content-center"
+                                                            onClick={() => updateQuantity(item.uid, 1)}
+                                                            style={{ height: '100%' }}
+                                                        >
+                                                            <i className="fas fa-plus" style={{ fontSize: '10px' }}></i>
+                                                        </button>
+                                                    </div>
                                                     <button
                                                         type="button"
-                                                        className="btn btn-sm btn-outline-danger"
+                                                        className="btn btn-sm text-danger border-0 bg-transparent p-0"
                                                         onClick={() => removeFromCart(item.uid)}
-                                                        style={{ minWidth: '80px' }}
                                                     >
-                                                        Remove
+                                                        <i className="fas fa-trash-alt me-1"></i> Remove
                                                     </button>
                                                 </div>
                                             </div>

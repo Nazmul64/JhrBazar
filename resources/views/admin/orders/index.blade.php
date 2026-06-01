@@ -3,6 +3,7 @@
 @section('content')
 @php
     $cur = $settings->default_currency ?? '৳';
+    $cur = str_replace('(৳)', '', $cur);
 @endphp
 <style>
     :root {
@@ -21,6 +22,8 @@
     }
 
     .order-hub-page { padding: 24px; background: #f8fafc; min-height: 100vh; font-family: 'Inter', system-ui, sans-serif; }
+    
+    .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
 
     .order-hub-card {
         border: none;
@@ -153,7 +156,7 @@
     .customer-phone { font-size: 0.75rem; color: var(--gray); }
 
     .status-badge {
-        padding: 0.4rem 0.8rem;
+        padding: 0.4rem 2.2rem 0.4rem 0.8rem !important;
         border-radius: 50px;
         font-size: 0.75rem;
         font-weight: 600;
@@ -343,9 +346,9 @@
                             <th>Order ID</th>
                             <th>Items</th>
                             <th>Customer</th>
-                            <th width="100">Staff</th>
-                            <th width="100">Status</th>
-                            <th width="120">Payment</th>
+                            <th width="160">Staff</th>
+                            <th width="140">Status</th>
+                            <th width="140">Payment</th>
                             <th>Total</th>
                             <th>Courier</th>
                             <th width="150">Action</th>
@@ -478,7 +481,7 @@
                                 </div>
                             </td>
                             <td>
-                                <select class="form-select form-select-sm border-0 bg-soft-info text-info fw-bold" onchange="assignStaff({{ $order->id }}, this.value)" style="font-size: 13px;">
+                                <select class="form-select form-select-sm border-0 bg-soft-info text-info fw-bold" onchange="assignStaff({{ $order->id }}, this.value)" style="font-size: 13px; min-width: 145px;">
                                     <option value="">Not Assigned</option>
                                     @foreach($staffs as $staff)
                                         <option value="{{ $staff->id }}" {{ ($order->order->staff_id ?? '') == $staff->id ? 'selected' : '' }}>{{ $staff->name }}</option>
@@ -487,7 +490,7 @@
                             </td>
                             <td>
                                 @php $s = $order->order->status ?? 'pending'; @endphp
-                                <select class="form-select form-select-sm status-badge status-{{ $s }}" onchange="updateStatus({{ $order->id }}, this.value)" style="font-size: 13px; font-weight: 700;">
+                                <select class="form-select form-select-sm status-badge status-{{ $s }}" onchange="updateStatus({{ $order->id }}, this.value)" style="font-size: 13px; font-weight: 700; min-width: 130px;">
                                     <option value="pending" {{ $s == 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="processing" {{ $s == 'processing' ? 'selected' : '' }}>Processing</option>
                                     <option value="shipped" {{ $s == 'shipped' ? 'selected' : '' }}>Shipped</option>
@@ -496,7 +499,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="form-select form-select-sm border-0 bg-light" onchange="updatePaymentStatus({{ $order->id }}, this.value)" style="font-size: 13px;">
+                                <select class="form-select form-select-sm border-0 bg-light" onchange="updatePaymentStatus({{ $order->id }}, this.value)" style="font-size: 13px; min-width: 120px;">
                                     <option value="pending" {{ ($order->order->payment_status ?? 'pending') == 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="paid" {{ ($order->order->payment_status ?? 'pending') == 'paid' ? 'selected' : '' }}>Paid</option>
                                     <option value="partial" {{ ($order->order->payment_status ?? 'pending') == 'partial' ? 'selected' : '' }}>Partial</option>
@@ -1011,9 +1014,29 @@
                                 </div>
                             </div>
                             <div class="col-12">
-                                <div class="p-3 border rounded">
-                                    <h6 class="fw-bold mb-3">Analysis Details:</h6>
-                                    <pre class="bg-dark text-success p-3 rounded mb-0" style="font-size: 13px; max-height:200px; overflow-y:auto;">${JSON.stringify(res, null, 4)}</pre>
+                                <div class="p-3 border rounded" style="background:#f1f5f9;">
+                                    <h6 class="fw-bold mb-3" style="color:#1e293b;">External Network Analysis</h6>
+                                    <div class="row g-2">
+                                        ${Object.keys(res.courierData || {}).map(key => {
+                                            let c = res.courierData[key];
+                                            return `
+                                            <div class="col-md-6">
+                                                <div class="d-flex align-items-center p-2 border rounded bg-white shadow-sm h-100">
+                                                    <img src="${c.logo}" alt="${c.name}" style="width: 45px; height: 45px; object-fit: contain; margin-right: 12px; border-radius: 6px; border: 1px solid #e2e8f0; padding: 3px; background:#fff;">
+                                                    <div style="flex:1;">
+                                                        <div class="fw-bold text-dark" style="font-size: 14px;">${c.name}</div>
+                                                        <div class="d-flex justify-content-between mt-1" style="font-size: 12px;">
+                                                            <span class="text-muted">Total: <strong class="text-dark">${c.total_parcel || 0}</strong></span>
+                                                            <span class="text-muted">Success: <strong class="text-success">${c.success_parcel || 0}</strong></span>
+                                                            <span class="text-muted">Reject: <strong class="text-danger">${c.cancelled_parcel || 0}</strong></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                    ${!res.courierData || Object.keys(res.courierData).length === 0 ? '<div class="text-muted small">No external courier data available for this phone number.</div>' : ''}
                                 </div>
                             </div>
                         </div>

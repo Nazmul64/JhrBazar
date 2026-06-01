@@ -21,7 +21,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.email || !formData.password) {
-            toast.error("অনুগ্রহ করে সব তথ্য দিন");
+            toast.error("Please enter all fields");
             return;
         }
 
@@ -31,11 +31,11 @@ const Login = () => {
             if (res.data.success) {
                 localStorage.setItem('auth_token', res.data.access_token);
                 localStorage.setItem('user', JSON.stringify(res.data.user));
-                toast.success("লগইন সফল হয়েছে!");
+                toast.success("Login successful!");
                 navigate('/customer/dashboard');
             }
         } catch (err) {
-            toast.error(err.response?.data?.message || "লগইন ব্যর্থ হয়েছে। তথ্য যাচাই করুন।");
+            toast.error(err.response?.data?.message || "Login failed. Please check your credentials.");
         } finally {
             setLoading(false);
         }
@@ -49,33 +49,33 @@ const Login = () => {
                         <div className="card border-0 shadow-lg" style={{ borderRadius: '15px', overflow: 'hidden' }}>
                             <div className="card-body p-4 p-md-5">
                                 <div className="text-center mb-4">
-                                    <h3 className="fw-bold" style={{ color: '#333' }}>স্বাগতম!</h3>
-                                    <p className="text-muted small">আপনার অ্যাকাউন্টে লগইন করুন।</p>
+                                    <h3 className="fw-bold" style={{ color: '#333' }}>Welcome!</h3>
+                                    <p className="text-muted small">Please login to your account.</p>
                                 </div>
 
                                 <form onSubmit={handleSubmit}>
                                     <div className="mb-3">
-                                        <label className="form-label small fw-bold text-muted">ইমেইল অথবা ফোন নম্বর</label>
+                                        <label className="form-label small fw-bold text-muted">Email or Phone Number</label>
                                         <input
                                             type="text"
                                             name="email"
                                             value={formData.email}
                                             onChange={handleChange}
                                             className="form-control shadow-none"
-                                            placeholder="আপনার ইমেইল বা ফোন নম্বর"
+                                            placeholder="Enter your email or phone number"
                                             style={{ padding: '12px 15px', borderRadius: '8px', border: '1px solid #e0e0e0' }}
                                         />
                                     </div>
 
                                     <div className="mb-4 position-relative">
-                                        <label className="form-label small fw-bold text-muted">পাসওয়ার্ড</label>
+                                        <label className="form-label small fw-bold text-muted">Password</label>
                                         <input
                                             type={showPassword ? "text" : "password"}
                                             name="password"
                                             value={formData.password}
                                             onChange={handleChange}
                                             className="form-control shadow-none"
-                                            placeholder="আপনার পাসওয়ার্ড"
+                                            placeholder="Enter your password"
                                             style={{ padding: '12px 15px', borderRadius: '8px', border: '1px solid #e0e0e0' }}
                                         />
                                         <span
@@ -90,10 +90,10 @@ const Login = () => {
                                         <div className="form-check">
                                             <input className="form-check-input" type="checkbox" id="rememberMe" style={{ accentColor: mainColor }} />
                                             <label className="form-check-label small text-muted" htmlFor="rememberMe">
-                                                মনে রাখুন
+                                                Remember me
                                             </label>
                                         </div>
-                                        <a href="#" className="small fw-bold text-decoration-none" style={{ color: mainColor }}>পাসওয়ার্ড ভুলে গেছেন?</a>
+                                        <a href="/password/reset" className="small fw-bold text-decoration-none" style={{ color: mainColor }}>Forgot Password?</a>
                                     </div>
 
                                     <button
@@ -102,12 +102,12 @@ const Login = () => {
                                         className="btn w-100 fw-bold text-white mb-4"
                                         style={{ backgroundColor: mainColor, padding: '12px', borderRadius: '8px', fontSize: '15px', transition: 'all 0.3s' }}
                                     >
-                                        {loading ? 'প্রসেস হচ্ছে...' : 'লগইন করুন'}
+                                        {loading ? 'Processing...' : 'Login'}
                                     </button>
 
                                     <div className="text-center">
-                                        <span className="text-muted small">অ্যাকাউন্ট নেই? </span>
-                                        <Link to="/customer/register" className="fw-bold text-decoration-none" style={{ color: mainColor }}>নতুন অ্যাকাউন্ট তৈরি করুন</Link>
+                                        <span className="text-muted small">Don't have an account? </span>
+                                        <Link to="/customer/register" className="fw-bold text-decoration-none" style={{ color: mainColor }}>Create a new account</Link>
                                     </div>
                                 </form>
 

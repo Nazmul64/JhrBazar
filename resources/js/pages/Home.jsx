@@ -12,6 +12,9 @@ import SEO from '../components/SEO';
 const Home = () => {
     const { settings, homeData, setHomeData } = useSettings();
     const mainColor = settings?.primary_color || window.initialSettings?.primary_color || '#57b500';
+    const importantColor = settings?.important_color || window.initialSettings?.important_color || '#ffffff';
+    const importantBgColor = settings?.important_background_color || window.initialSettings?.important_background_color || '#dc3545';
+
     
     const [popularProducts, setPopularProducts] = useState(homeData?.popularProducts || []);
     const [newArrivals, setNewArrivals] = useState(homeData?.newArrivals || []);
@@ -187,7 +190,7 @@ const Home = () => {
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <div className="d-flex align-items-center gap-2">
                             <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Best Deals</h4>
-                            <span className="badge bg-danger text-white rounded-pill" style={{ fontSize: '10px' }}>BIG SAVINGS</span>
+                            <span className="badge rounded-pill" style={{ backgroundColor: importantBgColor, color: importantColor, fontSize: '10px' }}>BIG SAVINGS</span>
                         </div>
                         <Link to="/products-all/best-deal" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
                     </div>
@@ -201,7 +204,7 @@ const Home = () => {
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <div className="d-flex align-items-center gap-2">
                             <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Digital Products</h4>
-                            <span className="badge bg-warning text-dark rounded-pill" style={{ fontSize: '10px' }}>E-BOOKS &amp; SOFTWARES</span>
+                            <span className="badge rounded-pill" style={{ backgroundColor: importantBgColor, color: importantColor, fontSize: '10px' }}>E-BOOKS &amp; SOFTWARES</span>
                         </div>
                         <Link to="/products-all/digital" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
                     </div>
@@ -220,7 +223,7 @@ const Home = () => {
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <div className="d-flex align-items-center gap-2">
                             <h4 className="fw-bold mb-0" style={{ color: '#333' }}>কাস্টমার রিভিউ</h4>
-                            <span className="badge rounded-pill text-white" style={{ backgroundColor: mainColor, fontSize: '10px' }}>REVIEWS</span>
+                            <span className="badge rounded-pill" style={{ backgroundColor: importantBgColor, color: importantColor, fontSize: '10px' }}>REVIEWS</span>
                         </div>
                     </div>
                     <div className="row g-3">
@@ -284,7 +287,7 @@ const Home = () => {
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <div className="d-flex align-items-center gap-2">
                             <h4 className="fw-bold mb-0" style={{ color: '#333' }}>{section.title}</h4>
-                            <span className="badge rounded-pill text-white" style={{ backgroundColor: mainColor, fontSize: '10px' }}>FEATURED</span>
+                            <span className="badge rounded-pill" style={{ backgroundColor: importantBgColor, color: importantColor, fontSize: '10px' }}>FEATURED</span>
                         </div>
                     </div>
                     {renderProductGrid(section.products)}

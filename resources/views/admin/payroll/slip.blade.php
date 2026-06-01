@@ -33,7 +33,7 @@
         
         {{-- Slip Actions --}}
         <div class="d-flex justify-content-between align-items-center mb-4 no-print">
-            <a href="{{ route('admin.payroll.index') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:6px;">
+            <a href="{{ route('admin.hrm.payroll.index') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:6px;">
                 <i class="fas fa-arrow-left me-1"></i> Back to Payrolls
             </a>
             <button onclick="window.print()" class="btn btn-sm text-white" style="background: linear-gradient(135deg, #e91e63, #c2185b); border: none; border-radius:6px; padding: 6px 16px;">

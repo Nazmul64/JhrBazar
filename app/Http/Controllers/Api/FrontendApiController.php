@@ -1039,6 +1039,56 @@ class FrontendApiController extends Controller
     }
 
     /**
+     * Get single landing page details by slug.
+     */
+    public function getLandingPageBySlug($slug)
+    {
+        $page = \App\Models\Landingpage::where('slug', $slug)->where('status', 1)->first();
+        if (!$page) {
+            return response()->json(['success' => false, 'message' => 'Landing page not found'], 404);
+        }
+
+        $primaryProduct = null;
+        if ($page->product_id) {
+            $product = \App\Models\Product::find($page->product_id);
+            if ($product) {
+                $primaryProduct = $this->mapProduct($product, 'admin');
+            }
+        }
+
+        $additionalProducts = [];
+        if ($page->additional_product_ids && is_array($page->additional_product_ids)) {
+            $products = \App\Models\Product::whereIn('id', $page->additional_product_ids)->where('is_active', true)->get();
+            foreach ($products as $prod) {
+                $additionalProducts[] = $this->mapProduct($prod, 'admin');
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $page->id,
+                'title' => $page->title,
+                'slug' => $page->slug,
+                'style_template' => $page->style_template,
+                'bg_color' => $page->bg_color ?: '#ffffff',
+                'button_color' => $page->button_color ?: '#1e3a8a',
+                'media_type' => $page->media_type,
+                'image' => $page->image ? asset($page->image) : null,
+                'feature_image' => $page->feature_image ? asset($page->feature_image) : null,
+                'video_url' => $page->video_url,
+                'checkout_image' => $page->checkout_image ? asset($page->checkout_image) : null,
+                'reviews' => $page->reviews ?: [],
+                'short_description' => $page->short_description,
+                'description' => $page->description,
+                'sections' => $page->sections ?: [],
+                'primary_product' => $primaryProduct,
+                'additional_products' => $additionalProducts,
+            ]
+        ]);
+    }
+
+    /**
      * Helper to map product data for frontend.
      */
     private function mapProduct($product, $type)

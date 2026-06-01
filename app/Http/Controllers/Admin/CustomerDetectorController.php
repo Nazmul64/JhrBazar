@@ -107,70 +107,75 @@ class CustomerDetectorController extends Controller
      */
     public function trackVisit(Request $request)
     {
-        $request->validate([
-            'page' => 'required|string',
-        ]);
+        try {
+            $request->validate([
+                'page' => 'required|string',
+            ]);
 
-        $page = $request->page;
-        $phone = null;
-        $name = null;
+            $page = $request->page;
+            $phone = null;
+            $name = null;
 
-        // Resolve identity
-        if (auth('sanctum')->check()) {
-            $user = auth('sanctum')->user();
-            $phone = $user->phone;
-            $name = $user->name;
-        }
+            // Resolve identity
+            if (auth('sanctum')->check()) {
+                $user = auth('sanctum')->user();
+                $phone = $user->phone;
+                $name = $user->name;
+            }
 
-        if (!$phone) {
-            $phone = $request->cookie('customer_tracker_phone');
-            $name = $request->cookie('customer_tracker_name') ?? 'Guest';
-        }
+            if (!$phone) {
+                $phone = $request->cookie('customer_tracker_phone');
+                $name = $request->cookie('customer_tracker_name') ?? 'Guest';
+            }
 
-        if (!$phone) {
-            $ip = $request->ip();
-            $lastOrder = Pointofsalepo::where('ip_address', $ip)
-                ->whereNotNull('phone')
-                ->latest()
-                ->first();
-            if ($lastOrder) {
-                $phone = $lastOrder->phone;
-                $name = 'Guest (IP Match)';
-                if ($lastOrder->customer && $lastOrder->customer->user) {
-                    $name = $lastOrder->customer->user->name;
+            if (!$phone) {
+                $ip = $request->ip();
+                $lastOrder = Pointofsalepo::where('ip_address', $ip)
+                    ->whereNotNull('phone')
+                    ->latest()
+                    ->first();
+                if ($lastOrder) {
+                    $phone = $lastOrder->phone;
+                    $name = 'Guest (IP Match)';
+                    if ($lastOrder->customer && $lastOrder->customer->user) {
+                        $name = $lastOrder->customer->user->name;
+                    }
                 }
             }
-        }
 
-        if ($phone && $phone !== 'N/A' && !empty($phone)) {
-            // Keep user logged via cookies
-            if (!$request->cookie('customer_tracker_phone')) {
-                \Illuminate\Support\Facades\Cookie::queue('customer_tracker_phone', $phone, 525600); // 1 year
-                \Illuminate\Support\Facades\Cookie::queue('customer_tracker_name', $name ?? 'Guest', 525600);
+            if ($phone && $phone !== 'N/A' && !empty($phone)) {
+                // Keep user logged via cookies
+                if (!$request->cookie('customer_tracker_phone')) {
+                    \Illuminate\Support\Facades\Cookie::queue('customer_tracker_phone', $phone, 525600); // 1 year
+                    \Illuminate\Support\Facades\Cookie::queue('customer_tracker_name', $name ?? 'Guest', 525600);
+                }
+
+                // Throttling: Only log if no identical visit in the last 1 minute
+                $recentVisit = CustomerVisit::where('phone_number', $phone)
+                    ->where('page_visited', $page)
+                    ->where('visited_at', '>=', now()->subMinute())
+                    ->first();
+
+                if (!$recentVisit) {
+                    $hasPreviousVisits = CustomerVisit::where('phone_number', $phone)->exists();
+                    
+                    CustomerVisit::create([
+                        'customer_name' => $name,
+                        'phone_number'  => $phone,
+                        'ip_address'    => $request->ip(),
+                        'page_visited'  => $page,
+                        'user_agent'    => $request->userAgent(),
+                        'visited_at'    => now(),
+                        'is_read'       => $hasPreviousVisits ? false : true,
+                    ]);
+                }
             }
 
-            // Throttling: Only log if no identical visit in the last 1 minute
-            $recentVisit = CustomerVisit::where('phone_number', $phone)
-                ->where('page_visited', $page)
-                ->where('visited_at', '>=', now()->subMinute())
-                ->first();
-
-            if (!$recentVisit) {
-                $hasPreviousVisits = CustomerVisit::where('phone_number', $phone)->exists();
-                
-                CustomerVisit::create([
-                    'customer_name' => $name,
-                    'phone_number'  => $phone,
-                    'ip_address'    => $request->ip(),
-                    'page_visited'  => $page,
-                    'user_agent'    => $request->userAgent(),
-                    'visited_at'    => now(),
-                    'is_read'       => $hasPreviousVisits ? false : true,
-                ]);
-            }
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('trackVisit API error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Database tracking bypassed'], 200);
         }
-
-        return response()->json(['success' => true]);
     }
 
     /**

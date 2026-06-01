@@ -294,12 +294,14 @@ class PointOfSalePosController extends Controller
     // ──────────────────────────────────────────────────────────────
     public function salesShow(PosInvoice $invoice)
     {
-        $invoice->load(['customer.user', 'order.staff', 'seller']);
+        $invoice->load(['customer.user', 'order.staff', 'seller', 'order.statusLogs.changedBy']);
         $settings = GenaralSetting::first();
         $staffs   = User::whereIn('role', ['employee', 'manager', 'staff'])->get();
+        $allProducts = \App\Models\Product::where('is_active', 1)->orderBy('name')->get();
+        $shippingCharges = \App\Models\ShippingCharge::where('status', 1)->orderBy('area_name')->get();
 
         return view('admin.pointofsalepos.show',
-            compact('invoice', 'settings', 'staffs'));
+            compact('invoice', 'settings', 'staffs', 'allProducts', 'shippingCharges'));
     }
 
     // ──────────────────────────────────────────────────────────────

@@ -33,7 +33,7 @@
                             @forelse($refunds as $refund)
                                 <tr>
                                     <td>{{ $refund->id }}</td>
-                                    <td>{{ $refund->order->order_number ?? 'N/A' }}</td>
+                                    <td>#{{ $refund->order->invoice->invoice_number ?? $refund->order_id }}</td>
                                     <td>{{ $refund->product_name }}</td>
                                     <td>{{ $refund->quantity }}</td>
                                     <td>{{ format_price($refund->total_amount) }}</td>

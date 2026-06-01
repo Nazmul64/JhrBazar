@@ -3,6 +3,7 @@
 @section('content')
 @php
     $cur = $settings->default_currency ?? '৳';
+    $cur = str_replace('(৳)', '', $cur);
 @endphp
 <style>
     :root {
@@ -153,7 +154,7 @@
     .customer-phone { font-size: 0.75rem; color: var(--gray); }
 
     .status-badge {
-        padding: 0.4rem 0.8rem;
+        padding: 0.4rem 2.2rem 0.4rem 0.8rem !important;
         border-radius: 50px;
         font-size: 0.75rem;
         font-weight: 600;
@@ -354,9 +355,9 @@
                             <th>Order ID</th>
                             <th>Items</th>
                             <th>Customer</th>
-                            <th width="100">Staff</th>
-                            <th width="100">Status</th>
-                            <th width="120">Payment</th>
+                            <th width="140">Staff</th>
+                            <th width="140">Status</th>
+                            <th width="140">Payment</th>
                             <th>Total</th>
                             <th>Courier</th>
                             <th width="150">Action</th>
@@ -483,7 +484,7 @@
                             </td>
                             <td>
                                 @php $s = $order->order->status ?? 'pending'; @endphp
-                                <select class="form-select form-select-sm status-badge status-{{ $s }}" onchange="updateStatus({{ $order->id }}, this.value)" style="font-size: 13px; font-weight: 700;">
+                                <select class="form-select form-select-sm status-badge status-{{ $s }}" onchange="updateStatus({{ $order->id }}, this.value)" style="font-size: 13px; font-weight: 700; min-width: 130px;">
                                     <option value="pending" {{ $s == 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="processing" {{ $s == 'processing' ? 'selected' : '' }}>Processing</option>
                                     <option value="shipped" {{ $s == 'shipped' ? 'selected' : '' }}>Shipped</option>
@@ -492,7 +493,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="form-select form-select-sm border-0 bg-light" onchange="updatePaymentStatus({{ $order->id }}, this.value)" style="font-size: 13px;">
+                                <select class="form-select form-select-sm border-0 bg-light" onchange="updatePaymentStatus({{ $order->id }}, this.value)" style="font-size: 13px; min-width: 120px;">
                                     <option value="pending" {{ ($order->order->payment_status ?? 'pending') == 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="paid" {{ ($order->order->payment_status ?? 'pending') == 'paid' ? 'selected' : '' }}>Paid</option>
                                     <option value="partial" {{ ($order->order->payment_status ?? 'pending') == 'partial' ? 'selected' : '' }}>Partial</option>

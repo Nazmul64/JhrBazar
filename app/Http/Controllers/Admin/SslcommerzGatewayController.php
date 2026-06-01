@@ -28,7 +28,7 @@ class SslcommerzGatewayController extends Controller
 
         $gateway->save();
 
-        return redirect()->back()->with('sslcommerz_success', 'SSLCommerz settings updated successfully!');
+        return redirect()->back()->with('success', 'SSLCommerz settings updated successfully!');
     }
 
     public function toggleStatus()

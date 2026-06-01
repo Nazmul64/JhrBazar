@@ -35,7 +35,7 @@ class Refund extends Model
     // Relationships
     public function order(): BelongsTo
     {
-        return $this->belongsTo(Order::class, 'order_id');
+        return $this->belongsTo(Pointofsalepo::class, 'order_id');
     }
 
     public function product(): BelongsTo

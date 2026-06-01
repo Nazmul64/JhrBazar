@@ -74,6 +74,7 @@ Route::get('/shipping-charges', [App\Http\Controllers\Api\CheckoutController::cl
 Route::post('/apply-coupon', [App\Http\Controllers\Api\CheckoutController::class, 'applyCoupon']);
 Route::post('/place-order', [App\Http\Controllers\Api\CheckoutController::class, 'placeOrder']);
 Route::get('/track-order/{invoice_no}', [App\Http\Controllers\Api\CheckoutController::class, 'trackOrder']);
+Route::get('/order-details/{invoice_no}', [App\Http\Controllers\Api\CheckoutController::class, 'orderDetails']);
 
 // Chat Routes
 Route::post('/chat/send', [App\Http\Controllers\Api\ChatApiController::class, 'sendMessage']);
@@ -88,3 +89,13 @@ Route::post('track-visit', [App\Http\Controllers\Admin\CustomerDetectorControlle
 
 // Blocked IP Check API for cyber security warning page
 Route::get('check-ip-blocked', [App\Http\Controllers\Admin\FraudCheckerController::class, 'checkIpBlocked']);
+
+// Premium Landing Page Builder Admin APIs
+Route::get('/admin/landingpages/{id}/sections', [App\Http\Controllers\Api\AdminLandingPageBuilderController::class, 'getSections']);
+Route::post('/admin/landingpages/{id}/save-sections', [App\Http\Controllers\Api\AdminLandingPageBuilderController::class, 'saveSections']);
+Route::post('/admin/landingpages/{id}/save-settings', [App\Http\Controllers\Api\AdminLandingPageBuilderController::class, 'saveSettings']);
+Route::post('/admin/landingpages/upload-image', [App\Http\Controllers\Api\AdminLandingPageBuilderController::class, 'uploadImage']);
+
+// Public Visitor Landing Page API
+Route::get('/landingpage/{slug}', [App\Http\Controllers\Api\FrontendApiController::class, 'getLandingPageBySlug']);
+

@@ -28,6 +28,7 @@ class GenaralSetting extends Model
         'show_download_app',
         'hotline_number',
         'footer_text',
+        'footer_copyright_text',
         'footer_logo',
         'footer_qr',
         'show_footer_section',
@@ -39,6 +40,8 @@ class GenaralSetting extends Model
         'footer_color',
         'tax_header_color',
         'tax_header_text_color',
+        'important_color',
+        'important_background_color',
         'font_family',
         'font_size',
         'product_title_size_desktop',
@@ -68,6 +71,7 @@ class GenaralSetting extends Model
         'button_color',
         'button_hover_color',
         'loader_status',
+        'customer_visit_notification_status',
         'membership_logo_1',
         'membership_logo_2',
         'membership_logo_3',
@@ -93,6 +97,7 @@ class GenaralSetting extends Model
         'show_product_stats' => 'boolean',
         'show_marquee' => 'boolean',
         'loader_status' => 'boolean',
+        'customer_visit_notification_status' => 'boolean',
         'show_membership_section' => 'boolean',
         'enable_analytics' => 'boolean',
         'enable_pixel' => 'boolean',
@@ -116,5 +121,10 @@ class GenaralSetting extends Model
             return asset($path);
         }
         return null;
+    }
+
+    public function getDefaultCurrencyAttribute($value)
+    {
+        return str_replace('(৳)', '', $value);
     }
 }

@@ -75,12 +75,12 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.name || !formData.email || !formData.phone || !formData.password || !formData.password_confirmation) {
-            toast.error("অনুগ্রহ করে সব তথ্য দিন");
+            toast.error("Please enter all fields");
             return;
         }
 
         if (formData.password !== formData.password_confirmation) {
-            toast.error("পাসওয়ার্ড দুটি মেলেনি");
+            toast.error("Passwords do not match");
             return;
         }
 
@@ -99,11 +99,11 @@ const Register = () => {
             if (res.data.success) {
                 localStorage.setItem('auth_token', res.data.access_token);
                 localStorage.setItem('user', JSON.stringify(res.data.user));
-                toast.success("নিবন্ধন সফল হয়েছে!");
+                toast.success("Registration successful!");
                 navigate('/customer/dashboard');
             }
         } catch (err) {
-            toast.error(err.response?.data?.message || "নিবন্ধন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
+            toast.error(err.response?.data?.message || "Registration failed. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -117,13 +117,13 @@ const Register = () => {
                         <div className="card border-0 shadow-lg" style={{ borderRadius: '15px', overflow: 'hidden' }}>
                             <div className="card-body p-4 p-md-5">
                                 <div className="text-center mb-4">
-                                    <h3 className="fw-bold" style={{ color: '#333' }}>অ্যাকাউন্ট তৈরি করুন</h3>
-                                    <p className="text-muted small">সেরা অফার পেতে আমাদের সাথে যুক্ত হন!</p>
+                                    <h3 className="fw-bold" style={{ color: '#333' }}>Create Account</h3>
+                                    <p className="text-muted small">Join us to get the best offers!</p>
                                 </div>
 
                                 <form onSubmit={handleSubmit}>
                                     <div className="mb-3">
-                                        <label className="form-label small fw-bold text-muted">পূর্ণ নাম</label>
+                                        <label className="form-label small fw-bold text-muted">Full Name</label>
                                         <input
                                             type="text"
                                             name="name"
@@ -131,13 +131,13 @@ const Register = () => {
                                             value={formData.name}
                                             onChange={handleChange}
                                             className="form-control shadow-none"
-                                            placeholder="আপনার পূর্ণ নাম লিখুন"
+                                            placeholder="Enter your full name"
                                             style={{ padding: '12px 15px', borderRadius: '8px', border: '1px solid #e0e0e0' }}
                                         />
                                     </div>
 
                                     <div className="mb-3">
-                                        <label className="form-label small fw-bold text-muted">ইমেইল অ্যাড্রেস</label>
+                                        <label className="form-label small fw-bold text-muted">Email Address</label>
                                         <input
                                             type="email"
                                             name="email"
@@ -145,13 +145,13 @@ const Register = () => {
                                             value={formData.email}
                                             onChange={handleChange}
                                             className="form-control shadow-none"
-                                            placeholder="আপনার ইমেইল অ্যাড্রেস লিখুন"
+                                            placeholder="Enter your email address"
                                             style={{ padding: '12px 15px', borderRadius: '8px', border: '1px solid #e0e0e0' }}
                                         />
                                     </div>
 
                                     <div className="mb-3">
-                                        <label className="form-label small fw-bold text-muted">ফোন নম্বর</label>
+                                        <label className="form-label small fw-bold text-muted">Phone Number</label>
                                         <div className="d-flex align-items-center position-relative country-dropdown-container" style={{ border: '1px solid #e0e0e0', borderRadius: '8px', overflow: 'visible', padding: '2px', backgroundColor: '#fff' }}>
                                             {/* Country Code Selection Dropdown Button */}
                                             <div 
@@ -196,7 +196,7 @@ const Register = () => {
                                                     <div className="px-2 pb-2 pt-1" style={{ borderBottom: '1px solid #f0f0f0' }}>
                                                         <input 
                                                             type="text" 
-                                                            placeholder="দেশ সার্চ করুন..." 
+                                                            placeholder="Search country..." 
                                                             value={countrySearch}
                                                             onChange={(e) => setCountrySearch(e.target.value)}
                                                             className="form-control form-control-sm shadow-none"
@@ -205,7 +205,7 @@ const Register = () => {
                                                         />
                                                     </div>
                                                     
-                                                    {/* Country List Rows */}
+                                                     {/* Country List Rows */}
                                                     {filteredCountries.map((c) => (
                                                         <div 
                                                             key={c.code}
@@ -227,7 +227,7 @@ const Register = () => {
                                                         </div>
                                                     ))}
                                                     {filteredCountries.length === 0 && (
-                                                        <div className="text-center text-muted py-2 small">কোনো দেশ পাওয়া যায়নি</div>
+                                                        <div className="text-center text-muted py-2 small">No countries found</div>
                                                     )}
                                                 </div>
                                             )}
@@ -235,7 +235,7 @@ const Register = () => {
                                     </div>
 
                                     <div className="mb-3 position-relative">
-                                        <label className="form-label small fw-bold text-muted">পাসওয়ার্ড</label>
+                                        <label className="form-label small fw-bold text-muted">Password</label>
                                         <input
                                             type={showPassword ? "text" : "password"}
                                             name="password"
@@ -243,7 +243,7 @@ const Register = () => {
                                             value={formData.password}
                                             onChange={handleChange}
                                             className="form-control shadow-none"
-                                            placeholder="একটি শক্তিশালী পাসওয়ার্ড দিন (কমপক্ষে ৮ অক্ষর)"
+                                            placeholder="Enter a strong password (at least 8 characters)"
                                             style={{ padding: '12px 15px', borderRadius: '8px', border: '1px solid #e0e0e0' }}
                                         />
                                         <span
@@ -255,7 +255,7 @@ const Register = () => {
                                     </div>
 
                                     <div className="mb-4 position-relative">
-                                        <label className="form-label small fw-bold text-muted">পাসওয়ার্ড নিশ্চিত করুন</label>
+                                        <label className="form-label small fw-bold text-muted">Confirm Password</label>
                                         <input
                                             type={showPassword ? "text" : "password"}
                                             name="password_confirmation"
@@ -263,7 +263,7 @@ const Register = () => {
                                             value={formData.password_confirmation}
                                             onChange={handleChange}
                                             className="form-control shadow-none"
-                                            placeholder="পাসওয়ার্ডটি আবার লিখুন"
+                                            placeholder="Re-enter your password"
                                             style={{ padding: '12px 15px', borderRadius: '8px', border: '1px solid #e0e0e0' }}
                                         />
                                     </div>
@@ -271,7 +271,7 @@ const Register = () => {
                                     <div className="form-check mb-4">
                                         <input className="form-check-input" type="checkbox" id="terms" style={{ accentColor: mainColor }} required />
                                         <label className="form-check-label small text-muted" htmlFor="terms">
-                                            আমি <Link to="/terms" style={{ color: mainColor }} className="text-decoration-none">শর্তাবলী</Link> এবং <Link to="/privacy-policy" style={{ color: mainColor }} className="text-decoration-none">প্রাইভেসি পলিসি</Link> এর সাথে একমত।
+                                            I agree to the <Link to="/terms" style={{ color: mainColor }} className="text-decoration-none">Terms & Conditions</Link> and <Link to="/privacy-policy" style={{ color: mainColor }} className="text-decoration-none">Privacy Policy</Link>.
                                         </label>
                                     </div>
 
@@ -281,12 +281,12 @@ const Register = () => {
                                         className="btn w-100 fw-bold text-white mb-4"
                                         style={{ backgroundColor: mainColor, padding: '12px', borderRadius: '8px', fontSize: '15px', transition: 'all 0.3s' }}
                                     >
-                                        {loading ? 'প্রসেস হচ্ছে...' : 'অ্যাকাউন্ট তৈরি করুন'}
+                                        {loading ? 'Processing...' : 'Create Account'}
                                     </button>
 
                                     <div className="text-center">
-                                        <span className="text-muted small">আগে থেকেই অ্যাকাউন্ট আছে? </span>
-                                        <Link to="/customer/login" className="fw-bold text-decoration-none" style={{ color: mainColor }}>এখানে লগইন করুন</Link>
+                                        <span className="text-muted small">Already have an account? </span>
+                                        <Link to="/customer/login" className="fw-bold text-decoration-none" style={{ color: mainColor }}>Login here</Link>
                                     </div>
                                 </form>
 

@@ -36,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
                     \Config::set('mail.mailers.' . $config->mail_mailer . '.encryption', $config->mail_encryption === 'none' ? null : $config->mail_encryption);
                     \Config::set('mail.from.address', $config->mail_from_address);
                     \Config::set('mail.from.name',    $config->mail_from_name ?? config('app.name'));
+                    app('mail.manager')->purge();
                 }
             }
         } catch (\Exception $e) {

@@ -146,6 +146,17 @@ class OfficeExpenseController extends Controller
         return back()->with('success', 'Category added.');
     }
 
+    public function categoryUpdate(Request $request, $id)
+    {
+        $request->validate(['name' => 'required|string|max:100', 'color' => 'nullable|string']);
+        $category = ExpenseCategory::findOrFail($id);
+        $category->update([
+            'name' => $request->name,
+            'color' => $request->color ?? '#6366f1'
+        ]);
+        return back()->with('success', 'Category updated.');
+    }
+
     public function categoryDestroy($id)
     {
         ExpenseCategory::findOrFail($id)->delete();

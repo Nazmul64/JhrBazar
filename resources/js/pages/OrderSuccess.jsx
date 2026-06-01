@@ -4,20 +4,40 @@ import MasterLayout from '../layouts/MasterLayout';
 import { useSettings } from '../context/SettingsContext';
 import confetti from 'canvas-confetti';
 import { CheckCircle, Truck, ShoppingBag, ArrowRight, Package, Calendar, MapPin } from 'lucide-react';
+import { useCart } from '../context/CartContext';
 
 const OrderSuccess = () => {
     const { settings } = useSettings();
+    const { clearCart } = useCart();
     const mainColor = settings?.primary_color || '#ff4d4d';
     const location = useLocation();
     const navigate = useNavigate();
-    const orderData = location.state?.orders || [];
+    
+    const [fetchedOrders, setFetchedOrders] = React.useState([]);
+    const orderData = location.state?.orders || fetchedOrders;
+
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const invoice = queryParams.get('invoice');
+        if (invoice && fetchedOrders.length === 0) {
+            axios.get(`/api/order-details/${invoice}`)
+                .then(res => {
+                    if (res.data.success) {
+                        setFetchedOrders(res.data.orders);
+                    }
+                })
+                .catch(err => console.error("Error loading order details:", err));
+        }
+    }, [location.search, fetchedOrders.length]);
 
     // Redirect to home if no order data and accessed directly
     useEffect(() => {
-        if (orderData.length === 0 && !location.state?.fromCheckout) {
+        if (orderData.length === 0 && !location.state?.fromCheckout && !new URLSearchParams(location.search).get('invoice')) {
             // navigate('/');
+        } else if (orderData.length > 0) {
+            clearCart();
         }
-    }, [orderData, navigate, location.state]);
+    }, [orderData, navigate, location.state, location.search, clearCart]);
 
     useEffect(() => {
         // Trigger fireworks effect

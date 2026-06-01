@@ -13,6 +13,7 @@ class ManagerAuthController extends Controller
      */
     public function showLogin()
     {
+        session(['forgot_password_role' => 'manager']);
         return view('auth.manager_login');
     }
 
@@ -51,5 +52,34 @@ class ManagerAuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('manager.login');
+    }
+
+    /**
+     * Show the forgot password link request form.
+     */
+    public function showLinkRequestForm()
+    {
+        return view('auth.manager_passwords.email');
+    }
+
+    /**
+     * Send a reset link to the given user.
+     */
+    public function sendResetLinkEmail(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = \App\Models\User::where('email', $request->email)->first();
+        if (!$user || !in_array($user->role, ['manager', 'admin'])) {
+            return back()->withErrors(['email' => 'We could not find a manager with that email address.']);
+        }
+
+        $response = \Illuminate\Support\Facades\Password::broker()->sendResetLink(
+            $request->only('email')
+        );
+
+        return $response == \Illuminate\Support\Facades\Password::RESET_LINK_SENT
+            ? back()->with('status', trans($response))
+            : back()->withErrors(['email' => trans($response)]);
     }
 }

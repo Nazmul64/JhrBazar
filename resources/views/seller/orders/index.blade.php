@@ -944,9 +944,29 @@
                                 </div>
                             </div>
                             <div class="col-12">
-                                <div class="p-3 border rounded">
-                                    <h6 class="fw-bold mb-3">Analysis Details:</h6>
-                                    <pre class="bg-dark text-success p-3 rounded mb-0" style="font-size: 13px; max-height:200px; overflow-y:auto;">${JSON.stringify(res, null, 4)}</pre>
+                                <div class="p-3 border rounded" style="background:#f1f5f9;">
+                                    <h6 class="fw-bold mb-3" style="color:#1e293b;">External Network Analysis</h6>
+                                    <div class="row g-2">
+                                        ${Object.keys(res.courierData || {}).map(key => {
+                                            let c = res.courierData[key];
+                                            return `
+                                            <div class="col-md-6">
+                                                <div class="d-flex align-items-center p-2 border rounded bg-white shadow-sm h-100">
+                                                    <img src="${c.logo}" alt="${c.name}" style="width: 45px; height: 45px; object-fit: contain; margin-right: 12px; border-radius: 6px; border: 1px solid #e2e8f0; padding: 3px; background:#fff;">
+                                                    <div style="flex:1;">
+                                                        <div class="fw-bold text-dark" style="font-size: 14px;">${c.name}</div>
+                                                        <div class="d-flex justify-content-between mt-1" style="font-size: 12px;">
+                                                            <span class="text-muted">Total: <strong class="text-dark">${c.total_parcel || 0}</strong></span>
+                                                            <span class="text-muted">Success: <strong class="text-success">${c.success_parcel || 0}</strong></span>
+                                                            <span class="text-muted">Reject: <strong class="text-danger">${c.cancelled_parcel || 0}</strong></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                    ${!res.courierData || Object.keys(res.courierData).length === 0 ? '<div class="text-muted small">No external courier data available for this phone number.</div>' : ''}
                                 </div>
                             </div>
                         </div>

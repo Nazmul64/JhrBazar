@@ -126,7 +126,11 @@
             <button type="submit" class="btn-login">Secure Login</button>
         </form>
 
-        <div class="text-center mt-4">
+        <div class="text-center mt-3">
+            <a href="{{ route('manager.password.request') }}" class="text-decoration-none" style="font-size: 13px; color: var(--primary); font-weight: 600;">Forgot Password?</a>
+        </div>
+
+        <div class="text-center mt-3">
             <a href="/" class="text-decoration-none" style="font-size: 13px; color: #6b7280;"><i class="bi bi-arrow-left me-1"></i> Back to Homepage</a>
         </div>
     </div>

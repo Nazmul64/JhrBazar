@@ -16,6 +16,38 @@
      return view('react-test', compact('homeData'));
  });
 
+ // Landing Page Public View Route (must be before catch-all)
+ Route::get('/l/{slug}', function () {
+     $homeData = null;
+     try {
+         $response = app(\App\Http\Controllers\Api\FrontendApiController::class)->getHomeData();
+         if ($response instanceof \Symfony\Component\HttpFoundation\Response) {
+             $homeData = json_decode($response->getContent());
+         } else {
+             $homeData = json_decode(json_encode($response));
+         }
+     } catch (\Exception $e) {
+         // Fallback
+     }
+     return view('react-test', compact('homeData'));
+ })->where('slug', '.+');
+
+ // Landing Page Builder Route (must be before catch-all)
+ Route::get('/landing-builder/{id}', function () {
+     $homeData = null;
+     try {
+         $response = app(\App\Http\Controllers\Api\FrontendApiController::class)->getHomeData();
+         if ($response instanceof \Symfony\Component\HttpFoundation\Response) {
+             $homeData = json_decode($response->getContent());
+         } else {
+             $homeData = json_decode(json_encode($response));
+         }
+     } catch (\Exception $e) {
+         // Fallback
+     }
+     return view('react-test', compact('homeData'));
+ })->where('id', '[0-9]+');
+
  // Frontend SPA Catch-all Route
  Route::get('/{any}', function () {
      $homeData = null;
@@ -30,7 +62,7 @@
          // Fallback
      }
      return view('react-test', compact('homeData'));
- })->where('any', '^(?!admin|api|employee|manager|seller|register|logout|user-profile).*$');
+ })->where('any', '^(?!admin|api|employee|manager|seller|register|logout|user-profile|password|l/|landing-builder/).*$');
 
 use App\Http\Controllers\Admin\Adminauthcontroller;
 use App\Http\Controllers\Admin\AdminSupportController;
@@ -127,6 +159,8 @@ use App\Http\Controllers\CustomAuthController;
 Route::get('admin/login',   [Adminauthcontroller::class, 'adminlogin'])        ->name('admin.login');
 Route::post('admin/login',  [Adminauthcontroller::class, 'admin_login_submit'])->name('admin.login.submit');
 Route::post('admin/logout', [Adminauthcontroller::class, 'admin_logout'])      ->name('admin.logout');
+Route::get('admin/password/reset', [Adminauthcontroller::class, 'showLinkRequestForm'])->name('admin.password.request');
+Route::post('admin/password/email', [Adminauthcontroller::class, 'sendResetLinkEmail'])->name('admin.password.email');
 
 // ── Custom User Registration ────────────────────────────────────────────────
 Route::get('register/customer', [CustomAuthController::class, 'showCustomerRegister'])->name('register.customer');
@@ -138,16 +172,22 @@ Route::post('register/seller', [CustomAuthController::class, 'registerSeller'])-
 Route::get('employee/login',  [App\Http\Controllers\Employee\EmployeeAuthController::class, 'showLogin'])->name('employee.login');
 Route::post('employee/login', [App\Http\Controllers\Employee\EmployeeAuthController::class, 'login'])->name('employee.login.submit');
 Route::post('employee/logout', [App\Http\Controllers\Employee\EmployeeAuthController::class, 'logout'])->name('employee.logout');
+Route::get('employee/password/reset', [App\Http\Controllers\Employee\EmployeeAuthController::class, 'showLinkRequestForm'])->name('employee.password.request');
+Route::post('employee/password/email', [App\Http\Controllers\Employee\EmployeeAuthController::class, 'sendResetLinkEmail'])->name('employee.password.email');
 
 // ── Manager Login ───────────────────────────────────────────────────────────
 Route::get('manager/login',  [App\Http\Controllers\Manager\ManagerAuthController::class, 'showLogin'])->name('manager.login');
 Route::post('manager/login', [App\Http\Controllers\Manager\ManagerAuthController::class, 'login'])->name('manager.login.submit');
 Route::post('manager/logout', [App\Http\Controllers\Manager\ManagerAuthController::class, 'logout'])->name('manager.logout');
+Route::get('manager/password/reset', [App\Http\Controllers\Manager\ManagerAuthController::class, 'showLinkRequestForm'])->name('manager.password.request');
+Route::post('manager/password/email', [App\Http\Controllers\Manager\ManagerAuthController::class, 'sendResetLinkEmail'])->name('manager.password.email');
 
 // ── Seller Login ────────────────────────────────────────────────────────────
 Route::get('seller/login',  [App\Http\Controllers\Seller\SellerAuthController::class, 'showLogin'])->name('seller.login');
 Route::post('seller/login', [App\Http\Controllers\Seller\SellerAuthController::class, 'login'])->name('seller.login.submit');
 Route::post('seller/logout', [App\Http\Controllers\Seller\SellerAuthController::class, 'logout'])->name('seller.logout');
+Route::get('seller/password/reset', [App\Http\Controllers\Seller\SellerAuthController::class, 'showLinkRequestForm'])->name('seller.password.request');
+Route::post('seller/password/email', [App\Http\Controllers\Seller\SellerAuthController::class, 'sendResetLinkEmail'])->name('seller.password.email');
 
 // ── Admin Protected Routes ──────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
@@ -184,13 +224,15 @@ Route::delete('hrm/expenses/{id}', [App\Http\Controllers\Admin\OfficeExpenseCont
 // Expense Categories
 Route::get('hrm/expense-categories', [App\Http\Controllers\Admin\OfficeExpenseController::class, 'categoryIndex'])->name('admin.hrm.expense.categories');
 Route::post('hrm/expense-categories', [App\Http\Controllers\Admin\OfficeExpenseController::class, 'categoryStore'])->name('admin.hrm.expense.category.store');
+Route::put('hrm/expense-categories/{id}', [App\Http\Controllers\Admin\OfficeExpenseController::class, 'categoryUpdate'])->name('admin.hrm.expense.category.update');
 Route::delete('hrm/expense-categories/{id}', [App\Http\Controllers\Admin\OfficeExpenseController::class, 'categoryDestroy'])->name('admin.hrm.expense.category.destroy');
 
 // ── Payroll ──────────────────────────────────────────────────────
 Route::get('hrm/payroll', [App\Http\Controllers\Admin\PayrollController::class, 'index'])->name('admin.hrm.payroll.index');
-Route::post('hrm/payroll/generate', [App\Http\Controllers\Admin\PayrollController::class, 'generate'])->name('admin.hrm.payroll.generate');
+Route::get('hrm/payroll/generate', [App\Http\Controllers\Admin\PayrollController::class, 'generate'])->name('admin.hrm.payroll.generate');
+Route::post('hrm/payroll', [App\Http\Controllers\Admin\PayrollController::class, 'storePayroll'])->name('admin.hrm.payroll.store');
 Route::post('hrm/payroll/bulk-pay', [App\Http\Controllers\Admin\PayrollController::class, 'bulkPay'])->name('admin.hrm.payroll.bulk-pay');
-Route::get('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'show'])->name('admin.hrm.payroll.show');
+Route::get('hrm/payroll/{id}/slip', [App\Http\Controllers\Admin\PayrollController::class, 'slip'])->name('admin.hrm.payroll.slip');
 Route::get('hrm/payroll/{id}/edit', [App\Http\Controllers\Admin\PayrollController::class, 'edit'])->name('admin.hrm.payroll.edit');
 Route::put('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'update'])->name('admin.hrm.payroll.update');
 Route::post('hrm/payroll/{id}/pay', [App\Http\Controllers\Admin\PayrollController::class, 'pay'])->name('admin.hrm.payroll.pay');
@@ -417,6 +459,7 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
         Route::post('/store',          [OrderHubController::class, 'store'])        ->name('store');
         Route::get('/{status?}',       [OrderHubController::class, 'index'])       ->name('index');
         Route::get('/show/{id}',       [OrderHubController::class, 'show'])        ->name('show');
+        Route::post('/update-order/{id}', [OrderHubController::class, 'updateOrder'])->name('update-order');
         Route::post('/status/{id}',    [OrderHubController::class, 'updateStatus'])->name('update-status');
         Route::post('/assign-staff/{id}', [OrderHubController::class, 'assignStaff'])->name('assign-staff');
         Route::post('/payment-status/{id}', [OrderHubController::class, 'updatePaymentStatus'])->name('payment-status');
@@ -438,6 +481,8 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
             Route::get('/create',               [RefundController::class, 'create'])->name('create');
             Route::post('/store',               [RefundController::class, 'store'])->name('store');
             Route::get('/{refund}',             [RefundController::class, 'show'])->name('show');
+            Route::get('/{refund}/edit',        [RefundController::class, 'edit'])->name('edit');
+            Route::put('/{refund}',             [RefundController::class, 'update'])->name('update');
             Route::post('/{refund}/status',     [RefundController::class, 'updateStatus'])->name('update-status');
             Route::post('/{refund}/approve',    [RefundController::class, 'approve'])->name('approve');
             Route::post('/{refund}/reject',     [RefundController::class, 'reject'])->name('reject');
@@ -448,6 +493,8 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
             // API endpoints for autocomplete
             Route::get('/api/products',         [RefundController::class, 'getProducts'])->name('api.products');
             Route::get('/api/couriers',         [RefundController::class, 'getCouriers'])->name('api.couriers');
+            Route::get('/api/orders',           [RefundController::class, 'getOrders'])->name('api.orders');
+            Route::get('/api/orders/{id}/details', [RefundController::class, 'getOrderDetails'])->name('api.order-details');
         });
     });
 
@@ -577,8 +624,10 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
 
     // ── Landing Pages ─────────────────────────────────────────────────────────
     Route::resource('landingpages', LandingPageController::class)->names('admin.landingpages')->except(['show']);
+    Route::get('landingpages/{landingpage}/builder', [LandingPageController::class, 'builder'])->name('admin.landingpages.builder');
     Route::get('landingpages/{landingpage}/preview', [LandingPageController::class, 'preview'])->name('admin.landingpages.preview');
     Route::patch('landingpages/{landingpage}/toggle-status', [LandingPageController::class, 'toggleStatus'])->name('admin.landingpages.toggle-status');
+    Route::post('landingpages/upload-section-image', [LandingPageController::class, 'uploadSectionImage'])->name('admin.landingpages.upload-section-image');
 
     // ── Google Tag Manager ────────────────────────────────────────────────────
     Route::resource('googletagmanager', GoogleTagManagerController::class)->names('admin.googletagmanager')->except(['show']);
@@ -905,4 +954,22 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('cyber-alerts/{id}', [App\Http\Controllers\Admin\FraudCheckerController::class, 'destroy'])->name('admin.cyber-alerts.destroy');
     });
 });
+
+// ── Public SSLCommerz Payment Callbacks ──────────────────────────────────────
+Route::post('/payment/sslcommerz/success', [App\Http\Controllers\Api\CheckoutController::class, 'successCallback'])->name('sslcommerz.success');
+Route::post('/payment/sslcommerz/fail',    [App\Http\Controllers\Api\CheckoutController::class, 'failCallback'])   ->name('sslcommerz.fail');
+Route::post('/payment/sslcommerz/cancel',  [App\Http\Controllers\Api\CheckoutController::class, 'cancelCallback']) ->name('sslcommerz.cancel');
+Route::post('/payment/sslcommerz/ipn',     [App\Http\Controllers\Api\CheckoutController::class, 'ipnCallback'])    ->name('sslcommerz.ipn');
+
+// Dynamic Safe Database Migration Route for Live Server Deployment
+Route::get('/run-migration-safely', function() {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        return '<h1>Migration Success!</h1><pre>' . e($output) . '</pre>';
+    } catch (\Throwable $e) {
+        return '<h1>Migration Failed!</h1><p>' . e($e->getMessage()) . '</p>';
+    }
+});
+
 

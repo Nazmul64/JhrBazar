@@ -257,11 +257,16 @@ const Header = () => {
 
                             {/* Icons Row */}
                             <div className="col-8 col-lg-5 d-flex justify-content-end align-items-center gap-3 gap-md-4">
+                                <a href="/seller/login" className="btn btn-sm text-white px-2.5 py-2 d-flex align-items-center gap-1 hover-scale shadow-sm" style={{ backgroundColor: mainColor, borderRadius: '6px', fontWeight: 'bold', fontSize: '11px', transition: 'all 0.3s', border: 'none' }}>
+                                    <i className="fas fa-store"></i>
+                                    <span className="d-none d-sm-inline">Become a Seller</span>
+                                    <span className="d-inline d-sm-none">Seller</span>
+                                </a>
                                 <Link to="/order-tracking" className="text-decoration-none d-none d-md-flex flex-column align-items-center justify-content-center hover-primary" style={{ border: `1px solid ${mainColor}`, borderRadius: '6px', padding: '5px 12px', color: mainColor, backgroundColor: `${mainColor}08`, transition: 'all 0.3s' }}>
                                     <div style={{ fontSize: '18px', lineHeight: '1' }}>
                                         <i className="fas fa-truck"></i>
                                     </div>
-                                    <span style={{ fontSize: '11px', fontWeight: 'bold', marginTop: '4px' }}>অর্ডার ট্র্যাকিং</span>
+                                    <span style={{ fontSize: '11px', fontWeight: 'bold', marginTop: '4px' }}>Order Tracking</span>
                                 </Link>
                                 <Link to={localStorage.getItem('auth_token') ? "/customer/dashboard" : "/customer/login"} className="text-decoration-none text-dark d-flex flex-column align-items-center hover-primary">
                                     <div style={{ fontSize: '22px' }}>👤</div>
@@ -301,7 +306,7 @@ const Header = () => {
                                 <div onMouseEnter={() => setIsCategoryOpen(true)} onMouseLeave={() => setIsCategoryOpen(false)} style={{ position: 'relative', height: '100%' }}>
                                     <div style={{ padding: '12px 25px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', backgroundColor: mainColor, fontWeight: 'bold', borderRadius: '4px 4px 0 0', height: '100%' }}>
                                         <i className="fas fa-th-large fs-6"></i>
-                                        <span style={{ fontSize: '15px' }}>সব ক্যাটাগরি</span>
+                                        <span style={{ fontSize: '15px' }}>All Categories</span>
                                         <i className="fas fa-chevron-down ms-3" style={{ fontSize: '12px', opacity: 0.8 }}></i>
                                     </div>
                                     <CategoryDropdown isOpen={isCategoryOpen} />
@@ -327,7 +332,7 @@ const Header = () => {
             {/* Mobile Sidebar */}
             {isMobileMenuOpen && (
                 <div onClick={() => setIsMobileMenuOpen(false)} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10001 }}>
-                    <div onClick={(e) => e.stopPropagation()} style={{ width: '300px', height: '100%', backgroundColor: '#fff', overflowY: 'auto' }}>
+                    <div onClick={(e) => e.stopPropagation()} style={{ width: '300px', height: '100%', backgroundColor: '#fff', overflowY: 'auto', paddingBottom: '80px' }}>
                         <div style={{ padding: '20px', backgroundColor: mainColor, color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
                             <h5 className="mb-0 fw-bold">Menu</h5>
                             <button className="btn text-white p-0" onClick={() => setIsMobileMenuOpen(false)}>✕</button>
@@ -371,7 +376,7 @@ const Header = () => {
                             <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">My Cart</Link>
                             <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">My Wishlist</Link>
                             <Link to="/order-tracking" onClick={() => setIsMobileMenuOpen(false)} className="d-flex align-items-center p-3 px-4 text-decoration-none border-bottom" style={{ color: mainColor, backgroundColor: `${mainColor}08`, fontWeight: 'bold' }}>
-                                <i className="fas fa-truck me-3 fs-5"></i> অর্ডার ট্র্যাকিং
+                                <i className="fas fa-truck me-3 fs-5"></i> Order Tracking
                             </Link>
                             {localStorage.getItem('auth_token') ? (
                                 <Link to="/customer/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="d-block p-3 px-4 text-decoration-none text-dark border-bottom">Dashboard</Link>
@@ -385,6 +390,14 @@ const Header = () => {
             )}
 
             <style>{`
+                .hover-scale {
+                    transition: transform 0.2s ease, opacity 0.2s ease;
+                }
+                .hover-scale:hover {
+                    transform: scale(1.05) !important;
+                    opacity: 0.95;
+                    color: #fff !important;
+                }
                 .hover-primary:hover { color: ${mainColor} !important; opacity: 0.8; }
                 .nav-item-custom:hover { color: ${mainColor} !important; }
                 .nav-item-custom { position: relative; }

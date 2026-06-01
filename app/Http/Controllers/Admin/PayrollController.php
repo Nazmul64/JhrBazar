@@ -149,7 +149,7 @@ class PayrollController extends Controller
 
         Payroll::create($validated);
 
-        return redirect()->route('admin.payroll.index', ['month' => $validated['month'], 'year' => $validated['year']])
+        return redirect()->route('admin.hrm.payroll.index', ['month' => $validated['month'], 'year' => $validated['year']])
             ->with('success', 'Enterprise Payroll generated successfully.');
     }
 

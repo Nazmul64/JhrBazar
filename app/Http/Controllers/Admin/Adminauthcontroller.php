@@ -11,6 +11,8 @@ class Adminauthcontroller extends Controller
 {
     public function adminlogin()
     {
+        session(['forgot_password_role' => 'admin']);
+
         // If already logged in as admin, skip login page
         if (Auth::check() && Auth::user()->role === 'admin') {
             return redirect()->route('admin.dashboard');
@@ -55,5 +57,34 @@ class Adminauthcontroller extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('admin.login');
+    }
+
+    /**
+     * Show the forgot password link request form.
+     */
+    public function showLinkRequestForm()
+    {
+        return view('admin.auth.passwords.email');
+    }
+
+    /**
+     * Send a reset link to the given user.
+     */
+    public function sendResetLinkEmail(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = \App\Models\User::where('email', $request->email)->first();
+        if (!$user || !in_array($user->role, ['admin', 'manager', 'employee'])) {
+            return back()->withErrors(['email' => 'We could not find an administrator with that email address.']);
+        }
+
+        $response = \Illuminate\Support\Facades\Password::broker()->sendResetLink(
+            $request->only('email')
+        );
+
+        return $response == \Illuminate\Support\Facades\Password::RESET_LINK_SENT
+            ? back()->with('status', trans($response))
+            : back()->withErrors(['email' => trans($response)]);
     }
 }

@@ -34,7 +34,7 @@
                                 <td>{{ $exp->category?->name ?? '—' }}</td>
                                 <td>{{ date('d M, Y', strtotime($exp->expense_date)) }}</td>
                                 <td class="text-center">
-                                    <a href="" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <a href="{{ route('admin.hrm.expense.edit', $exp->id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
                                     <form action="{{ route('admin.hrm.expense.destroy', $exp->id) }}" method="POST" style="display:inline">
                                         @csrf
                                         @method('DELETE')

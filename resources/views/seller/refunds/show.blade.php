@@ -25,7 +25,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <strong>Order ID:</strong>
-                                <p>{{ $refund->order->order_number ?? 'N/A' }}</p>
+                                <p>#{{ $refund->order->invoice->invoice_number ?? $refund->order_id }}</p>
                             </div>
                             <div class="col-md-6">
                                 <strong>Requested At:</strong>

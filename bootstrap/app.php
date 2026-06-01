@@ -21,6 +21,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'blocked'    => \App\Http\Middleware\CheckBlocked::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            '/payment/sslcommerz/success',
+            '/payment/sslcommerz/fail',
+            '/payment/sslcommerz/cancel',
+            '/payment/sslcommerz/ipn',
+        ]);
+
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\CheckBlocked::class,
             \App\Http\Middleware\TrackReturningCustomer::class,

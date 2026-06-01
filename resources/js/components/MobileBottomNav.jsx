@@ -34,11 +34,11 @@ const MobileBottomNav = () => {
             </Link>
             <Link to="/products-all/all" style={itemStyle('/products-all/all')}>
                 <span style={{ fontSize: '22px' }}>📦</span>
-                <span>সব পণ্য</span>
+                <span>Shop</span>
             </Link>
             <Link to="/products-all/best-deal" style={itemStyle('/products-all/best-deal')}>
                 <span style={{ fontSize: '22px' }}>🏷️</span>
-                <span>ডিল</span>
+                <span>Deals</span>
             </Link>
             <Link to="/cart" style={itemStyle('/cart')}>
                 <div style={{ position: 'relative' }}>
@@ -55,7 +55,7 @@ const MobileBottomNav = () => {
                 </div>
                 <span>CART</span>
             </Link>
-            <Link to="/login" style={itemStyle('/login')}>
+            <Link to="/customer/login" style={itemStyle('/customer/login')}>
                 <span style={{ fontSize: '22px' }}>👤</span>
                 <span>LOGIN</span>
             </Link>

@@ -24,6 +24,9 @@ import PageView from './pages/PageView';
 import OrderSuccess from './pages/OrderSuccess';
 import OrderTracking from './pages/OrderTracking';
 import UserDashboard from './pages/UserDashboard';
+import NotFound from './pages/NotFound';
+import LandingPageBuilder from './pages/LandingPageBuilder';
+import LandingPageView from './pages/LandingPageView';
 import { CartProvider } from './context/CartContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { WishlistProvider } from './context/WishlistContext';
@@ -85,6 +88,8 @@ const MainApp = () => {
                             <Route path="/product/:slug" element={<ProductDetails />} />
                             <Route path="/search" element={<SearchResults />} />
                             <Route path="/page/:slug" element={<PageView />} />
+                            <Route path="/landing-builder/:id" element={<LandingPageBuilder />} />
+                            <Route path="/l/:slug" element={<LandingPageView />} />
 
                             {/* Shopping Routes */}
                             <Route path="/cart" element={<Cart />} />
@@ -95,7 +100,7 @@ const MainApp = () => {
                             <Route path="/wishlist" element={<Wishlist />} />
 
                             {/* Catch-all Route */}
-                            <Route path="*" element={<Home />} />
+                            <Route path="*" element={<NotFound />} />
                         </Routes>
                     </Router>
                 </CartProvider>

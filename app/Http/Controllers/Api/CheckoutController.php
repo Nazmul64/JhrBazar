@@ -116,8 +116,8 @@ class CheckoutController extends Controller
             $gateways[] = ['name' => 'SSLCommerz', 'key' => 'sslcommerz', 'title' => $sslcommerz->title, 'logo' => $sslcommerz->logo ? asset('storage/' . $sslcommerz->logo) : $this->getDefaultLogo('sslcommerz')];
         }
 
-        // Add COD by default or check a setting if you have one
-        $gateways[] = ['name' => 'Cash on Delivery', 'key' => 'cod', 'title' => 'Cash on Delivery', 'logo' => null];
+        // COD is handled separately in the UI, do not add it as an online gateway
+        // $gateways[] = ['name' => 'Cash on Delivery', 'key' => 'cod', 'title' => 'Cash on Delivery', 'logo' => null];
 
         return response()->json([
             'success' => true,
@@ -372,7 +372,56 @@ class CheckoutController extends Controller
                     'coupon_code'     => $request->coupon_code,
                 ]);
 
+                // Attach invoice_number so frontend receives the 8-digit number
+                $order->invoice_number = $invoice->invoice_number;
                 $orders[] = $order;
+            }
+
+            $paymentUrl = null;
+            if ($request->payment_method === 'online' && $request->online_gateway === 'sslcommerz') {
+                $sslcommerz = SslcommerzGateway::first();
+                if ($sslcommerz && $sslcommerz->status) {
+                    $mode = $sslcommerz->mode ?? 'test';
+                    $domain = $mode === 'live' ? 'https://securepay.sslcommerz.com' : 'https://sandbox.sslcommerz.com';
+                    $post_url = "$domain/gwprocess/v4/api.php";
+
+                    $tran_id = $orders[0]->invoice_number;
+
+                    $post_data = [
+                        'store_id' => $sslcommerz->store_id,
+                        'store_passwd' => $sslcommerz->store_password,
+                        'total_amount' => $grandTotal,
+                        'currency' => 'BDT',
+                        'tran_id' => $tran_id,
+                        'success_url' => route('sslcommerz.success'),
+                        'fail_url' => route('sslcommerz.fail'),
+                        'cancel_url' => route('sslcommerz.cancel'),
+                        'ipn_url' => route('sslcommerz.ipn'),
+                        // Customer Details
+                        'cus_name' => $request->name,
+                        'cus_email' => $request->email ?: $request->phone . '@jhrbazar.com',
+                        'cus_add1' => $request->address,
+                        'cus_city' => $request->city ?: 'Dhaka',
+                        'cus_state' => $request->city ?: 'Dhaka',
+                        'cus_postcode' => '1000',
+                        'cus_country' => 'Bangladesh',
+                        'cus_phone' => $request->phone,
+                        // Shipping & Product profile
+                        'shipping_method' => 'NO',
+                        'num_of_item' => count($validatedItems),
+                        'product_name' => 'Products ordered',
+                        'product_category' => 'E-commerce',
+                        'product_profile' => 'general',
+                    ];
+
+                    $response = \Illuminate\Support\Facades\Http::asForm()->post($post_url, $post_data);
+
+                    if ($response->successful() && $response->json('status') === 'SUCCESS') {
+                        $paymentUrl = $response->json('GatewayPageURL');
+                    } else {
+                        throw new \Exception('Payment Gateway Error: ' . ($response->json('failedreason') ?: 'Unable to initiate SSLCommerz payment.'));
+                    }
+                }
             }
 
             DB::commit();
@@ -410,7 +459,8 @@ class CheckoutController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Order placed successfully!',
-                'orders'  => $orders
+                'orders'  => $orders,
+                'payment_url' => $paymentUrl
             ]);
 
         } catch (\Exception $e) {
@@ -596,5 +646,113 @@ class CheckoutController extends Controller
         if ($key === 'bkash') return 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/BKash_Logo.svg/512px-BKash_Logo.svg.png';
 
         return $logos[$key] ?? null;
+    }
+
+    /**
+     * Get details of a placed order/invoice (public endpoint for checkout redirect pages).
+     */
+    public function orderDetails($invoice_no)
+    {
+        $invoice = PosInvoice::with(['customer.user', 'order'])->where('invoice_number', $invoice_no)->first();
+        if (!$invoice) {
+            return response()->json(['success' => false, 'message' => 'Order not found.'], 404);
+        }
+        return response()->json([
+            'success' => true,
+            'orders' => [$invoice]
+        ]);
+    }
+
+    /**
+     * SSLCommerz Payment Success Callback
+     */
+    public function successCallback(Request $request)
+    {
+        $tran_id = $request->input('tran_id');
+        $val_id = $request->input('val_id');
+
+        if (!$tran_id || !$val_id) {
+            return redirect('/checkout?payment_error=true');
+        }
+
+        $sslcommerz = SslcommerzGateway::first();
+        if ($sslcommerz) {
+            $mode = $sslcommerz->mode ?? 'test';
+            $domain = $mode === 'live' ? 'https://securepay.sslcommerz.com' : 'https://sandbox.sslcommerz.com';
+            $validation_url = "$domain/validator/api/validationserverAPI.php";
+
+            $response = \Illuminate\Support\Facades\Http::get($validation_url, [
+                'val_id' => $val_id,
+                'store_id' => $sslcommerz->store_id,
+                'store_passwd' => $sslcommerz->store_password,
+                'format' => 'json'
+            ]);
+
+            if ($response->successful() && in_array($response->json('status'), ['VALID', 'VALIDATED'])) {
+                $invoice = PosInvoice::with('order')->where('invoice_number', $tran_id)->first();
+                if ($invoice) {
+                    $invoice->update(['payment_status' => 'Paid', 'received_amount' => $invoice->grand_total]);
+                    if ($invoice->order) {
+                        $invoice->order->update(['payment_status' => 'paid', 'status' => 'processing']);
+                    }
+                }
+                return redirect('/order-success?invoice=' . $tran_id);
+            }
+        }
+
+        return redirect('/checkout?payment_error=true');
+    }
+
+    /**
+     * SSLCommerz Payment Failure Callback
+     */
+    public function failCallback(Request $request)
+    {
+        return redirect('/checkout?payment_failed=true');
+    }
+
+    /**
+     * SSLCommerz Payment Cancel Callback
+     */
+    public function cancelCallback(Request $request)
+    {
+        return redirect('/checkout?payment_cancelled=true');
+    }
+
+    /**
+     * SSLCommerz Payment IPN Callback
+     */
+    public function ipnCallback(Request $request)
+    {
+        $tran_id = $request->input('tran_id');
+        $val_id = $request->input('val_id');
+
+        if ($tran_id && $val_id) {
+            $sslcommerz = SslcommerzGateway::first();
+            if ($sslcommerz) {
+                $mode = $sslcommerz->mode ?? 'test';
+                $domain = $mode === 'live' ? 'https://securepay.sslcommerz.com' : 'https://sandbox.sslcommerz.com';
+                $validation_url = "$domain/validator/api/validationserverAPI.php";
+
+                $response = \Illuminate\Support\Facades\Http::get($validation_url, [
+                    'val_id' => $val_id,
+                    'store_id' => $sslcommerz->store_id,
+                    'store_passwd' => $sslcommerz->store_password,
+                    'format' => 'json'
+                ]);
+
+                if ($response->successful() && in_array($response->json('status'), ['VALID', 'VALIDATED'])) {
+                    $invoice = PosInvoice::with('order')->where('invoice_number', $tran_id)->first();
+                    if ($invoice) {
+                        $invoice->update(['payment_status' => 'Paid', 'received_amount' => $invoice->grand_total]);
+                        if ($invoice->order) {
+                            $invoice->order->update(['payment_status' => 'paid', 'status' => 'processing']);
+                        }
+                    }
+                    return response()->json(['status' => 'success', 'message' => 'IPN Processed.']);
+                }
+            }
+        }
+        return response()->json(['status' => 'failed', 'message' => 'Verification failed.'], 400);
     }
 }

@@ -1,5 +1,7 @@
 @extends('admin.master')
 
+@section('title', 'Create Landing Page')
+
 @section('content')
 
 @php
@@ -7,246 +9,325 @@
 @endphp
 
 <style>
-:root{--accent:#e7567c;--accent-dk:#c93f65;--blue:#4361ee;--green:#22c55e;--text:#1a1f36;--muted:#6b7a99;--border:#e4e9f2;--bg:#f0f2f5;--white:#ffffff;--radius:8px;--radius-sm:5px;--shadow:0 1px 4px rgba(0,0,0,.07);}
-*,*::before,*::after{box-sizing:border-box;}
-.lp-page{padding:24px;background:var(--bg);min-height:100vh;font-family:'Segoe UI',system-ui,sans-serif;}
+:root {
+    --cr-accent: #1e3a8a; --cr-accent-lt: #2563eb;
+    --cr-text: #1a1f36; --cr-muted: #64748b;
+    --cr-border: #e2e8f0; --cr-bg: #f1f5f9;
+    --cr-white: #ffffff; --cr-radius: 10px;
+    --cr-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    --cr-label-color: #0f172a;
+}
+*, *::before, *::after { box-sizing: border-box; }
 
-.lp-page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
-.lp-page-title{font-size:20px;font-weight:800;color:var(--text);margin:0;}
-.btn-back{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;transition:all .15s;}
-.btn-back:hover{background:#f1f5f9;color:var(--text);text-decoration:none;}
+.cr-wrap { padding: 28px 28px 60px; background: var(--cr-bg); min-height: 100vh; font-family: 'DM Sans','Segoe UI',system-ui,sans-serif; }
 
-/* Form Layout */
-.lp-form-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
-.form-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px;}
-.form-card-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
-.form-card-head h4{font-size:14px;font-weight:700;color:var(--text);margin:0;}
-.form-card-body{padding:22px 20px;}
+/* ── Header ── */
+.cr-header { margin-bottom: 8px; }
+.cr-header h1 { font-size: 20px; font-weight: 800; color: var(--cr-text); margin: 0 0 4px; }
+.cr-breadcrumb { font-size: 12px; color: var(--cr-muted); }
+.cr-breadcrumb a { color: var(--cr-muted); text-decoration: none; }
+.cr-breadcrumb a:hover { color: var(--cr-accent); }
+.cr-breadcrumb span { margin: 0 5px; }
 
-.form-group{margin-bottom:18px;}
-.form-group:last-child{margin-bottom:0;}
-.form-label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:7px;}
-.form-label span{color:var(--accent);}
-.form-control{width:100%;height:44px;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:0 14px;font-size:13px;color:var(--text);background:#f9fafb;outline:none;font-family:inherit;transition:border-color .15s,box-shadow .15s;}
-.form-control:focus{border-color:var(--accent);background:var(--white);box-shadow:0 0 0 3px rgba(231,86,124,.1);}
-.form-control.is-invalid{border-color:#dc2626;}
-.invalid-feedback{font-size:12px;color:#dc2626;margin-top:5px;}
-select.form-control{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236b7a99' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;cursor:pointer;}
+/* ── Two-column grid ── */
+.cr-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; margin-top: 20px; }
+@media(max-width: 1100px) { .cr-grid { grid-template-columns: 1fr; } }
 
-/* File upload */
-.file-upload-wrap{position:relative;}
-.file-input{width:100%;height:44px;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:0;font-size:13px;color:var(--text);background:#f9fafb;outline:none;cursor:pointer;font-family:inherit;transition:border-color .15s;}
-.file-input:focus{border-color:var(--accent);}
-.img-preview-wrap{margin-top:10px;display:none;}
-.img-preview-wrap.show{display:block;}
-.img-preview{max-width:120px;max-height:120px;object-fit:cover;border-radius:8px;border:2px solid var(--border);}
+/* ── Card ── */
+.cr-card { background: var(--cr-white); border-radius: var(--cr-radius); box-shadow: var(--cr-shadow); border: 1px solid var(--cr-border); margin-bottom: 18px; overflow: hidden; }
+.cr-card-head { padding: 14px 20px; border-bottom: 1px solid var(--cr-border); display: flex; align-items: center; gap: 8px; }
+.cr-card-head h4 { font-size: 14px; font-weight: 700; color: var(--cr-text); margin: 0; }
+.cr-card-head .head-icon { width: 30px; height: 30px; border-radius: 8px; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: var(--cr-accent-lt); font-size: 15px; flex-shrink: 0; }
+.cr-card-body { padding: 20px 20px; }
 
-/* Toggle switch */
-.toggle-wrap{display:flex;align-items:center;gap:12px;}
-.toggle-switch{position:relative;width:50px;height:26px;cursor:pointer;display:inline-block;}
-.toggle-switch input{opacity:0;width:0;height:0;}
-.toggle-slider{position:absolute;inset:0;background:#d1d5db;border-radius:26px;transition:background .2s;}
-.toggle-slider::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;left:3px;top:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
-.toggle-switch input:checked+.toggle-slider{background:#22c55e;}
-.toggle-switch input:checked+.toggle-slider::after{transform:translateX(24px);}
-.toggle-label{font-size:13px;color:var(--muted);font-weight:500;}
+/* ── Form controls ── */
+.cr-group { margin-bottom: 16px; }
+.cr-group:last-child { margin-bottom: 0; }
+.cr-label { display: block; font-size: 12.5px; font-weight: 700; color: var(--cr-label-color); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+.cr-label .opt { font-weight: 500; color: var(--cr-muted); text-transform: none; letter-spacing: 0; }
+.cr-input {
+    width: 100%; height: 42px; border: 1.5px solid var(--cr-border); border-radius: 8px;
+    padding: 0 14px; font-size: 13.5px; color: var(--cr-text); background: #f8fafc;
+    outline: none; font-family: inherit; transition: border-color .15s, box-shadow .15s;
+}
+.cr-input:focus { border-color: var(--cr-accent-lt); background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.cr-input.is-invalid { border-color: #dc2626; }
+.cr-invalid { font-size: 12px; color: #dc2626; margin-top: 4px; }
 
-/* Rich text (summernote placeholder) */
-.rich-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:7px;display:block;}
+/* Slug wrapper */
+.cr-slug-wrap { display: flex; align-items: center; border: 1.5px solid var(--cr-border); border-radius: 8px; background: #f8fafc; overflow: hidden; transition: border-color .15s; }
+.cr-slug-wrap:focus-within { border-color: var(--cr-accent-lt); background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.cr-slug-prefix { padding: 0 10px; font-size: 13px; color: var(--cr-muted); background: #f1f5f9; border-right: 1.5px solid var(--cr-border); height: 42px; display: flex; align-items: center; font-weight: 600; white-space: nowrap; }
+.cr-slug-input { flex: 1; height: 42px; border: none; outline: none; padding: 0 12px; font-size: 13.5px; color: var(--cr-text); background: transparent; font-family: inherit; }
 
-/* Reviews section */
-.review-list{display:flex;flex-direction:column;gap:14px;}
-.review-item{background:#f8fafc;border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;position:relative;}
-.review-item-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-.review-item-num{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;}
-.btn-remove-review{background:#fee2e2;color:#dc2626;border:none;border-radius:4px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:4px;transition:background .15s;}
-.btn-remove-review:hover{background:#fecaca;}
+select.cr-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236b7a99' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-color: #f8fafc; padding-right: 36px; cursor: pointer; }
 
-.btn-add-review{height:40px;padding:0 18px;background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px;transition:all .15s;margin-top:10px;}
-.btn-add-review:hover{background:#dcfce7;}
+/* Multi-select list */
+.cr-multiselect { width: 100%; border: 1.5px solid var(--cr-border); border-radius: 8px; background: #f8fafc; font-size: 13px; color: var(--cr-text); font-family: inherit; padding: 4px 0; min-height: 130px; outline: none; transition: border-color .15s; }
+.cr-multiselect:focus { border-color: var(--cr-accent-lt); }
+.cr-multiselect option { padding: 6px 12px; }
+.cr-multiselect option:checked { background: #dbeafe; color: #1e40af; }
+.cr-hint { font-size: 11.5px; color: var(--cr-muted); margin-top: 5px; }
 
-/* Submit */
-.form-footer{padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:12px;}
-.btn-submit{height:44px;padding:0 28px;background:linear-gradient(135deg,#e7567c,#c93f65);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-family:inherit;transition:opacity .15s;}
-.btn-submit:hover{opacity:.9;}
-.btn-cancel{height:44px;padding:0 22px;background:#f1f5f9;color:var(--muted);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:7px;font-family:inherit;}
-.btn-cancel:hover{background:#e2e8f0;color:var(--text);text-decoration:none;}
+/* File input */
+.cr-file-wrap { display: flex; align-items: center; gap: 0; border: 1.5px solid var(--cr-border); border-radius: 8px; overflow: hidden; background: #f8fafc; }
+.cr-file-btn { padding: 0 14px; height: 42px; background: #e2e8f0; border: none; border-right: 1.5px solid var(--cr-border); font-size: 13px; font-weight: 600; color: var(--cr-text); cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.cr-file-name { flex: 1; padding: 0 12px; font-size: 13px; color: var(--cr-muted); height: 42px; display: flex; align-items: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.cr-file-input-hidden { position: absolute; opacity: 0; width: 0; height: 0; }
+.cr-img-preview { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1.5px solid var(--cr-border); margin-top: 10px; display: none; }
 
-@media(max-width:1024px){.lp-form-grid{grid-template-columns:1fr;}}
+/* Template picker */
+.cr-templates { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 4px; }
+.cr-tpl-card { border: 2px solid var(--cr-border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: border-color .15s, box-shadow .15s; position: relative; }
+.cr-tpl-card:hover { border-color: var(--cr-accent-lt); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.cr-tpl-card input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.cr-tpl-card.selected { border-color: var(--cr-accent-lt); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+.cr-tpl-card.selected::after { content: '✓'; position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; background: var(--cr-accent-lt); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.cr-tpl-thumb { height: 100px; background: linear-gradient(135deg,#1e293b,#0f172a); display: flex; align-items: center; justify-content: center; font-size: 30px; }
+.cr-tpl-thumb.light { background: linear-gradient(135deg,#f8fafc,#e2e8f0); }
+.cr-tpl-thumb.builder { background: linear-gradient(135deg,#1e40af,#2563eb); }
+.cr-tpl-name { padding: 8px 10px 10px; font-size: 12px; font-weight: 600; color: var(--cr-text); text-align: center; }
+
+/* Color pickers */
+.cr-color-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.cr-color-wrap { display: flex; align-items: center; gap: 10px; }
+.cr-color-input { width: 42px; height: 42px; border: 1.5px solid var(--cr-border); border-radius: 8px; padding: 3px; cursor: pointer; background: #f8fafc; }
+.cr-color-hex { flex: 1; height: 42px; border: 1.5px solid var(--cr-border); border-radius: 8px; padding: 0 12px; font-size: 13px; color: var(--cr-text); background: #f8fafc; outline: none; font-family: inherit; }
+
+/* Status select */
+.cr-status-select { width: 100%; height: 42px; border: 1.5px solid #86efac; border-radius: 8px; padding: 0 14px; font-size: 13.5px; color: #15803d; background: #f0fdf4; font-weight: 600; font-family: inherit; outline: none; cursor: pointer; }
+
+/* Buttons */
+.cr-btn-row { display: flex; gap: 10px; margin-top: 4px; }
+.cr-btn-primary { height: 44px; padding: 0 24px; background: var(--cr-accent); color: #fff; border: none; border-radius: 8px; font-size: 13.5px; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .15s; display: inline-flex; align-items: center; gap: 8px; }
+.cr-btn-primary:hover { opacity: .88; }
+.cr-btn-secondary { height: 44px; padding: 0 20px; background: var(--cr-white); border: 1.5px solid var(--cr-border); border-radius: 8px; font-size: 13.5px; font-weight: 600; color: var(--cr-muted); cursor: pointer; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; transition: all .15s; }
+.cr-btn-secondary:hover { background: #f1f5f9; color: var(--cr-text); text-decoration: none; }
 </style>
 
-<div class="lp-page">
+<div class="cr-wrap">
 
-    <div class="lp-page-header">
-        <h2 class="lp-page-title">
-            <i class="bi bi-plus-circle" style="color:var(--accent);margin-right:6px;"></i>
-            Landing Page Create
-        </h2>
-        <a href="{{ route('admin.landingpages.index') }}" class="btn-back">
-            <i class="bi bi-arrow-left"></i> Back
-        </a>
+    {{-- Header --}}
+    <div class="cr-header">
+        <h1>Create Landing Page</h1>
+        <p class="cr-breadcrumb">
+            <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+            <span>›</span>
+            <a href="{{ route('admin.landingpages.index') }}">Landing Pages</a>
+            <span>›</span> New
+        </p>
     </div>
 
-    <form action="{{ route('admin.landingpages.store') }}" method="POST" enctype="multipart/form-data" id="lpForm">
+    <form action="{{ route('admin.landingpages.store') }}" method="POST" enctype="multipart/form-data" id="lpCreateForm">
         @csrf
 
-        <div class="lp-form-grid">
+        <div class="cr-grid">
 
-            {{-- ── LEFT: Main Fields ── --}}
+            {{-- ════════════════════════════════ LEFT ════════════════════════════════ --}}
             <div>
 
-                {{-- Basic Info --}}
-                <div class="form-card">
-                    <div class="form-card-head">
-                        <i class="bi bi-info-circle" style="color:var(--accent);"></i>
+                {{-- Basic Information --}}
+                <div class="cr-card">
+                    <div class="cr-card-head">
+                        <div class="head-icon"><i class="bi bi-info-circle-fill"></i></div>
                         <h4>Basic Information</h4>
                     </div>
-                    <div class="form-card-body">
+                    <div class="cr-card-body">
 
                         {{-- Title --}}
-                        <div class="form-group">
-                            <label class="form-label">Landing Page Title <span>*</span></label>
+                        <div class="cr-group">
+                            <label class="cr-label">SUPER Page Title <span class="opt">(Optional)</span></label>
                             <input type="text" name="title"
-                                   class="form-control {{ $errors->has('title') ? 'is-invalid' : '' }}"
+                                   class="cr-input {{ $errors->has('title') ? 'is-invalid' : '' }}"
                                    placeholder="Enter landing page title"
                                    value="{{ old('title') }}">
-                            @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            @error('title')<div class="cr-invalid">{{ $message }}</div>@enderror
                         </div>
 
-                        {{-- Products + Media Type (2 col) --}}
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-                            <div class="form-group">
-                                <label class="form-label">Products</label>
-                                <select name="product_id" class="form-control">
-                                    <option value="">Choose...</option>
-                                    @foreach($products as $product)
-                                        <option value="{{ $product->id }}" {{ old('product_id') == $product->id ? 'selected' : '' }}>
-                                            {{ $product->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Media Type <span>*</span></label>
-                                <select name="media_type" class="form-control {{ $errors->has('media_type') ? 'is-invalid' : '' }}">
-                                    <option value="image" {{ old('media_type','image') === 'image' ? 'selected' : '' }}>Image</option>
-                                    <option value="video" {{ old('media_type') === 'video' ? 'selected' : '' }}>Video</option>
-                                </select>
-                                @error('media_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        {{-- URL Slug --}}
+                        <div class="cr-group">
+                            <label class="cr-label">URL Slug <span class="opt">(Optional)</span></label>
+                            <div class="cr-slug-wrap">
+                                <span class="cr-slug-prefix">/N/</span>
+                                <input type="text" name="slug" class="cr-slug-input"
+                                       placeholder="unique-page-slug"
+                                       value="{{ old('slug') }}">
                             </div>
                         </div>
 
-                        {{-- Main Image --}}
-                        <div class="form-group">
-                            <label class="form-label">Image <span>*</span></label>
-                            <input type="file" name="image" id="mainImage"
-                                   class="file-input {{ $errors->has('image') ? 'is-invalid' : '' }}"
-                                   accept="image/*"
-                                   onchange="previewImg(this,'mainPreview','mainPreviewWrap')">
-                            @error('image')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            <div class="img-preview-wrap" id="mainPreviewWrap">
-                                <img id="mainPreview" src="#" alt="Preview" class="img-preview">
-                            </div>
+                        {{-- Primary Product --}}
+                        <div class="cr-group">
+                            <label class="cr-label">Select Primary Product</label>
+                            <select name="product_id" class="cr-input">
+                                <option value="">-- Choose Main Product --</option>
+                                @foreach($products as $product)
+                                    <option value="{{ $product->id }}" {{ old('product_id') == $product->id ? 'selected' : '' }}>
+                                        {{ $product->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Additional Products --}}
+                        <div class="cr-group">
+                            <label class="cr-label">Additional Products / Combo Options <span class="opt">(Optional)</span></label>
+                            <select name="additional_product_ids[]" class="cr-multiselect" multiple size="6">
+                                @foreach($products as $product)
+                                    <option value="{{ $product->id }}"
+                                        {{ in_array($product->id, old('additional_product_ids', [])) ? 'selected' : '' }}>
+                                        {{ $product->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="cr-hint">These will appear as options in the order form.</p>
                         </div>
 
                     </div>
                 </div>
 
-                {{-- Short Description --}}
-                <div class="form-card">
-                    <div class="form-card-head">
-                        <i class="bi bi-text-paragraph" style="color:var(--accent);"></i>
-                        <h4>Short Description</h4>
+                {{-- Choose Visual Style --}}
+                <div class="cr-card">
+                    <div class="cr-card-head">
+                        <div class="head-icon"><i class="bi bi-palette-fill"></i></div>
+                        <h4>Choose Visual Style (Blade Template) <span style="color:#ef4444;font-size:12px">*</span></h4>
                     </div>
-                    <div class="form-card-body">
-                        <textarea name="short_description" id="shortDesc" class="form-control"
-                                  style="height:120px;resize:vertical;padding:12px;">{{ old('short_description') }}</textarea>
-                    </div>
-                </div>
+                    <div class="cr-card-body">
+                        <div class="cr-templates">
 
-                {{-- Description --}}
-                <div class="form-card">
-                    <div class="form-card-head">
-                        <i class="bi bi-file-text" style="color:var(--accent);"></i>
-                        <h4>Description</h4>
-                    </div>
-                    <div class="form-card-body">
-                        <textarea name="description" id="descEditor" class="form-control"
-                                  style="height:160px;resize:vertical;padding:12px;">{{ old('description') }}</textarea>
+                            {{-- Template 1 --}}
+                            <label class="cr-tpl-card" id="tpl1Label">
+                                <input type="radio" name="template" value="template1" {{ old('template','template3') === 'template1' ? 'checked' : '' }}>
+                                <div class="cr-tpl-thumb">🌙</div>
+                                <div class="cr-tpl-name">Template 1 (Modern Dark)</div>
+                            </label>
+
+                            {{-- Template 2 --}}
+                            <label class="cr-tpl-card" id="tpl2Label">
+                                <input type="radio" name="template" value="template2" {{ old('template') === 'template2' ? 'checked' : '' }}>
+                                <div class="cr-tpl-thumb light">☀️</div>
+                                <div class="cr-tpl-name">Template 2 (Clean Light)</div>
+                            </label>
+
+                            {{-- Template 3 (Default / Dynamic Builder) --}}
+                            <label class="cr-tpl-card {{ old('template','template3') === 'template3' ? 'selected' : '' }}" id="tpl3Label">
+                                <input type="radio" name="template" value="template3" {{ old('template','template3') === 'template3' ? 'checked' : '' }}>
+                                <div class="cr-tpl-thumb builder">🚀</div>
+                                <div class="cr-tpl-name">Template 3 (Dynamic Builder)</div>
+                            </label>
+
+                        </div>
                     </div>
                 </div>
 
             </div>
-
-            {{-- ── RIGHT: Reviews + Status ── --}}
+            {{-- ════════════════════════════════ RIGHT ════════════════════════════════ --}}
             <div>
 
-                {{-- Reviews --}}
-                <div class="form-card">
-                    <div class="form-card-head">
-                        <i class="bi bi-star" style="color:var(--warning);"></i>
-                        <h4>Reviews</h4>
+                {{-- Global Media --}}
+                <div class="cr-card">
+                    <div class="cr-card-head">
+                        <div class="head-icon"><i class="bi bi-images"></i></div>
+                        <h4>Global Media <span style="font-size:11px;color:var(--cr-muted);font-weight:500;">ⓘ</span></h4>
                     </div>
-                    <div class="form-card-body">
+                    <div class="cr-card-body">
 
-                        <div class="review-list" id="reviewList">
-                            {{-- Default 1 review row --}}
-                            <div class="review-item" id="review_0">
-                                <div class="review-item-head">
-                                    <span class="review-item-num">Review #1</span>
-                                    <button type="button" class="btn-remove-review" onclick="removeReview(0)">
-                                        <i class="bi bi-x"></i> Remove
-                                    </button>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Review Text <span>*</span></label>
-                                    <input type="text" name="reviews[0][review]"
-                                           class="form-control"
-                                           placeholder="Customer review text...">
-                                </div>
-                                <div class="form-group" style="margin-bottom:0;">
-                                    <label class="form-label">Review Image</label>
-                                    <input type="file" name="reviews[0][image]"
-                                           class="file-input" accept="image/*"
-                                           onchange="previewImg(this,'rPreview_0','rPreviewWrap_0')">
-                                    <div class="img-preview-wrap" id="rPreviewWrap_0">
-                                        <img id="rPreview_0" src="#" alt="" class="img-preview">
-                                    </div>
-                                </div>
+                        {{-- Feature Image --}}
+                        <div class="cr-group">
+                            <label class="cr-label">Main Feature Image <span class="opt">(Optional)</span></label>
+                            <div class="cr-file-wrap" onclick="document.getElementById('featureImageInput').click()">
+                                <span class="cr-file-btn">Choose file</span>
+                                <span class="cr-file-name" id="featureImageName">No file chosen</span>
                             </div>
+                            <input type="file" name="image" id="featureImageInput" class="cr-file-input-hidden" accept="image/*"
+                                   onchange="handleFile(this,'featureImageName','featureImgPreview')">
+                            <img id="featureImgPreview" class="cr-img-preview" alt="Preview">
+                            <p class="cr-hint">Shows at the top of the page.</p>
                         </div>
 
-                        <button type="button" class="btn-add-review" onclick="addReview()">
-                            <i class="bi bi-plus-circle"></i> Add Review
-                        </button>
+                        {{-- Video URL --}}
+                        <div class="cr-group">
+                            <label class="cr-label">Main Video URL <span class="opt">(Optional)</span></label>
+                            <input type="text" name="video_url" class="cr-input"
+                                   placeholder="https://youtube.com/..."
+                                   value="{{ old('video_url') }}">
+                        </div>
+
+                        {{-- Checkout Review Image --}}
+                        <div class="cr-group">
+                            <label class="cr-label">Checkout Review Image <span class="opt">(Optional)</span></label>
+                            <div class="cr-file-wrap" onclick="document.getElementById('reviewImgInput').click()">
+                                <span class="cr-file-btn">Choose file</span>
+                                <span class="cr-file-name" id="reviewImgName">No file chosen</span>
+                            </div>
+                            <input type="file" name="checkout_review_image" id="reviewImgInput" class="cr-file-input-hidden" accept="image/*"
+                                   onchange="handleFile(this,'reviewImgName','reviewImgPreview')">
+                            <img id="reviewImgPreview" class="cr-img-preview" alt="Preview">
+                            <p class="cr-hint">This single review image will stay fixed right above the Order Form.</p>
+                        </div>
 
                     </div>
                 </div>
 
-                {{-- Status --}}
-                <div class="form-card">
-                    <div class="form-card-head">
-                        <i class="bi bi-toggle-on" style="color:var(--green);"></i>
-                        <h4>Status</h4>
+                {{-- Theme Colors --}}
+                <div class="cr-card">
+                    <div class="cr-card-head">
+                        <div class="head-icon"><i class="bi bi-palette2"></i></div>
+                        <h4>Theme Colors 🎨</h4>
                     </div>
-                    <div class="form-card-body">
-                        <div class="toggle-wrap">
-                            <label class="toggle-switch">
-                                <input type="checkbox" name="status" value="1"
-                                       {{ old('status','1') ? 'checked' : '' }}>
-                                <span class="toggle-slider"></span>
-                            </label>
-                            <span class="toggle-label">Active</span>
+                    <div class="cr-card-body">
+                        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:16px;">
+                            These colors will automatically apply to all blocks you add in the Page Builder later!
                         </div>
+
+                        <div class="cr-color-row">
+                            {{-- Background Color --}}
+                            <div class="cr-group">
+                                <label class="cr-label">Background Color</label>
+                                <div class="cr-color-wrap">
+                                    <input type="color" name="bg_color" id="bgColorPicker" class="cr-color-input"
+                                           value="{{ old('bg_color','#ffffff') }}"
+                                           onchange="document.getElementById('bgColorHex').value = this.value">
+                                    <input type="text" id="bgColorHex" class="cr-color-hex"
+                                           value="{{ old('bg_color','#ffffff') }}"
+                                           onchange="document.getElementById('bgColorPicker').value = this.value">
+                                </div>
+                            </div>
+                            {{-- Button Color --}}
+                            <div class="cr-group">
+                                <label class="cr-label">Primary/Button Color</label>
+                                <div class="cr-color-wrap">
+                                    <input type="color" name="button_color" id="btnColorPicker" class="cr-color-input"
+                                           value="{{ old('button_color','#1e3a8a') }}"
+                                           onchange="document.getElementById('btnColorHex').value = this.value">
+                                    <input type="text" id="btnColorHex" class="cr-color-hex"
+                                           value="{{ old('button_color','#1e3a8a') }}"
+                                           onchange="document.getElementById('btnColorPicker').value = this.value">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Status --}}
+                        <div class="cr-group" style="margin-top:8px;">
+                            <label class="cr-label">Status</label>
+                            <select name="status" class="cr-status-select">
+                                <option value="1" {{ old('status','1') == '1' ? 'selected' : '' }}>Active</option>
+                                <option value="0" {{ old('status') == '0' ? 'selected' : '' }}>Inactive</option>
+                            </select>
+                        </div>
+
                     </div>
-                    <div class="form-footer">
-                        <button type="submit" class="btn-submit">
-                            <i class="bi bi-check-circle"></i> Submit
-                        </button>
-                        <a href="{{ route('admin.landingpages.index') }}" class="btn-cancel">
-                            <i class="bi bi-x"></i> Cancel
-                        </a>
-                    </div>
+                </div>
+
+                {{-- Submit Buttons --}}
+                <div class="cr-btn-row">
+                    <input type="hidden" name="action" value="builder">
+                    <button type="submit" class="cr-btn-primary">
+                        <i class="bi bi-arrow-right-circle-fill"></i>
+                        Create & Open Builder
+                    </button>
+                    <a href="{{ route('admin.landingpages.index') }}" class="cr-btn-secondary">
+                        Cancel
+                    </a>
                 </div>
 
             </div>
@@ -255,88 +336,43 @@ select.form-control{appearance:none;background-image:url("data:image/svg+xml,%3C
 </div>
 
 <script>
-'use strict';
+// Template card selection highlight
+document.querySelectorAll('.cr-tpl-card input[type="radio"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+        document.querySelectorAll('.cr-tpl-card').forEach(c => c.classList.remove('selected'));
+        this.closest('.cr-tpl-card').classList.add('selected');
+    });
+});
 
-/* ── Image Preview ── */
-function previewImg(input, previewId, wrapId) {
-    var wrap = document.getElementById(wrapId);
-    var prev = document.getElementById(previewId);
+// File input handler
+function handleFile(input, nameId, previewId) {
     if (input.files && input.files[0]) {
+        document.getElementById(nameId).textContent = input.files[0].name;
         var reader = new FileReader();
         reader.onload = function(e) {
-            prev.src = e.target.result;
-            wrap.classList.add('show');
+            var img = document.getElementById(previewId);
+            img.src = e.target.result;
+            img.style.display = 'block';
         };
         reader.readAsDataURL(input.files[0]);
     }
 }
 
-/* ── Dynamic Reviews ── */
-var reviewCount = 1;
-
-function addReview() {
-    var idx  = reviewCount;
-    var list = document.getElementById('reviewList');
-    var div  = document.createElement('div');
-    div.className = 'review-item';
-    div.id = 'review_' + idx;
-    div.innerHTML = `
-        <div class="review-item-head">
-            <span class="review-item-num">Review #${idx + 1}</span>
-            <button type="button" class="btn-remove-review" onclick="removeReview(${idx})">
-                <i class="bi bi-x"></i> Remove
-            </button>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Review Text <span style="color:var(--accent)">*</span></label>
-            <input type="text" name="reviews[${idx}][review]"
-                   class="form-control" placeholder="Customer review text...">
-        </div>
-        <div class="form-group" style="margin-bottom:0;">
-            <label class="form-label">Review Image</label>
-            <input type="file" name="reviews[${idx}][image]"
-                   class="file-input" accept="image/*"
-                   onchange="previewImg(this,'rPreview_${idx}','rPreviewWrap_${idx}')">
-            <div class="img-preview-wrap" id="rPreviewWrap_${idx}">
-                <img id="rPreview_${idx}" src="#" alt="" class="img-preview">
-            </div>
-        </div>`;
-    list.appendChild(div);
-    reviewCount++;
-    renumberReviews();
-}
-
-function removeReview(idx) {
-    var el = document.getElementById('review_' + idx);
-    if (el) el.remove();
-    renumberReviews();
-}
-
-function renumberReviews() {
-    var items = document.querySelectorAll('#reviewList .review-item');
-    items.forEach(function(item, i) {
-        var numEl = item.querySelector('.review-item-num');
-        if (numEl) numEl.textContent = 'Review #' + (i + 1);
-    });
-}
-
-/* ── Summernote (if loaded) ── */
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof $ !== 'undefined' && $.fn && $.fn.summernote) {
-        $('#shortDesc, #descEditor').summernote({
-            height: 150,
-            toolbar: [
-                ['style', ['bold','italic','underline','clear']],
-                ['font', ['strikethrough']],
-                ['fontname', ['fontname']],
-                ['color', ['color']],
-                ['para', ['ul','ol','paragraph']],
-                ['table', ['table']],
-                ['insert', ['link','picture','video']],
-                ['view', ['fullscreen','codeview','help']]
-            ]
-        });
+// Auto-generate slug from title
+document.querySelector('[name="title"]').addEventListener('input', function() {
+    var slugInput = document.querySelector('[name="slug"]');
+    if (!slugInput.value || slugInput.dataset.manual !== '1') {
+        var slug = this.value
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/--+/g, '-')
+            .trim();
+        slugInput.value = slug;
     }
+});
+document.querySelector('[name="slug"]').addEventListener('input', function() {
+    this.dataset.manual = '1';
 });
 </script>
 

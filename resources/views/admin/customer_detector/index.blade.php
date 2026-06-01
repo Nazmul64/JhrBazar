@@ -1026,8 +1026,8 @@
         </div>
 
         <!-- Pagination -->
-        <div class="d-flex justify-content-center">
-            {{ $visits->appends(request()->query())->links() }}
+        <div class="d-flex justify-content-center mt-4">
+            {{ $visits->appends(request()->query())->links('pagination::bootstrap-5') }}
         </div>
     </form>
 </div>

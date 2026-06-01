@@ -28,7 +28,7 @@ class AamarpayGatewayController extends Controller
 
         $gateway->save();
 
-        return redirect()->back()->with('aamarpay_success', 'Settings updated successfully!');
+        return redirect()->back()->with('success', 'Settings updated successfully!');
     }
 
     public function toggleStatus()

@@ -96,7 +96,7 @@ select.form-control{appearance:none;background-image:url("data:image/svg+xml,%3C
 
                         {{-- Title --}}
                         <div class="form-group">
-                            <label class="form-label">Landing Page Title <span>*</span></label>
+                            <label class="form-label">Landing Page Title <span style="color:var(--muted);font-weight:400;">(Optional)</span></label>
                             <input type="text" name="title"
                                    class="form-control {{ $errors->has('title') ? 'is-invalid' : '' }}"
                                    value="{{ old('title', $landingpage->title) }}"
@@ -266,11 +266,12 @@ select.form-control{appearance:none;background-image:url("data:image/svg+xml,%3C
                         </div>
                     </div>
                     <div class="form-footer">
-                        <a href="{{ route('admin.landingpages.preview', $landingpage->id) }}" target="_blank" class="btn-cancel" style="background:#f8fafc;color:#1f2937;">
+                        <input type="hidden" name="action" value="builder" />
+                        <a href="/l/{{ $landingpage->slug }}" target="_blank" class="btn-cancel" style="background:#f8fafc;color:#1f2937;">
                             <i class="bi bi-eye"></i> Preview
                         </a>
                         <button type="submit" class="btn-submit">
-                            <i class="bi bi-check-circle"></i> Update
+                            <i class="bi bi-arrow-right-circle"></i> Save & Go to Builder
                         </button>
                         <a href="{{ route('admin.landingpages.index') }}" class="btn-cancel">
                             <i class="bi bi-x"></i> Cancel

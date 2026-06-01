@@ -23,22 +23,27 @@ class CheckBlocked
         }
         */
 
-        if (Auth::check()) {
-            $user = Auth::user();
+        try {
+            if (Auth::check()) {
+                $user = Auth::user();
 
-            // Update last_ip
-            if ($user->last_ip !== $ip) {
-                $user->update(['last_ip' => $ip]);
+                // Update last_ip
+                if ($user->last_ip !== $ip) {
+                    $user->update(['last_ip' => $ip]);
+                }
+
+                if ($user->is_blocked) {
+                    Auth::logout();
+
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+
+                    return redirect()->route('login')->with('error', 'Your account has been blocked. Please contact support.');
+                }
             }
-
-            if ($user->is_blocked) {
-                Auth::logout();
-
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-
-                return redirect()->route('login')->with('error', 'Your account has been blocked. Please contact support.');
-            }
+        } catch (\Throwable $e) {
+            // Silently log block checker database error to prevent site-wide 500 internal server error crashes
+            \Illuminate\Support\Facades\Log::error('CheckBlocked middleware error: ' . $e->getMessage());
         }
 
         return $next($request);

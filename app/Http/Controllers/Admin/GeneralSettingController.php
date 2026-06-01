@@ -56,6 +56,7 @@ class GeneralSettingController extends Controller
         $data['enable_analytics'] = $request->has('enable_analytics') ? 1 : 0;
         $data['enable_pixel'] = $request->has('enable_pixel') ? 1 : 0;
         $data['enable_gtm'] = $request->has('enable_gtm') ? 1 : 0;
+        $data['customer_visit_notification_status'] = $request->has('customer_visit_notification_status') ? 1 : 0;
 
         $uploadPath = public_path('uploads/generalsetting');
         if (!file_exists($uploadPath)) {
@@ -136,6 +137,7 @@ class GeneralSettingController extends Controller
         $data['enable_analytics'] = $request->has('enable_analytics') ? 1 : 0;
         $data['enable_pixel'] = $request->has('enable_pixel') ? 1 : 0;
         $data['enable_gtm'] = $request->has('enable_gtm') ? 1 : 0;
+        $data['customer_visit_notification_status'] = $request->has('customer_visit_notification_status') ? 1 : 0;
 
         $uploadPath = public_path('uploads/generalsetting');
         if (!file_exists($uploadPath)) {
@@ -209,6 +211,7 @@ class GeneralSettingController extends Controller
             'category_slide_speed' => 4,
             'sidebar_behavior'    => 'fixed',
             'loader_status'       => 1,
+            'customer_visit_notification_status' => 1,
             'show_membership_section' => 1,
         ];
         $setting->update($defaults);
@@ -229,7 +232,7 @@ class GeneralSettingController extends Controller
         $setting = GenaralSetting::findOrFail($id);
         $field   = $request->field;
 
-        if (in_array($field, ['show_download_app', 'show_footer_section', 'top_rated_shops_status', 'show_product_stats', 'show_marquee', 'show_membership_section', 'enable_analytics', 'enable_pixel', 'enable_gtm'])) {
+        if (in_array($field, ['show_download_app', 'show_footer_section', 'top_rated_shops_status', 'show_product_stats', 'show_marquee', 'show_membership_section', 'enable_analytics', 'enable_pixel', 'enable_gtm', 'customer_visit_notification_status'])) {
             $setting->$field = !$setting->$field;
             $setting->save();
 

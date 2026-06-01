@@ -13,6 +13,27 @@ const MasterLayout = ({ children }) => {
         window.scrollTo(0, 0);
     }, []);
 
+    const [showScrollBtn, setShowScrollBtn] = React.useState(false);
+
+    React.useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 300) {
+                setShowScrollBtn(true);
+            } else {
+                setShowScrollBtn(false);
+            }
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', fontFamily: 'var(--font-family, Arial, sans-serif)', fontSize: 'var(--font-size, 14px)' }}>
             
@@ -20,6 +41,20 @@ const MasterLayout = ({ children }) => {
                 @keyframes fadeIn {
                     from { opacity: 0; transform: translateY(10px); }
                     to { opacity: 1; transform: translateY(0); }
+                }
+                .scroll-to-top-btn {
+                    bottom: 110px;
+                    left: 40px;
+                }
+                .scroll-to-top-btn:hover {
+                    transform: translateY(-3px);
+                    background-color: #e05200 !important;
+                }
+                @media (max-width: 768px) {
+                    .scroll-to-top-btn {
+                        bottom: 165px;
+                        left: 15px;
+                    }
                 }
             `}</style>
 
@@ -102,6 +137,26 @@ const MasterLayout = ({ children }) => {
 
             {/* Footer Part */}
             <Footer />
+
+            {showScrollBtn && (
+                <button
+                    onClick={scrollToTop}
+                    className="scroll-to-top-btn position-fixed border-0 d-flex align-items-center justify-content-center"
+                    style={{
+                        zIndex: 9998,
+                        backgroundColor: '#ff5c00',
+                        color: '#fff',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                    }}
+                >
+                    <i className="fas fa-chevron-up" style={{ fontSize: '16px' }}></i>
+                </button>
+            )}
         </div>
     );
 };

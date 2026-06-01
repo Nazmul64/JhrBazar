@@ -88,9 +88,11 @@
                                         <th>Refund ID</th>
                                         <th>Order ID</th>
                                         <th>Product</th>
+                                        <th>Courier</th>
                                         <th class="text-center">Qty</th>
                                         <th class="text-end">Amount</th>
                                         <th>Reason</th>
+                                        <th>Date</th>
                                         <th>Status</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
@@ -108,15 +110,50 @@
                                         <td>
                                             <a href="{{ route('admin.orders.show', $refund->order_id) }}"
                                                class="text-primary text-decoration-none fw-bold">
-                                                {{ $refund->order->order_no ?? 'N/A' }}
+                                                #{{ $refund->order->invoice->invoice_number ?? $refund->order_id }}
                                             </a>
                                         </td>
                                         <td>
-                                            <div>{{ $refund->product_name }}</div>
-                                            <small class="text-muted">{{ $refund->product->sku ?? '-' }}</small>
+                                            <div class="d-flex align-items-center">
+                                                @php
+                                                    $orderItem = null;
+                                                    if ($refund->order && is_array($refund->order->items)) {
+                                                        foreach ($refund->order->items as $item) {
+                                                            if (($item['id'] ?? null) == $refund->product_id || ($item['name'] ?? $item['title'] ?? '') === $refund->product_name) {
+                                                                $orderItem = $item;
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                    $thumbnail = $orderItem['thumbnail'] ?? null;
+                                                    if (!$thumbnail && $refund->product) {
+                                                        $thumbnail = $refund->product->thumbnail;
+                                                    }
+                                                @endphp
+                                                @if($thumbnail)
+                                                    <img src="{{ asset($thumbnail) }}" alt="{{ $refund->product_name }}" class="rounded border me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                                @else
+                                                    <div class="bg-light rounded border me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                        <i class="bi bi-image text-muted" style="font-size: 1.1rem;"></i>
+                                                    </div>
+                                                @endif
+                                                <div>
+                                                    <div class="fw-semibold text-dark">{{ $refund->product_name }}</div>
+                                                    <div class="text-muted small">Price: {{ settings()->default_currency ?? '৳' }}{{ number_format($refund->product_price, 0) }}</div>
+                                                    <small class="text-muted">{{ $refund->product->sku ?? '-' }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">
+                                                {{ $refund->courier->name ?? $refund->order->courier_name ?? 'N/A' }}
+                                            </span>
+                                            @if($refund->order && $refund->order->courier_status)
+                                                <small class="d-block text-muted mt-1 text-capitalize">{{ strtolower($refund->order->courier_status) }}</small>
+                                            @endif
                                         </td>
                                         <td class="text-center">{{ $refund->quantity }}</td>
-                                        <td class="text-end fw-bold">
+                                        <td class="text-end fw-bold text-success">
                                             {{ settings()->default_currency ?? '৳' }}{{ number_format($refund->total_amount, 0) }}
                                         </td>
                                         <td>
@@ -125,50 +162,66 @@
                                             </span>
                                         </td>
                                         <td>
+                                            <small class="text-muted fw-semibold">
+                                                {{ $refund->refund_date?->format('d M Y') ?? $refund->created_at?->format('d M Y') }}
+                                            </small>
+                                        </td>
+                                        <td>
                                             {!! $refund->getStatusBadge() !!}
                                         </td>
                                         <td class="text-center">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-light" type="button"
-                                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="bi bi-three-dots-vertical"></i>
+                                            <div class="d-flex justify-content-center gap-1">
+                                                <!-- View -->
+                                                <a href="{{ route('admin.refunds.show', $refund->id) }}"
+                                                   class="btn btn-sm btn-info text-white shadow-sm d-inline-flex align-items-center justify-content-center" 
+                                                   style="width: 28px; height: 28px; border-radius: 6px;" title="View Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <!-- Edit -->
+                                                @if($refund->isPending())
+                                                <a href="{{ route('admin.refunds.edit', $refund->id) }}"
+                                                   class="btn btn-sm btn-warning text-white shadow-sm d-inline-flex align-items-center justify-content-center" 
+                                                   style="width: 28px; height: 28px; border-radius: 6px;" title="Edit Refund">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                @endif
+                                                <!-- Delete -->
+                                                <button type="button" class="btn btn-sm btn-danger shadow-sm d-inline-flex align-items-center justify-content-center" 
+                                                        style="width: 28px; height: 28px; border-radius: 6px;"
+                                                        onclick="deleteRefund({{ $refund->id }})" title="Delete Refund">
+                                                    <i class="bi bi-trash"></i>
                                                 </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li>
-                                                        <a class="dropdown-item"
-                                                           href="{{ route('admin.refunds.show', $refund->id) }}">
-                                                            <i class="bi bi-eye me-1"></i> View Details
-                                                        </a>
-                                                    </li>
-                                                    @if($refund->isPending())
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li>
-                                                        <a class="dropdown-item" href="#"
-                                                           onclick="updateStatus({{ $refund->id }}, 'approved')">
-                                                            <i class="bi bi-check-circle text-success me-1"></i> Approve
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item" href="#"
-                                                           onclick="updateStatus({{ $refund->id }}, 'processing')">
-                                                            <i class="bi bi-arrow-repeat text-warning me-1"></i> Processing
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item" href="#"
-                                                           onclick="showRejectModal({{ $refund->id }})">
-                                                            <i class="bi bi-x-circle text-danger me-1"></i> Reject
-                                                        </a>
-                                                    </li>
-                                                    @endif
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li>
-                                                        <a class="dropdown-item text-danger" href="#"
-                                                           onclick="deleteRefund({{ $refund->id }})">
-                                                            <i class="bi bi-trash me-1"></i> Delete
-                                                        </a>
-                                                    </li>
-                                                </ul>
+                                                
+                                                <!-- Status Controls (Dropdown if Pending) -->
+                                                @if($refund->isPending())
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-light shadow-sm d-inline-flex align-items-center justify-content-center" 
+                                                            style="width: 28px; height: 28px; border-radius: 6px;"
+                                                            type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="bi bi-three-dots-vertical"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                        <li>
+                                                            <a class="dropdown-item" href="#"
+                                                               onclick="updateStatus({{ $refund->id }}, 'approved')">
+                                                                <i class="bi bi-check-circle text-success me-1"></i> Approve
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item" href="#"
+                                                               onclick="updateStatus({{ $refund->id }}, 'processing')">
+                                                                <i class="bi bi-arrow-repeat text-warning me-1"></i> Processing
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item" href="#"
+                                                               onclick="showRejectModal({{ $refund->id }})">
+                                                                <i class="bi bi-x-circle text-danger me-1"></i> Reject
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>

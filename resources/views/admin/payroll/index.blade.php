@@ -9,7 +9,7 @@
             <h4 class="fw-bold mb-1" style="color:#1a1a2e; font-size:22px;">Salaries & Payroll</h4>
             <p class="text-muted mb-0" style="font-size:13px;">Manage monthly employee payrolls and payslip generation.</p>
         </div>
-        <a href="{{ route('admin.payroll.generate') }}" class="btn-hrm-add">
+        <a href="{{ route('admin.hrm.payroll.generate') }}" class="btn-hrm-add">
             <i class="fas fa-calculator me-1"></i> Generate Payroll
         </a>
     </div>
@@ -62,7 +62,7 @@
     {{-- Filter Bar --}}
     <div class="card border-0 shadow-sm rounded-3 mb-4">
         <div class="card-body py-3">
-            <form action="{{ route('admin.payroll.index') }}" method="GET" class="d-flex gap-2 flex-wrap align-items-center">
+            <form action="{{ route('admin.hrm.payroll.index') }}" method="GET" class="d-flex gap-2 flex-wrap align-items-center">
                 <span class="text-muted fw-bold me-2" style="font-size:13px;"><i class="fas fa-filter me-1"></i> Selection Range:</span>
                 <select name="month" class="form-select select-hrm">
                     @for ($m=1; $m<=12; $m++)
@@ -137,13 +137,13 @@
                                         </button>
                                     @else
                                         {{-- Print Payslip --}}
-                                        <a href="{{ route('admin.payroll.slip', $payroll->id) }}" target="_blank" class="btn btn-sm btn-outline-primary py-1 px-3">
+                                        <a href="{{ route('admin.hrm.payroll.slip', $payroll->id) }}" target="_blank" class="btn btn-sm btn-outline-primary py-1 px-3">
                                             <i class="fas fa-print me-1"></i> Pay Slip
                                         </a>
                                     @endif
                                     
                                     {{-- Delete Log --}}
-                                    <form action="{{ route('admin.payroll.destroy', $payroll->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this payroll sheet?')">
+                                    <form action="{{ route('admin.hrm.payroll.destroy', $payroll->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this payroll sheet?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Record">
@@ -162,7 +162,7 @@
                                         <h5 class="fw-bold" style="color:#1a1a2e; font-size:18px;">Disburse Employee Salary</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
-                                    <form action="{{ route('admin.payroll.pay', $payroll->id) }}" method="POST">
+                                    <form action="{{ route('admin.hrm.payroll.pay', $payroll->id) }}" method="POST">
                                         @csrf
                                         <div class="modal-body p-4">
                                             <div class="alert alert-info rounded-3 border-0 py-3 mb-3">

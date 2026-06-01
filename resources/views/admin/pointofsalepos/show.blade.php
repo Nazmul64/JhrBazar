@@ -302,6 +302,9 @@ function posShowFmt($num, $cur) {
     <div class="od-page-header">
         <h1 class="od-page-title">Order Details</h1>
         <div class="od-header-btns">
+            <button class="btn-hdr" style="background:#ff9f43;color:#fff;" onclick="openEditOrderModal()">
+                <i class="bi bi-pencil-square"></i> Edit Order
+            </button>
             <button class="btn-hdr btn-barcode" onclick="openScanner()">
                 <i class="bi bi-upc-scan"></i> Attach Product Barcode
             </button>
@@ -371,6 +374,7 @@ function posShowFmt($num, $cur) {
                                     <th class="center">Color</th>
                                     <th class="right">Price</th>
                                     <th class="right">Total</th>
+                                    <th class="center" style="width:110px;">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -412,6 +416,11 @@ function posShowFmt($num, $cur) {
                                     <td class="center">{{ $item['color'] ?? '—' }}</td>
                                     <td class="right">{{ posShowFmt($itemPrice, $cur) }}</td>
                                     <td class="right">{{ posShowFmt($lineTotal, $cur) }}</td>
+                                    <td class="center">
+                                        <a href="{{ route('products.barcode', $item['id']) }}" target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 11px; border-radius: 4px; padding: 3px 8px; display: inline-flex; align-items: center; gap: 4px;">
+                                            <i class="bi bi-upc-scan"></i> Barcode
+                                        </a>
+                                    </td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -476,6 +485,25 @@ function posShowFmt($num, $cur) {
                 $custPhone   = $custUser?->phone ?? '';
                 $custEmail   = $custUser?->email ?? '';
                 $custAddress = $customer?->address ?? '';
+
+                if (!$custName && $invoice->order && $invoice->order->note && str_contains($invoice->order->note, 'Online Order')) {
+                    preg_match('/Name:\s*(.*)/', $invoice->order->note, $nameMatch);
+                    preg_match('/Phone:\s*(.*)/', $invoice->order->note, $phoneMatch);
+                    preg_match('/Email:\s*(.*)/', $invoice->order->note, $emailMatch);
+                    preg_match('/Address:\s*(.*)/', $invoice->order->note, $addressMatch);
+                    
+                    $custName = trim($nameMatch[1] ?? 'Walk-in Customer');
+                    $custPhone = trim($phoneMatch[1] ?? ($invoice->order->phone ?? ''));
+                    $custEmail = trim($emailMatch[1] ?? '');
+                    
+                    // The address might include city. If there are other lines after, they won't be captured without multi-line but since they are comma separated it works.
+                    // Address parsing fallback
+                    if (isset($addressMatch[1])) {
+                        $custAddress = trim(explode("\n", $addressMatch[1])[0]);
+                    }
+                } elseif (!$custName) {
+                    $custName = 'Walk-in Customer';
+                }
             @endphp
             <div class="od-card">
                 <div class="od-card-head">
@@ -654,6 +682,117 @@ function posShowFmt($num, $cur) {
     </div>
 </div>
 
+{{-- ══ ORDER EDIT MODAL ══ --}}
+<div class="scanner-overlay" id="editOrderOverlay" onclick="closeEditOrderBg(event)" style="z-index: 49999;">
+    <div class="scanner-modal" style="width: 850px; max-width: 95vw; border-radius: 12px;">
+        <div class="scanner-head">
+            <h5><i class="bi bi-pencil-square" style="color:var(--accent);"></i>&nbsp; Edit Order Details</h5>
+            <button class="scanner-close" onclick="closeEditOrder()">&times;</button>
+        </div>
+        <div class="scanner-body" style="padding: 20px;">
+            <form id="editOrderForm" onsubmit="submitEditOrder(event)">
+                <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <label class="sid-label" style="display: block; margin-bottom: 5px;">Customer Name</label>
+                        <input type="text" id="editCustomerName" required class="status-select" style="background:#fff; height: 38px;" value="{{ $custName }}">
+                    </div>
+                    <div style="flex: 1; min-width: 250px;">
+                        <label class="sid-label" style="display: block; margin-bottom: 5px;">Phone Number</label>
+                        <input type="text" id="editCustomerPhone" required class="status-select" style="background:#fff; height: 38px;" value="{{ $custPhone }}">
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label class="sid-label" style="display: block; margin-bottom: 5px;">Detailed Address</label>
+                    <textarea id="editCustomerAddress" required class="status-select" style="background:#fff; height: 60px; padding: 8px 12px; resize: vertical;">{{ $custAddress }}</textarea>
+                </div>
+
+                {{-- Product Search / Selection --}}
+                <div style="margin-bottom: 15px; border-top: 1px solid var(--border); padding-top: 15px;">
+                    <label class="sid-label" style="display: block; margin-bottom: 5px;">Search & Add Product</label>
+                    <div style="position: relative;">
+                        <input type="text" id="prodSearchInput" oninput="filterProductsDropdown()" onfocus="filterProductsDropdown()" placeholder="Type product name to search..." class="status-select" style="background:#fff; height: 38px; padding-left: 12px;">
+                        <div id="prodSearchDropdown" style="position: absolute; top: 42px; left: 0; right: 0; background: #ffffff !important; color: #1a1f36 !important; border: 1px solid #cbd5e1 !important; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 999999 !important; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+                            <!-- Dynamic items -->
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Items Table --}}
+                <div style="margin-bottom: 15px; max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                    <table class="od-table" style="width: 100%;">
+                        <thead>
+                            <tr style="background: #f8fafc;">
+                                <th style="padding: 8px; font-size: 11px;">SL</th>
+                                <th style="font-size: 11px;">Product</th>
+                                <th class="center" style="width: 90px; font-size: 11px;">Price</th>
+                                <th class="center" style="width: 70px; font-size: 11px;">Qty</th>
+                                <th class="center" style="width: 80px; font-size: 11px;">Size</th>
+                                <th class="center" style="width: 80px; font-size: 11px;">Color</th>
+                                <th class="right" style="width: 95px; font-size: 11px;">Total</th>
+                                <th class="center" style="width: 50px; font-size: 11px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="editOrderItemsBody">
+                            <!-- Dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 180px;">
+                        <label class="sid-label" style="display: block; margin-bottom: 5px;">Delivery Charge</label>
+                        <select id="editDeliveryCharge" onchange="recalcEditOrderTotals()" class="status-select" style="background:#fff; height: 38px;">
+                            @foreach($shippingCharges as $charge)
+                                <option value="{{ (float)$charge->charge }}" {{ (float)($invoice->delivery_charge ?? 0) == (float)$charge->charge ? 'selected' : '' }}>
+                                    {{ $charge->area_name }} ({{ posShowFmt($charge->charge, $cur) }})
+                                </option>
+                            @endforeach
+                            @if(!$shippingCharges->contains('charge', $invoice->delivery_charge))
+                                <option value="{{ (float)($invoice->delivery_charge ?? 0) }}" selected>
+                                    Custom Charge ({{ posShowFmt($invoice->delivery_charge ?? 0, $cur) }})
+                                </option>
+                            @endif
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 180px;">
+                        <label class="sid-label" style="display: block; margin-bottom: 5px;">Discount</label>
+                        <input type="number" step="any" id="editDiscount" oninput="recalcEditOrderTotals()" class="status-select" style="background:#fff; height: 38px;" value="{{ (float)($invoice->discount ?? 0) }}">
+                    </div>
+                </div>
+
+                <div style="background: #f8fafc; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-bottom: 15px; display: flex; justify-content: flex-end;">
+                    <div style="min-width: 230px; font-size: 12px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span style="color: var(--muted);">Sub Total:</span>
+                            <span id="editSubTotalText" style="font-weight: 600;">{{ posShowFmt($invoice->sub_total, $cur) }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span style="color: var(--muted);">Delivery Charge:</span>
+                            <span id="editDeliveryChargeText" style="font-weight: 600;">{{ posShowFmt($invoice->delivery_charge ?? 0, $cur) }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--green-dk);">
+                            <span>Discount:</span>
+                            <span id="editDiscountText" style="font-weight: 600;">-{{ posShowFmt($invoice->discount ?? 0, $cur) }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-top: 1.5px solid var(--border); padding-top: 6px; font-size: 14px; font-weight: 800;">
+                            <span>Grand Total:</span>
+                            <span id="editGrandTotalText" style="color: var(--accent);">{{ posShowFmt($invoice->grand_total, $cur) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="scan-footer" style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button type="button" class="btn-scan-close" onclick="closeEditOrder()">Cancel</button>
+                    <button type="submit" class="btn-scan-confirm" style="flex: 1; height: 44px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <i class="bi bi-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
@@ -663,6 +802,235 @@ const PRODUCT_LOOKUP_URL = '{{ route("admin.pointofsalepos.products") }}';
 const UPDATE_STATUS_URL  = '{{ route("admin.pointofsalepos.sales.status", $invoice->id) }}';
 const CSRF               = '{{ csrf_token() }}';
 const CURRENCY           = '{{ $cur }}';
+const ALL_PRODUCTS       = @json($allProducts ?? []);
+const INITIAL_ITEMS      = @json($invoice->items ?? []);
+let editItemsList        = [];
+
+/* ── Edit Order Modal Handlers ── */
+function openEditOrderModal() {
+    editItemsList = JSON.parse(JSON.stringify(INITIAL_ITEMS));
+    document.getElementById('editOrderOverlay').classList.add('show');
+    renderEditItemsTable();
+}
+
+function closeEditOrder() {
+    document.getElementById('editOrderOverlay').classList.remove('show');
+    document.getElementById('prodSearchDropdown').style.display = 'none';
+    document.getElementById('prodSearchInput').value = '';
+}
+
+function closeEditOrderBg(e) {
+    if (e.target === document.getElementById('editOrderOverlay')) closeEditOrder();
+}
+
+function renderEditItemsTable() {
+    const tbody = document.getElementById('editOrderItemsBody');
+    tbody.innerHTML = '';
+
+    editItemsList.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        const price = parseFloat(item.price || 0);
+        const qty = parseInt(item.qty || 0);
+        const lineTotal = price * qty;
+        item.line_total = lineTotal;
+
+        tr.innerHTML = `
+            <td>${index + 1}</td>
+            <td>
+                <div class="prod-name" style="font-size:12px; font-weight:600;">${escHtml(item.name || item.title)}</div>
+                <div class="prod-sku" style="font-size:10px;">${escHtml(item.sku || '')}</div>
+            </td>
+            <td>
+                <input type="number" step="any" class="status-select" style="background:#fff; height:28px; font-size:11px; padding:0 5px; text-align:center; min-width:65px;" value="${price}" oninput="updateEditItemField(${index}, 'price', this.value)">
+            </td>
+            <td>
+                <input type="number" class="status-select" style="background:#fff; height:28px; font-size:11px; padding:0 5px; text-align:center; min-width:45px;" value="${qty}" oninput="updateEditItemField(${index}, 'qty', this.value)">
+            </td>
+            <td>
+                <input type="text" class="status-select" style="background:#fff; height:28px; font-size:11px; padding:0 5px; text-align:center; min-width:60px;" value="${escHtml(item.size || '')}" placeholder="Size" oninput="updateEditItemField(${index}, 'size', this.value)">
+            </td>
+            <td>
+                <input type="text" class="status-select" style="background:#fff; height:28px; font-size:11px; padding:0 5px; text-align:center; min-width:60px;" value="${escHtml(item.color || '')}" placeholder="Color" oninput="updateEditItemField(${index}, 'color', this.value)">
+            </td>
+            <td class="right" id="editItemTotal-${index}" style="font-size:12px;">
+                ${CURRENCY}${lineTotal.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:2})}
+            </td>
+            <td class="center">
+                <button type="button" class="btn btn-sm btn-outline-danger" style="padding:2px 8px; font-size:11px; border-radius:4px;" onclick="removeEditItem(${index})">Remove</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    recalcEditOrderTotals();
+}
+
+function updateEditItemField(index, field, value) {
+    if (field === 'price') {
+        editItemsList[index].price = parseFloat(value || 0);
+    } else if (field === 'qty') {
+        editItemsList[index].qty = parseInt(value || 1);
+    } else {
+        editItemsList[index][field] = value;
+    }
+
+    const price = parseFloat(editItemsList[index].price || 0);
+    const qty = parseInt(editItemsList[index].qty || 0);
+    const lineTotal = price * qty;
+    editItemsList[index].line_total = lineTotal;
+
+    const totalCell = document.getElementById(`editItemTotal-${index}`);
+    if (totalCell) {
+        totalCell.innerText = `${CURRENCY}${lineTotal.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:2})}`;
+    }
+
+    recalcEditOrderTotals();
+}
+
+function removeEditItem(index) {
+    editItemsList.splice(index, 1);
+    renderEditItemsTable();
+}
+
+function filterProductsDropdown() {
+    const term = document.getElementById('prodSearchInput').value.trim().toLowerCase();
+    const dropdown = document.getElementById('prodSearchDropdown');
+    dropdown.innerHTML = '';
+
+    if (!term) {
+        // Show first 10 active products when search is blank but focused
+        const firstProducts = ALL_PRODUCTS.slice(0, 10);
+        renderFilteredDropdownItems(firstProducts, dropdown);
+        return;
+    }
+
+    const matches = ALL_PRODUCTS.filter(p => 
+        (p.name && p.name.toLowerCase().includes(term)) ||
+        (p.sku && p.sku.toLowerCase().includes(term)) ||
+        (p.barcode && String(p.barcode).toLowerCase().includes(term))
+    );
+
+    renderFilteredDropdownItems(matches, dropdown);
+}
+
+function renderFilteredDropdownItems(products, dropdown) {
+    if (!products.length) {
+        dropdown.innerHTML = '<div style="padding:10px; font-size:12px; color:var(--muted); text-align:center;">No active products found</div>';
+        dropdown.style.display = 'block';
+        return;
+    }
+
+    products.forEach(p => {
+        const itemEl = document.createElement('div');
+        itemEl.style.cssText = 'padding:10px 14px; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:13px; transition:background 0.15s; display:flex; justify-content:space-between; align-items:center; background:#ffffff !important; color:#1a1f36 !important;';
+        itemEl.onmouseenter = () => itemEl.style.background = '#f8fafc';
+        itemEl.onmouseleave = () => itemEl.style.background = '#ffffff';
+        
+        const price = parseFloat(p.discount_price) > 0 ? p.discount_price : p.selling_price;
+        itemEl.innerHTML = `
+            <div style="font-weight:600; color:#1a1f36 !important;">${escHtml(p.name)} <span style="font-size:11px; color:#64748b !important; font-weight:normal;">(${escHtml(p.sku || '')})</span></div>
+            <div style="font-weight:700; color:#e7567c !important;">${CURRENCY}${parseFloat(price).toFixed(0)}</div>
+        `;
+        
+        itemEl.onclick = () => {
+            addEditItem(p);
+        };
+        dropdown.appendChild(itemEl);
+    });
+    dropdown.style.display = 'block';
+}
+
+// Hide product search dropdown when clicking outside
+document.addEventListener('click', e => {
+    const input = document.getElementById('prodSearchInput');
+    const dropdown = document.getElementById('prodSearchDropdown');
+    if (input && dropdown && e.target !== input && !dropdown.contains(e.target)) {
+        dropdown.style.display = 'none';
+    }
+});
+
+function addEditItem(product) {
+    const existingIndex = editItemsList.findIndex(item => Number(item.id) === Number(product.id) || Number(item.product_id) === Number(product.id));
+    if (existingIndex !== -1) {
+        editItemsList[existingIndex].qty = parseInt(editItemsList[existingIndex].qty || 0) + 1;
+        editItemsList[existingIndex].line_total = parseFloat(editItemsList[existingIndex].price || 0) * parseInt(editItemsList[existingIndex].qty || 0);
+    } else {
+        const price = parseFloat(product.discount_price) > 0 ? product.discount_price : product.selling_price;
+        editItemsList.push({
+            id: product.id,
+            name: product.name,
+            sku: product.sku || '',
+            thumbnail: product.thumbnail || '',
+            price: parseFloat(price || 0),
+            qty: 1,
+            size: '',
+            color: '',
+            line_total: parseFloat(price || 0)
+        });
+    }
+
+    document.getElementById('prodSearchInput').value = '';
+    document.getElementById('prodSearchDropdown').style.display = 'none';
+    renderEditItemsTable();
+}
+
+function recalcEditOrderTotals() {
+    let subTotal = editItemsList.reduce((sum, item) => sum + parseFloat(item.line_total || 0), 0);
+    const shipping = parseFloat(document.getElementById('editDeliveryCharge').value || 0);
+    const discount = parseFloat(document.getElementById('editDiscount').value || 0);
+    const grandTotal = (subTotal + shipping) - discount;
+
+    document.getElementById('editSubTotalText').innerText = `${CURRENCY}${subTotal.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:2})}`;
+    document.getElementById('editDeliveryChargeText').innerText = `${CURRENCY}${shipping.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:2})}`;
+    document.getElementById('editDiscountText').innerText = `-${CURRENCY}${discount.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:2})}`;
+    document.getElementById('editGrandTotalText').innerText = `${CURRENCY}${grandTotal.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:2})}`;
+}
+
+function submitEditOrder(e) {
+    e.preventDefault();
+    if (!editItemsList.length) {
+        showToast('Please add at least one product to the order.', 'warning');
+        return;
+    }
+
+    const payload = {
+        customer_name: document.getElementById('editCustomerName').value.trim(),
+        customer_phone: document.getElementById('editCustomerPhone').value.trim(),
+        customer_address: document.getElementById('editCustomerAddress').value.trim(),
+        delivery_charge: parseFloat(document.getElementById('editDeliveryCharge').value || 0),
+        discount: parseFloat(document.getElementById('editDiscount').value || 0),
+        items: editItemsList
+    };
+
+    const saveBtn = e.target.querySelector('button[type="submit"]');
+    const originalHtml = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+
+    fetch(UPDATE_ORDER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Order updated successfully! Reloading...', 'success', 2000);
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            showToast(data.message || 'Error updating order.', 'error');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalHtml;
+        }
+    })
+    .catch(() => {
+        showToast('Network error while updating order.', 'error');
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalHtml;
+    });
+}
+
+const UPDATE_ORDER_URL   = '{{ route("admin.orders.update-order", $invoice->id) }}';
 
 /* ── Toast ── */
 function showToast(msg, type='info', ms=3000) {

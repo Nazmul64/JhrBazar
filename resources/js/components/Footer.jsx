@@ -52,7 +52,7 @@ const Footer = () => {
     const linkStyle = { textDecoration: 'none', color: 'var(--footer-text-color, #666)', opacity: 0.85, fontSize: '13px', transition: 'all 0.2s' };
 
     return (
-        <footer style={{ backgroundColor: 'var(--footer-bg, #fff)', color: 'var(--footer-text-color, #333)', padding: '80px 0 30px 0', borderTop: '1px solid rgba(0,0,0,0.08)', fontFamily: "'Poppins', sans-serif" }}>
+        <footer className="custom-footer" style={{ backgroundColor: 'var(--footer-bg, #fff)', color: 'var(--footer-text-color, #333)', padding: '80px 0 30px 0', borderTop: '1px solid rgba(0,0,0,0.08)', fontFamily: "'Poppins', sans-serif" }}>
             <div className="container">
                 <div className="row g-4 mb-5">
                     {/* Column 1: Brand Info */}
@@ -195,7 +195,7 @@ const Footer = () => {
                                         <img
                                             src={footerData.settings.payment_methods_logo}
                                             alt="Payment Methods"
-                                            style={{ maxHeight: '45px', width: 'auto', maxWidth: '100%' }}
+                                            style={{ maxHeight: '70px', width: 'auto', maxWidth: '100%' }}
                                         />
                                     </div>
                                 </div>
@@ -205,20 +205,22 @@ const Footer = () => {
                 )}
 
                 <div style={{ borderTop: '0px solid #f0f0f0', paddingTop: '10px' }}>
-                    <div className="row align-items-center">
-                        <div className="col-md-6 text-center text-md-start">
+                    <div className="row justify-content-center">
+                        <div className="col-12 text-center">
                             <p className="mb-0" style={{ fontSize: '13px', color: 'var(--footer-text-color, #333)', opacity: 0.6 }}>
-                                Copyright © 2026 {footerData.settings?.website_name || "JhrBazar"}
+                                {footerData.settings?.footer_copyright_text || `Copyright © ${new Date().getFullYear()} ${footerData.settings?.website_name || "JhrBazar"}`}
                             </p>
-                        </div>
-                        <div className="col-md-6 text-center text-md-end mt-4 mt-md-0">
-                            {/* Verification / Security Logos could go here */}
                         </div>
                     </div>
                 </div>
             </div>
 
             <style>{`
+                @media (max-width: 767.98px) {
+                    footer.custom-footer {
+                        padding-bottom: 120px !important;
+                    }
+                }
                 .footer-link:hover {
                     color: #e67e22 !important;
                     padding-left: 5px;

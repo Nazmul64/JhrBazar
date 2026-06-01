@@ -48,7 +48,7 @@ class LeaveController extends Controller
 
         Leave::create($validated);
 
-        return redirect()->route('admin.leave.index')
+        return redirect()->route('admin.hrm.leave.index')
             ->with('success', 'Leave logged successfully.');
     }
 
@@ -66,7 +66,7 @@ class LeaveController extends Controller
             'approved_by' => $request->status === 'Approved' ? Auth::id() : null
         ]);
 
-        return redirect()->route('admin.leave.index')
+        return redirect()->route('admin.hrm.leave.index')
             ->with('success', 'Leave application status updated successfully.');
     }
 
@@ -76,7 +76,7 @@ class LeaveController extends Controller
     public function destroy(Leave $leave)
     {
         $leave->delete();
-        return redirect()->route('admin.leave.index')
+        return redirect()->route('admin.hrm.leave.index')
             ->with('success', 'Leave record deleted successfully.');
     }
 }

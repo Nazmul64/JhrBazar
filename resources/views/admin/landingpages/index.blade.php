@@ -1,5 +1,7 @@
 @extends('admin.master')
 
+@section('title', 'Landing Pages')
+
 @section('content')
 
 @php
@@ -9,346 +11,387 @@
 
 <style>
 :root {
-    --accent:#e7567c; --accent-dk:#c93f65; --blue:#4361ee;
-    --green:#22c55e; --green-dk:#16a34a; --warning:#f59e0b;
-    --text:#1a1f36; --muted:#6b7a99; --border:#e4e9f2;
-    --bg:#f0f2f5; --white:#ffffff; --radius:8px; --radius-sm:5px;
-    --shadow:0 1px 4px rgba(0,0,0,.07);
+    --lp-accent: #1e3a8a;
+    --lp-accent-lt: #2563eb;
+    --lp-green: #22c55e;
+    --lp-red: #ef4444;
+    --lp-text: #1a1f36;
+    --lp-muted: #64748b;
+    --lp-border: #e2e8f0;
+    --lp-bg: #f1f5f9;
+    --lp-white: #ffffff;
+    --lp-radius: 12px;
+    --lp-shadow: 0 1px 6px rgba(0,0,0,0.08);
 }
-*,*::before,*::after{box-sizing:border-box;}
+*,*::before,*::after { box-sizing: border-box; }
 
-.lp-page{padding:24px;background:var(--bg);min-height:100vh;font-family:'Segoe UI',system-ui,sans-serif;}
+.lp-wrap { padding: 28px 28px 60px; background: var(--lp-bg); min-height: 100vh; font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif; }
 
-.lp-page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
-.lp-page-title{font-size:20px;font-weight:800;color:var(--text);margin:0;}
+/* ── Header ── */
+.lp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 12px; flex-wrap: wrap; }
+.lp-header-left h1 { font-size: 22px; font-weight: 800; color: var(--lp-text); margin: 0; }
+.lp-breadcrumb { font-size: 12px; color: var(--lp-muted); margin: 4px 0 0; }
+.lp-breadcrumb a { color: var(--lp-muted); text-decoration: none; }
+.lp-breadcrumb a:hover { color: var(--lp-accent); }
+.lp-breadcrumb span { margin: 0 5px; }
 
-.btn-add-new{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;background:linear-gradient(135deg,#e7567c,#c93f65);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;transition:opacity .15s;white-space:nowrap;}
-.btn-add-new:hover{opacity:.88;color:#fff;text-decoration:none;}
+.lp-header-right { display: flex; align-items: center; gap: 10px; }
 
-.summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
-.summary-card{background:var(--white);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;}
-.sum-icon{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
-.sum-icon.blue{background:#dbeafe;color:#2563eb;} .sum-icon.green{background:#dcfce7;color:#16a34a;} .sum-icon.purple{background:#ede9fe;color:#7c3aed;}
-.sum-value{font-size:20px;font-weight:800;color:var(--text);line-height:1.2;}
-.sum-label{font-size:12px;color:var(--muted);margin-top:2px;}
+.btn-theme-lib {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px; border-radius: 8px;
+    background: var(--lp-white); border: 1.5px solid var(--lp-border);
+    font-size: 13px; font-weight: 600; color: var(--lp-text);
+    text-decoration: none; cursor: pointer; transition: all .15s;
+}
+.btn-theme-lib:hover { border-color: var(--lp-accent-lt); color: var(--lp-accent-lt); text-decoration: none; }
+.btn-theme-lib .grid-icon { display: inline-grid; grid-template-columns: 1fr 1fr; gap: 2px; width: 14px; }
+.btn-theme-lib .grid-icon span { width: 5px; height: 5px; background: currentColor; border-radius: 1px; }
 
-.filter-card{background:var(--white);border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);margin-bottom:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;}
-.filter-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:160px;}
-.filter-label{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;}
-.filter-input{height:38px;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:0 12px;font-size:13px;color:var(--text);background:var(--white);outline:none;transition:border-color .15s;width:100%;font-family:inherit;}
-.filter-input:focus{border-color:var(--accent);}
-select.filter-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236b7a99' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px;cursor:pointer;}
-.filter-actions{display:flex;gap:8px;align-items:flex-end;}
-.btn-filter{height:38px;padding:0 20px;background:var(--accent);color:var(--white);border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:background .15s;white-space:nowrap;}
-.btn-filter:hover{background:var(--accent-dk);}
-.btn-reset{height:38px;padding:0 16px;background:#f1f5f9;color:var(--muted);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:background .15s;white-space:nowrap;}
-.btn-reset:hover{background:#e2e8f0;color:var(--text);text-decoration:none;}
+.btn-create-new {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px; border-radius: 8px;
+    background: var(--lp-accent); border: none;
+    font-size: 13px; font-weight: 700; color: #fff;
+    text-decoration: none; cursor: pointer; transition: opacity .15s;
+    white-space: nowrap;
+}
+.btn-create-new:hover { opacity: .88; color: #fff; text-decoration: none; }
 
-.table-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
-.table-card-top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;}
-.table-card-title{font-size:15px;font-weight:700;color:var(--text);margin:0;}
-.count-badge{background:#f3f4f6;color:var(--muted);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;}
+/* ── Alert ── */
+.lp-alert {
+    background: #f0fdf4; border: 1px solid #86efac;
+    border-radius: 8px; padding: 12px 20px;
+    font-size: 13.5px; color: #15803d; font-weight: 600;
+    margin-bottom: 20px; display: flex; align-items: center;
+    justify-content: space-between;
+}
+.lp-alert-close { background: none; border: none; cursor: pointer; color: #15803d; font-size: 18px; padding: 0; line-height: 1; }
 
-.lp-table{width:100%;border-collapse:collapse;}
-.lp-table thead tr{background:#f8fafc;}
-.lp-table thead th{padding:11px 16px;text-align:left;font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap;text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid var(--border);}
-.lp-table tbody tr{border-bottom:1px solid #f0f2f5;transition:background .12s;}
-.lp-table tbody tr:last-child{border-bottom:none;}
-.lp-table tbody tr:hover{background:#fafbff;}
-.lp-table tbody td{padding:13px 16px;font-size:13px;color:var(--text);vertical-align:middle;}
+/* ── Empty State ── */
+.lp-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 55vh; text-align: center;
+}
+.lp-empty-icon {
+    width: 90px; height: 90px; border-radius: 20px;
+    background: #e0e7ff; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 24px;
+}
+.lp-empty-icon svg { width: 48px; height: 48px; color: #4f46e5; }
+.lp-empty h3 { font-size: 20px; font-weight: 800; color: var(--lp-text); margin: 0 0 8px; }
+.lp-empty p { font-size: 14px; color: var(--lp-muted); margin: 0 0 24px; }
+.btn-get-started {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 32px; border-radius: 8px;
+    background: #4361ee; color: #fff; font-size: 14px; font-weight: 700;
+    text-decoration: none; border: none; cursor: pointer; transition: opacity .15s;
+}
+.btn-get-started:hover { opacity: .88; color: #fff; text-decoration: none; }
 
-.lp-thumb{width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid var(--border);background:#f1f5f9;}
-.lp-thumb-ph{width:54px;height:54px;border-radius:8px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:22px;color:#d1d5db;border:1px solid var(--border);}
-.lp-title-cell{display:flex;align-items:center;gap:12px;}
-.lp-title-text{font-weight:700;color:var(--text);font-size:14px;}
-.lp-product-tag{font-size:11px;color:var(--muted);margin-top:2px;}
+/* ── Cards Grid ── */
+.lp-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
 
-.media-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:11.5px;font-weight:600;}
-.media-badge.image{background:#dbeafe;color:#1d4ed8;}
-.media-badge.video{background:#fce7f3;color:#be185d;}
+.lp-card {
+    background: var(--lp-white);
+    border-radius: var(--lp-radius);
+    box-shadow: var(--lp-shadow);
+    overflow: hidden;
+    border: 1px solid var(--lp-border);
+    transition: box-shadow .2s, transform .2s;
+    position: relative;
+    cursor: pointer;
+}
+.lp-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.12); transform: translateY(-2px); }
 
-.reviews-count{background:#f3f4f6;color:#374151;padding:3px 8px;border-radius:20px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:4px;}
+/* Thumbnail */
+.lp-card-thumb {
+    height: 150px; background: #f8fafc;
+    display: flex; align-items: center; justify-content: center;
+    border-bottom: 1px solid var(--lp-border); position: relative; overflow: hidden;
+}
+.lp-card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.lp-card-thumb-ph { font-size: 48px; color: #cbd5e1; }
+.lp-card-thumb-ph svg { width: 52px; height: 52px; color: #94a3b8; }
 
-.status-toggle-form{display:inline;}
-.status-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s;}
-.status-btn.active{background:#dcfce7;color:#15803d;} .status-btn.active:hover{background:#bbf7d0;}
-.status-btn.inactive{background:#f3f4f6;color:#6b7280;} .status-btn.inactive:hover{background:#e5e7eb;}
-.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0;}
-.status-dot.active{background:#15803d;} .status-dot.inactive{background:#6b7280;}
+/* Status badge on card */
+.lp-card-status {
+    position: absolute; top: 10px; right: 10px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+}
+.lp-card-status.active { background: #d1fae5; color: #065f46; }
+.lp-card-status.inactive { background: #fee2e2; color: #991b1b; }
 
-.action-cell{display:flex;align-items:center;gap:8px;}
-.btn-edit{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:#dbeafe;color:#2563eb;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:background .15s;white-space:nowrap;}
-.btn-edit:hover{background:#bfdbfe;color:#1d4ed8;text-decoration:none;}
-.btn-delete{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;background:#fee2e2;color:#dc2626;border-radius:6px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:background .15s;white-space:nowrap;font-family:inherit;}
-.btn-delete:hover{background:#fecaca;}
+/* Card body */
+.lp-card-body { padding: 14px 16px 10px; }
+.lp-card-product { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--lp-muted); margin-bottom: 5px; }
+.lp-card-product svg { width: 14px; height: 14px; }
+.lp-card-slug { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--lp-muted); margin-bottom: 8px; }
+.lp-card-slug svg { width: 13px; height: 13px; }
+.lp-card-title { font-size: 14px; font-weight: 700; color: var(--lp-text); margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.empty-state{text-align:center;padding:60px 20px;}
-.empty-icon{font-size:52px;color:#d1d5db;display:block;margin-bottom:14px;}
-.empty-state h4{font-size:16px;color:#374151;font-weight:700;margin-bottom:6px;}
-.empty-state p{font-size:13.5px;color:var(--muted);margin:0;}
+/* Card actions */
+.lp-card-actions {
+    display: flex; align-items: center; gap: 6px;
+    padding: 10px 14px 12px;
+    border-top: 1px solid #f1f5f9;
+}
+.lp-card-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: none; cursor: pointer; font-size: 14px;
+    text-decoration: none; transition: opacity .15s; flex-shrink: 0;
+}
+.lp-card-btn:hover { opacity: .8; }
+.lp-card-btn.view   { background: #e0e7ff; color: #4f46e5; }
+.lp-card-btn.qr     { background: #1e293b; color: #fff; }
+.lp-card-btn.edit   { background: #e0e7ff; color: #2563eb; }
+.lp-card-btn.builder { background: #2563eb; color: #fff; }
+.lp-card-btn.preview { background: #06b6d4; color: #fff; }
+.lp-card-btn.delete { background: #fee2e2; color: #dc2626; }
 
-.pagi-area{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid var(--border);flex-wrap:wrap;gap:10px;}
-.pagi-info{font-size:13px;color:var(--muted);}
+/* Status toggle in actions */
+.lp-card-status-toggle form { display: inline; }
+.lp-card-status-toggle button {
+    background: none; border: none; cursor: pointer; padding: 0;
+    width: 32px; height: 32px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 14px; transition: opacity .15s;
+}
+.lp-card-status-toggle button:hover { opacity: .8; }
 
-.alert-ok{background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;font-weight:500;}
-.alert-err{background:#fff1f2;border:1px solid #fecdd3;color:#be123c;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;font-weight:500;}
+/* Pagination */
+.lp-pagination { margin-top: 28px; display: flex; justify-content: center; }
+.lp-pagination .pagination { gap: 4px; display: flex; list-style: none; padding: 0; margin: 0; }
+.lp-pagination .page-item .page-link { border-radius: 6px !important; border: 1px solid var(--lp-border); color: var(--lp-text); font-size: 13px; padding: 6px 12px; }
+.lp-pagination .page-item.active .page-link { background: var(--lp-accent); border-color: var(--lp-accent); color: #fff; }
 
-/* Modal */
-.confirm-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:50000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;padding:16px;}
-.confirm-overlay.show{opacity:1;pointer-events:all;}
-.confirm-modal{background:var(--white);border-radius:14px;width:420px;max-width:100%;box-shadow:0 24px 64px rgba(0,0,0,.22);transform:scale(.96) translateY(8px);transition:transform .2s;overflow:hidden;}
-.confirm-overlay.show .confirm-modal{transform:scale(1) translateY(0);}
-.confirm-head{padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
-.confirm-icon{width:44px;height:44px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;font-size:20px;color:#dc2626;flex-shrink:0;}
-.confirm-head h5{font-size:16px;font-weight:700;color:var(--text);margin:0;}
-.confirm-body{padding:20px 22px;}
-.confirm-body p{font-size:14px;color:var(--muted);margin:0;line-height:1.6;}
-.confirm-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
-.btn-cancel-modal{height:40px;padding:0 20px;background:#f1f5f9;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;color:var(--muted);font-family:inherit;}
-.btn-confirm-delete{height:40px;padding:0 20px;background:#dc2626;color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;}
-.btn-confirm-delete:hover{background:#b91c1c;}
-
-.toast-container{position:fixed;bottom:24px;right:24px;z-index:99999;display:flex;flex-direction:column;gap:8px;}
-.pos-toast{background:#1e293b;color:#fff;border-radius:var(--radius);padding:12px 18px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.2);display:flex;align-items:center;gap:10px;min-width:260px;animation:tIn .3s ease;}
-.pos-toast.t-success{background:#15803d;} .pos-toast.t-error{background:#be123c;}
-@keyframes tIn{from{opacity:0;transform:translateX(40px);}to{opacity:1;transform:translateX(0);}}
-@keyframes tOut{from{opacity:1;}to{opacity:0;transform:translateX(40px);}}
-
-@media(max-width:900px){.summary-row{grid-template-columns:1fr 1fr;}}
-@media(max-width:560px){.summary-row{grid-template-columns:1fr;}.table-card{overflow-x:auto;}}
+/* QR Modal */
+.qr-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: none; align-items: center; justify-content: center; }
+.qr-modal-overlay.show { display: flex; }
+.qr-modal { background: #fff; border-radius: 16px; padding: 32px; text-align: center; max-width: 320px; width: 90%; }
+.qr-modal h5 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.qr-modal img { width: 200px; height: 200px; }
+.qr-modal p { font-size: 12px; color: var(--lp-muted); margin-top: 12px; word-break: break-all; }
+.qr-close-btn { margin-top: 16px; padding: 8px 24px; background: var(--lp-accent); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
 </style>
 
-<div class="lp-page">
+<div class="lp-wrap">
 
-    <div class="lp-page-header">
-        <h2 class="lp-page-title">
-            <i class="bi bi-layout-text-window-reverse" style="color:var(--accent);margin-right:6px;"></i>
-            Landing Pages
-        </h2>
-        <div class="d-flex gap-2">
-            <a href="{{ route('admin.page_categories.index') }}" class="btn-add-new" style="background: linear-gradient(135deg,#4361ee,#2563eb);">
-                <i class="bi bi-folder"></i> Page Categories
-            </a>
-            <a href="{{ route('admin.landingpages.create') }}" class="btn-add-new">
-                <i class="bi bi-plus-circle"></i> Add New
+    {{-- ── Header ── --}}
+    <div class="lp-header">
+        <div class="lp-header-left">
+            <h1>Landing Pages</h1>
+            <p class="lp-breadcrumb">
+                <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+                <span>›</span> Marketing
+                <span>›</span> Landing Pages
+            </p>
+        </div>
+        <div class="lp-header-right">
+            {{-- Theme Library --}}
+            <button class="btn-theme-lib" onclick="alert('Theme Library coming soon!')">
+                <span class="grid-icon">
+                    <span></span><span></span><span></span><span></span>
+                </span>
+                Theme Library ({{ $landingpages->total() }})
+            </button>
+            {{-- Create New --}}
+            <a href="{{ route('admin.landingpages.create') }}" class="btn-create-new">
+                + Create New Page
             </a>
         </div>
     </div>
 
+    {{-- ── Success Alert ── --}}
     @if(session('success'))
-        <div class="alert-ok"><i class="bi bi-check-circle-fill" style="margin-right:6px;"></i>{{ session('success') }}</div>
-    @endif
-    @if(session('error'))
-        <div class="alert-err"><i class="bi bi-x-circle-fill" style="margin-right:6px;"></i>{{ session('error') }}</div>
+    <div class="lp-alert" id="lpAlert">
+        <span>{{ session('success') }}</span>
+        <button class="lp-alert-close" onclick="document.getElementById('lpAlert').style.display='none'">✕</button>
+    </div>
     @endif
 
-    {{-- Summary Cards --}}
-    @php
-        $total  = \App\Models\Landingpage::count();
-        $active = \App\Models\Landingpage::where('status',1)->count();
-        $draft  = \App\Models\Landingpage::where('status',0)->count();
-    @endphp
-    <div class="summary-row">
-        <div class="summary-card">
-            <div class="sum-icon blue"><i class="bi bi-layout-text-window-reverse"></i></div>
-            <div><div class="sum-value">{{ $total }}</div><div class="sum-label">Total Pages</div></div>
+    {{-- ── Empty State ── --}}
+    @if($landingpages->isEmpty())
+    <div class="lp-empty">
+        <div class="lp-empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <path d="M8 21h8M12 17v4"/>
+                <path d="M2 7h20M7 3v4M17 3v4"/>
+            </svg>
         </div>
-        <div class="summary-card">
-            <div class="sum-icon green"><i class="bi bi-check-circle"></i></div>
-            <div><div class="sum-value">{{ $active }}</div><div class="sum-label">Active Pages</div></div>
-        </div>
-        <div class="summary-card">
-            <div class="sum-icon purple"><i class="bi bi-pause-circle"></i></div>
-            <div><div class="sum-value">{{ $draft }}</div><div class="sum-label">Inactive Pages</div></div>
-        </div>
+        <h3>No Landing Pages Found</h3>
+        <p>Create your first high-converting landing page now!</p>
+        <a href="{{ route('admin.landingpages.create') }}" class="btn-get-started">
+            Get Started
+        </a>
     </div>
 
-    {{-- Filter --}}
-    <form method="GET" action="{{ route('admin.landingpages.index') }}">
-        <div class="filter-card">
-            <div class="filter-group">
-                <label class="filter-label">Search</label>
-                <input type="text" name="search" class="filter-input"
-                       placeholder="Search by title..." value="{{ request('search') }}">
+    {{-- ── Cards Grid ── --}}
+    @else
+    <div class="lp-cards-grid">
+        @foreach($landingpages as $lp)
+        <div class="lp-card">
+            {{-- Thumbnail --}}
+            <div class="lp-card-thumb">
+                @if($lp->feature_image)
+                    <img src="{{ asset($lp->feature_image) }}" alt="{{ $lp->title }}">
+                @else
+                    <div class="lp-card-thumb-ph">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                            <path d="M21 15l-5-5L5 21"/>
+                        </svg>
+                    </div>
+                @endif
+                {{-- Status Badge --}}
+                <span class="lp-card-status {{ $lp->status ? 'active' : 'inactive' }}">
+                    {{ $lp->status ? 'Active' : 'Inactive' }}
+                </span>
             </div>
-            <div class="filter-group">
-                <label class="filter-label">Status</label>
-                <select name="status" class="filter-input">
-                    <option value="">All Status</option>
-                    <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Active</option>
-                    <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Inactive</option>
-                </select>
-            </div>
-            <div class="filter-actions">
-                <button type="submit" class="btn-filter"><i class="bi bi-search"></i> Filter</button>
-                <a href="{{ route('admin.landingpages.index') }}" class="btn-reset"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
-            </div>
-        </div>
-    </form>
 
-    {{-- Table --}}
-    <div class="table-card">
-        <div class="table-card-top">
-            <div style="display:flex;align-items:center;gap:10px;">
-                <h3 class="table-card-title">All Landing Pages</h3>
-                <span class="count-badge">{{ $landingpages->total() }} records</span>
-            </div>
-        </div>
-
-        <div style="overflow-x:auto;">
-            <table class="lp-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Page</th>
-                        <th>Media</th>
-                        <th>Reviews</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($landingpages as $i => $lp)
-                        <tr>
-                            <td style="color:var(--muted);font-size:12px;font-weight:600;">{{ $landingpages->firstItem() + $i }}</td>
-
-                            <td>
-                                <div class="lp-title-cell">
-                                    @if($lp->image && file_exists(public_path($lp->image)))
-                                        <img class="lp-thumb" src="{{ asset($lp->image) }}" alt="{{ $lp->title }}">
-                                    @else
-                                        <div class="lp-thumb-ph">🖼️</div>
-                                    @endif
-                                    <div>
-                                        <div class="lp-title-text">{{ Str::limit($lp->title, 40) }}</div>
-                                        @if($lp->product)
-                                            <div class="lp-product-tag">
-                                                <i class="bi bi-box-seam" style="color:var(--blue);"></i>
-                                                {{ Str::limit($lp->product->name, 30) }}
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </td>
-
-                            <td>
-                                <span class="media-badge {{ $lp->media_type }}">
-                                    <i class="bi bi-{{ $lp->media_type === 'image' ? 'image' : 'camera-video' }}"></i>
-                                    {{ ucfirst($lp->media_type) }}
-                                </span>
-                            </td>
-
-                            <td>
-                                <span class="reviews-count">
-                                    <i class="bi bi-star" style="color:var(--warning);"></i>
-                                    {{ count($lp->reviews ?? []) }}
-                                </span>
-                            </td>
-
-                            <td>
-                                <form class="status-toggle-form"
-                                      action="{{ route('admin.landingpages.toggle-status', $lp->id) }}"
-                                      method="POST">
-                                    @csrf @method('PATCH')
-                                    <button type="submit" class="status-btn {{ $lp->status ? 'active' : 'inactive' }}">
-                                        <span class="status-dot {{ $lp->status ? 'active' : 'inactive' }}"></span>
-                                        {{ $lp->status ? 'Active' : 'Inactive' }}
-                                    </button>
-                                </form>
-                            </td>
-
-                            <td style="color:var(--muted);font-size:12px;">
-                                {{ $lp->created_at?->format('d M Y') }}<br>
-                                <span style="font-size:11px;">{{ $lp->created_at?->diffForHumans() }}</span>
-                            </td>
-
-                            <td>
-                                <div class="action-cell">
-                                    <a href="{{ route('admin.landingpages.preview', $lp->id) }}" target="_blank" class="btn-edit" style="background:#f8fafc;color:#1f2937;">
-                                        <i class="bi bi-eye"></i> Preview
-                                    </a>
-                                    <a href="{{ route('admin.landingpages.edit', $lp->id) }}" class="btn-edit">
-                                        <i class="bi bi-pencil"></i> Edit
-                                    </a>
-                                    <button class="btn-delete"
-                                            onclick="confirmDelete({{ $lp->id }}, '{{ addslashes($lp->title) }}', '{{ route('admin.landingpages.destroy', $lp->id) }}')">
-                                        <i class="bi bi-trash"></i> Delete
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="7">
-                            <div class="empty-state">
-                                <span class="empty-icon bi bi-layout-text-window-reverse"></span>
-                                <h4>No Landing Pages Found</h4>
-                                <p>Create your first landing page to get started.</p>
-                            </div>
-                        </td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        @if($landingpages->hasPages())
-            <div class="pagi-area">
-                <div class="pagi-info">
-                    Showing <strong>{{ $landingpages->firstItem() }}</strong>
-                    to <strong>{{ $landingpages->lastItem() }}</strong>
-                    of <strong>{{ $landingpages->total() }}</strong> results
+            {{-- Body --}}
+            <div class="lp-card-body">
+                <div class="lp-card-product">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                    </svg>
+                    {{ $lp->product?->name ?? 'No Product' }}
                 </div>
-                <div>{{ $landingpages->withQueryString()->links() }}</div>
+                <div class="lp-card-slug">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>
+                    /{{ $lp->slug }}
+                </div>
+                <div class="lp-card-title">{{ $lp->title }}</div>
             </div>
-        @endif
+
+            {{-- Actions --}}
+            <div class="lp-card-actions">
+                {{-- Preview (eye) --}}
+                <a href="/l/{{ $lp->slug }}" target="_blank" class="lp-card-btn view" title="Preview">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M2 12S5 4 12 4s10 8 10 8-3 8-10 8S2 12 2 12z"/></svg>
+                </a>
+                {{-- QR Code --}}
+                <button class="lp-card-btn qr" title="QR Code" onclick="showQR('{{ url('/l/' . $lp->slug) }}', '{{ addslashes($lp->title) }}')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
+                        <path d="M14 14h1v1h-1zM17 14h1v1h-1zM14 17h1v1h-1zM17 17h3v3h-3z"/>
+                    </svg>
+                </button>
+                {{-- Builder --}}
+                <a href="{{ route('admin.landingpages.builder', $lp->id) }}" class="lp-card-btn builder" title="Page Builder">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="9" height="9" rx="1"/><rect x="13" y="2" width="9" height="9" rx="1"/><rect x="2" y="13" width="9" height="9" rx="1"/><rect x="13" y="13" width="9" height="9" rx="1"/></svg>
+                </a>
+                {{-- Edit --}}
+                <a href="{{ route('admin.landingpages.edit', $lp->id) }}" class="lp-card-btn edit" title="Edit Settings">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </a>
+                {{-- Status Toggle --}}
+                <div class="lp-card-status-toggle" style="margin-left:auto;">
+                    <form method="POST" action="{{ route('admin.landingpages.toggle-status', $lp->id) }}">
+                        @csrf @method('PATCH')
+                        <button type="submit"
+                            class="lp-card-btn {{ $lp->status ? 'preview' : '' }}"
+                            style="{{ $lp->status ? 'background:#06b6d4;color:#fff;' : 'background:#94a3b8;color:#fff;' }}"
+                            title="{{ $lp->status ? 'Deactivate' : 'Activate' }}"
+                        >
+                            @if($lp->status)
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.36 6.64A9 9 0 1 1 5.64 17.36"/><path d="M12 2v4"/></svg>
+                            @else
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                            @endif
+                        </button>
+                    </form>
+                </div>
+                {{-- Delete --}}
+                <button class="lp-card-btn delete" title="Delete"
+                    onclick="confirmDeleteLP({{ $lp->id }}, '{{ addslashes($lp->title) }}', '{{ route('admin.landingpages.destroy', $lp->id) }}')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                </button>
+            </div>
+        </div>
+        @endforeach
+    </div>
+
+    {{-- Pagination --}}
+    @if($landingpages->hasPages())
+    <div class="lp-pagination">
+        {{ $landingpages->links('pagination::bootstrap-5') }}
+    </div>
+    @endif
+    @endif
+
+</div>
+
+{{-- QR Modal --}}
+<div class="qr-modal-overlay" id="qrModal">
+    <div class="qr-modal">
+        <h5 id="qrTitle">QR Code</h5>
+        <img id="qrImage" src="" alt="QR Code">
+        <p id="qrUrl"></p>
+        <button class="qr-close-btn" onclick="closeQR()">Close</button>
     </div>
 </div>
 
-{{-- Delete Modal --}}
-<div class="confirm-overlay" id="deleteOverlay">
-    <div class="confirm-modal">
-        <div class="confirm-head">
-            <div class="confirm-icon"><i class="bi bi-trash"></i></div>
-            <h5>Delete Landing Page?</h5>
-        </div>
-        <div class="confirm-body">
-            <p>Are you sure you want to delete <strong id="deleteTitle">this page</strong>?<br><br>
-            <span style="color:#dc2626;font-weight:600;"><i class="bi bi-exclamation-triangle-fill"></i> This action cannot be undone. All images will also be deleted.</span></p>
-        </div>
-        <div class="confirm-foot">
-            <button class="btn-cancel-modal" onclick="closeDeleteModal()"><i class="bi bi-x"></i> Cancel</button>
-            <form id="deleteForm" method="POST" style="display:inline;">
-                @csrf @method('DELETE')
-                <button type="submit" class="btn-confirm-delete"><i class="bi bi-trash"></i> Yes, Delete</button>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div class="toast-container" id="toastContainer"></div>
+{{-- Delete Form --}}
+<form id="deleteForm" method="POST" style="display:none;">
+    @csrf @method('DELETE')
+</form>
 
 <script>
-'use strict';
-function confirmDelete(id, title, url) {
-    document.getElementById('deleteTitle').textContent = title;
-    document.getElementById('deleteForm').action = url;
-    document.getElementById('deleteOverlay').classList.add('show');
+function showQR(url, title) {
+    const encoded = encodeURIComponent(url);
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encoded}`;
+    document.getElementById('qrTitle').textContent = title;
+    document.getElementById('qrImage').src = qrUrl;
+    document.getElementById('qrUrl').textContent = url;
+    document.getElementById('qrModal').classList.add('show');
 }
-function closeDeleteModal() { document.getElementById('deleteOverlay').classList.remove('show'); }
-document.getElementById('deleteOverlay').addEventListener('click', function(e){ if(e.target===this) closeDeleteModal(); });
-document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDeleteModal(); });
+function closeQR() {
+    document.getElementById('qrModal').classList.remove('show');
+}
+document.getElementById('qrModal').addEventListener('click', function(e) {
+    if (e.target === this) closeQR();
+});
 
-function showToast(msg, type, ms) {
-    type=type||'success'; ms=ms||3200;
-    var c=document.getElementById('toastContainer');
-    var t=document.createElement('div');
-    t.className='pos-toast t-'+type;
-    t.innerHTML='<i class="bi bi-'+(type==='success'?'check-circle-fill':'x-circle-fill')+'"></i><span>'+msg+'</span>';
-    c.appendChild(t);
-    setTimeout(function(){t.style.animation='tOut .3s ease forwards';t.addEventListener('animationend',function(){t.remove();},{once:true});},ms);
+function confirmDeleteLP(id, title, action) {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Delete Landing Page?',
+            text: `"${title}" will be permanently deleted.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, Delete',
+            cancelButtonText: 'Cancel',
+        }).then(result => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('deleteForm');
+                form.action = action;
+                form.submit();
+            }
+        });
+    } else {
+        if (confirm(`Delete "${title}"?`)) {
+            const form = document.getElementById('deleteForm');
+            form.action = action;
+            form.submit();
+        }
+    }
 }
-@if(session('success')) showToast('{{ addslashes(session("success")) }}','success'); @endif
-@if(session('error'))   showToast('{{ addslashes(session("error")) }}','error');   @endif
 </script>
 
 @endsection

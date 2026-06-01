@@ -323,7 +323,7 @@
                         <select name="default_currency" class="gs-select">
                             @php
                                 $currencies = ['USD ($)' => 'USD ($)', 'EUR (€)' => 'EUR (€)', 'GBP (£)' => 'GBP (£)', 'BDT (৳)' => 'BDT (৳)', 'INR (₹)' => 'INR (₹)'];
-                                $cur = old('default_currency', $setting->default_currency ?? 'USD ($)');
+                                $cur = old('default_currency', $setting ? $setting->getRawOriginal('default_currency') : 'USD ($)');
                             @endphp
                             @foreach($currencies as $val => $label)
                                 <option value="{{ $val }}" {{ $cur == $val ? 'selected' : '' }}>{{ $label }}</option>
@@ -560,6 +560,15 @@
                        value="{{ old('footer_text', $setting->footer_text ?? '') }}">
             </div>
         </div>
+        <div class="gs-row" style="margin-bottom:22px;">
+            <div class="gs-col">
+                <label class="gs-label">Footer Copyright Text</label>
+                <input type="text" name="footer_copyright_text" class="gs-input"
+                       placeholder="e.g. Copyright © 2026 JhrBazar. All rights reserved."
+                       value="{{ old('footer_copyright_text', $setting->footer_copyright_text ?? '') }}">
+                <small class="text-muted" style="font-size:11px;">এটি ফুটারের সবার নিচে কপিরাইট সেকশনে দেখাবে। খালি রাখলে ডিফল্ট ভ্যালু দেখাবে।</small>
+            </div>
+        </div>
 
         {{-- Footer Logo + QR --}}
         <div class="gs-row">
@@ -666,6 +675,22 @@
                 <div style="display: flex; gap: 10px;">
                     <input type="color" value="{{ old('tax_header_text_color', $setting->tax_header_text_color ?? '#1a1a2e') }}" oninput="this.nextElementSibling.value=this.value" style="height:40px;width:50px;border:none;border-radius:4px;cursor:pointer;">
                     <input type="text" name="tax_header_text_color" class="gs-input" value="{{ old('tax_header_text_color', $setting->tax_header_text_color ?? '#1a1a2e') }}" oninput="this.previousElementSibling.value=this.value" style="flex:1;">
+                </div>
+            </div>
+        </div>
+        <div class="gs-row" style="margin-bottom:22px;">
+            <div class="gs-col">
+                <label class="gs-label">Important Background Color</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="color" value="{{ old('important_background_color', $setting->important_background_color ?? '#ffffff') }}" oninput="this.nextElementSibling.value=this.value" style="height:40px;width:50px;border:none;border-radius:4px;cursor:pointer;">
+                    <input type="text" name="important_background_color" class="gs-input" value="{{ old('important_background_color', $setting->important_background_color ?? '#ffffff') }}" oninput="this.previousElementSibling.value=this.value" style="flex:1;">
+                </div>
+            </div>
+            <div class="gs-col">
+                <label class="gs-label">Important Color</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="color" value="{{ old('important_color', $setting->important_color ?? '#ff0000') }}" oninput="this.nextElementSibling.value=this.value" style="height:40px;width:50px;border:none;border-radius:4px;cursor:pointer;">
+                    <input type="text" name="important_color" class="gs-input" value="{{ old('important_color', $setting->important_color ?? '#ff0000') }}" oninput="this.previousElementSibling.value=this.value" style="flex:1;">
                 </div>
             </div>
         </div>
@@ -831,7 +856,22 @@
                     <span style="font-size:13px;font-weight:600;color:#333;">Enable GTM Tracking</span>
                 </div>
             </div>
-            <div class="gs-col"></div> {{-- Empty space for layout --}}
+            
+            {{-- Customer Visit Notification --}}
+            <div class="gs-col" style="border: 1px solid var(--border); padding: 20px; border-radius: 12px; background: #fcfcfc;">
+                <label class="gs-label fw-bold"><i class="bi bi-bell text-danger"></i> Returning Customer Visit Alert</label>
+                <p style="font-size:12px; color:#666; margin-bottom: 18px;">Show real-time notification popups in the admin panel when registered customers visit the website.</p>
+
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="customer_visit_notification_status"
+                               {{ old('customer_visit_notification_status', $setting->customer_visit_notification_status ?? 1) ? 'checked' : '' }}
+                               onchange="ajaxToggle(this, '{{ $setting ? route('admin.generalsettings.toggle', $setting->id) : '#' }}', 'customer_visit_notification_status')">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span style="font-size:13px;font-weight:600;color:#333;">Enable Real-time Visitor Alert</span>
+                </div>
+            </div>
         </div>
     </div>
 

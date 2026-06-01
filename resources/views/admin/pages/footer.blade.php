@@ -274,7 +274,7 @@ if (donutChartEl) {
     </script>
 
     {{-- ── Customer Detector AJAX Poller ── --}}
-    @if(auth()->check() && auth()->user()->role === 'admin')
+    @if(auth()->check() && auth()->user()->role === 'admin' && settings() && settings()->customer_visit_notification_status)
     <style>
         #cd-toast-container {
             position: fixed;

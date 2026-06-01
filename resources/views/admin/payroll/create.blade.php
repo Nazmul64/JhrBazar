@@ -24,7 +24,7 @@
                 <div class="card-body p-4">
                     <h5 class="fw-bold mb-3" style="color:#1a1a2e; font-size:16px;">1. Select Employee target</h5>
                     
-                    <form action="{{ route('admin.payroll.generate') }}" method="GET">
+                    <form action="{{ route('admin.hrm.payroll.generate') }}" method="GET">
                         <div class="mb-3">
                             <label class="hrm-lbl">Employee</label>
                             <select name="employee_id" class="form-select hrm-in" required onchange="this.form.submit()">
@@ -73,7 +73,7 @@
                     <h5 class="fw-bold mb-4" style="color:#1a1a2e; font-size:16px;">2. Structural Payroll Computations</h5>
 
                     @if($employee)
-                        <form action="{{ route('admin.payroll.store') }}" method="POST">
+                        <form action="{{ route('admin.hrm.payroll.store') }}" method="POST">
                             @csrf
                             <input type="hidden" name="employee_id" value="{{ $employee->id }}">
                             <input type="hidden" name="month" value="{{ $month }}">
@@ -197,7 +197,7 @@
                             </div>
 
                             <div class="mt-4 text-end">
-                                <a href="{{ route('admin.payroll.index') }}" class="btn btn-light px-4 py-2 me-2" style="font-size:13.5px; border-radius:8px;">Cancel</a>
+                                <a href="{{ route('admin.hrm.payroll.index') }}" class="btn btn-light px-4 py-2 me-2" style="font-size:13.5px; border-radius:8px;">Cancel</a>
                                 <button type="submit" class="btn-hrm-save px-4 py-2">Generate Payroll Sheet</button>
                             </div>
                         </form>
