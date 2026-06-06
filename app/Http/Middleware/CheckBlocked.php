@@ -24,19 +24,34 @@ class CheckBlocked
         */
 
         try {
-            if (Auth::check()) {
+            $user = null;
+            if (auth('sanctum')->check()) {
+                $user = auth('sanctum')->user();
+            } elseif (Auth::check()) {
                 $user = Auth::user();
+            }
 
+            if ($user) {
                 // Update last_ip
                 if ($user->last_ip !== $ip) {
                     $user->update(['last_ip' => $ip]);
                 }
 
                 if ($user->is_blocked) {
+                    if ($request->expectsJson() || $request->is('api/*') || $request->is('v1/*') || $request->routeIs('api.*')) {
+                        return response()->json([
+                            'success' => false,
+                            'blocked' => true,
+                            'message' => 'Your account has been blocked. Please contact support.'
+                        ], 403);
+                    }
+
                     Auth::logout();
 
-                    $request->session()->invalidate();
-                    $request->session()->regenerateToken();
+                    if ($request->hasSession()) {
+                        $request->session()->invalidate();
+                        $request->session()->regenerateToken();
+                    }
 
                     return redirect()->route('login')->with('error', 'Your account has been blocked. Please contact support.');
                 }

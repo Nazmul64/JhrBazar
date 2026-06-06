@@ -179,12 +179,12 @@
                             <span style="font-size:14px; font-weight:600; color:var(--dark);">Popular Product</span>
                         </label>
 
-                        @foreach(config('placement.frontend_sections') as $section)
+                        @foreach($categories as $cat)
                             <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                                <input type="checkbox" name="frontend_sections[]" value="{{ $section }}" 
-                                    {{ (is_array(old('frontend_sections')) && in_array($section, old('frontend_sections'))) ? 'checked' : '' }} 
+                                <input type="checkbox" name="frontend_sections[]" value="{{ $cat->name }}" 
+                                    {{ (is_array(old('frontend_sections')) && in_array($cat->name, old('frontend_sections'))) ? 'checked' : '' }} 
                                     style="width:16px;height:16px;accent-color:var(--brand);">
-                                <span style="font-size:14px; font-weight:600; color:var(--dark);">{{ $section }}</span>
+                                <span style="font-size:14px; font-weight:600; color:var(--dark);">{!! clean($cat->name) !!}</span>
                             </label>
                         @endforeach
                     </div>

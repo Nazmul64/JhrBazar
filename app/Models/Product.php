@@ -23,20 +23,20 @@ class Product extends Model
     ];
 
     protected $casts = [
-        'is_active'      => 'boolean',
+        'is_active' => 'boolean',
         'is_new_arrival' => 'boolean',
         'is_best_seller' => 'boolean',
         'is_hot_product' => 'boolean',
-        'is_flash_sale'  => 'boolean',
-        'is_just_for_you'=> 'boolean',
-        'is_popular'     => 'boolean',
-        'cash_on_delivery'=> 'boolean',
-        'online_payment'  => 'boolean',
+        'is_flash_sale' => 'boolean',
+        'is_just_for_you' => 'boolean',
+        'is_popular' => 'boolean',
+        'cash_on_delivery' => 'boolean',
+        'online_payment' => 'boolean',
         'is_shipping_charge' => 'boolean',
         'gallery_images' => 'array',
         'frontend_sections' => 'array',
-        'buying_price'   => 'decimal:2',
-        'selling_price'  => 'decimal:2',
+        'buying_price' => 'decimal:2',
+        'selling_price' => 'decimal:2',
         'discount_price' => 'decimal:2',
     ];
 

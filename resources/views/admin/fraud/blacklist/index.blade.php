@@ -19,8 +19,15 @@ body { background: var(--fc-primary); color: var(--fc-text); }
 .fc-page-title { font-size: 1.2rem; font-weight: 700; }
 
 .bl-layout {
-    display: block; /* Changed from grid to block for full width */
+    display: grid;
+    grid-template-columns: 2.5fr 1fr;
+    gap: 2rem;
     padding: 1.5rem 2rem;
+}
+@media (max-width: 992px) {
+    .bl-layout {
+        grid-template-columns: 1fr;
+    }
 }
 
 .stat-mini-grid {
@@ -190,10 +197,10 @@ body { background: var(--fc-primary); color: var(--fc-text); }
 <div class="fc-page-header">
     <div>
         <div class="fc-page-title">
-            <i class="fas fa-user-shield me-2" style="color:var(--fc-danger)"></i>IP Blacklist
+            <i class="fas fa-user-shield me-2" style="color:var(--fc-danger)"></i>Fraud Blacklist
         </div>
         <div style="font-size:.72rem; color:var(--fc-muted); margin-top:3px">
-            Manage blocked IP addresses to prevent spam and fraud.
+            Manage blocked IP addresses, device fingerprints, phone numbers, and emails to prevent spam and fraud.
         </div>
     </div>
     <div class="d-flex gap-2">
@@ -207,19 +214,32 @@ body { background: var(--fc-primary); color: var(--fc-text); }
 
     {{-- Left: List --}}
     <div>
-        {{-- Stats removed per user request --}}
-
         {{-- Filters --}}
         <form method="GET" class="fc-filters">
             <input type="text" name="search" class="fc-input-sm" placeholder="Search value..." value="{{ request('search') }}">
-            {{-- Type selector removed since it is now IP only --}}
-            @if(request()->hasAny(['search','type']))
+            
+            <select name="type" class="fc-select">
+                <option value="">All Identifier Types</option>
+                <option value="ip" {{ request('type') === 'ip' ? 'selected' : '' }}>IP Address</option>
+                <option value="device" {{ request('type') === 'device' ? 'selected' : '' }}>Device Fingerprint</option>
+                <option value="phone" {{ request('type') === 'phone' ? 'selected' : '' }}>Phone Number</option>
+                <option value="email" {{ request('type') === 'email' ? 'selected' : '' }}>Email Address</option>
+                <option value="country" {{ request('type') === 'country' ? 'selected' : '' }}>Country Code</option>
+            </select>
+
+            <select name="is_active" class="fc-select">
+                <option value="">All Statuses</option>
+                <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Blocked Only</option>
+                <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>Unblocked Only</option>
+            </select>
+
+            @if(request()->hasAny(['search', 'type', 'is_active']))
             <a href="{{ route('admin.fraud.blacklist.index') }}" class="btn-fc-ghost" style="padding:6px 12px; font-size:.72rem;">
                 <i class="fas fa-times"></i> Clear
             </a>
             @endif
-            <button type="submit" class="btn-fc-ghost" style="padding:6px 12px; font-size:.72rem;">
-                <i class="fas fa-search"></i> Search
+            <button type="submit" class="btn-fc-ghost" style="padding:6px 12px; font-size:.72rem; background: var(--fc-accent); border-color: var(--fc-accent);">
+                <i class="fas fa-search"></i> Filter
             </button>
         </form>
 
@@ -232,7 +252,7 @@ body { background: var(--fc-primary); color: var(--fc-text); }
         <table class="fc-table">
             <thead>
                 <tr>
-                    {{-- Type column removed --}}
+                    <th>Type</th>
                     <th>Value</th>
                     <th>Reason</th>
                     <th>Added By</th>
@@ -244,8 +264,8 @@ body { background: var(--fc-primary); color: var(--fc-text); }
             <tbody>
                 @forelse($blacklists as $item)
                 <tr>
-                    {{-- Type cell removed --}}
-                    <td><span class="bl-value">{{ $item->value }}</span></td>
+                    <td><span class="bl-type-badge {{ $item->type }}">{{ $item->type === 'ip' ? 'IP' : ($item->type === 'device' ? 'Device' : ucfirst($item->type)) }}</span></td>
+                    <td><span class="bl-value" style="word-break: break-all; max-width: 250px; display: inline-block;">{{ $item->value }}</span></td>
                     <td><span style="font-size:.78rem; color:var(--fc-muted)">{{ Str::limit($item->reason, 45) }}</span></td>
                     <td>
                         <span style="font-size:.75rem; color:var(--fc-muted)">{{ $item->creator->name ?? 'System' }}</span>
@@ -285,9 +305,9 @@ body { background: var(--fc-primary); color: var(--fc-text); }
                 <tr>
                     <td colspan="7">
                         <div class="empty-state">
-                            <i class="fas fa-shield-check" style="color:var(--fc-success)"></i>
+                            <i class="fas fa-shield-alt" style="color:var(--fc-muted)"></i>
                             Blacklist is empty
-                            <div style="font-size:.78rem; margin-top:.5rem">No blocked IP addresses found.</div>
+                            <div style="font-size:.78rem; margin-top:.5rem">No blocked identifiers found.</div>
                         </div>
                     </td>
                 </tr>
@@ -298,11 +318,48 @@ body { background: var(--fc-primary); color: var(--fc-text); }
         <div style="margin-top:1.25rem">{{ $blacklists->links() }}</div>
     </div>
 
-    {{-- Right Sidebar Form removed per user request --}}
-    {{-- 
+    {{-- Right Sidebar: Add Manual Blacklist Entry --}}
     <div>
-        ... (rest of the sidebar)
-    </div> 
-    --}}
+        <div class="bl-add-panel">
+            <div class="bl-add-header">
+                <i class="fas fa-plus-circle" style="color:var(--fc-accent)"></i> Add Blacklist Entry
+            </div>
+            <div class="bl-add-body">
+                <form method="POST" action="{{ route('admin.fraud.blacklist.store') }}">
+                    @csrf
+                    
+                    <div style="margin-bottom:1rem">
+                        <label class="fc-label">Identifier Type <span>*</span></label>
+                        <select name="type" required class="fc-control" style="margin-bottom:0">
+                            <option value="ip">IP Address</option>
+                            <option value="device">Device Fingerprint</option>
+                            <option value="phone">Phone Number</option>
+                            <option value="email">Email Address</option>
+                            <option value="country">Country Code</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom:1rem">
+                        <label class="fc-label">Value <span>*</span></label>
+                        <input type="text" name="value" required class="fc-control" style="margin-bottom:0" placeholder="e.g. 103.55.10.22 or FP-E3B8..." value="{{ old('value') }}">
+                    </div>
+
+                    <div style="margin-bottom:1rem">
+                        <label class="fc-label">Reason <span>*</span></label>
+                        <textarea name="reason" required class="fc-control" style="margin-bottom:0; resize:none;" rows="3" placeholder="Reason for blocking...">{{ old('reason') }}</textarea>
+                    </div>
+
+                    <div style="margin-bottom:1.5rem">
+                        <label class="fc-label">Expires At (Optional)</label>
+                        <input type="datetime-local" name="expires_at" class="fc-control" style="margin-bottom:0" value="{{ old('expires_at') }}">
+                    </div>
+
+                    <button type="submit" class="bl-submit">
+                        <i class="fas fa-user-slash"></i> Blacklist Identifier
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

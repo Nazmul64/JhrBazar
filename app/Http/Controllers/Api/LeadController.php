@@ -17,15 +17,33 @@ class LeadController extends Controller
         $request->validate([
             'phone' => 'required|string',
             'name'  => 'nullable|string',
+            'email' => 'nullable|string',
+            'total' => 'nullable|numeric',
+            'payment_method' => 'nullable|string',
+            'area' => 'nullable|string',
+            'address' => 'nullable|string',
+            'cart_items' => 'nullable|array',
+            'url' => 'nullable|string',
             'shop_id' => 'nullable',
             'seller_id' => 'nullable',
+            'device' => 'nullable|string',
+            'browser' => 'nullable|string',
+            'os' => 'nullable|string',
         ]);
 
         $phone = $request->phone;
         if (strlen($phone) < 11) return response()->json(['success' => false]);
 
-        $shopId = $request->seller_id;
-        
+        $shopId = $request->seller_id ?? $request->shop_id;
+
+        $browser = $request->browser;
+        if (!$browser) {
+            $userAgent = $request->header('User-Agent');
+            $browser = $request->os ? $request->os . ' (' . $userAgent . ')' : $userAgent;
+        }
+
+        $device = $request->device ?? $this->getDeviceType($request->header('User-Agent'));
+
         $lead = IncompleteOrder::updateOrCreate(
             ['phone' => $phone, 'shop_id' => $shopId],
             [
@@ -38,16 +56,20 @@ class LeadController extends Controller
                 'cart_items'      => $request->cart_items, // Should be json/array
                 'url'             => $request->url,
                 'ip_address'      => $request->ip(),
-                'browser'         => $request->header('User-Agent'),
-                'device'          => $this->getDeviceType($request->header('User-Agent')),
+                'browser'         => $browser,
+                'device'          => $device,
                 'status'          => 'incomplete'
             ]
         );
 
         // Set persistent cookies for returning customer tracking (1 year)
-        \Illuminate\Support\Facades\Cookie::queue('customer_tracker_phone', $phone, 525600);
-        if ($request->name) {
-            \Illuminate\Support\Facades\Cookie::queue('customer_tracker_name', $request->name, 525600);
+        try {
+            \Illuminate\Support\Facades\Cookie::queue('customer_tracker_phone', $phone, 525600);
+            if ($request->name) {
+                \Illuminate\Support\Facades\Cookie::queue('customer_tracker_name', $request->name, 525600);
+            }
+        } catch (\Throwable $e) {
+            // Ignore cookie queue failures in stateless environments
         }
 
         return response()->json(['success' => true, 'id' => $lead->id]);

@@ -5,6 +5,89 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
+const generateCanvasFingerprint = () => {
+    let fp = localStorage.getItem('device_fingerprint_secure');
+    if (fp) return fp;
+
+    try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 200;
+        canvas.height = 50;
+        
+        ctx.textBaseline = "top";
+        ctx.font = "14px 'Arial'";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillStyle = "#f60";
+        ctx.fillRect(125, 1, 62, 20);
+        ctx.fillStyle = "#069";
+        ctx.fillText("JhrBazarSecureFingerprint!", 2, 15);
+        ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+        ctx.fillText("JhrBazarSecureFingerprint!", 4, 17);
+        
+        const canvasData = canvas.toDataURL();
+        
+        const screenWidth = window.screen.width || 0;
+        const screenHeight = window.screen.height || 0;
+        const colorDepth = window.screen.colorDepth || 0;
+        const userAgent = navigator.userAgent || '';
+        const language = navigator.language || navigator.userLanguage || '';
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+        const hardwareConcurrency = navigator.hardwareConcurrency || 'unknown';
+        
+        const rawString = `${canvasData}|${screenWidth}x${screenHeight}|${colorDepth}|${userAgent}|${language}|${timezone}|${hardwareConcurrency}`;
+        
+        let hash = 2166136261;
+        for (let i = 0; i < rawString.length; i++) {
+            hash ^= rawString.charCodeAt(i);
+            hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+        }
+        
+        fp = 'FP-' + Math.abs(hash).toString(16).toUpperCase();
+        localStorage.setItem('device_fingerprint_secure', fp);
+        document.cookie = `device_fingerprint_secure=${fp}; max-age=31536000; path=/`;
+        return fp;
+    } catch (e) {
+        const fallback = 'FP-FALLBACK-' + Math.random().toString(36).substring(2, 15).toUpperCase();
+        localStorage.setItem('device_fingerprint_secure', fallback);
+        document.cookie = `device_fingerprint_secure=${fallback}; max-age=31536000; path=/`;
+        return fallback;
+    }
+};
+
+const getBrowserName = () => {
+    const userAgent = navigator.userAgent;
+    if (userAgent.indexOf("Chrome") > -1) return "Chrome";
+    if (userAgent.indexOf("Safari") > -1) return "Safari";
+    if (userAgent.indexOf("Firefox") > -1) return "Firefox";
+    if (userAgent.indexOf("MSIE") > -1 || !!document.documentMode === true) return "IE";
+    if (userAgent.indexOf("Edge") > -1) return "Edge";
+    return "Unknown Browser";
+};
+
+const getOSName = () => {
+    const userAgent = navigator.userAgent;
+    if (userAgent.indexOf("Windows NT 10.0") > -1) return "Windows 10/11";
+    if (userAgent.indexOf("Windows NT 6.2") > -1) return "Windows 8";
+    if (userAgent.indexOf("Windows NT 6.1") > -1) return "Windows 7";
+    if (userAgent.indexOf("Macintosh") > -1) return "macOS";
+    if (userAgent.indexOf("iPhone") > -1 || userAgent.indexOf("iPad") > -1) return "iOS";
+    if (userAgent.indexOf("Android") > -1) return "Android";
+    if (userAgent.indexOf("Linux") > -1) return "Linux";
+    return "Unknown OS";
+};
+
+const getDeviceType = () => {
+    const userAgent = navigator.userAgent;
+    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(userAgent)) {
+        return "Tablet";
+    }
+    if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(userAgent)) {
+        return "Mobile";
+    }
+    return "Desktop";
+};
+
 const Checkout = () => {
     const navigate = useNavigate();
     const mainColor = '#57b500';
@@ -20,7 +103,8 @@ const Checkout = () => {
     useEffect(() => {
         const checkBlock = async () => {
             try {
-                const res = await axios.get('/api/check-ip-blocked');
+                const fp = generateCanvasFingerprint();
+                const res = await axios.get(`/api/check-ip-blocked?fingerprint=${fp}`);
                 if (res.data.blocked) {
                     setIsBlocked(true);
                     setBlockedData(res.data.data);
@@ -248,6 +332,10 @@ const Checkout = () => {
                 shipping_charge: shippingAmount,
                 discount: couponDiscount,
                 coupon_code: couponApplied ? couponCode : null,
+                device_fingerprint: generateCanvasFingerprint(),
+                browser: getBrowserName(),
+                os: getOSName(),
+                device_type: getDeviceType()
             });
 
             if (res.data.success) {

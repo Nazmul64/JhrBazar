@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import MasterLayout from '../layouts/MasterLayout';
 import HeroSection from '../components/HeroSection';
@@ -15,7 +15,7 @@ const Home = () => {
     const importantColor = settings?.important_color || window.initialSettings?.important_color || '#ffffff';
     const importantBgColor = settings?.important_background_color || window.initialSettings?.important_background_color || '#dc3545';
 
-    
+
     const [popularProducts, setPopularProducts] = useState(homeData?.popularProducts || []);
     const [newArrivals, setNewArrivals] = useState(homeData?.newArrivals || []);
     const [justForYouProducts, setJustForYouProducts] = useState(homeData?.justForYouProducts || []);
@@ -27,7 +27,9 @@ const Home = () => {
     const [topShops, setTopShops] = useState(homeData?.topShops || []);
     const [recentReviews, setRecentReviews] = useState(homeData?.recentReviews || []);
     const [frontendSections, setFrontendSections] = useState(homeData?.frontendSections || []);
+    const [ourBrands, setOurBrands] = useState(homeData?.ourBrands || []);
     const [loading, setLoading] = useState(!homeData);
+    const brandSliderRef = useRef(null);
 
     const applyData = (data) => {
         setPopularProducts(data.popularProducts || []);
@@ -41,6 +43,7 @@ const Home = () => {
         setTopShops(data.topShops || []);
         setRecentReviews(data.recentReviews || []);
         setFrontendSections(data.frontendSections || []);
+        setOurBrands(data.ourBrands || []);
     };
 
     useEffect(() => {
@@ -65,7 +68,7 @@ const Home = () => {
     useEffect(() => {
         if (!loading) {
             window.dataLayer = window.dataLayer || [];
-            
+
             if (popularProducts.length > 0) {
                 window.dataLayer.push({
                     event: 'view_item_list',
@@ -79,7 +82,7 @@ const Home = () => {
                     }))
                 });
             }
-            
+
             if (newArrivals.length > 0) {
                 window.dataLayer.push({
                     event: 'view_item_list',
@@ -93,7 +96,7 @@ const Home = () => {
                     }))
                 });
             }
-            
+
             if (bestDeals.length > 0) {
                 window.dataLayer.push({
                     event: 'view_item_list',
@@ -150,7 +153,7 @@ const Home = () => {
 
     return (
         <MasterLayout>
-            <SEO 
+            <SEO
                 title={settings?.website_title}
                 siteName={settings?.website_name}
                 description={settings?.meta_description}
@@ -293,6 +296,103 @@ const Home = () => {
                     {renderProductGrid(section.products)}
                 </section>
             ))}
+
+            {/* ===== Our Brand Slider ===== */}
+            {!loading && ourBrands.length > 0 && (
+                <section className="container mb-4">
+                    <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                        <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Our Brand Partners</h4>
+                    </div>
+                    <div className="position-relative">
+                        <button
+                            type="button"
+                            className="brand-slider-arrow prev"
+                            onClick={() => {
+                                const container = brandSliderRef.current;
+                                if (container) container.scrollBy({ left: -container.clientWidth * 0.85, behavior: 'smooth' });
+                            }}
+                        >
+                            ‹
+                        </button>
+                        <div
+                            ref={brandSliderRef}
+                            className="our-brand-slider d-flex gap-3 overflow-x-auto pb-2 scroll-smooth"
+                        >
+                            {ourBrands.map((brand) => (
+                                <div
+                                    key={brand.id}
+                                    className="card border-0 shadow-sm"
+                                    style={{ minWidth: 210, maxWidth: 240, borderRadius: 18, overflow: 'hidden', flex: '0 0 auto' }}
+                                >
+                                    <div className="d-flex align-items-center justify-content-center" style={{ minHeight: 120, padding: '18px 14px', background: '#fff' }}>
+                                        <img src={brand.image} alt={brand.title || 'Brand'} style={{ maxHeight: 90, maxWidth: '100%', objectFit: 'contain' }} />
+                                    </div>
+                                    {brand.title && (
+                                        <div className="text-center py-2" style={{ fontSize: 13, color: '#4b5563' }}>
+                                            {brand.title}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        <button
+                            type="button"
+                            className="brand-slider-arrow next"
+                            onClick={() => {
+                                const container = brandSliderRef.current;
+                                if (container) container.scrollBy({ left: container.clientWidth * 0.85, behavior: 'smooth' });
+                            }}
+                        >
+                            ›
+                        </button>
+                    </div>
+                    <style>{`
+                        .our-brand-slider {
+                            scroll-behavior: smooth;
+                            -webkit-overflow-scrolling: touch;
+                        }
+                        .our-brand-slider::-webkit-scrollbar { height: 10px; }
+                        .our-brand-slider::-webkit-scrollbar-thumb { background-color: rgba(148,163,184,0.55); border-radius: 999px; }
+                        .our-brand-slider::-webkit-scrollbar-track { background: transparent; }
+
+                        .brand-slider-arrow {
+                            position: absolute;
+                            top: 50%;
+                            transform: translateY(-50%);
+                            width: 40px;
+                            height: 40px;
+                            border-radius: 50%;
+                            border: none;
+                            background: rgba(255,255,255,0.9);
+                            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+                            cursor: pointer;
+                            z-index: 5;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 22px;
+                            color: #111;
+                        }
+                        .brand-slider-arrow:hover {
+                            background: #fff;
+                        }
+                        .brand-slider-arrow.prev {
+                            left: -10px;
+                        }
+                        .brand-slider-arrow.next {
+                            right: -10px;
+                        }
+                        @media (max-width: 992px) {
+                            .brand-slider-arrow.prev { left: 0; }
+                            .brand-slider-arrow.next { right: 0; }
+                        }
+                        @media (max-width: 768px) {
+                            .our-brand-slider { gap: 14px; }
+                            .brand-slider-arrow { width: 34px; height: 34px; font-size: 20px; }
+                        }
+                    `}</style>
+                </section>
+            )}
 
 
             <style>{`

@@ -11,6 +11,7 @@ use App\Models\DigitalProduct;
 use App\Models\SellerDigitalProduct;
 use App\Models\Shop;
 use App\Models\GenaralSetting;
+use App\Models\OurBrand;
 use App\Models\SociallinkList;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -86,6 +87,14 @@ class FrontendApiController extends Controller
                     ]);
             }
 
+            $ourBrands = OurBrand::where('is_active', 1)
+                ->orderBy('sort_order')
+                ->get()
+                ->map(fn($brand) => [
+                    'id'    => $brand->id,
+                    'title' => $brand->title,
+                    'image' => $brand->image ? (str_starts_with($brand->image, 'http') ? $brand->image : '/' . ltrim($brand->image, '/')) : '/placeholder.jpg',
+                ]);
 
             $allProducts = $this->getCombinedProducts(null, 20, $productColumns);
             $recentReviews = \App\Models\Review::with('user:id,name')->where('status', 1)->latest()->take(6)->get();
@@ -110,11 +119,12 @@ class FrontendApiController extends Controller
             $allSectionProducts = $sectionAdminProducts->concat($sectionSellerProducts)->sortByDesc('created_at');
 
             $frontendSections = [];
+            $activeCategoryNames = $categories->pluck('name')->toArray();
             foreach ($allSectionProducts as $p) {
                 $sections = $p['frontend_sections'];
                 if (is_array($sections)) {
                     foreach ($sections as $secName) {
-                        if ($secName) {
+                        if ($secName && in_array($secName, $activeCategoryNames)) {
                             if (!isset($frontendSections[$secName])) {
                                 $frontendSections[$secName] = [];
                             }
@@ -146,6 +156,7 @@ class FrontendApiController extends Controller
                     'digitalProducts'      => $digital,
                     'bestDeals'            => $bestDeals,
                     'topShops'             => $topShops,
+                    'ourBrands'            => $ourBrands,
                     'allProducts'          => $allProducts,
                     'recentReviews'        => $recentReviews,
                     'frontendSections'     => $formattedSections,

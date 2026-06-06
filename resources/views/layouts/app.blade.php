@@ -10,7 +10,17 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Fonts -->
-    <link rel="dns-prefetch" href="//fonts.bunny.net">
+<!-- Dark Mode Styles -->
+<style>
+  :root {
+    --bg-light: #fdfdfc;
+    --bg-dark: #0a0a0a;
+    --text-light: #1b1b18;
+    --text-dark: #e5e5e5;
+  }
+  html.dark body { background: var(--bg-dark); color: var(--text-dark); }
+  body { background: var(--bg-light); color: var(--text-light); }
+</style>
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
 
     <!-- Scripts -->

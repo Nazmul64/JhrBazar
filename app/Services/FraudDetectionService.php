@@ -121,6 +121,7 @@ class FraudDetectionService
             'device_type'          => $data['device_type']           ?? null,
             'browser'              => $data['browser']               ?? null,
             'os'                   => $data['os']                    ?? null,
+            'device_fingerprint'   => $data['device_fingerprint']    ?? null,
             'triggered_rules'      => $this->triggeredRules,
             'flags'                => $this->flags,
             'courier_data'         => $courierData,
@@ -141,9 +142,10 @@ class FraudDetectionService
     private function checkBlacklists(array $data): void
     {
         $targets = [
-            'email' => $data['customer_email'] ?? null,
-            'phone' => $data['customer_phone'] ?? null,
-            'ip'    => $data['ip_address']     ?? null,
+            'email'  => $data['customer_email'] ?? null,
+            'phone'  => $data['customer_phone'] ?? null,
+            'ip'     => $data['ip_address']     ?? null,
+            'device' => $data['device_fingerprint'] ?? null,
         ];
 
         foreach ($targets as $type => $value) {
@@ -169,7 +171,6 @@ class FraudDetectionService
             return [];
         }
 
-        // In production: integrate ip-api.com, ipinfo.io, or IPQS
         $data = [
             'country'        => 'BD',
             'city'           => 'Dhaka',
@@ -183,17 +184,84 @@ class FraudDetectionService
             return $data;
         }
 
+        if ($ip !== '127.0.0.1' && $ip !== '::1') {
+            try {
+                $response = Http::timeout(1.5)->get("http://ip-api.com/json/{$ip}?fields=status,countryCode,city,isp,org,hosting,proxy");
+                if ($response->successful() && $response->json('status') === 'success') {
+                    $json = $response->json();
+                    $data['country'] = $json['countryCode'] ?? 'BD';
+                    $data['city'] = $json['city'] ?? 'Dhaka';
+                    
+                    $isHosting = $json['hosting'] ?? false;
+                    $isProxy = $json['proxy'] ?? false;
+                    
+                    // Suspicious hosting/vpn ISP detection
+                    $isp = strtolower($json['isp'] ?? '');
+                    $org = strtolower($json['org'] ?? '');
+                    $suspiciousIsp = false;
+                    $vpnKeywords = ['hosting', 'cloud', 'digitalocean', 'linode', 'hetzner', 'amazon', 'm247', 'ovh', 'choopa', 'datacenter', 'vpn', 'proxy', 'tor', 'servers', 'infrastructure'];
+                    foreach ($vpnKeywords as $keyword) {
+                        if (str_contains($isp, $keyword) || str_contains($org, $keyword)) {
+                            $suspiciousIsp = true;
+                            break;
+                        }
+                    }
+
+                    if ($isProxy || $isHosting || $suspiciousIsp) {
+                        $data['vpn_detected'] = true;
+                        $data['proxy_detected'] = true;
+                    }
+                    
+                    // Flag non-BD IPs
+                    if ($data['country'] !== 'BD') {
+                        $this->score += 30;
+                        $this->flags[] = 'FOREIGN_IP_COUNTRY_MISMATCH';
+                        $this->triggeredRules[] = [
+                            'rule'   => 'GEOLOCATION_CHECK',
+                            'name'   => 'Non-BD Geolocation Country Mismatch (' . $data['country'] . ')',
+                            'field'  => 'country',
+                            'action' => 'review',
+                            'impact' => 30,
+                        ];
+                    }
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Fraud IP API lookup error: ' . $e->getMessage());
+            }
+        }
+
         if ($data['vpn_detected']) {
-            $this->score += 20;
+            $this->score += 25;
             $this->flags[] = 'VPN_DETECTED';
+            $this->triggeredRules[] = [
+                'rule'   => 'VPN_CHECK',
+                'name'   => 'VPN / Hosting Network Detected',
+                'field'  => 'vpn_detected',
+                'action' => 'review',
+                'impact' => 25,
+            ];
         }
         if ($data['proxy_detected']) {
             $this->score += 25;
             $this->flags[] = 'PROXY_DETECTED';
+            $this->triggeredRules[] = [
+                'rule'   => 'PROXY_CHECK',
+                'name'   => 'Proxy Server Detected',
+                'field'  => 'proxy_detected',
+                'action' => 'review',
+                'impact' => 25,
+            ];
         }
         if ($data['tor_detected']) {
             $this->score += 40;
             $this->flags[] = 'TOR_DETECTED';
+            $this->triggeredRules[] = [
+                'rule'   => 'TOR_CHECK',
+                'name'   => 'Tor Network Node Detected',
+                'field'  => 'tor_detected',
+                'action' => 'decline',
+                'impact' => 40,
+            ];
         }
 
         return $data;

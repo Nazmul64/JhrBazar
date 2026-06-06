@@ -194,6 +194,10 @@ class CheckoutController extends Controller
             'payment_method' => 'required|string',
             'online_gateway' => 'nullable|string|required_if:payment_method,online',
             'coupon_code'    => 'nullable|string',
+            'device_fingerprint' => 'nullable|string',
+            'browser'        => 'nullable|string',
+            'os'             => 'nullable|string',
+            'device_type'    => 'nullable|string',
         ]);
 
         $shipping = ShippingCharge::where('id', $request->shipping_id)->where('status', 1)->first();
@@ -281,7 +285,8 @@ class CheckoutController extends Controller
 
         $isBlacklisted = FraudBlacklist::isBlacklisted('ip', $request->ip()) ||
                          FraudBlacklist::isBlacklisted('phone', $request->phone) ||
-                         ($request->email && FraudBlacklist::isBlacklisted('email', $request->email));
+                         ($request->email && FraudBlacklist::isBlacklisted('email', $request->email)) ||
+                         ($request->device_fingerprint && FraudBlacklist::isBlacklisted('device', $request->device_fingerprint));
 
         if ($isIpBlocked || $isBlacklisted) {
             return response()->json([
@@ -311,10 +316,78 @@ class CheckoutController extends Controller
             }
         }
 
+        $totalOrderAmount = collect($validatedItems)->sum(fn($i) => $i['price'] * $i['qty']);
+        $grandTotalForFraud = ($totalOrderAmount + $shippingCharge) - $couponDiscount;
+
+        // Run Fraud Detection Service Analysis
+        try {
+            $fraudData = [
+                'type' => 'transaction',
+                'customer_name' => $request->name,
+                'customer_email' => $request->email,
+                'customer_phone' => $request->phone,
+                'ip_address' => $request->ip(),
+                'transaction_amount' => $grandTotalForFraud,
+                'device_type' => $request->device_type,
+                'browser' => $request->browser,
+                'os' => $request->os,
+                'device_fingerprint' => $request->device_fingerprint,
+                'notes' => 'Checkout Auto-check',
+            ];
+
+            $fraudDetectionService = app(\App\Services\FraudDetectionService::class);
+            $fraudCheck = $fraudDetectionService->analyze($fraudData);
+
+            if ($fraudCheck->status === 'declined' || $fraudCheck->risk_score >= 80) {
+                // Auto Block: Add user, IP, phone, and fingerprint to blacklist
+                Ipblockmanage::updateOrCreate(
+                    ['ip_address' => $request->ip()],
+                    ['is_active' => true, 'reason' => 'Auto Block: High Fraud Risk Score (' . $fraudCheck->risk_score . ')']
+                );
+
+                FraudBlacklist::updateOrCreate(
+                    ['type' => 'ip', 'value' => $request->ip()],
+                    ['reason' => 'Auto Block: High Fraud Risk Score (' . $fraudCheck->risk_score . ')', 'is_active' => true, 'created_by' => null]
+                );
+
+                FraudBlacklist::updateOrCreate(
+                    ['type' => 'phone', 'value' => $request->phone],
+                    ['reason' => 'Auto Block: High Fraud Risk Score (' . $fraudCheck->risk_score . ')', 'is_active' => true, 'created_by' => null]
+                );
+
+                if ($request->device_fingerprint) {
+                    FraudBlacklist::updateOrCreate(
+                        ['type' => 'device', 'value' => $request->device_fingerprint],
+                        ['reason' => 'Auto Block: High Fraud Risk Score (' . $fraudCheck->risk_score . ')', 'is_active' => true, 'created_by' => null]
+                    );
+                }
+
+                if ($request->email) {
+                    FraudBlacklist::updateOrCreate(
+                        ['type' => 'email', 'value' => $request->email],
+                        ['reason' => 'Auto Block: High Fraud Risk Score (' . $fraudCheck->risk_score . ')', 'is_active' => true, 'created_by' => null]
+                    );
+                }
+
+                // If customer is logged in, block their account
+                if (auth('sanctum')->check()) {
+                    $user = auth('sanctum')->user();
+                    $user->update(['is_blocked' => true]);
+                }
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'দুঃখিত, আপনার লেনদেনের নিরাপত্তা ঝুঁকি অত্যন্ত বেশি হওয়ার কারণে সিস্টেম অর্ডারটি ব্লক করেছে।'
+                ], 403);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Fraud checking during checkout failed: ' . $e->getMessage());
+        }
+
         try {
             DB::beginTransaction();
 
-// 1. Group validated items by seller_id
+            // 1. Group validated items by seller_id
             $groupedItems = [];
             foreach ($validatedItems as $item) {
                 $sellerId = $item['seller_id'] ?? 0; // 0 for Admin
@@ -354,6 +427,10 @@ class CheckoutController extends Controller
                     'status'         => 'pending',
                     'ip_address'     => $request->ip(),
                     'phone'          => $request->phone,
+                    'device_fingerprint' => $request->device_fingerprint,
+                    'browser'        => $request->browser,
+                    'os'             => $request->os,
+                    'device_type'    => $request->device_type,
                 ]);
 
                 // 3. Create Invoice for the order
@@ -547,23 +624,29 @@ class CheckoutController extends Controller
         $checkType = $setting->duplicate_check_type ?: 'Product + IP + Phone';
         $ip = $request->ip();
         $phone = $request->phone;
+        $fingerprint = $request->device_fingerprint;
 
         $query = Pointofsalepo::where('created_at', '>=', Carbon::now()->subMinutes($timeLimit));
 
-        if (Str::contains($checkType, 'IP')) {
-            $query->where('ip_address', $ip);
-        }
-
-        if (Str::contains($checkType, 'Phone')) {
-            $query->where('phone', $phone);
+        if ($fingerprint) {
+            $query->where(function($q) use ($ip, $phone, $fingerprint) {
+                $q->where('device_fingerprint', $fingerprint)
+                  ->orWhere('ip_address', $ip)
+                  ->orWhere('phone', $phone);
+            });
+        } else {
+            if (Str::contains($checkType, 'IP')) {
+                $query->where('ip_address', $ip);
+            }
+            if (Str::contains($checkType, 'Phone')) {
+                $query->where('phone', $phone);
+            }
         }
 
         // For Product check, we need to see if any item in the new order matches an item in recent orders
         if (Str::contains($checkType, 'Product')) {
             $newProductIds = collect($validatedItems)->pluck('id')->toArray();
 
-            // This is a bit complex since items is JSON.
-            // We'll fetch the recent orders and check manually or use JSON search if supported.
             $recentOrders = $query->get();
             foreach ($recentOrders as $recentOrder) {
                 $recentProductIds = collect($recentOrder->items)->pluck('id')->toArray();
@@ -754,5 +837,13 @@ class CheckoutController extends Controller
             }
         }
         return response()->json(['status' => 'failed', 'message' => 'Verification failed.'], 400);
+    }
+
+    /**
+     * Process checkout (V1 endpoint).
+     */
+    public function process(Request $request)
+    {
+        return $this->placeOrder($request);
     }
 }

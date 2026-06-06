@@ -80,6 +80,7 @@ use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\FlashsaleController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProductBrandController;
+use App\Http\Controllers\Admin\OurBrandController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SizeController;
@@ -334,6 +335,10 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
     // ── Product Brands ────────────────────────────────────────────────────────
     Route::resource('productbrand', ProductBrandController::class)->names('admin.productbrands')->except(['create', 'show']);
     Route::post('productbrand/{productbrand}/toggle', [ProductBrandController::class, 'toggleStatus'])->name('admin.productbrands.toggle');
+
+    // ── Our Brand Slider ──────────────────────────────────────────────────────
+    Route::resource('ourbrand', OurBrandController::class)->names('admin.ourbrands')->except(['create', 'show']);
+    Route::post('ourbrand/{ourbrand}/toggle', [OurBrandController::class, 'toggleStatus'])->name('admin.ourbrands.toggle');
 
     // ── Colors ────────────────────────────────────────────────────────────────
     Route::resource('color', ColorController::class)->names('admin.colors')->except(['show']);

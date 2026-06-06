@@ -16,11 +16,38 @@ class FraudCheckerController extends Controller
     public function checkIpBlocked(Request $request)
     {
         $ip = $request->ip();
+        $fingerprint = $request->query('fingerprint') ?? $request->cookie('device_fingerprint_secure');
 
         // Check if IP is blocked in our system
         $blocked = Ipblockmanage::where('ip_address', $ip)
             ->where('is_active', true)
             ->exists();
+
+        if (!$blocked && $fingerprint) {
+            $blocked = \App\Models\FraudBlacklist::isBlacklisted('device', $fingerprint);
+        }
+
+        // Check user account block status
+        $userBlocked = false;
+        if (auth('sanctum')->check()) {
+            $u = auth('sanctum')->user();
+            if ($u && $u->is_blocked) {
+                $userBlocked = true;
+            }
+        }
+        if (!$userBlocked && $request->filled('phone')) {
+            $userBlocked = \App\Models\User::where('phone', $request->query('phone'))->where('is_blocked', true)->exists();
+        }
+        if (!$userBlocked && $request->filled('email')) {
+            $userBlocked = \App\Models\User::where('email', $request->query('email'))->where('is_blocked', true)->exists();
+        }
+        if (!$userBlocked && $request->filled('user_id')) {
+            $userBlocked = \App\Models\User::where('id', $request->query('user_id'))->where('is_blocked', true)->exists();
+        }
+
+        if ($userBlocked) {
+            $blocked = true;
+        }
 
         if (!$blocked) {
             return response()->json([

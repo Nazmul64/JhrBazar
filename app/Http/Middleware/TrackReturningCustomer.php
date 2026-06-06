@@ -45,14 +45,24 @@ class TrackReturningCustomer
             if (!$phone) {
                 $ip = $request->ip();
                 if ($ip && $ip !== '127.0.0.1' && $ip !== '::1') {
-                    $lastOrder = Pointofsalepo::where('ip_address', $ip)
-                        ->whereNotNull('phone')
-                        ->latest()
-                        ->first();
-                    if ($lastOrder) {
-                        $phone = $lastOrder->phone;
+                    $cachedPhone = \Illuminate\Support\Facades\Cache::remember('ip_phone_' . md5($ip), 300, function() use ($ip) {
+                        $lastOrder = Pointofsalepo::where('ip_address', $ip)
+                            ->whereNotNull('phone')
+                            ->latest()
+                            ->first();
+                        return $lastOrder ? $lastOrder->phone : 'NONE';
+                    });
+
+                    if ($cachedPhone && $cachedPhone !== 'NONE') {
+                        $phone = $cachedPhone;
                         $name = 'Guest (IP Match)';
-                        if ($lastOrder->customer && $lastOrder->customer->user) {
+                        
+                        // Attempt to fetch user name dynamically if order customer exists
+                        $lastOrder = Pointofsalepo::where('ip_address', $ip)
+                            ->where('phone', $phone)
+                            ->latest()
+                            ->first();
+                        if ($lastOrder && $lastOrder->customer && $lastOrder->customer->user) {
                             $name = $lastOrder->customer->user->name;
                         }
                     }

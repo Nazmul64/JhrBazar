@@ -7,6 +7,7 @@ use App\Models\Review;
 use App\Models\Pointofsalepo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class ReviewController extends Controller
 {
@@ -106,5 +107,13 @@ class ReviewController extends Controller
             'success' => true,
             'data'    => $reviews
         ]);
+    }
+
+    /**
+     * Fetch reviews for a specific product ID and product type.
+     */
+    public function fetch($product_id, $product_type)
+    {
+        return $this->getProductReviews($product_type, $product_id);
     }
 }

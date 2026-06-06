@@ -448,6 +448,12 @@
             Dashboard
         </a>
 
+        <a class="sb-item {{ request()->routeIs('admin.ourbrands.*') ? 'active' : '' }}"
+           href="{{ route('admin.ourbrands.index') }}">
+            <span class="sb-icon"><i class="bi bi-image"></i></span>
+            Our Brand Slider
+        </a>
+
 
         {{-- ══════════════════════════════════════════
              SECTION 2 · ORDERS
@@ -662,6 +668,12 @@
             <a class="sb-item {{ request()->routeIs('admin.productbrands.*') ? 'active' : '' }}"
                href="{{ route('admin.productbrands.index') }}">
                 <span class="sb-icon"><i class="bi bi-bookmark"></i></span> Brands
+            </a>
+            @endif
+            @if(auth()->user()->hasPermission('brand.list'))
+            <a class="sb-item {{ request()->routeIs('admin.ourbrands.*') ? 'active' : '' }}"
+               href="{{ route('admin.ourbrands.index') }}">
+                <span class="sb-icon"><i class="bi bi-image"></i></span> Our Brand Slider
             </a>
             @endif
             @if(auth()->user()->hasPermission('color.list'))

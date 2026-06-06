@@ -245,6 +245,12 @@
                 <i class="bi bi-dot"></i> Brand
             </a>
             @endif
+            @if(auth()->user()->hasPermission('brand.list'))
+            <a class="nav-item-custom {{ request()->routeIs('admin.ourbrands.*') ? 'active' : '' }}"
+               href="{{ route('admin.ourbrands.index') }}">
+                <i class="bi bi-dot"></i> Our Brand Slider
+            </a>
+            @endif
             @if(auth()->user()->hasPermission('color.list'))
             <a class="nav-item-custom {{ request()->routeIs('admin.colors.*') ? 'active' : '' }}"
                href="{{ route('admin.colors.index') }}">
