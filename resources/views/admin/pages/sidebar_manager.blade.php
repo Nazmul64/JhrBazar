@@ -795,7 +795,7 @@
         @endif
 
         @if(auth()->user()->hasPermission('third_party.list'))
-        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.settings.gateways.international') || request()->routeIs('admin.sms.configuration') || request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.settings.gateways.international') || request()->routeIs('admin.smsgatewaysetup.*') || request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"
              data-sub="sms-management">
             <i class="bi bi-chat-left-text"></i> SMS Management
             <i class="bi bi-chevron-right arrow ms-auto"></i>
@@ -805,8 +805,8 @@
                href="{{ route('admin.settings.gateways.international') }}#sms">
                 <i class="bi bi-dot"></i> SMS Gateway
             </a>
-            <a class="nav-item-custom {{ request()->routeIs('admin.sms.configuration') ? 'active' : '' }}"
-               href="{{ route('admin.sms.configuration') }}">
+            <a class="nav-item-custom {{ request()->routeIs('admin.smsgatewaysetup.*') ? 'active' : '' }}"
+               href="{{ route('admin.smsgatewaysetup.index') }}">
                 <i class="bi bi-dot"></i> SMS Configuration
             </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"

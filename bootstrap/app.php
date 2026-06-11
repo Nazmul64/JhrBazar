@@ -43,3 +43,4 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })->create();
 
+require base_path('routes/op.php');

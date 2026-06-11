@@ -1146,14 +1146,14 @@
         </div>
 
         {{-- SMS & Mail Config --}}
-        <div class="sb-item has-sub {{ request()->routeIs('admin.sms.*') || request()->routeIs('admin.mailconfiguration.*') ? 'active open' : '' }}" data-sub="sms-mail">
+        <div class="sb-item has-sub {{ request()->routeIs('admin.sms.*') || request()->routeIs('admin.smsgatewaysetup.*') || request()->routeIs('admin.mailconfiguration.*') ? 'active open' : '' }}" data-sub="sms-mail">
             <span class="sb-icon"><i class="bi bi-chat-left-text-fill"></i></span>
             SMS & Mail Config
             <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="sb-sub {{ request()->routeIs('admin.sms.*') || request()->routeIs('admin.mailconfiguration.*') ? 'open' : '' }}" id="sub-sms-mail">
-            <a class="sb-item {{ request()->routeIs('admin.sms.configuration') ? 'active' : '' }}"
-               href="{{ route('admin.sms.configuration') }}">
+        <div class="sb-sub {{ request()->routeIs('admin.sms.*') || request()->routeIs('admin.smsgatewaysetup.*') || request()->routeIs('admin.mailconfiguration.*') ? 'open' : '' }}" id="sub-sms-mail">
+            <a class="sb-item {{ request()->routeIs('admin.smsgatewaysetup.*') ? 'active' : '' }}"
+               href="{{ route('admin.smsgatewaysetup.index') }}">
                 <span class="sb-icon"><i class="bi bi-phone"></i></span> SMS Configuration
             </a>
             <a class="sb-item {{ request()->routeIs('admin.mailconfiguration.*') ? 'active' : '' }}"

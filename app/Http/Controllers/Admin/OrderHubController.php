@@ -657,7 +657,7 @@ class OrderHubController extends Controller
     /**
      * Send to Pathao (Bulk).
      */
-    private function bulkSendToPathao($invoices)
+    private function bulkSendToPathao($request, $invoices)
     {
         $gateway = PathaoCourier::first();
         if (!$gateway || !$gateway->status) {

@@ -34,6 +34,8 @@ const LandingPageView = () => {
   // Products purchase state
   const [selectedProducts, setSelectedProducts] = useState([]); // Array of { id, qty, title, price, thumbnail, product_type }
   const [submitting, setSubmitting] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
 
   // Countdown timer state
   const [timeLeft, setTimeLeft] = useState(3600); // 1 hour countdown
@@ -140,17 +142,10 @@ const LandingPageView = () => {
     }
   };
 
-  // Place COD Order
-  const handlePlaceOrder = (e) => {
-    e.preventDefault();
-    if (!name.trim()) return toast.error('দয়া করে আপনার নাম লিখুন।');
-    if (!phone.trim() || phone.length < 11) return toast.error('দয়া করে ১১ ডিজিটের সঠিক মোবাইল নম্বর দিন।');
-    if (!address.trim()) return toast.error('দয়া করে আপনার পূর্ণাঙ্গ ঠিকানা লিখুন।');
-    if (!selectedShipping) return toast.error('ডেলিভারি এরিয়া নির্বাচন করুন।');
-    if (selectedProducts.length === 0) return toast.error('দয়া করে অন্তত একটি প্রোডাক্ট সিলেক্ট করুন।');
-
+  // Resend OTP on Landing Page
+  const handleResendOtp = () => {
+    setOtpCode('');
     setSubmitting(true);
-
     const payload = {
       name,
       phone,
@@ -168,6 +163,59 @@ const LandingPageView = () => {
 
     axios.post('/api/place-order', payload)
       .then(res => {
+        if (res.data.otp_required) {
+          toast.success(res.data.message || 'নতুন ওটিপি (OTP) পাঠানো হয়েছে!');
+        } else if (res.data.success) {
+          setName('');
+          setPhone('');
+          setAddress('');
+          setOtpSent(false);
+          setOtpCode('');
+          navigate(`/order-success?invoice=${res.data.invoice_no || res.data.order_id}`, {
+            state: { orders: [res.data.order || res.data.invoice], fromCheckout: true }
+          });
+        } else {
+          toast.error(res.data.message);
+        }
+        setSubmitting(false);
+      })
+      .catch(err => {
+        console.error(err);
+        toast.error(err.response?.data?.message || 'ওটিপি পাঠাতে সমস্যা হয়েছে।');
+        setSubmitting(false);
+      });
+  };
+
+  // Place COD Order
+  const handlePlaceOrder = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!name.trim()) return toast.error('দয়া করে আপনার নাম লিখুন।');
+    if (!phone.trim() || phone.length < 11) return toast.error('দয়া করে ১১ ডিজিটের সঠিক মোবাইল নম্বর দিন।');
+    if (!address.trim()) return toast.error('দয়া করে আপনার পূর্ণাঙ্গ ঠিকানা লিখুন।');
+    if (!selectedShipping) return toast.error('ডেলিভারি এরিয়া নির্বাচন করুন।');
+    if (selectedProducts.length === 0) return toast.error('দয়া করে অন্তত একটি প্রোডাক্ট সিলেক্ট করুন।');
+    if (otpSent && (!otpCode.trim() || otpCode.length < 4)) return toast.error('দয়া করে সঠিক ওটিপি (OTP) কোড দিন।');
+
+    setSubmitting(true);
+
+    const payload = {
+      name,
+      phone,
+      address,
+      city: city || selectedShipping.name,
+      shipping_id: selectedShipping.id,
+      items: selectedProducts.map(p => ({
+        id: p.id,
+        qty: p.qty,
+        product_type: 'admin',
+        uid: `admin_${p.id}`
+      })),
+      payment_method: 'cod',
+      otp_code: otpSent ? otpCode : null
+    };
+
+    axios.post('/api/place-order', payload)
+      .then(res => {
         if (res.data.success) {
           toast.success('আপনার অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে!');
 
@@ -175,11 +223,16 @@ const LandingPageView = () => {
           setName('');
           setPhone('');
           setAddress('');
+          setOtpSent(false);
+          setOtpCode('');
 
           // Redirect to the unified order success page using navigate
           navigate(`/order-success?invoice=${res.data.invoice_no || res.data.order_id}`, {
             state: { orders: [res.data.order || res.data.invoice], fromCheckout: true }
           });
+        } else if (res.data.otp_required) {
+          setOtpSent(true);
+          toast.success(res.data.message || 'আপনার মোবাইলে ওটিপি (OTP) কোড পাঠানো হয়েছে!');
         } else {
           toast.error(res.data.message || 'অর্ডার করতে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।');
         }
@@ -570,6 +623,27 @@ const LandingPageView = () => {
                       ))}
                     </select>
                   </div>
+
+                  {otpSent && (
+                    <div className="border border-success rounded-3 p-3 bg-light animate-fade-in mt-3">
+                      <label className="form-label fw-bold text-success mb-2"><i className="fas fa-lock me-1"></i> মোবাইলে পাঠানো ওটিপি (OTP) কোড দিন *</label>
+                      <input
+                        type="text"
+                        className="form-control py-2 shadow-none border-success fw-bold text-center mb-2"
+                        style={{ fontSize: '18px', letterSpacing: '4px' }}
+                        placeholder="------"
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value)}
+                        required
+                      />
+                      <div className="d-flex justify-content-between mt-2 px-1">
+                        <span className="small text-muted">কোড পাননি?</span>
+                        <button type="button" onClick={handleResendOtp} className="btn btn-link btn-sm text-decoration-none p-0 text-success fw-bold">
+                          আবার ওটিপি পাঠান (Resend OTP)
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -683,11 +757,11 @@ const LandingPageView = () => {
                   {/* Submission Glowing Action Button */}
                   <button
                     onClick={handlePlaceOrder}
-                    disabled={submitting}
+                    disabled={submitting || (otpSent && otpCode.length < 4)}
                     className="btn btn-lg w-100 text-white glowing-btn fw-bold py-3 fs-5 shadow"
                     style={{ borderRadius: '14px' }}
                   >
-                    {submitting ? 'অর্ডার প্রসেস হচ্ছে...' : `অর্ডার নিশ্চিত করুন ৳${grandTotal.toLocaleString()}`}
+                    {submitting ? 'অর্ডার প্রসেস হচ্ছে...' : (otpSent ? 'ওটিপি যাচাই করে অর্ডার কনফার্ম করুন' : `অর্ডার নিশ্চিত করুন ৳${grandTotal.toLocaleString()}`)}
                   </button>
 
                   <div className="text-center mt-3 small text-muted d-flex align-items-center justify-content-center gap-2">

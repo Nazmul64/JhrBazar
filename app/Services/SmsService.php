@@ -13,10 +13,16 @@ class SmsService
      */
     public static function send($phone, $message)
     {
-        $gateway = SmsGateway::first();
+        $gateway = SmsGateway::where('status', true)->first();
 
-        if (!$gateway || !$gateway->status) {
+        if (!$gateway) {
             return false;
+        }
+
+        // Mock bypass for local environment or mock/test gateway URLs
+        if (config('app.env') === 'local' || str_contains($gateway->url, 'mock') || str_contains($gateway->url, '127.0.0.1') || str_contains($gateway->url, 'localhost')) {
+            Log::info("SMS (MOCK) sent to $phone: $message");
+            return true;
         }
 
         try {

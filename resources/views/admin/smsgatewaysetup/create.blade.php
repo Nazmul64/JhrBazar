@@ -17,6 +17,9 @@
 }
 
 .sms-config-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 20px 24px;
     border-bottom: 1px solid #e8e8e8;
 }
@@ -26,6 +29,18 @@
     font-weight: 600;
     color: #1a1a2e;
     margin: 0;
+}
+
+.btn-back {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #f3f4f6; color: #4b5563 !important;
+    border: 1px solid #d1d5db; border-radius: 4px;
+    padding: 6px 12px; font-size: 13px; font-weight: 500;
+    text-decoration: none; transition: all .2s ease;
+}
+
+.btn-back:hover {
+    background: #e5e7eb;
 }
 
 .sms-config-body {
@@ -119,7 +134,7 @@
     color: #4b5563;
 }
 
-/* Custom Sliding Switch style matching iOS / modern switches */
+/* Custom Sliding Switch style */
 .sms-switch {
     position: relative;
     display: inline-block;
@@ -190,34 +205,19 @@
 .sms-btn-submit:active {
     background-color: #0b806e;
 }
-
-/* ── Success Alert ──────────────────────────────────────────── */
-.sms-alert-success {
-    background-color: #ecfdf5;
-    border: 1px solid #a7f3d0;
-    color: #065f46;
-    padding: 16px;
-    border-radius: 4px;
-    font-size: 14px;
-    margin-bottom: 20px;
-}
 </style>
 
 <div class="sms-config-container">
-    {{-- Success Message --}}
-    @if(session('sms_success') || session('success'))
-        <div class="sms-alert-success">
-            {{ session('sms_success') ?? session('success') }}
-        </div>
-    @endif
-
     <div class="sms-config-card">
         <div class="sms-config-header">
             <h3>SMS Gateway</h3>
+            <a href="{{ route('admin.smsgatewaysetup.index') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
         </div>
 
         <div class="sms-config-body">
-            <form action="{{ route('admin.sms.update') }}" method="POST">
+            <form action="{{ route('admin.smsgatewaysetup.store') }}" method="POST">
                 @csrf
 
                 {{-- URL, API Key, Sender ID Row --}}
@@ -229,7 +229,7 @@
                                name="url" 
                                class="sms-form-control" 
                                placeholder="https://msg.elitbuzz-bd.com/smsapi" 
-                               value="{{ $sms->url ?? '' }}" 
+                               value="{{ old('url', 'https://msg.elitbuzz-bd.com/smsapi') }}" 
                                required>
                     </div>
 
@@ -240,7 +240,7 @@
                                name="api_key" 
                                class="sms-form-control" 
                                placeholder="Your API Key" 
-                               value="{{ $sms->api_key ?? '' }}" 
+                               value="{{ old('api_key') }}" 
                                required>
                     </div>
 
@@ -251,7 +251,7 @@
                                name="sender_id" 
                                class="sms-form-control" 
                                placeholder="Sender ID" 
-                               value="{{ $sms->sender_id ?? '' }}" 
+                               value="{{ old('sender_id') }}" 
                                required>
                     </div>
                 </div>
@@ -261,7 +261,7 @@
                     <div class="sms-switch-group">
                         <span class="sms-switch-label">Status</span>
                         <label class="sms-switch">
-                            <input type="checkbox" name="status" value="1" {{ !empty($sms->status) ? 'checked' : '' }}>
+                            <input type="checkbox" name="status" value="1" {{ old('status') ? 'checked' : '' }}>
                             <span class="sms-slider"></span>
                         </label>
                     </div>
@@ -269,7 +269,7 @@
                     <div class="sms-switch-group">
                         <span class="sms-switch-label">Order confirm</span>
                         <label class="sms-switch">
-                            <input type="checkbox" name="order_confirm" value="1" {{ !empty($sms->order_confirm) ? 'checked' : '' }}>
+                            <input type="checkbox" name="order_confirm" value="1" {{ old('order_confirm') ? 'checked' : '' }}>
                             <span class="sms-slider"></span>
                         </label>
                     </div>
@@ -277,7 +277,7 @@
                     <div class="sms-switch-group">
                         <span class="sms-switch-label">Forgot password</span>
                         <label class="sms-switch">
-                            <input type="checkbox" name="forgot_password" value="1" {{ !empty($sms->forgot_password) ? 'checked' : '' }}>
+                            <input type="checkbox" name="forgot_password" value="1" {{ old('forgot_password') ? 'checked' : '' }}>
                             <span class="sms-slider"></span>
                         </label>
                     </div>
@@ -285,7 +285,7 @@
                     <div class="sms-switch-group">
                         <span class="sms-switch-label">Password Generator</span>
                         <label class="sms-switch">
-                            <input type="checkbox" name="password_generator" value="1" {{ !empty($sms->password_generator) ? 'checked' : '' }}>
+                            <input type="checkbox" name="password_generator" value="1" {{ old('password_generator') ? 'checked' : '' }}>
                             <span class="sms-slider"></span>
                         </label>
                     </div>

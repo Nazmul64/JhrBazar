@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Pointofsalepo;
 use App\Models\PosInvoice;
 use App\Models\Promocode;
+use App\Models\SellerVoucher;
 use App\Models\ShippingCharge;
 use App\Models\Product;
 use App\Models\SellerProduct;
@@ -133,6 +134,7 @@ class CheckoutController extends Controller
         $request->validate([
             'coupon_code' => 'required|string',
             'subtotal'    => 'required|numeric',
+            'items'       => 'nullable|array',
         ]);
 
         $coupon = Promocode::where('coupon_code', $request->coupon_code)
@@ -141,6 +143,25 @@ class CheckoutController extends Controller
             ->where('expired_date', '>=', now())
             ->first();
 
+        $isVoucher = false;
+
+        if (!$coupon) {
+            $voucher = SellerVoucher::where('voucher_code', $request->coupon_code)
+                ->where('status', 1)
+                ->first();
+
+            if ($voucher) {
+                $now = now();
+                $start = \Carbon\Carbon::parse($voucher->start_date->format('Y-m-d') . ' ' . $voucher->start_time);
+                $end = \Carbon\Carbon::parse($voucher->expired_date->format('Y-m-d') . ' ' . $voucher->expired_time);
+
+                if ($now->greaterThanOrEqualTo($start) && $now->lessThanOrEqualTo($end)) {
+                    $coupon = $voucher;
+                    $isVoucher = true;
+                }
+            }
+        }
+
         if (!$coupon) {
             return response()->json([
                 'success' => false,
@@ -148,7 +169,38 @@ class CheckoutController extends Controller
             ]);
         }
 
-        if ($request->subtotal < $coupon->minimum_order_amount) {
+        $subtotal = (float) $request->subtotal;
+
+        if ($isVoucher) {
+            $sellerId = (int)$coupon->seller_id;
+            
+            if ($request->has('items') && is_array($request->items)) {
+                $sellerItems = collect($request->items)->filter(function($item) use ($sellerId) {
+                    $itemSellerId = isset($item['seller_id']) ? (int)$item['seller_id'] : 0;
+                    return $itemSellerId === $sellerId;
+                });
+
+                if ($sellerItems->isEmpty()) {
+                    $sellerName = "this seller";
+                    $sellerUser = \App\Models\User::find($sellerId);
+                    if ($sellerUser) {
+                        $shop = \App\Models\Shop::where('user_id', $sellerId)->first();
+                        $sellerName = $shop ? $shop->name : $sellerUser->name;
+                    }
+                    return response()->json([
+                        'success' => false,
+                        'message' => "This promo code is only valid for products from {$sellerName}."
+                    ]);
+                }
+
+                // Subtotal of only this seller's products
+                $subtotal = $sellerItems->sum(function($item) {
+                    return (float)$item['price'] * (int)$item['qty'];
+                });
+            }
+        }
+
+        if ($subtotal < $coupon->minimum_order_amount) {
             return response()->json([
                 'success' => false,
                 'message' => 'Minimum order amount for this coupon is ৳' . number_format($coupon->minimum_order_amount)
@@ -157,7 +209,7 @@ class CheckoutController extends Controller
 
         $discount = 0;
         if ($coupon->discount_type === 'percentage') {
-            $discount = ($request->subtotal * $coupon->discount) / 100;
+            $discount = ($subtotal * $coupon->discount) / 100;
             if ($coupon->maximum_discount_amount > 0 && $discount > $coupon->maximum_discount_amount) {
                 $discount = $coupon->maximum_discount_amount;
             }
@@ -165,11 +217,13 @@ class CheckoutController extends Controller
             $discount = $coupon->discount;
         }
 
+        $discount = min($discount, $subtotal);
+
         return response()->json([
             'success'  => true,
             'message'  => 'Coupon applied successfully!',
             'discount' => $discount,
-            'code'     => $coupon->coupon_code
+            'code'     => $isVoucher ? $coupon->voucher_code : $coupon->coupon_code
         ]);
     }
 
@@ -198,6 +252,7 @@ class CheckoutController extends Controller
             'browser'        => 'nullable|string',
             'os'             => 'nullable|string',
             'device_type'    => 'nullable|string',
+            'otp_code'       => 'nullable|string',
         ]);
 
         $shipping = ShippingCharge::where('id', $request->shipping_id)->where('status', 1)->first();
@@ -250,6 +305,8 @@ class CheckoutController extends Controller
             ];
         }
 
+        $coupon = null;
+        $isVoucher = false;
         $couponDiscount = 0;
         if ($request->coupon_code) {
             $coupon = Promocode::where('coupon_code', $request->coupon_code)
@@ -259,13 +316,54 @@ class CheckoutController extends Controller
                 ->first();
 
             if (!$coupon) {
+                $voucher = SellerVoucher::where('voucher_code', $request->coupon_code)
+                    ->where('status', 1)
+                    ->first();
+
+                if ($voucher) {
+                    $now = now();
+                    $start = \Carbon\Carbon::parse($voucher->start_date->format('Y-m-d') . ' ' . $voucher->start_time);
+                    $end = \Carbon\Carbon::parse($voucher->expired_date->format('Y-m-d') . ' ' . $voucher->expired_time);
+
+                    if ($now->greaterThanOrEqualTo($start) && $now->lessThanOrEqualTo($end)) {
+                        $coupon = $voucher;
+                        $isVoucher = true;
+                    }
+                }
+            }
+
+            if (!$coupon) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'অবৈধ বা মেয়াদোত্তীর্ণ কুপন কোড।'
+                    'message' => 'অবৈধ বা মেয়াদোত্তীর্ণ কুপন কোড।'
                 ], 422);
             }
 
-            $subTotalForCoupon = collect($validatedItems)->sum(fn($item) => $item['price'] * $item['qty']);
+            if ($isVoucher) {
+                $sellerId = (int)$coupon->seller_id;
+                $sellerItems = collect($validatedItems)->filter(function($item) use ($sellerId) {
+                    $itemSellerId = isset($item['seller_id']) ? (int)$item['seller_id'] : 0;
+                    return $itemSellerId === $sellerId;
+                });
+
+                if ($sellerItems->isEmpty()) {
+                    $sellerName = "this seller";
+                    $sellerUser = \App\Models\User::find($sellerId);
+                    if ($sellerUser) {
+                        $shop = \App\Models\Shop::where('user_id', $sellerId)->first();
+                        $sellerName = $shop ? $shop->name : $sellerUser->name;
+                    }
+                    return response()->json([
+                        'success' => false,
+                        'message' => "এই কুপন কোডটি শুধুমাত্র {$sellerName}-এর পণ্যের জন্য প্রযোজ্য।"
+                    ], 422);
+                }
+
+                $subTotalForCoupon = $sellerItems->sum(fn($item) => $item['price'] * $item['qty']);
+            } else {
+                $subTotalForCoupon = collect($validatedItems)->sum(fn($item) => $item['price'] * $item['qty']);
+            }
+
             if ($subTotalForCoupon < $coupon->minimum_order_amount) {
                 return response()->json([
                     'success' => false,
@@ -383,7 +481,53 @@ class CheckoutController extends Controller
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Fraud checking during checkout failed: ' . $e->getMessage());
         }
+        // OTP Verification Check
+        $smsGateway = SmsGateway::where('status', true)->first();
+        $otpSetting = \App\Models\Verificatiootpsettings::first();
+        $otpRequired = $smsGateway && $otpSetting && $otpSetting->must_verify_account_on_order_placement;
 
+        if ($otpRequired) {
+            if (!$request->has('otp_code') || empty($request->otp_code)) {
+                // Generate and send OTP
+                $otp = rand(100000, 999999);
+                \Illuminate\Support\Facades\Cache::put('checkout_otp_' . $request->phone, $otp, 300); // valid for 5 minutes
+
+                $shopName = GenaralSetting::first()->shop_name ?? 'JhrBazar';
+                $message = "প্রিয় গ্রাহক, JhrBazar-এ আপনার অর্ডারটি নিশ্চিত করতে ওটিপি কোডটি ব্যবহার করুন: " . $otp . "। ধন্যবাদ!";
+                
+                try {
+                    $sent = SmsService::send($request->phone, $message);
+                    if (!$sent) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'মোবাইলে ওটিপি (OTP) পাঠাতে ব্যর্থ হয়েছে। অনুগ্রহ করে মোবাইল নম্বরটি পরীক্ষা করুন।'
+                        ], 500);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error("Failed to send OTP SMS: " . $e->getMessage());
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'ওটিপি (OTP) সার্ভারে ত্রুটি দেখা দিয়েছে। আবার চেষ্টা করুন।'
+                    ], 500);
+                }
+
+                return response()->json([
+                    'success' => false,
+                    'otp_required' => true,
+                    'message' => 'আপনার মোবাইলে ওটিপি (OTP) কোড পাঠানো হয়েছে। অর্ডার সম্পন্ন করতে কোডটি দিন।'
+                ]);
+            } else {
+                $cachedOtp = \Illuminate\Support\Facades\Cache::get('checkout_otp_' . $request->phone);
+                if (!$cachedOtp || $cachedOtp != $request->otp_code) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'অবৈধ বা মেয়াদোত্তীর্ণ ওটিপি (OTP) কোড। সঠিক কোডটি দিন।'
+                    ], 422);
+                }
+                // OTP is valid, clear it from cache
+                \Illuminate\Support\Facades\Cache::forget('checkout_otp_' . $request->phone);
+            }
+        }
         try {
             DB::beginTransaction();
 
@@ -405,7 +549,15 @@ class CheckoutController extends Controller
 
                 // Pro-rate discount and shipping across seller orders.
                 $totalOrderAmount = collect($validatedItems)->sum(fn($i) => $i['price'] * $i['qty']);
-                $orderDiscount = $totalOrderAmount > 0 ? $couponDiscount * ($subTotal / $totalOrderAmount) : 0;
+                if ($coupon && $isVoucher) {
+                    if ((int)$sellerId === (int)$coupon->seller_id) {
+                        $orderDiscount = $couponDiscount;
+                    } else {
+                        $orderDiscount = 0;
+                    }
+                } else {
+                    $orderDiscount = $totalOrderAmount > 0 ? $couponDiscount * ($subTotal / $totalOrderAmount) : 0;
+                }
                 $orderShipping = $totalOrderAmount > 0 ? $shippingCharge * ($subTotal / $totalOrderAmount) : 0;
 
                 $grandTotal = ($subTotal + $orderShipping) - $orderDiscount;
@@ -522,8 +674,8 @@ class CheckoutController extends Controller
             }
 
             try {
-                $smsGateway = SmsGateway::first();
-                if ($smsGateway && $smsGateway->status && $smsGateway->order_confirm) {
+                $smsGateway = SmsGateway::where('status', true)->first();
+                if ($smsGateway && $smsGateway->order_confirm) {
                     $invoiceNumber = $orders[0]->invoice_number ?? '';
                     $shopName = GenaralSetting::first()->shop_name ?? 'Our Shop';
                     $message = "প্রিয় গ্রাহক, " . $shopName . "-এ আপনার অর্ডারটি সফলভাবে সম্পন্ন হয়েছে। ইনভয়েস নং: #" . $invoiceNumber . "। আমাদের সাথে কেনাকাটার জন্য ধন্যবাদ।";
@@ -600,7 +752,7 @@ class CheckoutController extends Controller
         return 0.0;
     }
 
-    private function calculateCouponDiscount(Promocode $coupon, float $subTotal): float
+    private function calculateCouponDiscount($coupon, float $subTotal): float
     {
         $discount = 0;
         if ($coupon->discount_type === 'percentage') {

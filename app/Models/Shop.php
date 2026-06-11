@@ -42,21 +42,19 @@ class Shop extends Model
     public function getLogoUrlAttribute(): ?string
     {
         if (!$this->logo) return null;
-        $path = ltrim($this->logo, '/');
-        if (file_exists(public_path($path))) {
-            return asset($path);
+        if (str_starts_with($this->logo, 'http')) {
+            return $this->logo;
         }
-        return null;
+        return asset(ltrim($this->logo, '/'));
     }
 
     public function getBannerUrlAttribute(): ?string
     {
         if (!$this->banner) return null;
-        $path = ltrim($this->banner, '/');
-        if (file_exists(public_path($path))) {
-            return asset($path);
+        if (str_starts_with($this->banner, 'http')) {
+            return $this->banner;
         }
-        return null;
+        return asset(ltrim($this->banner, '/'));
     }
 
     // ── Hard-coded counts (replace later when products/orders tables exist) ─

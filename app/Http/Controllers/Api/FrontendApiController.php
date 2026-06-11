@@ -79,8 +79,8 @@ class FrontendApiController extends Controller
                         'id'          => $shop->id,
                         'seller_id'   => $shop->user_id,
                         'name'        => $shop->name,
-                        'logo'        => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : '/' . ltrim($shop->logo, '/')) : '/assets/admin/images/default-avatar.png',
-                        'banner'      => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : '/' . ltrim($shop->banner, '/')) : '/placeholder.jpg',
+                        'logo'        => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : asset(ltrim($shop->logo, '/'))) : asset('assets/admin/images/default-avatar.png'),
+                        'banner'      => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : asset(ltrim($shop->banner, '/'))) : asset('placeholder.jpg'),
                         'item_count'  => $shop->item_count,
                         'rating'      => '5.0',
                         'description' => $shop->description,
@@ -736,8 +736,8 @@ class FrontendApiController extends Controller
                     'id'           => $shop->id,
                     'seller_id'    => $shop->user_id,
                     'name'         => $shop->name,
-                    'logo'         => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : '/' . ltrim($shop->logo, '/')) : '/assets/admin/images/default-avatar.png',
-                    'banner'       => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : '/' . ltrim($shop->banner, '/')) : '/placeholder.jpg',
+                    'logo'         => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : asset(ltrim($shop->logo, '/'))) : asset('assets/admin/images/default-avatar.png'),
+                    'banner'       => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : asset(ltrim($shop->banner, '/'))) : asset('placeholder.jpg'),
                     'item_count'   => $productCount,
                     'rating'       => '5.0', // Placeholder for now
                     'description'  => $shop->description,
@@ -771,8 +771,8 @@ class FrontendApiController extends Controller
                 'id'          => $shop->id,
                 'user_id'     => $shop->user_id,
                 'name'        => $shop->name,
-                'logo'        => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : '/' . ltrim($shop->logo, '/')) : '/placeholder.jpg',
-                'banner'      => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : '/' . ltrim($shop->banner, '/')) : '/placeholder.jpg',
+                'logo'        => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : asset(ltrim($shop->logo, '/'))) : asset('placeholder.jpg'),
+                'banner'      => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : asset(ltrim($shop->banner, '/'))) : asset('placeholder.jpg'),
                 'description' => $shop->description,
             ] : null
         ]);

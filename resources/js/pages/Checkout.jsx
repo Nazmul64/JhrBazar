@@ -14,7 +14,7 @@ const generateCanvasFingerprint = () => {
         const ctx = canvas.getContext('2d');
         canvas.width = 200;
         canvas.height = 50;
-        
+
         ctx.textBaseline = "top";
         ctx.font = "14px 'Arial'";
         ctx.textBaseline = "alphabetic";
@@ -24,9 +24,9 @@ const generateCanvasFingerprint = () => {
         ctx.fillText("JhrBazarSecureFingerprint!", 2, 15);
         ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
         ctx.fillText("JhrBazarSecureFingerprint!", 4, 17);
-        
+
         const canvasData = canvas.toDataURL();
-        
+
         const screenWidth = window.screen.width || 0;
         const screenHeight = window.screen.height || 0;
         const colorDepth = window.screen.colorDepth || 0;
@@ -34,15 +34,15 @@ const generateCanvasFingerprint = () => {
         const language = navigator.language || navigator.userLanguage || '';
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
         const hardwareConcurrency = navigator.hardwareConcurrency || 'unknown';
-        
+
         const rawString = `${canvasData}|${screenWidth}x${screenHeight}|${colorDepth}|${userAgent}|${language}|${timezone}|${hardwareConcurrency}`;
-        
+
         let hash = 2166136261;
         for (let i = 0; i < rawString.length; i++) {
             hash ^= rawString.charCodeAt(i);
             hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
         }
-        
+
         fp = 'FP-' + Math.abs(hash).toString(16).toUpperCase();
         localStorage.setItem('device_fingerprint_secure', fp);
         document.cookie = `device_fingerprint_secure=${fp}; max-age=31536000; path=/`;
@@ -99,6 +99,9 @@ const Checkout = () => {
 
     const [isBlocked, setIsBlocked] = useState(false);
     const [blockedData, setBlockedData] = useState(null);
+
+    const [otpSent, setOtpSent] = useState(false);
+    const [otpCode, setOtpCode] = useState('');
 
     useEffect(() => {
         const checkBlock = async () => {
@@ -287,7 +290,8 @@ const Checkout = () => {
         try {
             const res = await axios.post('/api/apply-coupon', {
                 coupon_code: couponCode,
-                subtotal: cartTotal
+                subtotal: cartTotal,
+                items: cartItems
             });
             if (res.data.success) {
                 setCouponDiscount(res.data.discount);
@@ -306,10 +310,44 @@ const Checkout = () => {
     const shippingAmount = selectedShipping ? Number(selectedShipping.charge) : 0;
     const finalTotal = (cartTotal + shippingAmount) - couponDiscount;
     const selectedGateway = availableGateways.find(gateway => gateway.key === formData.online_gateway);
-    const submitButtonLabel = formData.payment_method === 'online'
-        ? (selectedGateway ? `Pay with ${selectedGateway.title}` : 'Select Online Gateway')
-        : 'Confirm Order (Cash on Delivery)';
-    const isSubmitDisabled = loading || (formData.payment_method === 'online' && !formData.online_gateway);
+    const submitButtonLabel = otpSent
+        ? 'ওটিপি যাচাই করে অর্ডার নিশ্চিত করুন (Verify & Confirm)'
+        : (formData.payment_method === 'online'
+            ? (selectedGateway ? `Pay with ${selectedGateway.title}` : 'Select Online Gateway')
+            : 'Confirm Order (Cash on Delivery)');
+    const isSubmitDisabled = loading || (formData.payment_method === 'online' && !formData.online_gateway) || (otpSent && otpCode.length < 4);
+
+    const handleResendOtp = async () => {
+        setOtpCode('');
+        setLoading(true);
+        try {
+            const res = await axios.post('/api/place-order', {
+                ...formData,
+                city: selectedShipping ? selectedShipping.area_name : 'N/A',
+                items: cartItems,
+                shipping_charge: shippingAmount,
+                discount: couponDiscount,
+                coupon_code: couponApplied ? couponCode : null,
+                device_fingerprint: generateCanvasFingerprint(),
+                browser: getBrowserName(),
+                os: getOSName(),
+                device_type: getDeviceType()
+            });
+
+            if (res.data.otp_required) {
+                toast.success(res.data.message || "নতুন ওটিপি (OTP) পাঠানো হয়েছে!");
+            } else if (res.data.success) {
+                clearCart();
+                navigate('/order-success', { state: { orders: res.data.orders } });
+            } else {
+                toast.error(res.data.message);
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || "OTP পাঠাতে সমস্যা হয়েছে।");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -335,7 +373,8 @@ const Checkout = () => {
                 device_fingerprint: generateCanvasFingerprint(),
                 browser: getBrowserName(),
                 os: getOSName(),
-                device_type: getDeviceType()
+                device_type: getDeviceType(),
+                otp_code: otpSent ? otpCode : null
             });
 
             if (res.data.success) {
@@ -345,6 +384,9 @@ const Checkout = () => {
                     clearCart();
                     navigate('/order-success', { state: { orders: res.data.orders } });
                 }
+            } else if (res.data.otp_required) {
+                setOtpSent(true);
+                toast.success(res.data.message || "ওটিপি (OTP) কোড পাঠানো হয়েছে!");
             } else {
                 toast.error(res.data.message || "Failed to place order");
             }
@@ -593,7 +635,7 @@ const Checkout = () => {
                                             )}
                                             {saveStatus === 'saving' && (
                                                 <div className="mt-1 small text-muted animation-slide-down">
-                                                    <span className="spinner-border spinner-border-sm me-1" style={{width:'10px', height:'10px'}}></span> Saving...
+                                                    <span className="spinner-border spinner-border-sm me-1" style={{ width: '10px', height: '10px' }}></span> Saving...
                                                 </div>
                                             )}
                                         </div>
@@ -629,6 +671,26 @@ const Checkout = () => {
                                                 value={formData.address} onChange={handleChange}
                                             ></textarea>
                                         </div>
+
+                                        {otpSent && (
+                                            <div className="col-12 mt-3 p-3 border border-success rounded-4 bg-light shadow-sm animate-fade-in">
+                                                <label className="form-label small fw-bold text-success uppercase"><i className="fas fa-lock me-1"></i> ওটিপি (OTP) কোড লিখুন</label>
+                                                <div className="input-group border border-success rounded-3 p-1 bg-white shadow-inner">
+                                                    <span className="input-group-text bg-transparent border-0"><i className="fas fa-key text-success"></i></span>
+                                                    <input
+                                                        type="text" required className="form-control bg-transparent border-0 fw-bold text-center"
+                                                        placeholder="৬ ডিজিটের ওটিপি কোড দিন" style={{ letterSpacing: '4px', fontSize: '16px' }}
+                                                        value={otpCode} onChange={(e) => setOtpCode(e.target.value)}
+                                                    />
+                                                </div>
+                                                <div className="d-flex justify-content-between mt-2 px-1">
+                                                    <span className="small text-muted">আপনার মোবাইলে কোড পাঠানো হয়েছে</span>
+                                                    <button type="button" onClick={handleResendOtp} className="btn btn-link btn-sm text-decoration-none p-0 text-success fw-bold">
+                                                        আবার পাঠান (Resend OTP)
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="mt-5">
@@ -662,7 +724,7 @@ const Checkout = () => {
                                                             <div className="text-muted"><i className="fas fa-ban"></i></div>
                                                             <div>
                                                                 <div className="fw-bold text-muted">Cash On Delivery</div>
-                                                                <div className="small text-danger" style={{fontSize: '10px'}}>Not available for some items</div>
+                                                                <div className="small text-danger" style={{ fontSize: '10px' }}>Not available for some items</div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -693,7 +755,7 @@ const Checkout = () => {
                                                             <div className="text-muted"><i className="fas fa-ban"></i></div>
                                                             <div>
                                                                 <div className="fw-bold text-muted">Online Payment</div>
-                                                                <div className="small text-danger" style={{fontSize: '10px'}}>Not available for some items</div>
+                                                                <div className="small text-danger" style={{ fontSize: '10px' }}>Not available for some items</div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -785,7 +847,7 @@ const Checkout = () => {
                                                         ৳{Number(item.price * item.qty).toLocaleString()}
                                                     </div>
                                                     <div className="d-flex align-items-center bg-light border rounded" style={{ height: '32px' }}>
-                                                        <button 
+                                                        <button
                                                             type="button"
                                                             className="btn btn-sm btn-light border-0 px-2 d-flex align-items-center justify-content-center"
                                                             onClick={() => updateQuantity(item.uid, -1)}
@@ -795,7 +857,7 @@ const Checkout = () => {
                                                             <i className="fas fa-minus" style={{ fontSize: '10px' }}></i>
                                                         </button>
                                                         <span className="fw-bold px-2 small">{item.qty}</span>
-                                                        <button 
+                                                        <button
                                                             type="button"
                                                             className="btn btn-sm btn-light border-0 px-2 d-flex align-items-center justify-content-center"
                                                             onClick={() => updateQuantity(item.uid, 1)}
@@ -838,7 +900,7 @@ const Checkout = () => {
                                         {couponApplied && (
                                             <div className="mt-2 small text-success fw-bold d-flex justify-content-between">
                                                 <span>Coupon Applied Successfully!</span>
-                                                <span className="cursor-pointer text-danger" onClick={() => {setCouponApplied(false); setCouponDiscount(0); setCouponCode('')}}>Remove</span>
+                                                <span className="cursor-pointer text-danger" onClick={() => { setCouponApplied(false); setCouponDiscount(0); setCouponCode('') }}>Remove</span>
                                             </div>
                                         )}
                                     </div>

@@ -114,6 +114,7 @@ use App\Http\Controllers\Admin\SslcommerzGatewayController;
 use App\Http\Controllers\Admin\CourierController;
 use App\Http\Controllers\Admin\PathaoCourierController;
 use App\Http\Controllers\Admin\SmsGatewayController;
+use App\Http\Controllers\Admin\SmsGatewaySetupController;
 use App\Http\Controllers\Admin\TwilioGatewayController;
 use App\Http\Controllers\Admin\TelesignGatewayController;
 use App\Http\Controllers\Admin\NexmoGatewayController;
@@ -590,6 +591,10 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
     // ── Courier Management ───────────────────────────────────────────────────
     Route::get('/courier', [CourierController::class, 'index'])->name('admin.courier.index');
 
+    // ── SMS Gateway Setup CRUD ────────────────────────────────────────────────
+    Route::resource('smsgatewaysetup', SmsGatewaySetupController::class)->names('admin.smsgatewaysetup');
+    Route::post('smsgatewaysetup/{id}/toggle', [SmsGatewaySetupController::class, 'toggleStatus'])->name('admin.smsgatewaysetup.toggle');
+
     // ── SMS Gateway ───────────────────────────────────────────────────────────
     Route::post('/settings/sms/update', [SmsGatewayController::class, 'update'])->name('admin.sms.update');
 
@@ -600,6 +605,7 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
             'telesign'    => \App\Models\TelesignGateway::first(),
             'nexmo'       => \App\Models\NexmoGateway::first(),
             'messagebird' => \App\Models\MessagebirdGateway::first(),
+            'sms'         => \App\Models\SmsGateway::first(),
         ];
         return view('admin.smsconfiguration.sms-configuration', $data);
     })->name('admin.sms.configuration');
