@@ -113,6 +113,45 @@ const Home = () => {
         }
     }, [loading, popularProducts, newArrivals, bestDeals]);
 
+    useEffect(() => {
+        if (loading || ourBrands.length === 0) return;
+        const container = brandSliderRef.current;
+        if (!container) return;
+
+        let intervalId;
+
+        const startInterval = () => {
+            intervalId = setInterval(() => {
+                const maxScroll = container.scrollWidth - container.clientWidth;
+                if (container.scrollLeft >= maxScroll - 15) {
+                    container.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    container.scrollBy({ left: 196, behavior: 'smooth' }); // card width 180 + gap 16
+                }
+            }, 3000);
+        };
+
+        startInterval();
+
+        const handleMouseEnter = () => {
+            if (intervalId) clearInterval(intervalId);
+        };
+
+        const handleMouseLeave = () => {
+            if (intervalId) clearInterval(intervalId);
+            startInterval();
+        };
+
+        container.addEventListener('mouseenter', handleMouseEnter);
+        container.addEventListener('mouseleave', handleMouseLeave);
+
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+            container.removeEventListener('mouseenter', handleMouseEnter);
+            container.removeEventListener('mouseleave', handleMouseLeave);
+        };
+    }, [loading, ourBrands]);
+
     const renderSpinner = () => {
         return null; // No spinner as per user request for <1s loading
     };
@@ -299,11 +338,11 @@ const Home = () => {
 
             {/* ===== Our Brand Slider ===== */}
             {!loading && ourBrands.length > 0 && (
-                <section className="container mb-4">
+                <section className="container mb-5 mt-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-                        <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Our Brand Partners</h4>
+                        <h4 className="fw-bold mb-0" style={{ color: '#333', fontSize: '1.25rem' }}>Our Brand Partners</h4>
                     </div>
-                    <div className="position-relative">
+                    <div className="position-relative px-2">
                         <button
                             type="button"
                             className="brand-slider-arrow prev"
@@ -316,22 +355,37 @@ const Home = () => {
                         </button>
                         <div
                             ref={brandSliderRef}
-                            className="our-brand-slider d-flex gap-3 overflow-x-auto pb-2 scroll-smooth"
+                            className="our-brand-slider d-flex gap-3 overflow-x-auto pb-3 scroll-smooth align-items-center"
                         >
                             {ourBrands.map((brand) => (
                                 <div
                                     key={brand.id}
-                                    className="card border-0 shadow-sm"
-                                    style={{ minWidth: 210, maxWidth: 240, borderRadius: 18, overflow: 'hidden', flex: '0 0 auto' }}
+                                    className="brand-logo-card d-flex align-items-center justify-content-center"
+                                    style={{
+                                        minWidth: 180,
+                                        height: 96,
+                                        borderRadius: 16,
+                                        background: '#ffffff',
+                                        border: '1px solid rgba(0,0,0,0.06)',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+                                        flex: '0 0 auto',
+                                        padding: '12px 20px',
+                                        transition: 'all 0.3s ease',
+                                        cursor: 'pointer'
+                                    }}
                                 >
-                                    <div className="d-flex align-items-center justify-content-center" style={{ minHeight: 120, padding: '18px 14px', background: '#fff' }}>
-                                        <img src={brand.image} alt={brand.title || 'Brand'} style={{ maxHeight: 90, maxWidth: '100%', objectFit: 'contain' }} />
-                                    </div>
-                                    {brand.title && (
-                                        <div className="text-center py-2" style={{ fontSize: 13, color: '#4b5563' }}>
-                                            {brand.title}
-                                        </div>
-                                    )}
+                                    <img 
+                                        src={brand.image} 
+                                        alt="Brand Logo" 
+                                        style={{ 
+                                            maxHeight: 52, 
+                                            maxWidth: '100%', 
+                                            objectFit: 'contain',
+                                            filter: 'grayscale(100%) opacity(0.6)',
+                                            transition: 'all 0.3s ease'
+                                        }} 
+                                        className="brand-logo-img"
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -350,45 +404,56 @@ const Home = () => {
                         .our-brand-slider {
                             scroll-behavior: smooth;
                             -webkit-overflow-scrolling: touch;
+                            scrollbar-width: none; /* Firefox */
                         }
-                        .our-brand-slider::-webkit-scrollbar { height: 10px; }
-                        .our-brand-slider::-webkit-scrollbar-thumb { background-color: rgba(148,163,184,0.55); border-radius: 999px; }
-                        .our-brand-slider::-webkit-scrollbar-track { background: transparent; }
+                        .our-brand-slider::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+                        .brand-logo-card:hover {
+                            transform: translateY(-4px);
+                            box-shadow: 0 10px 20px rgba(0,0,0,0.06) !important;
+                            border-color: rgba(0,0,0,0.1) !important;
+                        }
+                        .brand-logo-card:hover .brand-logo-img {
+                            filter: grayscale(0%) opacity(1) !important;
+                        }
 
                         .brand-slider-arrow {
                             position: absolute;
                             top: 50%;
                             transform: translateY(-50%);
-                            width: 40px;
-                            height: 40px;
+                            width: 38px;
+                            height: 38px;
                             border-radius: 50%;
-                            border: none;
-                            background: rgba(255,255,255,0.9);
-                            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+                            border: 1px solid #e2e8f0;
+                            background: rgba(255,255,255,0.95);
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
                             cursor: pointer;
                             z-index: 5;
                             display: flex;
                             align-items: center;
                             justify-content: center;
-                            font-size: 22px;
-                            color: #111;
+                            font-size: 20px;
+                            color: #475569;
+                            transition: all 0.2s;
                         }
                         .brand-slider-arrow:hover {
                             background: #fff;
+                            color: #000;
+                            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
                         }
                         .brand-slider-arrow.prev {
-                            left: -10px;
+                            left: -12px;
                         }
                         .brand-slider-arrow.next {
-                            right: -10px;
+                            right: -12px;
                         }
                         @media (max-width: 992px) {
                             .brand-slider-arrow.prev { left: 0; }
                             .brand-slider-arrow.next { right: 0; }
                         }
                         @media (max-width: 768px) {
-                            .our-brand-slider { gap: 14px; }
-                            .brand-slider-arrow { width: 34px; height: 34px; font-size: 20px; }
+                            .our-brand-slider { gap: 12px; }
+                            .brand-slider-arrow { width: 32px; height: 32px; font-size: 18px; }
                         }
                     `}</style>
                 </section>
