@@ -600,6 +600,27 @@
             Contact Messages
         </a>
         @endif
+
+        {{-- Firebase Push Notifications --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.notifications.*') || request()->routeIs('admin.firebase.settings') ? 'active open' : '' }}" data-sub="firebase-notif">
+            <span class="sb-icon"><i class="bi bi-bell-fill"></i></span>
+            <span>Push Notifications</span>
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.notifications.*') || request()->routeIs('admin.firebase.settings') ? 'open' : '' }}" id="sub-firebase-notif">
+            <a class="sb-item {{ request()->routeIs('admin.notifications.create') ? 'active' : '' }}"
+               href="{{ route('admin.notifications.create') }}">
+                <span class="sb-icon"><i class="bi bi-send"></i></span> Send Notification
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.notifications.index') ? 'active' : '' }}"
+               href="{{ route('admin.notifications.index') }}">
+                <span class="sb-icon"><i class="bi bi-clock-history"></i></span> History Logs
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.firebase.settings') ? 'active' : '' }}"
+               href="{{ route('admin.firebase.settings') }}">
+                <span class="sb-icon"><i class="bi bi-gear"></i></span> FCM Config
+            </a>
+        </div>
         @endif
 
 

@@ -80,6 +80,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/save-settings', [AdminLandingPageBuilderController::class, 'saveSettings'])->name('save-settings');
         Route::post('/upload-image',       [AdminLandingPageBuilderController::class, 'uploadImage'])->name('upload-image');
     });
+
+    // Review Routes
+    Route::post('/reviews', [ReviewController::class, 'store']);
+    Route::get('/reviews/{product_id}/{product_type}', [ReviewController::class, 'fetch']);
+
+    // FCM & Push Notification Routes
+    Route::post('/user/save-fcm-token', [App\Http\Controllers\Api\NotificationApiController::class, 'saveToken']);
+    Route::get('/notifications', [App\Http\Controllers\Api\NotificationApiController::class, 'getNotifications']);
+    Route::post('/notifications/{id}/read', [App\Http\Controllers\Api\NotificationApiController::class, 'markAsRead']);
+    Route::post('/notifications/read-all', [App\Http\Controllers\Api\NotificationApiController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [App\Http\Controllers\Api\NotificationApiController::class, 'delete']);
+    Route::delete('/notifications/clear-all', [App\Http\Controllers\Api\NotificationApiController::class, 'clearAll']);
 });
 
 
@@ -92,6 +104,10 @@ Route::get('/settings',    [FrontendApiController::class, 'getSettings'])->name(
 Route::get('/banners',     [FrontendApiController::class, 'getBanners'])->name('api.banners');
 Route::get('/footer-data', [FrontendApiController::class, 'getFooterData'])->name('api.footer');
 
+// Checkout OTP Routes
+Route::get('/checkout/otp-settings', [CheckoutController::class, 'getOtpSettings']);
+Route::post('/checkout/send-otp', [CheckoutController::class, 'sendOtp']);
+Route::post('/checkout/verify-otp', [CheckoutController::class, 'verifyOtp']);
 
 /*
 |─────────────────────────────────────────────────────────────────────────────

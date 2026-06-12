@@ -43,6 +43,7 @@ class User extends Authenticatable
         'thana',
         'department_id',
         'designation_id',
+        'fcm_token',
     ];
 
     public function transactions()

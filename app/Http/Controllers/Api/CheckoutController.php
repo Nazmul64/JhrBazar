@@ -487,45 +487,52 @@ class CheckoutController extends Controller
         $otpRequired = $smsGateway && $otpSetting && $otpSetting->must_verify_account_on_order_placement;
 
         if ($otpRequired) {
-            if (!$request->has('otp_code') || empty($request->otp_code)) {
-                // Generate and send OTP
-                $otp = rand(100000, 999999);
-                \Illuminate\Support\Facades\Cache::put('checkout_otp_' . $request->phone, $otp, 300); // valid for 5 minutes
+            // Check if phone has already been verified via verify-otp endpoint
+            $isVerified = \Illuminate\Support\Facades\Cache::get('checkout_otp_verified_' . $request->phone);
+            if ($isVerified) {
+                // Verified successfully, delete verification flag and proceed
+                \Illuminate\Support\Facades\Cache::forget('checkout_otp_verified_' . $request->phone);
+            } else {
+                if (!$request->has('otp_code') || empty($request->otp_code)) {
+                    // Generate and send OTP
+                    $otp = rand(100000, 999999);
+                    \Illuminate\Support\Facades\Cache::put('checkout_otp_' . $request->phone, $otp, 300); // valid for 5 minutes
 
-                $shopName = GenaralSetting::first()->shop_name ?? 'JhrBazar';
-                $message = "প্রিয় গ্রাহক, JhrBazar-এ আপনার অর্ডারটি নিশ্চিত করতে ওটিপি কোডটি ব্যবহার করুন: " . $otp . "। ধন্যবাদ!";
-                
-                try {
-                    $sent = SmsService::send($request->phone, $message);
-                    if (!$sent) {
+                    $shopName = GenaralSetting::first()->shop_name ?? 'JhrBazar';
+                    $message = "প্রিয় গ্রাহক, JhrBazar-এ আপনার অর্ডারটি নিশ্চিত করতে ওটিপি কোডটি ব্যবহার করুন: " . $otp . "। ধন্যবাদ!";
+                    
+                    try {
+                        $sent = SmsService::send($request->phone, $message);
+                        if (!$sent) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => 'মোবাইলে ওটিপি (OTP) পাঠাতে ব্যর্থ হয়েছে। অনুগ্রহ করে মোবাইল নম্বরটি পরীক্ষা করুন।'
+                            ], 500);
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error("Failed to send OTP SMS: " . $e->getMessage());
                         return response()->json([
                             'success' => false,
-                            'message' => 'মোবাইলে ওটিপি (OTP) পাঠাতে ব্যর্থ হয়েছে। অনুগ্রহ করে মোবাইল নম্বরটি পরীক্ষা করুন।'
+                            'message' => 'ওটিপি (OTP) সার্ভারে ত্রুটি দেখা দিয়েছে। আবার চেষ্টা করুন।'
                         ], 500);
                     }
-                } catch (\Exception $e) {
-                    \Log::error("Failed to send OTP SMS: " . $e->getMessage());
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'ওটিপি (OTP) সার্ভারে ত্রুটি দেখা দিয়েছে। আবার চেষ্টা করুন।'
-                    ], 500);
-                }
 
-                return response()->json([
-                    'success' => false,
-                    'otp_required' => true,
-                    'message' => 'আপনার মোবাইলে ওটিপি (OTP) কোড পাঠানো হয়েছে। অর্ডার সম্পন্ন করতে কোডটি দিন।'
-                ]);
-            } else {
-                $cachedOtp = \Illuminate\Support\Facades\Cache::get('checkout_otp_' . $request->phone);
-                if (!$cachedOtp || $cachedOtp != $request->otp_code) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'অবৈধ বা মেয়াদোত্তীর্ণ ওটিপি (OTP) কোড। সঠিক কোডটি দিন।'
-                    ], 422);
+                        'otp_required' => true,
+                        'message' => 'আপনার মোবাইলে ওটিপি (OTP) কোড পাঠানো হয়েছে। অর্ডার সম্পন্ন করতে কোডটি দিন।'
+                    ]);
+                } else {
+                    $cachedOtp = \Illuminate\Support\Facades\Cache::get('checkout_otp_' . $request->phone);
+                    if (!$cachedOtp || $cachedOtp != $request->otp_code) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'অবৈধ বা মেয়াদোত্তীর্ণ ওটিপি (OTP) কোড। সঠিক কোডটি দিন।'
+                        ], 422);
+                    }
+                    // OTP is valid, clear it from cache
+                    \Illuminate\Support\Facades\Cache::forget('checkout_otp_' . $request->phone);
                 }
-                // OTP is valid, clear it from cache
-                \Illuminate\Support\Facades\Cache::forget('checkout_otp_' . $request->phone);
             }
         }
         try {
@@ -997,5 +1004,98 @@ class CheckoutController extends Controller
     public function process(Request $request)
     {
         return $this->placeOrder($request);
+    }
+
+    /**
+     * Get OTP verification settings for checkout.
+     */
+    public function getOtpSettings()
+    {
+        $smsGateway = SmsGateway::where('status', true)->first();
+        $otpSetting = \App\Models\Verificatiootpsettings::first();
+        $otpRequired = $smsGateway && $otpSetting && $otpSetting->must_verify_account_on_order_placement;
+
+        return response()->json([
+            'success' => true,
+            'otp_required' => (bool)$otpRequired,
+            'min_phone_length' => $otpSetting->min_phone_length ?? 11,
+            'max_phone_length' => $otpSetting->max_phone_length ?? 11,
+            'sms_gateway_active' => (bool)$smsGateway,
+        ]);
+    }
+
+    /**
+     * Send OTP to a phone number for checkout verification.
+     */
+    public function sendOtp(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required|string',
+        ]);
+
+        $smsGateway = SmsGateway::where('status', true)->first();
+        if (!$smsGateway) {
+            return response()->json([
+                'success' => false,
+                'message' => 'এসএমএস গেটওয়ে কনফিগার করা নেই বা নিষ্ক্রিয় রয়েছে।'
+            ], 400);
+        }
+
+        $otp = rand(100000, 999999);
+        \Illuminate\Support\Facades\Cache::put('checkout_otp_' . $request->phone, $otp, 300); // 5 minutes
+
+        $shopName = GenaralSetting::first()->shop_name ?? 'JhrBazar';
+        $message = "প্রিয় গ্রাহক, " . $shopName . "-এ আপনার অর্ডারটি নিশ্চিত করতে ওটিপি কোডটি ব্যবহার করুন: " . $otp . "। ধন্যবাদ!";
+
+        try {
+            $sent = SmsService::send($request->phone, $message);
+            if ($sent) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'আপনার মোবাইলে ওটিপি (OTP) কোড পাঠানো হয়েছে।'
+                ]);
+            }
+            return response()->json([
+                'success' => false,
+                'message' => 'ওটিপি পাঠাতে ব্যর্থ হয়েছে। অনুগ্রহ করে মোবাইল নম্বরটি পরীক্ষা করুন।'
+            ], 500);
+        } catch (\Exception $e) {
+            \Log::error("Failed to send OTP SMS from API: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'ওটিপি সার্ভারে অভ্যন্তরীণ ত্রুটি দেখা দিয়েছে।'
+            ], 500);
+        }
+    }
+
+    /**
+     * Verify checkout OTP for a phone number.
+     */
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required|string',
+            'otp_code' => 'required|string',
+        ]);
+
+        $cachedOtp = \Illuminate\Support\Facades\Cache::get('checkout_otp_' . $request->phone);
+
+        if (!$cachedOtp || $cachedOtp != $request->otp_code) {
+            return response()->json([
+                'success' => false,
+                'message' => 'অবৈধ বা মেয়াদোত্তীর্ণ ওটিপি (OTP) কোড।'
+            ], 422);
+        }
+
+        // Keep a verification flag in cache for 10 minutes so that order placement can check it
+        \Illuminate\Support\Facades\Cache::put('checkout_otp_verified_' . $request->phone, true, 600);
+        
+        // Remove OTP code from cache
+        \Illuminate\Support\Facades\Cache::forget('checkout_otp_' . $request->phone);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'ওটিপি (OTP) সফলভাবে যাচাই করা হয়েছে।'
+        ]);
     }
 }

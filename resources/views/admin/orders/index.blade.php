@@ -166,7 +166,7 @@
     .status-pending   { background: #fff4e5; color: #ff9800; }
     .status-processing{ background: #e8f0fe; color: #1a73e8; }
     .status-shipped   { background: #e6fcf5; color: #0ca678; }
-    .status-delivered { background: #f0fdf4; color: #15803d; }
+    .status-delivered, .status-complete { background: #f0fdf4; color: #15803d; }
     .status-cancelled { background: #fff5f5; color: #fa5252; }
 
     .action-btn {
@@ -494,7 +494,7 @@
                                     <option value="pending" {{ $s == 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="processing" {{ $s == 'processing' ? 'selected' : '' }}>Processing</option>
                                     <option value="shipped" {{ $s == 'shipped' ? 'selected' : '' }}>Shipped</option>
-                                    <option value="complete" {{ $s == 'complete' ? 'selected' : '' }}>Complete</option>
+                                    <option value="complete" {{ ($s == 'complete' || $s == 'delivered') ? 'selected' : '' }}>Complete</option>
                                     <option value="cancelled" {{ $s == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                                 </select>
                             </td>
@@ -539,8 +539,10 @@
                                     @if(!$order->order->pathao_consignment_id)
                                         <a href="javascript:void(0)" onclick="sendIndividualCourier({{ $order->id }}, 'pathao')" class="action-btn btn-pathao" title="Pathao"><i class="bi bi-send"></i></a>
                                     @endif
-                                    <button onclick="updateStatus({{ $order->id }}, 'complete')" class="action-btn btn-complete" title="Complete" style="background:#28a745; border:none;"><i class="bi bi-check2"></i></button>
-<a href="javascript:void(0)" onclick="deleteOrder({{ $order->id }})" class="action-btn btn-delete" title="Delete"><i class="bi bi-trash"></i></a>
+                                    <button id="complete-btn-{{ $order->id }}" onclick="toggleCompleteStatus({{ $order->id }}, '{{ $s }}')" class="action-btn btn-complete" title="{{ ($s == 'complete' || $s == 'delivered') ? 'Revert Complete' : 'Complete' }}" style="background: {{ ($s == 'complete' || $s == 'delivered') ? '#dc3545' : '#28a745' }}; border:none;">
+                                        <i class="bi {{ ($s == 'complete' || $s == 'delivered') ? 'bi-x-circle' : 'bi-check2' }}"></i>
+                                    </button>
+                                    <a href="javascript:void(0)" onclick="deleteOrder({{ $order->id }})" class="action-btn btn-delete" title="Delete"><i class="bi bi-trash"></i></a>
                                 </div>
                             </td>
                         </tr>
@@ -635,6 +637,27 @@
         document.querySelectorAll('.order-checkbox').forEach(cb => cb.checked = this.checked);
     });
 
+    function toggleCompleteStatus(id, currentStatus) {
+        if (currentStatus === 'delivered' || currentStatus === 'complete') {
+            Swal.fire({
+                title: 'পেমেন্ট রিভার্ট করবেন?',
+                text: "এই অর্ডারের কমপ্লিট স্ট্যাটাস বাতিল করতে চান? এতে সেলারের ব্যালেন্স থেকে টাকা কেটে নেওয়া হবে।",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'হ্যাঁ, বাতিল করুন!',
+                cancelButtonText: 'না, রাখুন'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    updateStatus(id, 'pending');
+                }
+            });
+        } else {
+            updateStatus(id, 'complete');
+        }
+    }
+
     function updateStatus(id, status) {
         fetch(`{{ url('admin/orders/status') }}/${id}`, {
             method: 'POST',
@@ -648,8 +671,32 @@
         .then(data => {
             if(data.success) {
                 const select = document.querySelector(`#order-row-${id} .status-badge`);
-                select.className = `form-select form-select-sm status-badge status-${status}`;
+                if (select) {
+                    select.value = (status === 'delivered') ? 'complete' : status;
+                    // Reset all status classes
+                    select.classList.remove('status-pending', 'status-processing', 'status-shipped', 'status-delivered', 'status-complete', 'status-cancelled');
+                    select.classList.add(`status-${status}`);
+                }
+                
+                // Update complete button icon, color, title, and onclick behavior dynamically
+                const btn = document.getElementById(`complete-btn-${id}`);
+                if (btn) {
+                    if (status === 'delivered' || status === 'complete') {
+                        btn.style.background = '#dc3545';
+                        btn.innerHTML = '<i class="bi bi-x-circle"></i>';
+                        btn.setAttribute('onclick', `toggleCompleteStatus(${id}, 'delivered')`);
+                        btn.setAttribute('title', 'Revert Complete');
+                    } else {
+                        btn.style.background = '#28a745';
+                        btn.innerHTML = '<i class="bi bi-check2"></i>';
+                        btn.setAttribute('onclick', `toggleCompleteStatus(${id}, 'pending')`);
+                        btn.setAttribute('title', 'Complete');
+                    }
+                }
+                
                 Swal.fire({ icon: 'success', title: 'Success', text: data.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+            } else {
+                Swal.fire('Error', data.message || 'Something went wrong', 'error');
             }
         });
     }

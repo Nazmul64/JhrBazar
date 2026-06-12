@@ -149,6 +149,7 @@ use App\Http\Controllers\Seller\SellerOrderHubController;
 use App\Http\Controllers\Manager\ManagerDashboardController;
 use App\Http\Controllers\Admin\CustomerManagementController;
 use App\Http\Controllers\Admin\IncompleteOrderController;
+use App\Http\Controllers\Admin\FirebaseNotificationController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -624,6 +625,14 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
     Route::get('/mail-configuration',            [MailConfigurationController::class, 'index'])       ->name('admin.mailconfiguration.index');
     Route::post('/mail-configuration/update',    [MailConfigurationController::class, 'update'])      ->name('admin.mailconfiguration.update');
     Route::post('/mail-configuration/send-test', [MailConfigurationController::class, 'sendTestMail'])->name('admin.mailconfiguration.send-test');
+
+    // ── Firebase Notifications ────────────────────────────────────────────────
+    Route::get( 'firebase/settings',        [FirebaseNotificationController::class, 'settings'])      ->name('admin.firebase.settings');
+    Route::post('firebase/settings/update', [FirebaseNotificationController::class, 'updateSettings'])->name('admin.firebase.settings.update');
+    Route::post('firebase/save-token',      [FirebaseNotificationController::class, 'saveToken'])     ->name('admin.firebase.save-token');
+    Route::get( 'notifications',            [FirebaseNotificationController::class, 'index'])         ->name('admin.notifications.index');
+    Route::get( 'notifications/compose',    [FirebaseNotificationController::class, 'create'])        ->name('admin.notifications.create');
+    Route::post('notifications/send',       [FirebaseNotificationController::class, 'store'])         ->name('admin.notifications.store');
 
     // ── Pixels ────────────────────────────────────────────────────────────────
     Route::resource('pixels', PixelController::class)->names('admin.pixels')->except(['show']);
