@@ -223,7 +223,7 @@
                     <span class="badge mb-3 px-3 py-2 rounded-pill fw-bold" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); color: white; border: 1px solid rgba(255,255,255,0.2); letter-spacing: 1px; font-size: 10px; text-transform: uppercase;">
                         <i class="bi bi-shield-check-fill me-1 text-info"></i> System Live: Marketplace Intelligence
                     </span>
-                    <h1 class="fw-bold mb-3" style="font-family: 'Sora', sans-serif; font-size: clamp(24px, 5vw, 36px);">Jhr Bazar <span class="text-white-50">Command Center</span></h1>
+                    <h1 class="fw-bold mb-3" style="font-family: 'Sora', sans-serif; font-size: clamp(24px, 5vw, 36px);">{{ $gs->website_name ?? 'Jhr Bazar' }} <span class="text-white-50">Command Center</span></h1>
                     <p class="opacity-75 mb-4 fw-medium" style="max-width: 580px; font-size: 15px; line-height: 1.6;">Monitor your ecosystem in real-time. Manage sellers, analyze customer behavior, and optimize your revenue streams with our unified dashboard.</p>
                     <div class="d-flex flex-wrap gap-3">
                         <button class="btn btn-light rounded-pill px-4 py-2 fw-bold text-primary shadow-sm border-0 transition-all hover-scale" style="font-size: 14px;">

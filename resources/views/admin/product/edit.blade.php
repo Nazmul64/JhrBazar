@@ -387,7 +387,7 @@
                         <input type="checkbox" name="frontend_sections[]" value="{{ $cat->name }}" 
                             {{ in_array($cat->name, $savedSections) ? 'checked' : '' }} 
                             style="width:16px;height:16px;accent-color:var(--brand);">
-                        <span style="font-size:13.5px; font-weight:600; color:var(--dark);">{!! clean($cat->name) !!}</span>
+                        <span style="font-size:13.5px; font-weight:600; color:var(--dark);">{{ $cat->name }}</span>
                     </label>
                 @endforeach
             </div>

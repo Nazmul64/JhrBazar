@@ -112,6 +112,7 @@ use App\Http\Controllers\Admin\LandingPageController;
 use App\Http\Controllers\Admin\ShurjopayGatewayController;
 use App\Http\Controllers\Admin\SslcommerzGatewayController;
 use App\Http\Controllers\Admin\CourierController;
+use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\PathaoCourierController;
 use App\Http\Controllers\Admin\SmsGatewayController;
 use App\Http\Controllers\Admin\SmsGatewaySetupController;
@@ -508,6 +509,7 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
     // ── Contact ───────────────────────────────────────────────────────────────
     Route::post('contact/{contact}/toggle', [ContactController::class, 'toggleStatus'])->name('admin.contact.toggle');
     Route::resource('contact', ContactController::class)->names('admin.contact')->except(['show']);
+    Route::resource('contact-messages', ContactMessageController::class)->names('admin.contact_messages')->only(['index', 'destroy']);
 
     // ── Settings / Gateways Page ──────────────────────────────────────────────
     Route::get('/settings/gateways', function () {
@@ -588,6 +590,46 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
     Route::post('/settings/shurjopay/toggle', [ShurjopayGatewayController::class, 'toggleStatus'])->name('admin.shurjopay.toggle');
     Route::post('/settings/sslcommerz/update', [SslcommerzGatewayController::class, 'update'])      ->name('admin.sslcommerz.update');
     Route::post('/settings/sslcommerz/toggle', [SslcommerzGatewayController::class, 'toggleStatus'])->name('admin.sslcommerz.toggle');
+
+    Route::post('/settings/gateways/{gateway}/delete-logo', function ($gatewayKey) {
+        $models = [
+            'stripe' => \App\Models\StripeGateway::class,
+            'paypal' => \App\Models\PaypalGateway::class,
+            'razorpay' => \App\Models\RazorpayGateway::class,
+            'paystack' => \App\Models\PaystackGateway::class,
+            'aamarpay' => \App\Models\AamarpayGateway::class,
+            'bkash' => \App\Models\BkashGateway::class,
+            'paytabs' => \App\Models\PaytabsGateway::class,
+            'qicard' => \App\Models\QicardGateway::class,
+            'jazzcash' => \App\Models\JazzcashGateway::class,
+            'shurjopay' => \App\Models\ShurjopayGateway::class,
+            'sslcommerz' => \App\Models\SslcommerzGateway::class,
+        ];
+
+        if (!isset($models[$gatewayKey])) {
+            return response()->json(['success' => false, 'message' => 'Invalid gateway'], 400);
+        }
+
+        $modelClass = $models[$gatewayKey];
+        $gateway = $modelClass::first();
+        if ($gateway && $gateway->logo) {
+            // Delete from public uploads
+            $filePath = public_path($gateway->logo);
+            if (file_exists($filePath)) {
+                @unlink($filePath);
+            }
+            
+            // Delete from storage disk (legacy)
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($gateway->logo)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($gateway->logo);
+            }
+            
+            $gateway->logo = null;
+            $gateway->save();
+        }
+
+        return response()->json(['success' => true]);
+    })->name('admin.gateways.delete-logo');
 
     // ── Courier Management ───────────────────────────────────────────────────
     Route::get('/courier', [CourierController::class, 'index'])->name('admin.courier.index');
@@ -980,6 +1022,9 @@ Route::post('/payment/sslcommerz/success', [App\Http\Controllers\Api\CheckoutCon
 Route::post('/payment/sslcommerz/fail',    [App\Http\Controllers\Api\CheckoutController::class, 'failCallback'])   ->name('sslcommerz.fail');
 Route::post('/payment/sslcommerz/cancel',  [App\Http\Controllers\Api\CheckoutController::class, 'cancelCallback']) ->name('sslcommerz.cancel');
 Route::post('/payment/sslcommerz/ipn',     [App\Http\Controllers\Api\CheckoutController::class, 'ipnCallback'])    ->name('sslcommerz.ipn');
+
+// ── Public bKash Payment Callback ───────────────────────────────────────────
+Route::get('/payment/bkash/callback', [App\Http\Controllers\Api\CheckoutController::class, 'bkashCallback'])->name('bkash.callback');
 
 // Dynamic Safe Database Migration Route for Live Server Deployment
 Route::get('/run-migration-safely', function() {

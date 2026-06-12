@@ -20,7 +20,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('admin.contact.update', $contact->id) }}" method="POST">
+            <form action="{{ route('admin.contact.update', $contact->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -88,11 +88,68 @@
                     @enderror
                 </div>
 
+                {{-- Support Image --}}
+                <div class="mb-3">
+                    <label for="contact_image" class="form-label label-custom">Support Image</label>
+                    <input
+                        type="file"
+                        id="contact_image"
+                        name="contact_image"
+                        class="form-control input-custom @error('contact_image') is-invalid @enderror"
+                        accept="image/*"
+                        onchange="previewContactImage(this)"
+                    >
+                    @error('contact_image')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <div class="mt-2" id="contact_image_preview_container" style="{{ $contact->contact_image ? '' : 'display:none;' }}">
+                        <img id="contact_image_preview" src="{{ $contact->contact_image ? asset($contact->contact_image) : '#' }}" alt="Preview" style="max-height: 150px; border-radius: 6px; border: 1px solid #d9d9d9; padding: 4px;">
+                    </div>
+                </div>
+
+                {{-- Google Map Embed Code --}}
+                <div class="mb-4">
+                    <label for="map_embed_code" class="form-label label-custom">Google Map Embed Code (iframe)</label>
+                    <textarea
+                        id="map_embed_code"
+                        name="map_embed_code"
+                        rows="4"
+                        class="form-control input-custom @error('map_embed_code') is-invalid @enderror"
+                        placeholder="Paste Google Map iframe code here"
+                    >{{ old('map_embed_code', $contact->map_embed_code) }}</textarea>
+                    @error('map_embed_code')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
                 <button type="submit" class="btn btn-pink px-4">
                     Save And Update
                 </button>
 
             </form>
+
+            <script>
+                function previewContactImage(input) {
+                    const preview = document.getElementById('contact_image_preview');
+                    const container = document.getElementById('contact_image_preview_container');
+                    if (input.files && input.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            preview.src = e.target.result;
+                            container.style.display = 'block';
+                        }
+                        reader.readAsDataURL(input.files[0]);
+                    } else {
+                        @if($contact->contact_image)
+                            preview.src = "{{ asset($contact->contact_image) }}";
+                            container.style.display = 'block';
+                        @else
+                            preview.src = '#';
+                            container.style.display = 'none';
+                        @endif
+                    }
+                }
+            </script>
 
         </div>
     </div>

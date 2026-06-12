@@ -362,14 +362,14 @@ const Home = () => {
                                     key={brand.id}
                                     className="brand-logo-card d-flex align-items-center justify-content-center"
                                     style={{
-                                        minWidth: 180,
-                                        height: 96,
+                                        minWidth: 130,
+                                        height: 130,
                                         borderRadius: 16,
                                         background: '#ffffff',
                                         border: '1px solid rgba(0,0,0,0.06)',
                                         boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
                                         flex: '0 0 auto',
-                                        padding: '12px 20px',
+                                        padding: '10px',
                                         transition: 'all 0.3s ease',
                                         cursor: 'pointer'
                                     }}
@@ -378,10 +378,9 @@ const Home = () => {
                                         src={brand.image} 
                                         alt="Brand Logo" 
                                         style={{ 
-                                            maxHeight: 52, 
+                                            maxHeight: 110, 
                                             maxWidth: '100%', 
                                             objectFit: 'contain',
-                                            filter: 'grayscale(100%) opacity(0.6)',
                                             transition: 'all 0.3s ease'
                                         }} 
                                         className="brand-logo-img"
@@ -414,8 +413,8 @@ const Home = () => {
                             border-color: rgba(0,0,0,0.1) !important;
                         }
                         .brand-logo-card:hover .brand-logo-img {
-                            filter: grayscale(0%) opacity(1) !important;
-                        }
+                             transform: scale(1.05);
+                         }
 
                         .brand-slider-arrow {
                             position: absolute;

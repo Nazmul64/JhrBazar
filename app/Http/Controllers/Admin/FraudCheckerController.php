@@ -15,8 +15,36 @@ class FraudCheckerController extends Controller
      */
     public function checkIpBlocked(Request $request)
     {
+        $settings = \App\Models\GenaralSetting::first();
+        if (!$settings || !$settings->ip_block_status) {
+            return response()->json([
+                'blocked' => false
+            ]);
+        }
+
         $ip = $request->ip();
         $fingerprint = $request->query('fingerprint') ?? $request->cookie('device_fingerprint_secure');
+        $phone = $request->query('phone');
+        $email = $request->query('email');
+
+        // Allow the first order: If no previous orders exist matching the phone, IP or fingerprint, they are NOT blocked
+        $hasPreviousOrders = false;
+        if ($phone) {
+            $hasPreviousOrders = $hasPreviousOrders || \App\Models\Pointofsalepo::where('phone', $phone)->exists();
+        }
+        if ($email) {
+            $hasPreviousOrders = $hasPreviousOrders || \App\Models\Pointofsalepo::where('note', 'like', "%Email: $email%")->exists();
+        }
+        $hasPreviousOrders = $hasPreviousOrders || \App\Models\Pointofsalepo::where('ip_address', $ip)->exists();
+        if ($fingerprint) {
+            $hasPreviousOrders = $hasPreviousOrders || \App\Models\Pointofsalepo::where('device_fingerprint', $fingerprint)->exists();
+        }
+
+        if (!$hasPreviousOrders) {
+            return response()->json([
+                'blocked' => false
+            ]);
+        }
 
         // Check if IP is blocked in our system
         $blocked = Ipblockmanage::where('ip_address', $ip)

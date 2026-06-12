@@ -570,9 +570,11 @@
         {{-- ══════════════════════════════════════════
              SECTION 4 · COMMUNICATIONS
         ══════════════════════════════════════════ --}}
-        @if(auth()->user()->hasPermission('chat.list'))
+        @if(auth()->user()->hasPermission('chat.list') || auth()->user()->hasPermission('contact.list') || auth()->user()->hasPermission('third_party.list'))
         <div class="sb-section">Communications</div>
+        @endif
 
+        @if(auth()->user()->hasPermission('chat.list'))
         <a class="sb-item {{ request()->routeIs('admin.chat.*') ? 'active' : '' }}"
            href="{{ route('admin.chat.index') }}">
             <span class="sb-icon"><i class="bi bi-chat-left-dots-fill"></i></span>
@@ -592,16 +594,23 @@
                 <span class="sb-badge">{{ $unreadSellerChats }}</span>
             @endif
         </a>
+        @endif
 
         @if(auth()->user()->hasPermission('contact.list'))
         <a class="sb-item {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}"
            href="{{ route('admin.contact.index') }}">
+            <span class="sb-icon"><i class="bi bi-gear-fill"></i></span>
+            Contact Settings
+        </a>
+        <a class="sb-item {{ request()->routeIs('admin.contact_messages.*') ? 'active' : '' }}"
+           href="{{ route('admin.contact_messages.index') }}">
             <span class="sb-icon"><i class="bi bi-envelope-fill"></i></span>
             Contact Messages
         </a>
         @endif
 
         {{-- Firebase Push Notifications --}}
+        @if(auth()->user()->hasPermission('third_party.list'))
         <div class="sb-item has-sub {{ request()->routeIs('admin.notifications.*') || request()->routeIs('admin.firebase.settings') ? 'active open' : '' }}" data-sub="firebase-notif">
             <span class="sb-icon"><i class="bi bi-bell-fill"></i></span>
             <span>Push Notifications</span>

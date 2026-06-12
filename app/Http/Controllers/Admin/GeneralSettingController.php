@@ -43,6 +43,7 @@ class GeneralSettingController extends Controller
             'gtm_id'                => 'nullable|string|max:255',
             'trade_license_number'  => 'nullable|string|max:255',
             'dbid_number'           => 'nullable|string|max:255',
+            'free_shipping_text'    => 'nullable|string|max:255',
         ]);
 
         $data = $request->except(['_token', 'logo', 'favicon', 'app_logo', 'footer_logo', 'footer_qr', 'membership_logo_1', 'membership_logo_2', 'membership_logo_3', 'payment_methods_logo']);
@@ -57,6 +58,7 @@ class GeneralSettingController extends Controller
         $data['enable_pixel'] = $request->has('enable_pixel') ? 1 : 0;
         $data['enable_gtm'] = $request->has('enable_gtm') ? 1 : 0;
         $data['customer_visit_notification_status'] = $request->has('customer_visit_notification_status') ? 1 : 0;
+        $data['ip_block_status'] = $request->has('ip_block_status') ? 1 : 0;
 
         $uploadPath = public_path('uploads/generalsetting');
         if (!file_exists($uploadPath)) {
@@ -122,6 +124,7 @@ class GeneralSettingController extends Controller
             'gtm_id'                => 'nullable|string|max:255',
             'trade_license_number'  => 'nullable|string|max:255',
             'dbid_number'           => 'nullable|string|max:255',
+            'free_shipping_text'    => 'nullable|string|max:255',
         ]);
 
         $setting = GenaralSetting::findOrFail($id);
@@ -138,6 +141,7 @@ class GeneralSettingController extends Controller
         $data['enable_pixel'] = $request->has('enable_pixel') ? 1 : 0;
         $data['enable_gtm'] = $request->has('enable_gtm') ? 1 : 0;
         $data['customer_visit_notification_status'] = $request->has('customer_visit_notification_status') ? 1 : 0;
+        $data['ip_block_status'] = $request->has('ip_block_status') ? 1 : 0;
 
         $uploadPath = public_path('uploads/generalsetting');
         if (!file_exists($uploadPath)) {
@@ -213,6 +217,7 @@ class GeneralSettingController extends Controller
             'loader_status'       => 1,
             'customer_visit_notification_status' => 1,
             'show_membership_section' => 1,
+            'free_shipping_text'  => '⚡ Free shipping on orders over 5,000 BDT',
         ];
         $setting->update($defaults);
 
@@ -232,7 +237,7 @@ class GeneralSettingController extends Controller
         $setting = GenaralSetting::findOrFail($id);
         $field   = $request->field;
 
-        if (in_array($field, ['show_download_app', 'show_footer_section', 'top_rated_shops_status', 'show_product_stats', 'show_marquee', 'show_membership_section', 'enable_analytics', 'enable_pixel', 'enable_gtm', 'customer_visit_notification_status'])) {
+        if (in_array($field, ['show_download_app', 'show_footer_section', 'top_rated_shops_status', 'show_product_stats', 'show_marquee', 'show_membership_section', 'enable_analytics', 'enable_pixel', 'enable_gtm', 'customer_visit_notification_status', 'ip_block_status'])) {
             $setting->$field = !$setting->$field;
             $setting->save();
 

@@ -146,6 +146,9 @@ gw-form-group label {
     align-items: center;
     gap: 12px;
 }
+.gw-file-wrap input[type="file"] {
+    display: none;
+}
 
 .gw-file-btn {
     display: inline-flex;
@@ -240,6 +243,16 @@ gw-form-group label {
                             <span class="gw-file-name" id="stripe-logo-name">No file chosen</span>
                             <input type="file" id="stripe-logo" name="logo" accept="image/*" onchange="updateFileName(this,'stripe-logo-name')">
                         </div>
+                        @if($stripe && $stripe->logo)
+                            <div class="current-logo-preview" style="margin-top: 10px;">
+                                <span style="display:block; font-size:12px; color:#666; margin-bottom:4px;">Current Logo:</span>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="{{ Str::startsWith($stripe->logo, ['http://', 'https://']) ? $stripe->logo : (Str::startsWith($stripe->logo, ['storage/', 'uploads/']) ? asset($stripe->logo) : asset('storage/' . $stripe->logo)) }}" 
+                                         alt="Stripe Logo" style="max-height: 40px; border: 1px solid #dde2ec; border-radius: 4px; padding: 4px; background: #fff;">
+                                    <button type="button" class="btn-delete-logo" onclick="deleteGatewayLogo('stripe', this)" style="background:#ff5252; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:bold;">Delete Logo</button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
             </div>
             <div class="gw-card-footer">
@@ -289,6 +302,16 @@ gw-form-group label {
                             <span class="gw-file-name" id="paypal-logo-name">No file chosen</span>
                             <input type="file" id="paypal-logo" name="logo" accept="image/*" onchange="updateFileName(this,'paypal-logo-name')">
                         </div>
+                        @if($paypal && $paypal->logo)
+                            <div class="current-logo-preview" style="margin-top: 10px;">
+                                <span style="display:block; font-size:12px; color:#666; margin-bottom:4px;">Current Logo:</span>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="{{ Str::startsWith($paypal->logo, ['http://', 'https://']) ? $paypal->logo : (Str::startsWith($paypal->logo, ['storage/', 'uploads/']) ? asset($paypal->logo) : asset('storage/' . $paypal->logo)) }}" 
+                                         alt="PayPal Logo" style="max-height: 40px; border: 1px solid #dde2ec; border-radius: 4px; padding: 4px; background: #fff;">
+                                    <button type="button" class="btn-delete-logo" onclick="deleteGatewayLogo('paypal', this)" style="background:#ff5252; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:bold;">Delete Logo</button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
             </div>
             <div class="gw-card-footer">
@@ -341,6 +364,16 @@ gw-form-group label {
                             <span class="gw-file-name" id="razorpay-logo-name">No file chosen</span>
                             <input type="file" id="razorpay-logo" name="logo" accept="image/*" onchange="updateFileName(this,'razorpay-logo-name')">
                         </div>
+                        @if($razorpay && $razorpay->logo)
+                            <div class="current-logo-preview" style="margin-top: 10px;">
+                                <span style="display:block; font-size:12px; color:#666; margin-bottom:4px;">Current Logo:</span>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="{{ Str::startsWith($razorpay->logo, ['http://', 'https://']) ? $razorpay->logo : (Str::startsWith($razorpay->logo, ['storage/', 'uploads/']) ? asset($razorpay->logo) : asset('storage/' . $razorpay->logo)) }}" 
+                                         alt="Razorpay Logo" style="max-height: 40px; border: 1px solid #dde2ec; border-radius: 4px; padding: 4px; background: #fff;">
+                                    <button type="button" class="btn-delete-logo" onclick="deleteGatewayLogo('razorpay', this)" style="background:#ff5252; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:bold;">Delete Logo</button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
             </div>
             <div class="gw-card-footer">
@@ -396,6 +429,16 @@ gw-form-group label {
                             <span class="gw-file-name" id="paystack-logo-name">No file chosen</span>
                             <input type="file" id="paystack-logo" name="logo" accept="image/*" onchange="updateFileName(this,'paystack-logo-name')">
                         </div>
+                        @if($paystack && $paystack->logo)
+                            <div class="current-logo-preview" style="margin-top: 10px;">
+                                <span style="display:block; font-size:12px; color:#666; margin-bottom:4px;">Current Logo:</span>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="{{ Str::startsWith($paystack->logo, ['http://', 'https://']) ? $paystack->logo : (Str::startsWith($paystack->logo, ['storage/', 'uploads/']) ? asset($paystack->logo) : asset('storage/' . $paystack->logo)) }}" 
+                                         alt="Paystack Logo" style="max-height: 40px; border: 1px solid #dde2ec; border-radius: 4px; padding: 4px; background: #fff;">
+                                    <button type="button" class="btn-delete-logo" onclick="deleteGatewayLogo('paystack', this)" style="background:#ff5252; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:bold;">Delete Logo</button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
             </div>
             <div class="gw-card-footer">
@@ -456,6 +499,16 @@ gw-form-group label {
                             <span class="gw-file-name" id="paytabs-logo-name">No file chosen</span>
                             <input type="file" id="paytabs-logo" name="logo" accept="image/*" onchange="updateFileName(this,'paytabs-logo-name')">
                         </div>
+                        @if($paytabs && $paytabs->logo)
+                            <div class="current-logo-preview" style="margin-top: 10px;">
+                                <span style="display:block; font-size:12px; color:#666; margin-bottom:4px;">Current Logo:</span>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="{{ Str::startsWith($paytabs->logo, ['http://', 'https://']) ? $paytabs->logo : (Str::startsWith($paytabs->logo, ['storage/', 'uploads/']) ? asset($paytabs->logo) : asset('storage/' . $paytabs->logo)) }}" 
+                                         alt="PayTabs Logo" style="max-height: 40px; border: 1px solid #dde2ec; border-radius: 4px; padding: 4px; background: #fff;">
+                                    <button type="button" class="btn-delete-logo" onclick="deleteGatewayLogo('paytabs', this)" style="background:#ff5252; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:bold;">Delete Logo</button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
             </div>
             <div class="gw-card-footer">
@@ -514,6 +567,16 @@ gw-form-group label {
                             <span class="gw-file-name" id="qicard-logo-name">No file chosen</span>
                             <input type="file" id="qicard-logo" name="logo" accept="image/*" onchange="updateFileName(this,'qicard-logo-name')">
                         </div>
+                        @if($qicard && $qicard->logo)
+                            <div class="current-logo-preview" style="margin-top: 10px;">
+                                <span style="display:block; font-size:12px; color:#666; margin-bottom:4px;">Current Logo:</span>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="{{ Str::startsWith($qicard->logo, ['http://', 'https://']) ? $qicard->logo : (Str::startsWith($qicard->logo, ['storage/', 'uploads/']) ? asset($qicard->logo) : asset('storage/' . $qicard->logo)) }}" 
+                                         alt="QiCard Logo" style="max-height: 40px; border: 1px solid #dde2ec; border-radius: 4px; padding: 4px; background: #fff;">
+                                    <button type="button" class="btn-delete-logo" onclick="deleteGatewayLogo('qicard', this)" style="background:#ff5252; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:bold;">Delete Logo</button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
             </div>
             <div class="gw-card-footer">
@@ -582,6 +645,16 @@ gw-form-group label {
                             <span class="gw-file-name" id="jazzcash-logo-name">No file chosen</span>
                             <input type="file" id="jazzcash-logo" name="logo" accept="image/*" onchange="updateFileName(this,'jazzcash-logo-name')">
                         </div>
+                        @if($jazzcash && $jazzcash->logo)
+                            <div class="current-logo-preview" style="margin-top: 10px;">
+                                <span style="display:block; font-size:12px; color:#666; margin-bottom:4px;">Current Logo:</span>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="{{ Str::startsWith($jazzcash->logo, ['http://', 'https://']) ? $jazzcash->logo : (Str::startsWith($jazzcash->logo, ['storage/', 'uploads/']) ? asset($jazzcash->logo) : asset('storage/' . $jazzcash->logo)) }}" 
+                                         alt="JazzCash Logo" style="max-height: 40px; border: 1px solid #dde2ec; border-radius: 4px; padding: 4px; background: #fff;">
+                                    <button type="button" class="btn-delete-logo" onclick="deleteGatewayLogo('jazzcash', this)" style="background:#ff5252; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:bold;">Delete Logo</button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
             </div>
             <div class="gw-card-footer">
@@ -622,6 +695,33 @@ function ajaxToggle(url, checkbox, labelId) {
         }
     })
     .catch(function(err){ console.error('Toggle failed:', err); checkbox.checked = !checkbox.checked; });
+}
+
+function deleteGatewayLogo(gatewayKey, btn) {
+    if (!confirm('Are you sure you want to delete this logo?')) return;
+    fetch('{{ route("admin.gateways.delete-logo", ["gateway" => ":gateway"]) }}'.replace(':gateway', gatewayKey), {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            var card = btn.closest('.gw-card') || btn.closest('.gateway-box') || btn.closest('.gw-form-group');
+            var preview = card.querySelector('.current-logo-preview');
+            if (preview) preview.remove();
+            alert('Logo deleted successfully!');
+        } else {
+            alert('Failed to delete logo: ' + data.message);
+        }
+    })
+    .catch(err => {
+        console.error('Delete failed:', err);
+        alert('An error occurred while deleting the logo.');
+    });
 }
 </script>
 @endsection

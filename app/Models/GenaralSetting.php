@@ -88,6 +88,8 @@ class GenaralSetting extends Model
         'enable_gtm',
         'trade_license_number',
         'dbid_number',
+        'free_shipping_text',
+        'ip_block_status',
     ];
 
     protected $casts = [
@@ -104,6 +106,7 @@ class GenaralSetting extends Model
         'enable_gtm' => 'boolean',
         'slider_speed' => 'integer',
         'category_slide_speed' => 'integer',
+        'ip_block_status' => 'boolean',
     ];
     public function getLogoUrlAttribute(): ?string
     {

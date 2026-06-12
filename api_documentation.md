@@ -27,6 +27,12 @@ Welcome to the **JhrBazar API Documentation**. This comprehensive reference guid
 - **Production Base URL**: `https://your-domain.com/api` (or `https://your-domain.com` if not using /api prefix reverse proxy)
 - **Development/Local URL**: `http://127.0.0.1:8000` (Note: `bootstrap/app.php` sets `apiPrefix: ''`, so API endpoints are directly on the root. Example: `http://127.0.0.1:8000/settings` or `http://127.0.0.1:8000/v1/auth/login`)
 
+### Dynamic Image URL Mapping
+All API endpoints returning image paths (logo, banners, categories, products, wishlist, etc.) automatically rewrite their URLs to be absolute URLs based on the current request's scheme and host. For example:
+- If requested via `http://10.0.2.2:8000/api/home-data` (Android Emulator), the image URLs in the response will point to `http://10.0.2.2:8000/uploads/...`.
+- If requested via `http://127.0.0.1:8000/api/home-data` (Local browser), the image URLs in the response will point to `http://127.0.0.1:8000/uploads/...`.
+This works dynamically even for cached responses, ensuring images always load correctly on any client or emulator.
+
 ### Headers
 Every request must include the following headers:
 ```http

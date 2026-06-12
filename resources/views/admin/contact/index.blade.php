@@ -35,6 +35,26 @@
                     <label class="form-label text-muted small">Email Address</label>
                     <p class="mb-0 fw-medium">{{ $contact->email_address ?? '—' }}</p>
                 </div>
+                <div class="mb-4">
+                    <label class="form-label text-muted small">Support Image</label>
+                    @if($contact->contact_image)
+                        <div class="mt-1">
+                            <img src="{{ asset($contact->contact_image) }}" alt="Support Image" style="max-height: 120px; border-radius: 6px; border: 1px solid #eee; padding: 4px;">
+                        </div>
+                    @else
+                        <p class="mb-0 fw-medium text-muted">No support image uploaded</p>
+                    @endif
+                </div>
+                <div class="mb-4">
+                    <label class="form-label text-muted small">Google Map</label>
+                    @if($contact->map_embed_code)
+                        <div class="mt-1 rounded border overflow-hidden" style="max-width: 500px; height: 200px;">
+                            {!! preg_replace('/width="[0-9]+"/', 'width="100%"', preg_replace('/height="[0-9]+"/', 'height="100%"', $contact->map_embed_code)) !!}
+                        </div>
+                    @else
+                        <p class="mb-0 fw-medium text-muted">No map embed code configured</p>
+                    @endif
+                </div>
 
                 <a href="{{ route('admin.contact.edit', $contact->id) }}"
                    class="btn btn-pink px-4">

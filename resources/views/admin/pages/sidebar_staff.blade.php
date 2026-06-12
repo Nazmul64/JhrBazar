@@ -656,7 +656,11 @@
         @if(auth()->user()->hasPermission('contact.list'))
         <a class="nav-item-custom {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}"
            href="{{ route('admin.contact.index') }}">
-            <i class="bi bi-envelope"></i> Contact Us
+            <i class="bi bi-gear"></i> Contact Settings
+        </a>
+        <a class="nav-item-custom {{ request()->routeIs('admin.contact_messages.*') ? 'active' : '' }}"
+           href="{{ route('admin.contact_messages.index') }}">
+            <i class="bi bi-envelope"></i> Contact Messages
         </a>
         @endif
         @endif

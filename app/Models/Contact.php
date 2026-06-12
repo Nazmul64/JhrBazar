@@ -11,5 +11,7 @@ class Contact extends Model
         'whatsapp_number',
         'messenger_link',
         'email_address',
+        'contact_image',
+        'map_embed_code',
     ];
 }

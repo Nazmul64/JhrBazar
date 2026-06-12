@@ -59,62 +59,59 @@ class CheckoutController extends Controller
 
         $stripe = StripeGateway::first();
         if ($stripe && $stripe->status) {
-            $gateways[] = ['name' => 'Stripe', 'key' => 'stripe', 'title' => $stripe->title, 'logo' => $stripe->logo ? asset('storage/' . $stripe->logo) : $this->getDefaultLogo('stripe')];
+            $gateways[] = ['name' => 'Stripe', 'key' => 'stripe', 'title' => $stripe->title, 'logo' => $this->getGatewayLogoUrl($stripe, 'stripe')];
         }
 
         $paypal = PaypalGateway::first();
         if ($paypal && $paypal->status) {
-            $gateways[] = ['name' => 'PayPal', 'key' => 'paypal', 'title' => $paypal->title, 'logo' => $paypal->logo ? asset('storage/' . $paypal->logo) : $this->getDefaultLogo('paypal')];
+            $gateways[] = ['name' => 'PayPal', 'key' => 'paypal', 'title' => $paypal->title, 'logo' => $this->getGatewayLogoUrl($paypal, 'paypal')];
         }
 
         $razorpay = RazorpayGateway::first();
         if ($razorpay && $razorpay->status) {
-            $gateways[] = ['name' => 'Razorpay', 'key' => 'razorpay', 'title' => $razorpay->title, 'logo' => $razorpay->logo ? asset('storage/' . $razorpay->logo) : $this->getDefaultLogo('razorpay')];
+            $gateways[] = ['name' => 'Razorpay', 'key' => 'razorpay', 'title' => $razorpay->title, 'logo' => $this->getGatewayLogoUrl($razorpay, 'razorpay')];
         }
 
         $paystack = PaystackGateway::first();
         if ($paystack && $paystack->status) {
-            $gateways[] = ['name' => 'Paystack', 'key' => 'paystack', 'title' => $paystack->title, 'logo' => $paystack->logo ? asset('storage/' . $paystack->logo) : $this->getDefaultLogo('paystack')];
+            $gateways[] = ['name' => 'Paystack', 'key' => 'paystack', 'title' => $paystack->title, 'logo' => $this->getGatewayLogoUrl($paystack, 'paystack')];
         }
 
         $aamarpay = AamarpayGateway::first();
         if ($aamarpay && $aamarpay->status) {
-            $gateways[] = ['name' => 'Aamarpay', 'key' => 'aamarpay', 'title' => $aamarpay->title, 'logo' => $aamarpay->logo ? asset('storage/' . $aamarpay->logo) : $this->getDefaultLogo('aamarpay')];
+            $gateways[] = ['name' => 'Aamarpay', 'key' => 'aamarpay', 'title' => $aamarpay->title, 'logo' => $this->getGatewayLogoUrl($aamarpay, 'aamarpay')];
         }
 
         $bkash = BkashGateway::first();
         if ($bkash && $bkash->status) {
-            $gateways[] = ['name' => 'bKash', 'key' => 'bkash', 'title' => $bkash->title, 'logo' => $bkash->logo ? asset('storage/' . $bkash->logo) : $this->getDefaultLogo('bkash')];
+            $gateways[] = ['name' => 'bKash', 'key' => 'bkash', 'title' => $bkash->title, 'logo' => $this->getGatewayLogoUrl($bkash, 'bkash')];
         }
 
-        $bkashPayment = BkashPayment::first();
-        if ($bkashPayment && $bkashPayment->status) {
-            $gateways[] = ['name' => 'bKash Payment', 'key' => 'bkash_payment', 'title' => 'bKash Payment', 'logo' => $this->getDefaultLogo('bkash')];
-        }
+
 
         $paytabs = PaytabsGateway::first();
         if ($paytabs && $paytabs->status) {
-            $gateways[] = ['name' => 'PayTabs', 'key' => 'paytabs', 'title' => $paytabs->title, 'logo' => $paytabs->logo ? asset('storage/' . $paytabs->logo) : $this->getDefaultLogo('paytabs')];
+            $gateways[] = ['name' => 'PayTabs', 'key' => 'paytabs', 'title' => $paytabs->title, 'logo' => $this->getGatewayLogoUrl($paytabs, 'paytabs')];
         }
 
         $qicard = QicardGateway::first();
         if ($qicard && $qicard->status) {
-            $gateways[] = ['name' => 'QiCard', 'key' => 'qicard', 'title' => $qicard->title, 'logo' => $qicard->logo ? asset('storage/' . $qicard->logo) : $this->getDefaultLogo('qicard')];
+            $gateways[] = ['name' => 'QiCard', 'key' => 'qicard', 'title' => $qicard->title, 'logo' => $this->getGatewayLogoUrl($qicard, 'qicard')];
         }
 
         $jazzcash = JazzcashGateway::first();
         if ($jazzcash && $jazzcash->status) {
-            $gateways[] = ['name' => 'JazzCash', 'key' => 'jazzcash', 'title' => $jazzcash->title, 'logo' => $jazzcash->logo ? asset('storage/' . $jazzcash->logo) : $this->getDefaultLogo('jazzcash')];
+            $gateways[] = ['name' => 'JazzCash', 'key' => 'jazzcash', 'title' => $jazzcash->title, 'logo' => $this->getGatewayLogoUrl($jazzcash, 'jazzcash')];
         }
 
         $shurjopay = ShurjopayGateway::first();
         if ($shurjopay && $shurjopay->status) {
-            $gateways[] = ['name' => 'Shurjopay', 'key' => 'shurjopay', 'title' => 'Shurjopay', 'logo' => $this->getDefaultLogo('shurjopay')];
+            $gateways[] = ['name' => 'Shurjopay', 'key' => 'shurjopay', 'title' => 'Shurjopay', 'logo' => $this->getGatewayLogoUrl($shurjopay, 'shurjopay')];
         }
 
         $sslcommerz = SslcommerzGateway::first();
         if ($sslcommerz && $sslcommerz->status) {
-            $gateways[] = ['name' => 'SSLCommerz', 'key' => 'sslcommerz', 'title' => $sslcommerz->title, 'logo' => $sslcommerz->logo ? asset('storage/' . $sslcommerz->logo) : $this->getDefaultLogo('sslcommerz')];
+            $gateways[] = ['name' => 'SSLCommerz', 'key' => 'sslcommerz', 'title' => $sslcommerz->title, 'logo' => $this->getGatewayLogoUrl($sslcommerz, 'sslcommerz')];
         }
 
         // COD is handled separately in the UI, do not add it as an online gateway
@@ -377,20 +374,33 @@ class CheckoutController extends Controller
         $shippingCharge = (float) $shipping->charge;
 
         // IP Block & Fraud Blacklist Check
-        $isIpBlocked = Ipblockmanage::where('ip_address', $request->ip())
-            ->where('is_active', true)
-            ->exists();
+        $settings = \App\Models\GenaralSetting::first();
+        $ipBlockEnabled = $settings && $settings->ip_block_status;
 
-        $isBlacklisted = FraudBlacklist::isBlacklisted('ip', $request->ip()) ||
-                         FraudBlacklist::isBlacklisted('phone', $request->phone) ||
-                         ($request->email && FraudBlacklist::isBlacklisted('email', $request->email)) ||
-                         ($request->device_fingerprint && FraudBlacklist::isBlacklisted('device', $request->device_fingerprint));
+        $hasPreviousOrders = false;
+        if ($ipBlockEnabled) {
+            $hasPreviousOrders = \App\Models\Pointofsalepo::where('phone', $request->phone)
+                ->orWhere('ip_address', $request->ip())
+                ->orWhere('device_fingerprint', $request->device_fingerprint)
+                ->exists();
+        }
 
-        if ($isIpBlocked || $isBlacklisted) {
-            return response()->json([
-                'success' => false,
-                'message' => 'দুঃখিত, আপনার তথ্য আমাদের সিস্টেমে ব্লক করা হয়েছে। আপনি বর্তমানে কোনো অর্ডার করতে পারবেন না।'
-            ], 403);
+        if ($ipBlockEnabled && $hasPreviousOrders) {
+            $isIpBlocked = Ipblockmanage::where('ip_address', $request->ip())
+                ->where('is_active', true)
+                ->exists();
+
+            $isBlacklisted = FraudBlacklist::isBlacklisted('ip', $request->ip()) ||
+                             FraudBlacklist::isBlacklisted('phone', $request->phone) ||
+                             ($request->email && FraudBlacklist::isBlacklisted('email', $request->email)) ||
+                             ($request->device_fingerprint && FraudBlacklist::isBlacklisted('device', $request->device_fingerprint));
+
+            if ($isIpBlocked || $isBlacklisted) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'দুঃখিত, আপনার তথ্য আমাদের সিস্টেমে ব্লক করা হয়েছে। আপনি বর্তমানে কোনো অর্ডার করতে পারবেন না।'
+                ], 403);
+            }
         }
 
         if ($request->payment_method === 'online') {
@@ -417,69 +427,71 @@ class CheckoutController extends Controller
         $totalOrderAmount = collect($validatedItems)->sum(fn($i) => $i['price'] * $i['qty']);
         $grandTotalForFraud = ($totalOrderAmount + $shippingCharge) - $couponDiscount;
 
-        // Run Fraud Detection Service Analysis
-        try {
-            $fraudData = [
-                'type' => 'transaction',
-                'customer_name' => $request->name,
-                'customer_email' => $request->email,
-                'customer_phone' => $request->phone,
-                'ip_address' => $request->ip(),
-                'transaction_amount' => $grandTotalForFraud,
-                'device_type' => $request->device_type,
-                'browser' => $request->browser,
-                'os' => $request->os,
-                'device_fingerprint' => $request->device_fingerprint,
-                'notes' => 'Checkout Auto-check',
-            ];
+        // Run Fraud Detection Service Analysis only if IP Block is enabled AND they have previous orders
+        if ($ipBlockEnabled && $hasPreviousOrders) {
+            try {
+                $fraudData = [
+                    'type' => 'transaction',
+                    'customer_name' => $request->name,
+                    'customer_email' => $request->email,
+                    'customer_phone' => $request->phone,
+                    'ip_address' => $request->ip(),
+                    'transaction_amount' => $grandTotalForFraud,
+                    'device_type' => $request->device_type,
+                    'browser' => $request->browser,
+                    'os' => $request->os,
+                    'device_fingerprint' => $request->device_fingerprint,
+                    'notes' => 'Checkout Auto-check',
+                ];
 
-            $fraudDetectionService = app(\App\Services\FraudDetectionService::class);
-            $fraudCheck = $fraudDetectionService->analyze($fraudData);
+                $fraudDetectionService = app(\App\Services\FraudDetectionService::class);
+                $fraudCheck = $fraudDetectionService->analyze($fraudData);
 
-            if ($fraudCheck->status === 'declined' || $fraudCheck->risk_score >= 80) {
-                // Auto Block: Add user, IP, phone, and fingerprint to blacklist
-                Ipblockmanage::updateOrCreate(
-                    ['ip_address' => $request->ip()],
-                    ['is_active' => true, 'reason' => 'Auto Block: High Fraud Risk Score (' . $fraudCheck->risk_score . ')']
-                );
+                if ($fraudCheck->status === 'declined' || $fraudCheck->risk_score >= 80) {
+                    // Auto Block: Add user, IP, phone, and fingerprint to blacklist
+                    Ipblockmanage::updateOrCreate(
+                        ['ip_address' => $request->ip()],
+                        ['is_active' => true, 'reason' => 'Auto Block: High Fraud Risk Score (' . $fraudCheck->risk_score . ')']
+                    );
 
-                FraudBlacklist::updateOrCreate(
-                    ['type' => 'ip', 'value' => $request->ip()],
-                    ['reason' => 'Auto Block: High Fraud Risk Score (' . $fraudCheck->risk_score . ')', 'is_active' => true, 'created_by' => null]
-                );
-
-                FraudBlacklist::updateOrCreate(
-                    ['type' => 'phone', 'value' => $request->phone],
-                    ['reason' => 'Auto Block: High Fraud Risk Score (' . $fraudCheck->risk_score . ')', 'is_active' => true, 'created_by' => null]
-                );
-
-                if ($request->device_fingerprint) {
                     FraudBlacklist::updateOrCreate(
-                        ['type' => 'device', 'value' => $request->device_fingerprint],
+                        ['type' => 'ip', 'value' => $request->ip()],
                         ['reason' => 'Auto Block: High Fraud Risk Score (' . $fraudCheck->risk_score . ')', 'is_active' => true, 'created_by' => null]
                     );
-                }
 
-                if ($request->email) {
                     FraudBlacklist::updateOrCreate(
-                        ['type' => 'email', 'value' => $request->email],
+                        ['type' => 'phone', 'value' => $request->phone],
                         ['reason' => 'Auto Block: High Fraud Risk Score (' . $fraudCheck->risk_score . ')', 'is_active' => true, 'created_by' => null]
                     );
-                }
 
-                // If customer is logged in, block their account
-                if (auth('sanctum')->check()) {
-                    $user = auth('sanctum')->user();
-                    $user->update(['is_blocked' => true]);
-                }
+                    if ($request->device_fingerprint) {
+                        FraudBlacklist::updateOrCreate(
+                            ['type' => 'device', 'value' => $request->device_fingerprint],
+                            ['reason' => 'Auto Block: High Fraud Risk Score (' . $fraudCheck->risk_score . ')', 'is_active' => true, 'created_by' => null]
+                        );
+                    }
 
-                return response()->json([
-                    'success' => false,
-                    'message' => 'দুঃখিত, আপনার লেনদেনের নিরাপত্তা ঝুঁকি অত্যন্ত বেশি হওয়ার কারণে সিস্টেম অর্ডারটি ব্লক করেছে।'
-                ], 403);
+                    if ($request->email) {
+                        FraudBlacklist::updateOrCreate(
+                            ['type' => 'email', 'value' => $request->email],
+                            ['reason' => 'Auto Block: High Fraud Risk Score (' . $fraudCheck->risk_score . ')', 'is_active' => true, 'created_by' => null]
+                        );
+                    }
+
+                    // If customer is logged in, block their account
+                    if (auth('sanctum')->check()) {
+                        $user = auth('sanctum')->user();
+                        $user->update(['is_blocked' => true]);
+                    }
+
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'দুঃখিত, আপনার লেনদেনের নিরাপত্তা ঝুঁকি অত্যন্ত বেশি হওয়ার কারণে সিস্টেম অর্ডারটি ব্লক করেছে।'
+                    ], 403);
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Fraud checking during checkout failed: ' . $e->getMessage());
             }
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Fraud checking during checkout failed: ' . $e->getMessage());
         }
         // OTP Verification Check
         $smsGateway = SmsGateway::where('status', true)->first();
@@ -656,6 +668,51 @@ class CheckoutController extends Controller
                         $paymentUrl = $response->json('GatewayPageURL');
                     } else {
                         throw new \Exception('Payment Gateway Error: ' . ($response->json('failedreason') ?: 'Unable to initiate SSLCommerz payment.'));
+                    }
+                }
+            }
+
+            if ($request->payment_method === 'online' && $request->online_gateway === 'bkash') {
+                $bkash = BkashGateway::first();
+                if ($bkash && $bkash->status) {
+                    $baseUrl = $bkash->base_url ?: ($bkash->mode === 'live' ? 'https://tokenized.pay.bka.sh/v1.2.0-beta' : 'https://tokenized.sandbox.bka.sh/v1.2.0-beta');
+                    $baseUrl = rtrim($baseUrl, '/');
+                    
+                    // Call Grant Token
+                    $authResponse = \Illuminate\Support\Facades\Http::withHeaders([
+                        'username' => $bkash->username,
+                        'password' => $bkash->password
+                    ])->post("$baseUrl/tokenized/checkout/token/grant", [
+                        'app_key' => $bkash->app_key,
+                        'app_secret' => $bkash->app_secret_key
+                    ]);
+
+                    if (!$authResponse->successful() || !$authResponse->json('id_token')) {
+                        throw new \Exception('bKash Authentication Failed: ' . ($authResponse->json('errorMessage') ?: 'Credentials check failed.'));
+                    }
+
+                    $idToken = $authResponse->json('id_token');
+                    $invoiceNo = $orders[0]->invoice_number;
+                    $callbackUrl = route('bkash.callback', ['invoice' => $invoiceNo]);
+
+                    // Call Create Payment
+                    $createResponse = \Illuminate\Support\Facades\Http::withHeaders([
+                        'Authorization' => $idToken,
+                        'X-APP-Key' => $bkash->app_key
+                    ])->post("$baseUrl/tokenized/checkout/single/create", [
+                        'mode' => '0011',
+                        'payerReference' => $request->phone,
+                        'callbackURL' => $callbackUrl,
+                        'amount' => strval($grandTotalForFraud),
+                        'currency' => 'BDT',
+                        'intent' => 'sale',
+                        'merchantInvoiceNumber' => $invoiceNo
+                    ]);
+
+                    if ($createResponse->successful() && $createResponse->json('bkashURL')) {
+                        $paymentUrl = $createResponse->json('bkashURL');
+                    } else {
+                        throw new \Exception('bKash Payment Creation Failed: ' . ($createResponse->json('errorMessage') ?: 'Unable to initiate bKash payment.'));
                     }
                 }
             }
@@ -842,9 +899,7 @@ class CheckoutController extends Controller
             case 'bkash':
                 $g = BkashGateway::first();
                 return $g && $g->app_key && $g->app_secret_key && $g->username && $g->password;
-            case 'bkash_payment':
-                $g = BkashPayment::first();
-                return $g && $g->app_key && $g->app_secret && $g->username && $g->password;
+
             case 'paytabs':
                 $g = PaytabsGateway::first();
                 return $g && $g->profile_id && $g->server_key;
@@ -888,6 +943,28 @@ class CheckoutController extends Controller
         if ($key === 'bkash') return 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/BKash_Logo.svg/512px-BKash_Logo.svg.png';
 
         return $logos[$key] ?? null;
+    }
+
+    /**
+     * Resolve correct gateway logo URL.
+     */
+    private function getGatewayLogoUrl($gateway, $key)
+    {
+        if (!$gateway || !$gateway->logo) {
+            return $this->getDefaultLogo($key);
+        }
+
+        $logo = $gateway->logo;
+
+        if (str_starts_with($logo, 'http://') || str_starts_with($logo, 'https://')) {
+            return $logo;
+        }
+
+        if (str_starts_with($logo, 'storage/') || str_starts_with($logo, 'uploads/')) {
+            return asset($logo);
+        }
+
+        return asset('storage/' . $logo);
     }
 
     /**
@@ -1097,5 +1174,64 @@ class CheckoutController extends Controller
             'success' => true,
             'message' => 'ওটিপি (OTP) সফলভাবে যাচাই করা হয়েছে।'
         ]);
+    }
+
+    /**
+     * bKash Payment Callback
+     */
+    public function bkashCallback(Request $request)
+    {
+        $status = $request->input('status');
+        $paymentID = $request->input('paymentID');
+        $invoiceNo = $request->input('invoice');
+
+        if (!$invoiceNo) {
+            return redirect('/checkout?payment_error=true');
+        }
+
+        if ($status === 'success' && $paymentID) {
+            $bkash = BkashGateway::first();
+            if ($bkash) {
+                $baseUrl = $bkash->mode === 'live' ? 'https://tokenized.pay.bka.sh/v1.2.0-beta' : 'https://tokenized.sandbox.bka.sh/v1.2.0-beta';
+                
+                // Get Grant Token
+                $authResponse = \Illuminate\Support\Facades\Http::withHeaders([
+                    'username' => $bkash->username,
+                    'password' => $bkash->password
+                ])->post("$baseUrl/tokenized/checkout/token/grant", [
+                    'app_key' => $bkash->app_key,
+                    'app_secret' => $bkash->app_secret_key
+                ]);
+
+                if ($authResponse->successful() && $authResponse->json('id_token')) {
+                    $idToken = $authResponse->json('id_token');
+
+                    // Call Execute Payment
+                    $executeResponse = \Illuminate\Support\Facades\Http::withHeaders([
+                        'Authorization' => $idToken,
+                        'X-APP-Key' => $bkash->app_key
+                    ])->post("$baseUrl/tokenized/checkout/single/execute", [
+                        'paymentID' => $paymentID
+                    ]);
+
+                    if ($executeResponse->successful() && in_array($executeResponse->json('statusCode'), ['0000', '2062'])) {
+                        // Payment Successful
+                        $invoice = PosInvoice::with('order')->where('invoice_number', $invoiceNo)->first();
+                        if ($invoice) {
+                            $invoice->update(['payment_status' => 'Paid', 'received_amount' => $invoice->grand_total]);
+                            if ($invoice->order) {
+                                $invoice->order->update(['payment_status' => 'paid', 'status' => 'processing']);
+                            }
+                        }
+                        return redirect('/order-success?invoice=' . $invoiceNo);
+                    }
+                }
+            }
+            return redirect('/checkout?payment_failed=true');
+        } elseif ($status === 'cancel') {
+            return redirect('/checkout?payment_cancelled=true');
+        }
+
+        return redirect('/checkout?payment_failed=true');
     }
 }

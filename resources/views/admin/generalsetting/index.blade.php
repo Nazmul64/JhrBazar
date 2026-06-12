@@ -224,18 +224,64 @@
     .toggle-switch input:checked + .toggle-slider { background: var(--toggle-on); }
     .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
 
-    /* ---- Save Button ---- */
+    /* ---- Action & Reset Buttons ---- */
+    .reset-buttons {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding-top: 24px;
+        padding-bottom: 30px;
+        border-top: 1px solid #f0f0f0;
+        margin-top: 25px;
+    }
+    .reset-btn {
+        padding: 10px 24px;
+        border-radius: var(--border-radius);
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        outline: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        line-height: 1;
+    }
+    .reset-btn-neutral {
+        background: transparent;
+        color: #6c757d;
+        border: 1.5px solid #d1d5db;
+    }
+    .reset-btn-neutral:hover {
+        background: rgba(0, 0, 0, 0.05);
+        border-color: #9ca3af;
+        color: #333;
+    }
+    .reset-btn-warning {
+        background: transparent;
+        color: #d97706;
+        border: 1.5px solid #fcd34d;
+    }
+    .reset-btn-warning:hover {
+        background: #fffbeb;
+        border-color: #f59e0b;
+        color: #b45309;
+    }
     .btn-save {
         background: var(--primary);
         color: #fff;
         border: none;
-        padding: 10px 28px;
+        padding: 10.5px 28px;
         border-radius: var(--border-radius);
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
         transition: background .2s;
-        float: right;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        line-height: 1;
     }
     .btn-save:hover { background: var(--primary-hover); }
 
@@ -876,6 +922,28 @@
     </div>
 
     {{-- =============================================
+         SECTION 5.6 – Security / IP Block Settings
+    ============================================= --}}
+    <div class="gs-section">
+        <div class="gs-section-title">
+            <div class="title-left">
+                <span class="title-icon">🔒</span>
+                <span>Security / IP Block Settings</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:13px;font-weight:600;color:#333;">Enable Automated IP & Fraud Block</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="ip_block_status" id="toggle_ip_block"
+                           {{ old('ip_block_status', $setting->ip_block_status ?? 0) ? 'checked' : '' }}
+                           onchange="ajaxToggle(this, '{{ $setting ? route('admin.generalsettings.toggle', $setting->id) : '#' }}', 'ip_block_status')">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+        <p style="font-size:12px; color:#666; margin: 0;">যখন এই সুইচটি অন (Enable) থাকবে, তখন সিস্টেম অটোমেটিক ফেক অর্ডারকারী বা সন্দেহভাজন আইপি ট্র্যাক করে ব্লক করবে। তবে কাস্টমারের প্রথম অর্ডার করার ক্ষেত্রে কোনো ব্লক কার্যকর হবে না। সুইচটি অফ থাকলে আইপি ব্লক সিস্টেম সম্পূর্ণ নিষ্ক্রিয় থাকবে।</p>
+    </div>
+
+    {{-- =============================================
          SECTION 6 – Layout & Product Grid
     ============================================= --}}
     <div class="gs-section">
@@ -963,6 +1031,13 @@
             <div class="gs-col" style="flex: 1 1 100%;">
                 <label class="gs-label">Marquee Text (Scrolling Offer Text)</label>
                 <textarea name="marquee_text" class="gs-input" rows="2" placeholder="e.g. 🔥 Flash Sale! Get 50% Off on all electronics today! 🔥">{{ old('marquee_text', $setting->marquee_text ?? '') }}</textarea>
+            </div>
+        </div>
+
+        <div class="gs-row" style="margin-top: 18px;">
+            <div class="gs-col" style="flex: 1 1 100%;">
+                <label class="gs-label">Free Shipping Announcement Text (Top Bar)</label>
+                <input type="text" name="free_shipping_text" class="gs-input" placeholder="e.g. ⚡ Free shipping on orders over 5,000 BDT" value="{{ old('free_shipping_text', $setting->free_shipping_text ?? '') }}">
             </div>
         </div>
     </div>
@@ -1122,15 +1197,18 @@
 
 
     {{-- ===== Save Button ===== --}}
-        <div class="reset-buttons" style="overflow:hidden; padding-bottom:30px;">
-            <button type="reset" class="reset-btn" style="margin-right:10px;">Reset Form</button>
-
-            <button type="button" class="reset-btn" style="margin-right:10px; background-color: #f39c12;"
-                onclick="submitResetForm()">
-                Reset to Defaults
+        <div class="reset-buttons">
+            <button type="reset" class="reset-btn reset-btn-neutral">
+                <i class="bi bi-arrow-counterclockwise"></i> Reset Form
             </button>
 
-            <button type="submit" class="btn-save">Save And Update</button>
+            <button type="button" class="reset-btn reset-btn-warning" onclick="submitResetForm()">
+                <i class="bi bi-exclamation-triangle"></i> Reset to Defaults
+            </button>
+
+            <button type="submit" class="btn-save" style="margin-left: auto;">
+                <i class="bi bi-check-circle-fill"></i> Save And Update
+            </button>
         </div>
     </form>
 

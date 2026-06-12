@@ -25,16 +25,20 @@ class FrontendApiController extends Controller
 
     public function getHomeData()
     {
-        return Cache::remember('home_data_v2', 60, function() {
+        $start = microtime(true);
+        $fromCache = true;
+
+        $data = Cache::remember('home_data_v2', 86400, function() use (&$fromCache) {
+            $fromCache = false;
             $settings = GenaralSetting::first();
 
             if ($settings) {
-                $settings->logo = $settings->logo ? (str_starts_with($settings->logo, 'http') ? $settings->logo : '/' . ltrim($settings->logo, '/')) : null;
-                $settings->footer_logo = $settings->footer_logo ? (str_starts_with($settings->footer_logo, 'http') ? $settings->footer_logo : '/' . ltrim($settings->footer_logo, '/')) : null;
+                $settings->logo = $settings->logo ? (str_starts_with($settings->logo, 'http') ? $settings->logo : asset(ltrim($settings->logo, '/'))) : null;
+                $settings->footer_logo = $settings->footer_logo ? (str_starts_with($settings->footer_logo, 'http') ? $settings->footer_logo : asset(ltrim($settings->footer_logo, '/'))) : null;
             }
 
             $banners = Banner::where('is_active', 1)->latest()->get()->map(function($b) {
-                $image = $b->image ? (str_starts_with($b->image, 'http') ? $b->image : '/' . ltrim($b->image, '/')) : '/placeholder.jpg';
+                $image = $b->image ? (str_starts_with($b->image, 'http') ? $b->image : asset(ltrim($b->image, '/'))) : asset('placeholder.jpg');
                 return [
                     'id' => $b->id,
                     'image' => $image . '?v=' . self::ASSET_VERSION,
@@ -47,11 +51,11 @@ class FrontendApiController extends Controller
                 ->orderBy('name', 'asc')
                 ->get()
                 ->map(function($cat) {
-                    $thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : '/placeholder.jpg';
+                    $thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : asset(ltrim($cat->thumbnail, '/'))) : asset('placeholder.jpg');
                     $cat->thumbnail = $thumbnail . '?v=' . self::ASSET_VERSION;
                     if ($cat->subCategories) {
                         $cat->subCategories->map(function($sub) {
-                            $subThumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : '/' . ltrim($sub->thumbnail, '/')) : '/placeholder.jpg';
+                            $subThumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : asset(ltrim($sub->thumbnail, '/'))) : asset('placeholder.jpg');
                             $sub->thumbnail = $subThumbnail . '?v=' . self::ASSET_VERSION;
                             return $sub;
                         });
@@ -93,7 +97,7 @@ class FrontendApiController extends Controller
                 ->map(fn($brand) => [
                     'id'    => $brand->id,
                     'title' => $brand->title,
-                    'image' => $brand->image ? (str_starts_with($brand->image, 'http') ? $brand->image : '/' . ltrim($brand->image, '/')) : '/placeholder.jpg',
+                    'image' => $brand->image ? (str_starts_with($brand->image, 'http') ? $brand->image : asset(ltrim($brand->image, '/'))) : asset('placeholder.jpg'),
                 ]);
 
             $allProducts = $this->getCombinedProducts(null, 20, $productColumns);
@@ -163,6 +167,11 @@ class FrontendApiController extends Controller
                 ]
             ])->getData();
         });
+
+        $elapsed = (microtime(true) - $start) * 1000;
+        \Illuminate\Support\Facades\Log::info("getHomeData: " . ($fromCache ? "CACHE HIT" : "CACHE MISS") . " in " . round($elapsed, 2) . " ms");
+
+        return response()->json($data);
     }
 
     /**
@@ -207,14 +216,14 @@ class FrontendApiController extends Controller
      */
     public function getSettings()
     {
-        $data = Cache::remember('general_settings_with_cats', 10, function() {
+        $data = Cache::remember('general_settings_with_cats', 86400, function() {
             $s = GenaralSetting::first();
             if ($s) {
-                $s->logo = $s->logo ? (str_starts_with($s->logo, 'http') ? $s->logo : '/' . ltrim($s->logo, '/')) : null;
-                $s->favicon = $s->favicon ? (str_starts_with($s->favicon, 'http') ? $s->favicon : '/' . ltrim($s->favicon, '/')) : null;
-                $s->footer_logo = $s->footer_logo ? (str_starts_with($s->footer_logo, 'http') ? $s->footer_logo : '/' . ltrim($s->footer_logo, '/')) : null;
-                $s->app_logo = $s->app_logo ? (str_starts_with($s->app_logo, 'http') ? $s->app_logo : '/' . ltrim($s->app_logo, '/')) : null;
-                $s->og_image = $s->og_image ? (str_starts_with($s->og_image, 'http') ? $s->og_image : '/' . ltrim($s->og_image, '/')) : null;
+                $s->logo = $s->logo ? (str_starts_with($s->logo, 'http') ? $s->logo : asset(ltrim($s->logo, '/'))) : null;
+                $s->favicon = $s->favicon ? (str_starts_with($s->favicon, 'http') ? $s->favicon : asset(ltrim($s->favicon, '/'))) : null;
+                $s->footer_logo = $s->footer_logo ? (str_starts_with($s->footer_logo, 'http') ? $s->footer_logo : asset(ltrim($s->footer_logo, '/'))) : null;
+                $s->app_logo = $s->app_logo ? (str_starts_with($s->app_logo, 'http') ? $s->app_logo : asset(ltrim($s->app_logo, '/'))) : null;
+                $s->og_image = $s->og_image ? (str_starts_with($s->og_image, 'http') ? $s->og_image : asset(ltrim($s->og_image, '/'))) : null;
             }
 
             $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('name', 'asc')])
@@ -222,10 +231,10 @@ class FrontendApiController extends Controller
                 ->orderBy('name', 'asc')
                 ->get()
                 ->map(function($cat) {
-                    $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : '/placeholder.jpg';
+                    $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : asset(ltrim($cat->thumbnail, '/'))) : asset('placeholder.jpg');
                     if ($cat->subCategories) {
                         $cat->subCategories->map(function($sub) {
-                            $sub->thumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : '/' . ltrim($sub->thumbnail, '/')) : '/placeholder.jpg';
+                            $sub->thumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : asset(ltrim($sub->thumbnail, '/'))) : asset('placeholder.jpg');
                             return $sub;
                         });
                     }
@@ -252,7 +261,7 @@ class FrontendApiController extends Controller
      */
     public function getCategoriesWithSub()
     {
-        return Cache::remember('categories_with_sub_v2', 60, function() {
+        return Cache::remember('categories_with_sub_v2', 86400, function() {
             $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('name', 'asc')])
                 ->where('is_active', 1)
                 ->orderBy('name', 'asc')
@@ -279,7 +288,7 @@ class FrontendApiController extends Controller
      */
     public function getBanners()
     {
-        $banners = Cache::remember('banners_list', 60, function() {
+        $banners = Cache::remember('banners_list', 86400, function() {
             return Banner::where('is_active', 1)
                 ->latest()
                 ->get()
@@ -946,34 +955,37 @@ class FrontendApiController extends Controller
      */
     public function getFooterData()
     {
-        $productCategories = Category::where('is_active', 1)->select('id', 'name')->orderBy('name', 'asc')->get();
+        $data = Cache::remember('footer_data_v2', 86400, function() {
+            $productCategories = Category::where('is_active', 1)->select('id', 'name')->orderBy('name', 'asc')->get();
 
-        $pageCategories = \App\Models\PageCategory::with(['pages' => function($q) {
-                $q->where('status', 1)->select('id', 'page_category_id', 'name', 'slug')->orderBy('created_at', 'asc');
-            }])
-            ->where('status', 1)->select('id', 'name')->orderBy('created_at', 'asc')->get();
+            $pageCategories = \App\Models\PageCategory::with(['pages' => function($q) {
+                    $q->where('status', 1)->select('id', 'page_category_id', 'name', 'slug')->orderBy('created_at', 'asc');
+                }])
+                ->where('status', 1)->select('id', 'name')->orderBy('created_at', 'asc')->get();
 
-        $settings = GenaralSetting::first();
-        if ($settings) {
-            $settings->logo = $settings->logo ? (str_starts_with($settings->logo, 'http') ? $settings->logo : '/' . ltrim($settings->logo, '/')) : null;
-            $settings->footer_logo = $settings->footer_logo ? (str_starts_with($settings->footer_logo, 'http') ? $settings->footer_logo : '/' . ltrim($settings->footer_logo, '/')) : null;
-            $settings->payment_methods_logo = $settings->payment_methods_logo ? (str_starts_with($settings->payment_methods_logo, 'http') ? $settings->payment_methods_logo : '/' . ltrim($settings->payment_methods_logo, '/')) : null;
-            $settings->footer_qr = $settings->footer_qr ? (str_starts_with($settings->footer_qr, 'http') ? $settings->footer_qr : '/' . ltrim($settings->footer_qr, '/')) : null;
-        }
+            $settings = GenaralSetting::first();
+            if ($settings) {
+                $settings->logo = $settings->logo ? (str_starts_with($settings->logo, 'http') ? $settings->logo : asset(ltrim($settings->logo, '/'))) : null;
+                $settings->footer_logo = $settings->footer_logo ? (str_starts_with($settings->footer_logo, 'http') ? $settings->footer_logo : asset(ltrim($settings->footer_logo, '/'))) : null;
+                $settings->payment_methods_logo = $settings->payment_methods_logo ? (str_starts_with($settings->payment_methods_logo, 'http') ? $settings->payment_methods_logo : asset(ltrim($settings->payment_methods_logo, '/'))) : null;
+                $settings->footer_qr = $settings->footer_qr ? (str_starts_with($settings->footer_qr, 'http') ? $settings->footer_qr : asset(ltrim($settings->footer_qr, '/'))) : null;
+            }
 
-        $membershipLogos = \App\Models\MembershipLogo::where('is_active', 1)->select('id', 'image', 'name')->get()->map(function($logo) {
-            $logo->image = $logo->image ? (str_starts_with($logo->image, 'http') ? $logo->image : '/' . ltrim($logo->image, '/')) : null;
-            return $logo;
+            $membershipLogos = \App\Models\MembershipLogo::where('is_active', 1)->select('id', 'image', 'name')->get()->map(function($logo) {
+                $logo->image = $logo->image ? (str_starts_with($logo->image, 'http') ? $logo->image : asset(ltrim($logo->image, '/'))) : null;
+                return $logo;
+            });
+
+            return [
+                'product_categories' => $productCategories,
+                'page_categories'    => $pageCategories,
+                'settings'           => $settings,
+                'social_links'       => SociallinkList::where('is_active', 1)->select('id', 'name', 'link')->get(),
+                'membership_logos'   => $membershipLogos
+            ];
         });
 
-        return response()->json([
-            'success'            => true,
-            'product_categories' => $productCategories,
-            'page_categories'    => $pageCategories,
-            'settings'           => $settings,
-            'social_links'       => SociallinkList::where('is_active', 1)->select('id', 'name', 'link')->get(),
-            'membership_logos'   => $membershipLogos
-        ]);
+        return response()->json(array_merge(['success' => true], $data));
     }
 
     /**
@@ -1120,8 +1132,8 @@ class FrontendApiController extends Controller
                                         $product->thumbnail ? (
                                             str_starts_with($product->thumbnail, 'http')
                                             ? $product->thumbnail
-                                            : '/' . ltrim(str_starts_with($product->thumbnail, 'uploads/') ? $product->thumbnail : 'uploads/product/' . ltrim($product->thumbnail, '/'), '/')
-                                        ) : '/placeholder.jpg'
+                                            : asset(ltrim(str_starts_with($product->thumbnail, 'uploads/') ? $product->thumbnail : 'uploads/product/' . ltrim($product->thumbnail, '/'), '/'))
+                                        ) : asset('placeholder.jpg')
                                      ) . '?v=' . self::ASSET_VERSION,
             'price'               => $sellingPrice,
             'oldPrice'            => $originalPrice,

@@ -167,9 +167,7 @@
     color: #888;
 }
 .gw-file-wrap input[type="file"] {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
+    display: none;
 }
 
 /* ── Save Button ── */
@@ -489,6 +487,16 @@
                             <input type="file" id="sslcommerz-logo" name="logo" accept="image/*"
                                 onchange="updateFileName(this,'sslcommerz-logo-name')">
                         </div>
+                        @if($sslcommerz && $sslcommerz->logo)
+                            <div class="current-logo-preview" style="margin-top: 10px;">
+                                <span style="display:block; font-size:12px; color:#666; margin-bottom:4px;">Current Logo:</span>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="{{ Str::startsWith($sslcommerz->logo, ['http://', 'https://']) ? $sslcommerz->logo : (Str::startsWith($sslcommerz->logo, ['storage/', 'uploads/']) ? asset($sslcommerz->logo) : asset('storage/' . $sslcommerz->logo)) }}" 
+                                         alt="SSLCommerz Logo" style="max-height: 40px; border: 1px solid #dde2ec; border-radius: 4px; padding: 4px; background: #fff;">
+                                    <button type="button" class="btn-delete-logo" onclick="deleteGatewayLogo('sslcommerz', this)" style="background:#ff5252; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:bold;">Delete Logo</button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
             </div>
             <div class="gw-card-footer">
@@ -680,6 +688,16 @@
                             <input type="file" id="aamarpay-logo" name="logo" accept="image/*"
                                 onchange="updateFileName(this,'aamarpay-logo-name')">
                         </div>
+                        @if($aamarpay && $aamarpay->logo)
+                            <div class="current-logo-preview" style="margin-top: 10px;">
+                                <span style="display:block; font-size:12px; color:#666; margin-bottom:4px;">Current Logo:</span>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="{{ Str::startsWith($aamarpay->logo, ['http://', 'https://']) ? $aamarpay->logo : (Str::startsWith($aamarpay->logo, ['storage/', 'uploads/']) ? asset($aamarpay->logo) : asset('storage/' . $aamarpay->logo)) }}" 
+                                         alt="AamarPay Logo" style="max-height: 40px; border: 1px solid #dde2ec; border-radius: 4px; padding: 4px; background: #fff;">
+                                    <button type="button" class="btn-delete-logo" onclick="deleteGatewayLogo('aamarpay', this)" style="background:#ff5252; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:bold;">Delete Logo</button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
             </div>
             <div class="gw-card-footer">
@@ -715,6 +733,11 @@
                             value="{{ $bkash->mode ?? 'Test' }}">
                     </div>
                     <div class="gw-form-group">
+                        <label>Base Url <span class="req">*</span></label>
+                        <input type="text" name="base_url" class="gw-form-control"
+                            value="{{ $bkash->base_url ?? 'https://tokenized.sandbox.bka.sh/v1.2.0-beta' }}" required>
+                    </div>
+                    <div class="gw-form-group">
                         <label>App Key <span class="req">*</span></label>
                         <input type="text" name="app_key" class="gw-form-control"
                             value="{{ $bkash->app_key ?? '' }}" required>
@@ -747,6 +770,16 @@
                             <input type="file" id="bkash-logo" name="logo" accept="image/*"
                                 onchange="updateFileName(this,'bkash-logo-name')">
                         </div>
+                        @if($bkash && $bkash->logo)
+                            <div class="current-logo-preview" style="margin-top: 10px;">
+                                <span style="display:block; font-size:12px; color:#666; margin-bottom:4px;">Current Logo:</span>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="{{ Str::startsWith($bkash->logo, ['http://', 'https://']) ? $bkash->logo : (Str::startsWith($bkash->logo, ['storage/', 'uploads/']) ? asset($bkash->logo) : asset('storage/' . $bkash->logo)) }}" 
+                                         alt="BKash Logo" style="max-height: 40px; border: 1px solid #dde2ec; border-radius: 4px; padding: 4px; background: #fff;">
+                                    <button type="button" class="btn-delete-logo" onclick="deleteGatewayLogo('bkash', this)" style="background:#ff5252; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:bold;">Delete Logo</button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
             </div>
             <div class="gw-card-footer">
@@ -984,54 +1017,7 @@
     {{-- ══════════════════════════════════════════════════════════ --}}
     <span class="section-label">BD Payment Gateways</span>
 
-    {{-- ── BKASH PAYMENT ── --}}
-    <div class="gw-card" style="margin-bottom:20px;">
-        <div class="gw-card-header">
-            <h3>Bkash</h3>
-        </div>
-        <form action="{{ route('admin.bkash-pay.update') }}" method="POST">
-            @csrf
-            <div class="gw-card-body">
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
-                    <div class="gw-form-group">
-                        <label>User Name <span class="req">*</span></label>
-                        <input type="text" name="username" class="gw-form-control"
-                            value="{{ $bkashPay->username ?? '' }}" required>
-                    </div>
-                    <div class="gw-form-group">
-                        <label>App Key <span class="req">*</span></label>
-                        <input type="text" name="app_key" class="gw-form-control"
-                            value="{{ $bkashPay->app_key ?? '' }}" required>
-                    </div>
-                    <div class="gw-form-group">
-                        <label>App Secret <span class="req">*</span></label>
-                        <input type="text" name="app_secret" class="gw-form-control"
-                            value="{{ $bkashPay->app_secret ?? '' }}" required>
-                    </div>
-                    <div class="gw-form-group">
-                        <label>Base Url <span class="req">*</span></label>
-                        <input type="text" name="base_url" class="gw-form-control"
-                            value="{{ $bkashPay->base_url ?? 'https://tokenized.pay.bka.sh/v1.2.0-beta' }}" required>
-                    </div>
-                    <div class="gw-form-group">
-                        <label>Password <span class="req">*</span></label>
-                        <input type="text" name="password" class="gw-form-control"
-                            value="{{ $bkashPay->password ?? '' }}" required>
-                    </div>
-                    <div class="gw-form-group" style="display:flex;align-items:center;gap:12px;margin-top:24px;">
-                        <label style="margin:0;">Status</label>
-                        <label class="toggle-switch">
-                            <input type="checkbox" name="status" value="1" {{ $bkashPay && $bkashPay->status ? 'checked' : '' }}>
-                            <span class="toggle-slider" style="background:#26c6a6;"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div style="padding:0 24px 20px;">
-                <button type="submit" class="btn-submit-teal">Submit</button>
-            </div>
-        </form>
-    </div>
+
 
     {{-- ── SHURJOPAY ── --}}
     <div class="gw-card" style="margin-bottom:20px;">
@@ -1191,6 +1177,33 @@ function ajaxToggle(url, checkbox, labelId) {
         }
     })
     .catch(function(err){ console.error('Toggle failed:', err); checkbox.checked = !checkbox.checked; });
+}
+
+function deleteGatewayLogo(gatewayKey, btn) {
+    if (!confirm('Are you sure you want to delete this logo?')) return;
+    fetch('{{ route("admin.gateways.delete-logo", ["gateway" => ":gateway"]) }}'.replace(':gateway', gatewayKey), {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            var card = btn.closest('.gw-card') || btn.closest('.gateway-box') || btn.closest('.gw-form-group');
+            var preview = card.querySelector('.current-logo-preview');
+            if (preview) preview.remove();
+            alert('Logo deleted successfully!');
+        } else {
+            alert('Failed to delete logo: ' + data.message);
+        }
+    })
+    .catch(err => {
+        console.error('Delete failed:', err);
+        alert('An error occurred while deleting the logo.');
+    });
 }
 </script>
 @endsection

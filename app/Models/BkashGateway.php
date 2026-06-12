@@ -10,6 +10,7 @@ class BkashGateway extends Model
 
     protected $fillable = [
         'mode',
+        'base_url',
         'app_key',
         'password',
         'username',

@@ -16,13 +16,21 @@ class SteadfastCourierController extends Controller
         $gateway->api_key = $request->api_key;
         $gateway->secret_key = $request->secret_key;
         $gateway->url = $request->url;
-        $gateway->status = $request->boolean('status');
 
         if ($request->hasFile('logo')) {
-            if ($gateway->logo && Storage::disk('public')->exists($gateway->logo)) {
-                Storage::disk('public')->delete($gateway->logo);
+            if ($gateway->logo) {
+                $oldPath = public_path($gateway->logo);
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+                if (Storage::disk('public')->exists($gateway->logo)) {
+                    Storage::disk('public')->delete($gateway->logo);
+                }
             }
-            $gateway->logo = $request->file('logo')->store('gateway-logos', 'public');
+            $file = $request->file('logo');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/gateway-logos'), $filename);
+            $gateway->logo = 'uploads/gateway-logos/' . $filename;
         }
 
         $gateway->save();

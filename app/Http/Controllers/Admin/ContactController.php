@@ -40,9 +40,25 @@ class ContactController extends Controller
             'whatsapp_number' => 'nullable|string|max:20',
             'messenger_link'  => 'nullable|string|max:255',
             'email_address'   => 'nullable|email|max:255',
+            'contact_image'   => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
+            'map_embed_code'  => 'nullable|string',
         ]);
 
-        Contact::create($validated);
+        $data = $request->except(['_token', 'contact_image']);
+
+        $uploadPath = public_path('uploads/contact');
+        if (!file_exists($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+
+        if ($request->hasFile('contact_image')) {
+            $file     = $request->file('contact_image');
+            $filename = time() . '_contact_image.' . $file->getClientOriginalExtension();
+            $file->move($uploadPath, $filename);
+            $data['contact_image'] = 'uploads/contact/' . $filename;
+        }
+
+        Contact::create($data);
 
         return redirect()->route('admin.contact.index')
                          ->with('success', 'Contact information saved successfully.');
@@ -67,10 +83,29 @@ class ContactController extends Controller
             'whatsapp_number' => 'nullable|string|max:20',
             'messenger_link'  => 'nullable|string|max:255',
             'email_address'   => 'nullable|email|max:255',
+            'contact_image'   => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
+            'map_embed_code'  => 'nullable|string',
         ]);
 
         $contact = Contact::findOrFail($id);
-        $contact->update($validated);
+        $data = $request->except(['_token', '_method', 'contact_image']);
+
+        $uploadPath = public_path('uploads/contact');
+        if (!file_exists($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+
+        if ($request->hasFile('contact_image')) {
+            if ($contact->contact_image && file_exists(public_path($contact->contact_image))) {
+                unlink(public_path($contact->contact_image));
+            }
+            $file     = $request->file('contact_image');
+            $filename = time() . '_contact_image.' . $file->getClientOriginalExtension();
+            $file->move($uploadPath, $filename);
+            $data['contact_image'] = 'uploads/contact/' . $filename;
+        }
+
+        $contact->update($data);
 
         return redirect()->route('admin.contact.index')
                          ->with('success', 'Contact information updated successfully.');
@@ -81,7 +116,11 @@ class ContactController extends Controller
      */
     public function destroy(string $id)
     {
-        Contact::findOrFail($id)->delete();
+        $contact = Contact::findOrFail($id);
+        if ($contact->contact_image && file_exists(public_path($contact->contact_image))) {
+            unlink(public_path($contact->contact_image));
+        }
+        $contact->delete();
 
         return redirect()->route('admin.contact.index')
                          ->with('success', 'Contact information deleted successfully.');

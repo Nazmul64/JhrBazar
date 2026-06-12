@@ -816,10 +816,37 @@
         </div>
         @endif
 
+        {{-- Firebase Push Notifications --}}
+        @if(auth()->user()->hasPermission('third_party.list'))
+        <div class="nav-item-custom has-sub {{ request()->routeIs('admin.notifications.*') || request()->routeIs('admin.firebase.*') ? 'active' : '' }}"
+             data-sub="firebase-notifications">
+            <i class="bi bi-bell-fill"></i> Push Notifications
+            <i class="bi bi-chevron-right arrow ms-auto"></i>
+        </div>
+        <div class="nav-submenu" id="sub-firebase-notifications">
+            <a class="nav-item-custom {{ request()->routeIs('admin.notifications.index') ? 'active' : '' }}"
+               href="{{ route('admin.notifications.index') }}">
+                <i class="bi bi-dot"></i> Notification Hub
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.notifications.create') ? 'active' : '' }}"
+               href="{{ route('admin.notifications.create') }}">
+                <i class="bi bi-dot"></i> Send Notification
+            </a>
+            <a class="nav-item-custom {{ request()->routeIs('admin.firebase.settings') ? 'active' : '' }}"
+               href="{{ route('admin.firebase.settings') }}">
+                <i class="bi bi-dot"></i> FCM Credentials
+            </a>
+        </div>
+        @endif
+
         @if(auth()->user()->hasPermission('contact.list'))
         <a class="nav-item-custom {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}"
            href="{{ route('admin.contact.index') }}">
-            <i class="bi bi-envelope"></i> Contact Us
+            <i class="bi bi-gear"></i> Contact Settings
+        </a>
+        <a class="nav-item-custom {{ request()->routeIs('admin.contact_messages.*') ? 'active' : '' }}"
+           href="{{ route('admin.contact_messages.index') }}">
+            <i class="bi bi-envelope"></i> Contact Messages
         </a>
         @endif
         @endif

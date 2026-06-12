@@ -253,7 +253,7 @@
                     <div class="preview-notification text-start">
                         <div class="preview-header">
                             <span class="preview-logo"></span>
-                            <span>JHR BAZAR</span>
+                            <span>{{ strtoupper($gs->website_name ?? 'JHR BAZAR') }}</span>
                             <span class="ms-auto">now</span>
                         </div>
                         <div class="preview-title" id="p_title">FCM Message Title</div>

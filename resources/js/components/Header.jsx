@@ -215,7 +215,7 @@ const Header = () => {
             {/* Professional Top Bar */}
             <div style={{ backgroundColor: topHeaderColor, color: '#fff', padding: '8px 0', fontSize: '12px' }}>
                 <div className="container d-flex justify-content-between align-items-center">
-                    <div style={{ fontWeight: 'bold' }}>⚡ Free shipping on orders over 5,000 BDT</div>
+                    <div style={{ fontWeight: 'bold' }}>{settings?.free_shipping_text || "⚡ Free shipping on orders over 5,000 BDT"}</div>
                     <div className="d-none d-lg-flex gap-4">
                         <Link to="/products" className="text-white text-decoration-none">All Products</Link>
                         <a href="/seller/login" className="text-white text-decoration-none">Become a Seller</a>

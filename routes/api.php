@@ -238,6 +238,10 @@ Route::get('/about-company',   [FrontendApiController::class, 'getAboutCompany']
 Route::get('/privacy-policy',  [FrontendApiController::class, 'getPrivacyPolicy'])->name('api.content.privacy');
 Route::get('/page/{slug}',     [FrontendApiController::class, 'getPage'])->name('api.content.page');
 
+// ── Contact Info & Message Submission ─────────────────────────────────────
+Route::get('/contact-info',    [App\Http\Controllers\Api\ContactApiController::class, 'getContactInfo'])->name('api.contact.info');
+Route::post('/contact/submit', [App\Http\Controllers\Api\ContactApiController::class, 'submitMessage'])->name('api.contact.submit');
+
 
 /*
 |─────────────────────────────────────────────────────────────────────────────

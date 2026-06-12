@@ -7,8 +7,8 @@ export const useSettings = () => useContext(SettingsContext);
 
 export const SettingsProvider = ({ children }) => {
     const [settings, setSettings] = useState(window.initialSettings || null);
-    const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(!!window.initialSettings?.loader_status);
+    const [categories, setCategories] = useState(window.initialHomeData?.data?.categories || []);
+    const [loading, setLoading] = useState(!!(window.initialSettings?.loader_status && !window.initialHomeData));
     const [initialFetch, setInitialFetch] = useState(true);
     const [homeData, setHomeData] = useState(window.initialHomeData?.data || null);
 
