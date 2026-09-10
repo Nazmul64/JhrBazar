@@ -377,7 +377,7 @@
 
     {{-- ══════════════ PRICE ══════════════ --}}
     <div class="s-card">
-        <p class="s-title">Price Information</p>
+        <p class="s-title"><i class="bi bi-tag-fill me-1"></i> Price & Stock Information</p>
         <div class="s-body">
             <div class="grid-3 mb-4">
                 <div>
@@ -400,17 +400,30 @@
                            class="f-input" placeholder="0" value="{{ old('discount_price', 0) }}">
                 </div>
             </div>
-            <div style="max-width:340px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                    <label class="f-label" style="margin-bottom: 0;">Stock Quantity</label>
-                    <div style="display: flex; align-items: center; gap: 5px;">
-                        <input type="checkbox" id="unlimited_stock" onchange="toggleStockUnlimited(this)" style="cursor: pointer;">
-                        <label for="unlimited_stock" style="font-size: 13px; cursor: pointer; color: #555; margin-bottom:0;">Unlimited</label>
+
+            <div class="grid-2" style="max-width: 680px; gap: 20px;">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <label class="f-label" style="margin-bottom: 0;">Stock Quantity <span class="req" id="stock_req_star">*</span></label>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <input type="checkbox" id="unlimited_stock" name="is_unlimited" value="1" onchange="toggleStockUnlimited(this)" style="cursor: pointer; width: 16px; height: 16px;" {{ old('is_unlimited') ? 'checked' : '' }}>
+                            <label for="unlimited_stock" style="font-size: 13px; cursor: pointer; color: #4b5563; font-weight: 500; margin-bottom:0;">Unlimited Stock</label>
+                        </div>
                     </div>
+                    @php $isUnlim = old('is_unlimited'); @endphp
+                    <input type="{{ $isUnlim ? 'text' : 'number' }}" id="stock_quantity_input" name="stock_quantity" min="0"
+                           class="f-input {{ $errors->has('stock_quantity') ? 'is-invalid' : '' }}"
+                           placeholder="0" value="{{ $isUnlim ? 'Unlimited' : old('stock_quantity', 0) }}"
+                           {{ $isUnlim ? 'readonly style=background-color:#f1f5f9;color:#64748b;' : '' }}>
+                    @error('stock_quantity')<div class="f-err"><i class="bi bi-exclamation-circle"></i>{{ $message }}</div>@enderror
                 </div>
-                <input type="number" id="stock_quantity_input" name="stock_quantity" min="0" class="f-input"
-                       placeholder="0" value="{{ old('stock_quantity', 0) }}">
-                <input type="hidden" id="stock_quantity_hidden" value="999999">
+
+                <div>
+                    <label class="f-label">Low Stock Alert Threshold</label>
+                    <input type="number" name="low_stock_threshold" min="0" class="f-input"
+                           placeholder="3" value="{{ old('low_stock_threshold', 3) }}">
+                    <small style="font-size: 11px; color: #94a3b8;">Alert triggered when stock falls to or below this number.</small>
+                </div>
             </div>
         </div>
     </div>
@@ -418,25 +431,25 @@
     <script>
         function toggleStockUnlimited(checkbox) {
             const numberInput = document.getElementById('stock_quantity_input');
-            const hiddenInput = document.getElementById('stock_quantity_hidden');
+            const reqStar     = document.getElementById('stock_req_star');
             
             if (checkbox.checked) {
-                numberInput.dataset.oldValue = numberInput.value;
+                if (numberInput.type === 'number') {
+                    numberInput.dataset.oldValue = numberInput.value;
+                }
                 numberInput.type = 'text';
                 numberInput.value = 'Unlimited';
                 numberInput.setAttribute('readonly', 'readonly');
-                numberInput.style.backgroundColor = '#f0f0f0';
-                numberInput.removeAttribute('name');
-                
-                hiddenInput.name = 'stock_quantity';
+                numberInput.style.backgroundColor = '#f1f5f9';
+                numberInput.style.color = '#64748b';
+                if (reqStar) reqStar.style.display = 'none';
             } else {
                 numberInput.type = 'number';
                 numberInput.value = numberInput.dataset.oldValue || 0;
                 numberInput.removeAttribute('readonly');
                 numberInput.style.backgroundColor = '';
-                numberInput.setAttribute('name', 'stock_quantity');
-                
-                hiddenInput.removeAttribute('name');
+                numberInput.style.color = '';
+                if (reqStar) reqStar.style.display = 'inline';
             }
         }
     </script>

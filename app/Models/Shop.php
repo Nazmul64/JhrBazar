@@ -57,15 +57,17 @@ class Shop extends Model
         return asset(ltrim($this->banner, '/'));
     }
 
-    // ── Hard-coded counts (replace later when products/orders tables exist) ─
+    // ── Dynamic counts ──────────────────────────────────────────────────────
     public function getProductsCountAttribute(): int
     {
-        return 0; // TODO: return $this->products()->count();
+        $physicalCount = \App\Models\SellerProduct::where('seller_id', $this->user_id)->count();
+        $digitalCount = \App\Models\SellerDigitalProduct::where('seller_id', $this->user_id)->count();
+        return $physicalCount + $digitalCount;
     }
 
     public function getOrdersCountAttribute(): int
     {
-        return 0; // TODO: return orders count via product->shop
+        return \App\Models\Pointofsalepo::where('seller_id', $this->user_id)->count();
     }
 
     // ── Relations ───────────────────────────────────────────────────────────

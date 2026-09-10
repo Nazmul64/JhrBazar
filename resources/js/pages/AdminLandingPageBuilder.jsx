@@ -4,15 +4,24 @@ import toast from 'react-hot-toast';
 import { 
   Eye, ArrowLeft, Settings, Palette, Plus, Grid, List, 
   Trash2, Edit3, Move, Check, X, ShieldAlert, Image, 
-  Video, Star, FileText, CheckCircle2, AlertCircle, Percent
+  Video, Star, FileText, CheckCircle2, AlertCircle, Percent, Clock
 } from 'lucide-react';
 
 // Admin panel version — receives pageId as prop (no React Router needed)
+const getLandingPageImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  if (url.startsWith('/')) return url;
+  return '/' + url;
+};
+
 const AdminLandingPageBuilder = ({ pageId, pageSlug, pageTitle: initialTitle }) => {
   const id = pageId;
   const [loading, setLoading] = useState(true);
   const [pageData, setPageData] = useState(null);
   const [sections, setSections] = useState([]);
+  const [draggedIndex, setDraggedIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
   
   // Modals state
   const [showSectionModal, setShowSectionModal] = useState(false);
@@ -102,6 +111,41 @@ const AdminLandingPageBuilder = ({ pageId, pageSlug, pageTitle: initialTitle }) 
     }
   };
 
+  // Drag & Drop Handlers
+  const handleDragStart = (e, index) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDrop = (e, index) => {
+    e.preventDefault();
+    setDragOverIndex(null);
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const updated = [...sections];
+    const draggedItem = updated[draggedIndex];
+    updated.splice(draggedIndex, 1);
+    updated.splice(index, 0, draggedItem);
+
+    setSections(updated);
+    saveSectionsToDb(updated);
+    setDraggedIndex(null);
+    toast.success('Sections reordered!');
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
   // Add a new section block
   const addSectionBlock = (type, displayName) => {
     let defaultData = {};
@@ -143,7 +187,154 @@ const AdminLandingPageBuilder = ({ pageId, pageSlug, pageTitle: initialTitle }) 
         title: 'Our Gallery',
         gallery: []
       };
+    } else if (type === 'three_column_grid') {
+      defaultData = {
+        main_title: 'বুকের দুধের সমস্যা সমাধানে Lactova Natural Supplement-এর কার্যকারিতা-',
+        cards: [
+          {
+            title: 'বুকের দুধের প্রবাহ কমে যাচ্ছে?',
+            icon_emoji: '🌿',
+            desc: 'প্রাকৃতিক গ্যালাক্টাগ উপাদান বুকের দুধের পরিমাণ ও স্বাভাবিক ফ্লো বজায় রাখতে সহায়ক, ফলে মা ও শিশু দুজনেই পেতে পারে প্রয়োজনীয় পুষ্টি।'
+          },
+          {
+            title: 'প্রসবের পর শরীর দুর্বল লাগছে?',
+            icon_emoji: '💚',
+            desc: 'মাতৃত্বের পর শরীরে যে ক্লান্তি ও দুর্বলতা আসে, Milkberry Lactova তা কমাতে সহায়তা করে এবং দৈনন্দিন শক্তি ও স্বস্তি ফিরিয়ে আনতে সাহায্য করে।'
+          },
+          {
+            title: 'মায়ের পুষ্টির ঘাটতি কি প্রভাব ফেলছে?',
+            icon_emoji: '✨',
+            desc: 'প্রাকৃতিক ভেষজ উপাদান শরীরের প্রয়োজনীয় পুষ্টি সরবরাহে সহায়ক, যাতে মা থাকেন সুস্থ, প্রাণবন্ত ও সতেজ।'
+          },
+          {
+            title: 'মানসিক চাপ কি বুকের দুধে প্রভাব ফেলে?',
+            icon_emoji: '🌸',
+            desc: 'অতিরিক্ত দুশ্চিন্তা ও ঘুমের অভাব অনেক সময় দুধের প্রবাহে প্রভাব ফেলে। Natural support মাকে মানসিক স্বস্তি ও রিল্যাক্স অনুভব করতে সহায়তা করতে পারে।'
+          },
+          {
+            title: 'কেন Natural Support বেছে নেওয়া গুরুত্বপূর্ণ?',
+            icon_emoji: '🌿',
+            desc: 'প্রাকৃতিক উপাদান শরীরের স্বাভাবিক ভারসাম্য বজায় রাখতে সহায়তা করে এবং মা ও শিশুর সুস্থতায় gentle support দেয়।'
+          },
+          {
+            title: 'কেন অনেক মা এখন Milkberry Lactova ব্যবহার করছেন?',
+            icon_emoji: '💬',
+            desc: 'Natural formulation, quality-focused ingredients এবং motherhood support এর কারণে অনেক মা এখন Milkberry Lactova এর উপর আস্থা রাখছেন।'
+          }
+        ]
+      };
+    } else if (type === 'trust_badges') {
+      defaultData = {
+        badge1: 'কোয়ালিটি নিশ্চিত করে ডেলিভারি',
+        badge2: 'সারা বাংলাদেশে হোম ডেলিভারি',
+        badge3: 'পণ্য চেক করে টাকা দেওয়ার সুযোগ',
+        badge4: 'দ্রুত কাস্টমার সাপোর্ট'
+      };
+    } else if (type === 'countdown_pricing') {
+      defaultData = {
+        timer_text: '🔥 অফারটি শেষ হওয়ার আগে অর্ডার করুন!',
+        timer_duration_mins: 60,
+        price_text: 'আজকের বিশেষ দাম: ৳',
+        price_type: 'subtotal'
+      };
+    } else if (type === 'video_image_order') {
+      defaultData = {
+        top_title: '🤩 মাত্র ৭-১০ দিন ব্যবহারে আপনার বাচ্চার ঠান্ডা সর্দি কাশি নির্মূল হবে, ইনশাল্লাহ 🌿 👶',
+        video_url: '',
+        image_path: '',
+        bottom_title: 'ওষুধ সেবন ছাড়াই সন্তান এর কফ, ঠান্ডা, কাশি শ্বাসকষ্ট দূর করতে ব্যবহার করুন হাবীবী বেবি অয়েল।',
+        button_text: 'অর্ডার করুন'
+      };
+    } else if (type === 'features_image_right') {
+      defaultData = {
+        title: 'এই তেল যে সকল সমস্যার সমাধান করবে',
+        bg_color: '#2e4f40',
+        text_color: '#ffffff',
+        items: [
+          'ঠান্ডা সর্দি কাশি প্রাকৃতিক ভাবে দূর করবে',
+          'শিশুর বুকের জমে থাকা কফ সহজে বের করে দেয়',
+          'নাক বন্ধ হওয়া বা শ্বাসকষ্ট হওয়া থেকে বাচ্চা কে রক্ষা করবে',
+          'নেবুলাইজ করার প্রয়োজন পড়বে না',
+          'রক্তসঞ্চালন উন্নত করে, যা বাচ্চার শক্তি ও বৃদ্ধিতে সহায়ক',
+          'শিশুর রোগ প্রতিরোধ ক্ষমতা বাড়ায় নিউমোনিয়া ও ঠান্ডার সমস্যা দূর করে',
+          'ম্যাসাজের মাধ্যমে ত্বক ও শ্বাসযন্ত্রের সুরক্ষা নিশ্চিত করা',
+          'শিশুর শ্বাসপ্রশ্বাসকে স্বাভাবিক রাখতে সহায়ক ভূমিকা রাখে'
+        ],
+        image_path: ''
+      };
+    } else if (type === 'usage_rules') {
+      defaultData = {
+        title: 'এই তেল ব্যবহারের নিয়ম',
+        description: '৫-৬ ফোঁটা তেল হাতে নিয়ে শিশুর বুকে পিঠে এবং পায়ে ম্যাসাজ করুন, প্রতিদিন ২-৩ বার ৫-১০ মিনিট করে ম্যাসাজ করতে পারেন।',
+        button_text: 'অর্ডার করুন',
+        image_path: '',
+        bg_color: '#ffffff',
+        text_color: '#1e293b'
+      };
+    } else if (type === 'review_slider') {
+      defaultData = {
+        title: 'সরাসরি কাস্টমার সাপোর্ট এ যোগাযোগ করুন: +880 1711-207829',
+        slides: [],
+        bg_color: '#ffffff',
+        text_color: '#1e293b'
+      };
+    } else if (type === 'product_hero') {
+      defaultData = {
+        title: 'প্রাকৃতিক ও ১০০% খাঁটি হাবীবী বেবি অয়েল',
+        subtitle: 'সন্তানের কফ, ঠান্ডা, কাশি ও শ্বাসকষ্ট দূর করতে এটি একটি কার্যকরী প্রাকৃতিক সমাধান।',
+        video_url: '',
+        image_path: '',
+        bg_color: '#ffffff',
+        text_color: '#1e293b',
+        button_text: 'অর্ডার করুন',
+        bullets: [
+          '১০০% প্রাকৃতিক উপাদান',
+          'কোনো পার্শ্বপ্রতিক্রিয়া নেই',
+          'শিশুর ফুসফুস ও শ্বাসযন্ত্রের সুরক্ষা নিশ্চিত করে'
+        ]
+      };
+    } else if (type === 'price_box') {
+      defaultData = {
+        title: 'প্যাকেজ অফার - সীমিত সময়ের জন্য!',
+        original_price: '১২০০',
+        discounted_price: '৬৯০',
+        save_amount: '৫১০',
+        badge_text: 'বেস্ট সেলার',
+        bg_color: '#f8fafc',
+        text_color: '#1e293b',
+        button_text: 'অর্ডার করুন'
+      };
+    } else if (type === 'feature_list') {
+      defaultData = {
+        title: 'কেন হাবীবী বেবি অয়েল অন্য তেলের চেয়ে আলাদা?',
+        bg_color: '#ffffff',
+        text_color: '#1e293b',
+        features: [
+          { title: 'প্রাকৃতিক নিষ্কাশন', desc: 'কোনো রকম প্রিজারভেটিভ বা কেমিক্যাল ছাড়াই বিশেষ ভেষজ উপাদানের মিশ্রণ।', icon: 'leaf' },
+          { title: 'নিরাপদ ফর্মুলা', desc: 'মায়ের যত্নে শিশুর কোমল ত্বকের জন্য সম্পূর্ণ নিরাপদ ও পরীক্ষিত।', icon: 'shield' },
+          { title: 'দ্রুত কার্যকারিতা', desc: 'বুকে ম্যাসাজ করার মাত্র কয়েক মিনিটের মধ্যেই শ্বাসপ্রশ্বাস স্বাভাবিক হতে শুরু করে।', icon: 'clock' }
+        ]
+      };
+    } else if (type === 'banner_slider') {
+      defaultData = {
+        slides: [],
+        auto_play: true,
+        bg_color: '#ffffff'
+      };
+    } else if (type === 'custom_html') {
+      defaultData = {
+        html_content: '<div class="text-center p-4 bg-light rounded shadow-sm">\n  <h3 class="fw-bold text-primary">এখানে আপনার কাস্টম হেডার দিন</h3>\n  <p class="text-secondary">কাস্টম HTML/CSS ব্যবহার করে এই অংশটি সাজানো হয়েছে।</p>\n</div>'
+      };
+    } else if (type === 'text_left_image_right') {
+      defaultData = {
+        title: 'বাংলাদেশ বিজ্ঞান ও শিল্প গবেষণা পরিষদ (BCSIR) থেকে ল্যাব টেস্টেড, তাই বাচ্চার শরীরের জন্য শতভাগ নিরাপদ!',
+        description: 'আমাদের হাবিবী বেবি অয়েল সম্পূর্ণ প্রাকৃতিকভাবে তৈরি এবং বিসিএসআইআর ল্যাব টেস্টে শতভাগ নিরাপদ প্রমাণিত হয়েছে। এতে শিশুর ত্বকের জন্য কোনো ক্ষতিকর উপাদান নেই।',
+        image_path: '',
+        bg_color: '#ffffff',
+        text_color: '#1e293b'
+      };
     }
+
 
     const newBlock = {
       id: 'block_' + Math.random().toString(36).substr(2, 9),
@@ -339,29 +530,77 @@ const AdminLandingPageBuilder = ({ pageId, pageSlug, pageTitle: initialTitle }) 
           <div className="d-flex flex-column gap-3">
             {sections.map((block, index) => (
               <div 
-                key={block.id} 
-                className="bg-white rounded border shadow-sm p-3 d-flex align-items-center justify-content-between hover-shadow transition"
+                key={block.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDrop={(e) => handleDrop(e, index)}
+                onDragEnd={handleDragEnd}
+                className={`bg-white rounded border shadow-sm p-3 d-flex align-items-center justify-content-between transition-all ${
+                  draggedIndex === index 
+                    ? 'opacity-40 border-dashed border-secondary' 
+                    : dragOverIndex === index 
+                    ? 'border-primary border-2 shadow-md bg-light-subtle' 
+                    : 'hover-shadow'
+                }`}
+                style={{ 
+                  cursor: 'grab',
+                  transform: dragOverIndex === index && draggedIndex !== index ? 'scale(1.01)' : 'none',
+                  transition: 'all 0.2s ease-in-out'
+                }}
               >
-                <div className="d-flex align-items-center gap-3">
-                  <input type="checkbox" className="form-check-input" />
-                  <div className="bg-light rounded border d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px' }}>
+                <div className="d-flex align-items-center gap-3" draggable={false} onDragStart={(e) => e.preventDefault()}>
+                  <input type="checkbox" className="form-check-input" draggable={false} />
+                  <div className="bg-light rounded border d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px' }} draggable={false}>
                     {block.type === 'two_column_features' ? (
                       <List size={22} className="text-danger" />
-                    ) : block.type === 'video_section' ? (
+                    ) : block.type === 'features_image_right' ? (
+                      <List size={22} className="text-success" />
+                    ) : block.type === 'usage_rules' ? (
+                      <FileText size={22} className="text-primary" />
+                    ) : block.type === 'review_slider' ? (
+                      <Star size={22} className="text-warning" />
+                    ) : (block.type === 'video_section' || block.type === 'video_image_order') ? (
                       <Video size={22} className="text-danger" />
+                    ) : block.type === 'three_column_grid' ? (
+                      <Grid size={22} className="text-success" />
+                    ) : block.type === 'trust_badges' ? (
+                      <CheckCircle2 size={22} className="text-success" />
+                    ) : block.type === 'countdown_pricing' ? (
+                      <Clock size={22} className="text-warning" />
+                    ) : block.type === 'product_hero' ? (
+                      <Star size={22} className="text-warning" />
+                    ) : block.type === 'price_box' ? (
+                      <Percent size={22} className="text-success" />
+                    ) : block.type === 'feature_list' ? (
+                      <CheckCircle2 size={22} className="text-info" />
+                    ) : block.type === 'banner_slider' ? (
+                      <Image size={22} className="text-primary" />
+                    ) : block.type === 'custom_html' ? (
+                      <FileText size={22} className="text-secondary" />
+                    ) : block.type === 'text_left_image_right' ? (
+                      <FileText size={22} className="text-success" />
                     ) : (
                       <Grid size={22} className="text-primary" />
                     )}
                   </div>
-                  <div>
-                    <h6 className="m-0 fw-bold text-dark">{block.data?.main_title || block.data?.title || block.title || 'Untitled Block'}</h6>
+                  <div draggable={false}>
+                    <h6 className="m-0 fw-bold text-dark">
+                      {block.type === 'trust_badges' 
+                        ? (block.data?.badge1 ? `${block.data.badge1}, ${block.data.badge2}...` : 'Trust Badges') 
+                        : block.type === 'countdown_pricing'
+                        ? (block.data?.timer_text || 'Countdown & Special Price')
+                        : block.type === 'video_image_order'
+                        ? (block.data?.top_title || 'Video & Image Section')
+                        : (block.data?.main_title || block.data?.title || block.title || 'Untitled Block')}
+                    </h6>
                     <span className="badge bg-light text-secondary border mt-1 font-monospace" style={{ fontSize: '10px' }}>
                       {block.type?.toUpperCase().replace(/_/g, ' ')}
                     </span>
                   </div>
                 </div>
 
-                <div className="d-flex align-items-center gap-3">
+                <div className="d-flex align-items-center gap-3" draggable={false} onDragStart={(e) => e.preventDefault()}>
                   {/* Move up / down re-ordering arrows */}
                   <div className="btn-group">
                     <button 
@@ -369,6 +608,7 @@ const AdminLandingPageBuilder = ({ pageId, pageSlug, pageTitle: initialTitle }) 
                       onClick={() => moveSection(index, 'up')} 
                       className="btn btn-sm btn-outline-secondary"
                       title="Move Up"
+                      draggable={false}
                     >
                       ▲
                     </button>
@@ -377,6 +617,7 @@ const AdminLandingPageBuilder = ({ pageId, pageSlug, pageTitle: initialTitle }) 
                       onClick={() => moveSection(index, 'down')} 
                       className="btn btn-sm btn-outline-secondary"
                       title="Move Down"
+                      draggable={false}
                     >
                       ▼
                     </button>
@@ -387,12 +628,14 @@ const AdminLandingPageBuilder = ({ pageId, pageSlug, pageTitle: initialTitle }) 
                   <button 
                     onClick={() => setEditingBlock({ index, ...block })} 
                     className="btn btn-primary btn-sm d-flex align-items-center gap-1 px-3 fw-semibold"
+                    draggable={false}
                   >
                     <Edit3 size={14} /> Edit
                   </button>
                   <button 
                     onClick={() => deleteSection(index)} 
                     className="btn btn-danger btn-sm d-flex align-items-center gap-1 px-3"
+                    draggable={false}
                   >
                     <Trash2 size={14} />
                   </button>
@@ -421,10 +664,17 @@ const AdminLandingPageBuilder = ({ pageId, pageSlug, pageTitle: initialTitle }) 
                     { type: 'price_box', name: 'Product Price Box', icon: <Percent size={22} className="text-success" /> },
                     { type: 'feature_list', name: 'Product Feature List', icon: <CheckCircle2 size={22} className="text-info" /> },
                     { type: 'banner_slider', name: 'Banner Slider', icon: <Image size={22} className="text-primary" /> },
-                    { type: 'review_slider', name: 'Review Slider', icon: <Star size={22} className="text-warning" /> },
+                    { type: 'review_slider', name: 'রিভিউ স্লাইডার (টাইটেল সহ)', icon: <Star size={22} className="text-warning" /> },
                     { type: 'video_section', name: 'Video Section', icon: <Video size={22} className="text-danger" /> },
                     { type: 'image_gallery', name: 'Image Gallery', icon: <Grid size={22} className="text-success" /> },
                     { type: 'custom_html', name: 'Custom HTML / Text', icon: <FileText size={22} className="text-secondary" /> },
+                    { type: 'three_column_grid', name: '৩ কলাম বিশিষ্ট ফিচার গ্রিড', icon: <Grid size={22} className="text-success" /> },
+                    { type: 'trust_badges', name: 'ট্রাস্ট ব্যাজ (৪ কলাম)', icon: <CheckCircle2 size={22} className="text-success" /> },
+                    { type: 'countdown_pricing', name: 'কাউন্টডাউন ও বিশেষ দাম', icon: <Clock size={22} className="text-warning" /> },
+                    { type: 'video_image_order', name: 'ভিডিও ও ছবি (অর্ডার বাটন সহ)', icon: <Video size={22} className="text-danger" /> },
+                    { type: 'features_image_right', name: 'ফিচার তালিকা (বামে টেক্সট, ডানে ছবি)', icon: <List size={22} className="text-success" /> },
+                    { type: 'usage_rules', name: 'ব্যবহারের নিয়ম (বামে টেক্সট, ডানে ছবি)', icon: <FileText size={22} className="text-primary" /> },
+                    { type: 'text_left_image_right', name: 'ইমেজ ডানে, টেক্সট বামে (সার্টিফিকেট/ বিবরণ)', icon: <FileText size={22} className="text-success" /> },
                   ].map((opt) => (
                     <div key={opt.type} className="col-md-4">
                       <div 
@@ -438,11 +688,11 @@ const AdminLandingPageBuilder = ({ pageId, pageSlug, pageTitle: initialTitle }) 
                     </div>
                   ))}
                   {/* Show placeholding grid items to resemble all 39 elements from screenshots */}
-                  {Array.from({ length: 30 }).map((_, i) => (
+                  {Array.from({ length: 27 }).map((_, i) => (
                     <div key={i} className="col-md-4 opacity-50">
                       <div className="bg-white rounded-3 border p-3 text-center hover-border shadow-sm h-100 d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '120px' }}>
                         <Grid size={22} className="text-secondary mb-2" />
-                        <span className="text-secondary small font-monospace">Placeholder Block #{i + 9}</span>
+                        <span className="text-secondary small font-monospace">Placeholder Block #{i + 12}</span>
                       </div>
                     </div>
                   ))}
@@ -760,7 +1010,7 @@ const AdminLandingPageBuilder = ({ pageId, pageSlug, pageTitle: initialTitle }) 
                       />
                       {editingBlock.data?.bottom_image && (
                         <div className="mt-2 border rounded p-1" style={{ maxWidth: '100px' }}>
-                          <img src={editingBlock.data.bottom_image.startsWith('http') ? editingBlock.data.bottom_image : '/' + editingBlock.data.bottom_image} alt="uploaded" className="img-fluid rounded" />
+                          <img src={getLandingPageImageUrl(editingBlock.data.bottom_image)} alt="uploaded" className="img-fluid rounded" />
                         </div>
                       )}
                     </div>
@@ -855,6 +1105,312 @@ const AdminLandingPageBuilder = ({ pageId, pageSlug, pageTitle: initialTitle }) 
                         setSections(updated);
                       }}
                     ></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-secondary fw-semibold px-4" onClick={() => setEditingBlock(null)}>Close</button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary fw-bold px-5" 
+                  onClick={() => {
+                    saveSectionsToDb(sections);
+                    setEditingBlock(null);
+                  }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DYNAMIC EDITING DIALOG FOR `three_column_grid` ── */}
+      {editingBlock && editingBlock.type === 'three_column_grid' && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+              <div className="modal-header text-white" style={{ background: '#1e3a8a' }}>
+                <h5 className="modal-title fw-bold d-flex align-items-center gap-2">
+                  <Grid size={20} /> Edit 3-Column Feature Grid
+                </h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setEditingBlock(null)}></button>
+              </div>
+
+              {/* TABS CONTAINER */}
+              <div className="bg-white px-3 pt-2 border-bottom">
+                <ul className="nav nav-tabs border-0">
+                  <li className="nav-item">
+                    <button className="nav-link active fw-bold text-primary border-0 border-bottom border-primary border-3" type="button">Content</button>
+                  </li>
+                  <li className="nav-item">
+                    <button className="nav-link text-secondary border-0" type="button" onClick={() => toast('Style & Animation tab settings loaded.')}>Style & Animation</button>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="modal-body p-4 bg-light" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                {/* Section Main Title */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">সেকশন মেইন টাইটেল</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    value={editingBlock.data?.main_title || ''} 
+                    onChange={(e) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.main_title = e.target.value;
+                      setSections(updated);
+                    }} 
+                    placeholder="বুকের দুধের সমস্যা সমাধানে Lactova Natural Supplement-এর কার্যকারিতা-"
+                  />
+                </div>
+
+                {/* Edit cards array */}
+                <div className="row g-3">
+                  {(editingBlock.data?.cards || []).map((card, idx) => (
+                    <div key={idx} className="col-md-6">
+                      <div className="bg-white p-3 rounded border shadow-sm h-100">
+                        <h6 className="fw-bold text-primary mb-3">Card #{idx + 1} Settings</h6>
+                        
+                        <div className="mb-2">
+                          <label className="form-label small fw-semibold text-secondary">Card Header/Question</label>
+                          <input 
+                            type="text" 
+                            className="form-control form-control-sm" 
+                            value={card.title || ''} 
+                            onChange={(e) => {
+                              const updated = [...sections];
+                              updated[editingBlock.index].data.cards[idx].title = e.target.value;
+                              setSections(updated);
+                            }} 
+                          />
+                        </div>
+
+                        <div className="mb-2">
+                          <label className="form-label small fw-semibold text-secondary">Emoji Icon</label>
+                          <input 
+                            type="text" 
+                            className="form-control form-control-sm" 
+                            value={card.icon_emoji || ''} 
+                            onChange={(e) => {
+                              const updated = [...sections];
+                              updated[editingBlock.index].data.cards[idx].icon_emoji = e.target.value;
+                              setSections(updated);
+                            }} 
+                            placeholder="🌿, 💚, ✨..."
+                          />
+                        </div>
+
+                        <div>
+                          <label className="form-label small fw-semibold text-secondary">Description</label>
+                          <textarea 
+                            className="form-control form-control-sm" 
+                            rows="3" 
+                            value={card.desc || ''} 
+                            onChange={(e) => {
+                              const updated = [...sections];
+                              updated[editingBlock.index].data.cards[idx].desc = e.target.value;
+                              setSections(updated);
+                            }}
+                          ></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-secondary fw-semibold px-4" onClick={() => setEditingBlock(null)}>Close</button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary fw-bold px-5" 
+                  onClick={() => {
+                    saveSectionsToDb(sections);
+                    setEditingBlock(null);
+                  }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DYNAMIC EDITING DIALOG FOR `trust_badges` ── */}
+      {editingBlock && editingBlock.type === 'trust_badges' && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+          <div className="modal-dialog">
+            <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+              <div className="modal-header text-white" style={{ background: '#1e3a8a' }}>
+                <h5 className="modal-title fw-bold d-flex align-items-center gap-2">
+                  <CheckCircle2 size={20} /> Edit Trust Badges (4 Columns)
+                </h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setEditingBlock(null)}></button>
+              </div>
+
+              <div className="modal-body p-4 bg-light">
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">ব্যাজ ১</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    value={editingBlock.data?.badge1 || ''} 
+                    onChange={(e) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.badge1 = e.target.value;
+                      setSections(updated);
+                    }} 
+                    placeholder="কোয়ালিটি নিশ্চিত করে ডেলিভারি"
+                  />
+                </div>
+
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">ব্যাজ ২</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    value={editingBlock.data?.badge2 || ''} 
+                    onChange={(e) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.badge2 = e.target.value;
+                      setSections(updated);
+                    }} 
+                    placeholder="সারা বাংলাদেশে হোম ডেলিভারি"
+                  />
+                </div>
+
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">ব্যাজ ৩</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    value={editingBlock.data?.badge3 || ''} 
+                    onChange={(e) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.badge3 = e.target.value;
+                      setSections(updated);
+                    }} 
+                    placeholder="পণ্য চেক করে টাকা দেওয়ার সুযোগ"
+                  />
+                </div>
+
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">ব্যাজ ৪</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    value={editingBlock.data?.badge4 || ''} 
+                    onChange={(e) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.badge4 = e.target.value;
+                      setSections(updated);
+                    }} 
+                    placeholder="দ্রুত কাস্টমার সাপোর্ট"
+                  />
+                </div>
+              </div>
+
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-secondary fw-semibold px-4" onClick={() => setEditingBlock(null)}>Close</button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary fw-bold px-5" 
+                  onClick={() => {
+                    saveSectionsToDb(sections);
+                    setEditingBlock(null);
+                  }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DYNAMIC EDITING DIALOG FOR `countdown_pricing` ── */}
+      {editingBlock && editingBlock.type === 'countdown_pricing' && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+          <div className="modal-dialog">
+            <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+              <div className="modal-header text-white" style={{ background: '#1e3a8a' }}>
+                <h5 className="modal-title fw-bold d-flex align-items-center gap-2">
+                  <Clock size={20} /> Edit Countdown & Special Price Banner
+                </h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setEditingBlock(null)}></button>
+              </div>
+
+              <div className="modal-body p-4 bg-light">
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <h6 className="fw-bold text-primary mb-2">কাউন্টডাউন টাইমার সেটিংস</h6>
+                  
+                  <div className="mb-2">
+                    <label className="form-label small fw-semibold text-secondary">টাইমার হেডার টেক্সট</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      value={editingBlock.data?.timer_text || ''} 
+                      onChange={(e) => {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.timer_text = e.target.value;
+                        setSections(updated);
+                      }} 
+                      placeholder="🔥 অফারটি শেষ হওয়ার আগে অর্ডার করুন!"
+                    />
+                  </div>
+
+                  <div className="mb-2">
+                    <label className="form-label small fw-semibold text-secondary">কাউন্টডাউন সময় (মিনিট)</label>
+                    <input 
+                      type="number" 
+                      className="form-control" 
+                      value={editingBlock.data?.timer_duration_mins || 60} 
+                      onChange={(e) => {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.timer_duration_mins = parseInt(e.target.value) || 60;
+                        setSections(updated);
+                      }} 
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <h6 className="fw-bold text-success mb-2">বিশেষ মূল্য ব্যানার সেটিংস</h6>
+
+                  <div className="mb-2">
+                    <label className="form-label small fw-semibold text-secondary">মূল্য হেডার টেক্সট</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      value={editingBlock.data?.price_text || ''} 
+                      onChange={(e) => {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.price_text = e.target.value;
+                        setSections(updated);
+                      }} 
+                      placeholder="আজকের বিশেষ দাম: ৳"
+                    />
+                  </div>
+
+                  <div className="mb-2">
+                    <label className="form-label small fw-semibold text-secondary">মূল্য ধরণ (Price Type)</label>
+                    <select 
+                      className="form-select"
+                      value={editingBlock.data?.price_type || 'subtotal'}
+                      onChange={(e) => {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.price_type = e.target.value;
+                        setSections(updated);
+                      }}
+                    >
+                      <option value="subtotal">Subtotal (ডেলিভারি চার্জ ছাড়া পণ্যের মোট দাম)</option>
+                      <option value="grand_total">Grand Total (ডেলিভারি চার্জ সহ সর্বমোট দাম)</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -1014,7 +1570,7 @@ const AdminLandingPageBuilder = ({ pageId, pageSlug, pageTitle: initialTitle }) 
                           <div key={idx} className="col-4 col-md-3 position-relative group">
                             <div className="border rounded overflow-hidden shadow-sm ratio ratio-1x1" style={{ backgroundColor: '#fff' }}>
                               <img 
-                                src={img.startsWith('http') ? img : '/' + img} 
+                                src={getLandingPageImageUrl(img)} 
                                 alt={`gallery-${idx}`} 
                                 className="img-fluid object-cover w-100 h-100" 
                               />
@@ -1052,6 +1608,1100 @@ const AdminLandingPageBuilder = ({ pageId, pageSlug, pageTitle: initialTitle }) 
                 >
                   Save Changes
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DYNAMIC EDITING DIALOG FOR `video_image_order` ── */}
+      {editingBlock && editingBlock.type === 'video_image_order' && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+              <div className="modal-header text-white" style={{ background: '#1e3a8a' }}>
+                <h5 className="modal-title fw-bold d-flex align-items-center gap-2">
+                  <Video size={20} /> Edit Video & Image Section with CTA
+                </h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setEditingBlock(null)}></button>
+              </div>
+
+              <div className="modal-body p-4 bg-light" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                {/* 1. Top Title */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">উপরের টাইটেল (Top Title)</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    value={editingBlock.data?.top_title || ''} 
+                    onChange={(e) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.top_title = e.target.value;
+                      setSections(updated);
+                    }} 
+                    placeholder="যেমন: মাত্র ৭-১০ দিন ব্যবহারে আপনার বাচ্চার ঠান্ডা সর্দি কাশি নির্মূল হবে"
+                  />
+                </div>
+
+                {/* 2. YouTube Video URL */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">ইউটিউব ভিডিও লিংক (YouTube Video URL - বাম পাশ)</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    value={editingBlock.data?.video_url || ''} 
+                    onChange={(e) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.video_url = e.target.value;
+                      setSections(updated);
+                    }} 
+                    placeholder="https://www.youtube.com/watch?v=..."
+                  />
+                </div>
+
+                {/* 3. Image Upload */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">ছবি (Image - ডান পাশ)</label>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="form-control"
+                    onChange={(e) => handleImageUpload(e, (uploadedPath) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.image_path = uploadedPath;
+                      setSections(updated);
+                    })} 
+                  />
+                  {editingBlock.data?.image_path && (
+                    <div className="mt-2 border rounded p-1" style={{ maxWidth: '150px' }}>
+                      <img 
+                        src={getLandingPageImageUrl(editingBlock.data.image_path)} 
+                        alt="uploaded" 
+                        className="img-fluid rounded" 
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* 4. Bottom Title */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">নিচের টাইটেল (Bottom Title)</label>
+                  <textarea 
+                    className="form-control" 
+                    rows="3"
+                    value={editingBlock.data?.bottom_title || ''} 
+                    onChange={(e) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.bottom_title = e.target.value;
+                      setSections(updated);
+                    }} 
+                    placeholder="যেমন: ওষুধ সেবন ছাড়াই সন্তান এর কফ, ঠান্ডা, কাশি শ্বাসকষ্ট দূর করতে ব্যবহার করুন হাবীবী বেবি অয়েল।"
+                  />
+                </div>
+
+                {/* 5. Button Text */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">বাটন টেক্সট (Button Text)</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    value={editingBlock.data?.button_text || 'অর্ডার করুন'} 
+                    onChange={(e) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.button_text = e.target.value;
+                      setSections(updated);
+                    }} 
+                    placeholder="অর্ডার করুন"
+                  />
+                </div>
+              </div>
+
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-secondary fw-semibold px-4" onClick={() => setEditingBlock(null)}>Close</button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary fw-bold px-5" 
+                  onClick={() => {
+                    saveSectionsToDb(sections);
+                    setEditingBlock(null);
+                  }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DYNAMIC EDITING DIALOG FOR `features_image_right` ── */}
+      {editingBlock && editingBlock.type === 'features_image_right' && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+              <div className="modal-header text-white" style={{ background: '#1e3a8a' }}>
+                <h5 className="modal-title fw-bold d-flex align-items-center gap-2">
+                  <List size={20} /> Edit Features List (Left Text, Right Image)
+                </h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setEditingBlock(null)}></button>
+              </div>
+
+              <div className="modal-body p-4 bg-light" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                {/* 1. Header Title */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">সেকশন টাইটেল (Header Title)</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    value={editingBlock.data?.title || ''} 
+                    onChange={(e) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.title = e.target.value;
+                      setSections(updated);
+                    }} 
+                    placeholder="যেমন: এই তেল যে সকল সমস্যার সমাধান করবে"
+                  />
+                </div>
+
+                {/* 2. Color Settings */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <h6 className="fw-bold text-dark mb-3">কালার সেটিংস (Color Settings)</h6>
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label small fw-semibold text-secondary">ব্যাকগ্রাউন্ড কালার (Background Color)</label>
+                      <input 
+                        type="color" 
+                        className="form-control form-control-color w-100" 
+                        value={editingBlock.data?.bg_color || '#2e4f40'} 
+                        onChange={(e) => {
+                          const updated = [...sections];
+                          updated[editingBlock.index].data.bg_color = e.target.value;
+                          setSections(updated);
+                        }} 
+                      />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label small fw-semibold text-secondary">টেক্সট কালার (Text Color)</label>
+                      <input 
+                        type="color" 
+                        className="form-control form-control-color w-100" 
+                        value={editingBlock.data?.text_color || '#ffffff'} 
+                        onChange={(e) => {
+                          const updated = [...sections];
+                          updated[editingBlock.index].data.text_color = e.target.value;
+                          setSections(updated);
+                        }} 
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Image Upload */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">ছবি (Image - ডান পাশ)</label>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="form-control"
+                    onChange={(e) => handleImageUpload(e, (uploadedPath) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.image_path = uploadedPath;
+                      setSections(updated);
+                    })} 
+                  />
+                  {editingBlock.data?.image_path && (
+                    <div className="mt-2 border rounded p-1" style={{ maxWidth: '150px' }}>
+                      <img 
+                        src={getLandingPageImageUrl(editingBlock.data.image_path)} 
+                        alt="uploaded" 
+                        className="img-fluid rounded" 
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* 4. Features Bullet List */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">ফিচার তালিকা (বাম পাশের কলাম আইটেম)</label>
+                  <div className="d-flex flex-column gap-2 mt-1">
+                    {(editingBlock.data?.items || []).map((item, idx) => (
+                      <div key={idx} className="d-flex gap-2">
+                        <span className="text-success align-self-center">✔</span>
+                        <input 
+                          type="text" 
+                          className="form-control form-control-sm" 
+                          value={item} 
+                          onChange={(e) => {
+                            const updated = [...sections];
+                            updated[editingBlock.index].data.items[idx] = e.target.value;
+                            setSections(updated);
+                          }} 
+                        />
+                        <button 
+                          type="button" 
+                          className="btn btn-sm btn-outline-danger" 
+                          onClick={() => {
+                            const updated = [...sections];
+                            updated[editingBlock.index].data.items.splice(idx, 1);
+                            setSections(updated);
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    <button 
+                      type="button" 
+                      className="btn btn-sm btn-outline-primary align-self-start mt-2 fw-semibold"
+                      onClick={() => {
+                        const updated = [...sections];
+                        if (!updated[editingBlock.index].data.items) updated[editingBlock.index].data.items = [];
+                        updated[editingBlock.index].data.items.push('');
+                        setSections(updated);
+                      }}
+                    >
+                      + আরেকটি ফিচার যোগ করুন
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-secondary fw-semibold px-4" onClick={() => setEditingBlock(null)}>Close</button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary fw-bold px-5" 
+                  onClick={() => {
+                    saveSectionsToDb(sections);
+                    setEditingBlock(null);
+                  }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DYNAMIC EDITING DIALOG FOR `usage_rules` ── */}
+      {editingBlock && editingBlock.type === 'usage_rules' && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+              <div className="modal-header text-white" style={{ background: '#1e3a8a' }}>
+                <h5 className="modal-title fw-bold d-flex align-items-center gap-2">
+                  <FileText size={20} /> Edit Usage Rules (Left Text, Right Image)
+                </h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setEditingBlock(null)}></button>
+              </div>
+
+              <div className="modal-body p-4 bg-light" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                {/* 1. Header Title */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">সেকশন টাইটেল (Header Title)</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    value={editingBlock.data?.title || ''} 
+                    onChange={(e) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.title = e.target.value;
+                      setSections(updated);
+                    }} 
+                    placeholder="যেমন: এই তেল ব্যবহারের নিয়ম"
+                  />
+                </div>
+
+                {/* 2. Description Instruction Text */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">বর্ণনা / নির্দেশনাবলী (Description)</label>
+                  <textarea 
+                    className="form-control" 
+                    rows="4"
+                    value={editingBlock.data?.description || ''} 
+                    onChange={(e) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.description = e.target.value;
+                      setSections(updated);
+                    }} 
+                    placeholder="যেমন: ৫-৬ ফোঁটা তেল হাতে নিয়ে শিশুর বুকে পিঠে এবং পায়ে ম্যাসাজ করুন..."
+                  />
+                </div>
+
+                {/* 3. Button Text */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">বাটন টেক্সট (Button Text)</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    value={editingBlock.data?.button_text || 'অর্ডার করুন'} 
+                    onChange={(e) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.button_text = e.target.value;
+                      setSections(updated);
+                    }} 
+                    placeholder="অর্ডার করুন"
+                  />
+                </div>
+
+                {/* 4. Color Settings */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <h6 className="fw-bold text-dark mb-3">কালার সেটিংস (Color Settings)</h6>
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label small fw-semibold text-secondary">ব্যাকগ্রাউন্ড কালার (Background Color)</label>
+                      <input 
+                        type="color" 
+                        className="form-control form-control-color w-100" 
+                        value={editingBlock.data?.bg_color || '#ffffff'} 
+                        onChange={(e) => {
+                          const updated = [...sections];
+                          updated[editingBlock.index].data.bg_color = e.target.value;
+                          setSections(updated);
+                        }} 
+                      />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label small fw-semibold text-secondary">টেক্সট কালার (Text Color)</label>
+                      <input 
+                        type="color" 
+                        className="form-control form-control-color w-100" 
+                        value={editingBlock.data?.text_color || '#1e293b'} 
+                        onChange={(e) => {
+                          const updated = [...sections];
+                          updated[editingBlock.index].data.text_color = e.target.value;
+                          setSections(updated);
+                        }} 
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 5. Image Upload */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">ছবি (Image - ডান পাশ)</label>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="form-control"
+                    onChange={(e) => handleImageUpload(e, (uploadedPath) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.image_path = uploadedPath;
+                      setSections(updated);
+                    })} 
+                  />
+                  {editingBlock.data?.image_path && (
+                    <div className="mt-2 border rounded p-1" style={{ maxWidth: '150px' }}>
+                      <img 
+                        src={getLandingPageImageUrl(editingBlock.data.image_path)} 
+                        alt="uploaded" 
+                        className="img-fluid rounded" 
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-secondary fw-semibold px-4" onClick={() => setEditingBlock(null)}>Close</button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary fw-bold px-5" 
+                  onClick={() => {
+                    saveSectionsToDb(sections);
+                    setEditingBlock(null);
+                  }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DYNAMIC EDITING DIALOG FOR `review_slider` ── */}
+      {editingBlock && editingBlock.type === 'review_slider' && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+              <div className="modal-header text-white" style={{ background: '#1e3a8a' }}>
+                <h5 className="modal-title fw-bold d-flex align-items-center gap-2">
+                  <Star size={20} /> Edit Review Slider Block
+                </h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setEditingBlock(null)}></button>
+              </div>
+
+              <div className="modal-body p-4 bg-light" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                {/* 1. Header Title */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">সেকশন টাইটেল (Header Title)</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    value={editingBlock.data?.title || ''} 
+                    onChange={(e) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.title = e.target.value;
+                      setSections(updated);
+                    }} 
+                    placeholder="যেমন: সরাসরি কাস্টমার সাপোর্ট এ যোগাযোগ করুন: +880 1711-207829"
+                  />
+                </div>
+
+                {/* 2. Color Settings */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <h6 className="fw-bold text-dark mb-3">কালার সেটিংস (Color Settings)</h6>
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label small fw-semibold text-secondary">ব্যাকগ্রাউন্ড কালার (Background Color)</label>
+                      <input 
+                        type="color" 
+                        className="form-control form-control-color w-100" 
+                        value={editingBlock.data?.bg_color || '#ffffff'} 
+                        onChange={(e) => {
+                          const updated = [...sections];
+                          updated[editingBlock.index].data.bg_color = e.target.value;
+                          setSections(updated);
+                        }} 
+                      />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label small fw-semibold text-secondary">টেক্সট কালার (Text Color)</label>
+                      <input 
+                        type="color" 
+                        className="form-control form-control-color w-100" 
+                        value={editingBlock.data?.text_color || '#1e293b'} 
+                        onChange={(e) => {
+                          const updated = [...sections];
+                          updated[editingBlock.index].data.text_color = e.target.value;
+                          setSections(updated);
+                        }} 
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Upload Slide Images (Multiple) */}
+                <div className="mb-4 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold text-dark">স্লাইড ইমেজ আপলোড করুন (Upload Slide Images)</label>
+                  <input 
+                    type="file" 
+                    multiple 
+                    accept="image/*" 
+                    className="form-control"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files);
+                      if (files.length === 0) return;
+
+                      toast.loading('Uploading slide images...', { id: 'upload-slides' });
+                      
+                      const uploadPromises = files.map(file => {
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        return axios.post('/api/admin/landingpages/upload-image', formData, {
+                          headers: { 'Content-Type': 'multipart/form-data' }
+                        })
+                        .then(res => res.data.success ? res.data.path : null)
+                        .catch(err => {
+                          console.error(err);
+                          return null;
+                        });
+                      });
+
+                      Promise.all(uploadPromises).then(results => {
+                        const uploadedPaths = results.filter(path => path !== null);
+                        if (uploadedPaths.length > 0) {
+                          const updated = [...sections];
+                          if (!updated[editingBlock.index].data.slides) updated[editingBlock.index].data.slides = [];
+                          updated[editingBlock.index].data.slides = [...(editingBlock.data.slides || []), ...uploadedPaths];
+                          setSections(updated);
+                          toast.success(`Successfully uploaded ${uploadedPaths.length} slide images!`, { id: 'upload-slides' });
+                        } else {
+                          toast.error('Failed to upload images.', { id: 'upload-slides' });
+                        }
+                      });
+                    }}
+                  />
+                  
+                  {/* Slides Previews with Deletions */}
+                  {editingBlock.data?.slides && editingBlock.data.slides.length > 0 && (
+                    <div className="mt-4 border-top pt-3">
+                      <label className="form-label fw-bold text-secondary mb-3">স্লাইড প্রিভিউ ({editingBlock.data.slides.length} images)</label>
+                      <div className="row g-2">
+                        {editingBlock.data.slides.map((img, idx) => (
+                          <div key={idx} className="col-4 col-md-3 position-relative group">
+                            <div className="border rounded overflow-hidden shadow-sm ratio ratio-1x1" style={{ backgroundColor: '#fff' }}>
+                              <img 
+                                src={getLandingPageImageUrl(img)} 
+                                alt={`slide-${idx}`} 
+                                className="img-fluid object-cover w-100 h-100" 
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...sections];
+                                updated[editingBlock.index].data.slides.splice(idx, 1);
+                                setSections(updated);
+                                toast.success('Slide removed!');
+                              }}
+                              className="btn btn-danger btn-sm rounded-circle shadow position-absolute"
+                              style={{ top: '-5px', right: '-5px', zIndex: 10, width: '24px', height: '24px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-secondary fw-semibold px-4" onClick={() => setEditingBlock(null)}>Close</button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary fw-bold px-5" 
+                  onClick={() => {
+                    saveSectionsToDb(sections);
+                    setEditingBlock(null);
+                  }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DYNAMIC EDITING DIALOG FOR `product_hero` ── */}
+      {editingBlock && editingBlock.type === 'product_hero' && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+              <div className="modal-header text-white" style={{ background: '#1e3a8a' }}>
+                <h5 className="modal-title fw-bold">Edit Product Hero</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setEditingBlock(null)}></button>
+              </div>
+              <div className="modal-body p-4 bg-light" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Title</label>
+                  <input type="text" className="form-control" value={editingBlock.data?.title || ''} onChange={(e) => {
+                    const updated = [...sections];
+                    updated[editingBlock.index].data.title = e.target.value;
+                    setSections(updated);
+                  }} />
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Subtitle</label>
+                  <textarea className="form-control" rows="3" value={editingBlock.data?.subtitle || ''} onChange={(e) => {
+                    const updated = [...sections];
+                    updated[editingBlock.index].data.subtitle = e.target.value;
+                    setSections(updated);
+                  }}></textarea>
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">YouTube Video URL</label>
+                  <input type="text" className="form-control" value={editingBlock.data?.video_url || ''} onChange={(e) => {
+                    const updated = [...sections];
+                    updated[editingBlock.index].data.video_url = e.target.value;
+                    setSections(updated);
+                  }} placeholder="e.g. https://www.youtube.com/watch?v=..." />
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Hero Image (Alternative to video)</label>
+                  <input type="file" className="form-control mb-2" onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    toast.loading('Uploading image...', { id: 'upload-hero-img' });
+                    axios.post('/api/admin/landingpages/upload-image', formData, {
+                      headers: { 'Content-Type': 'multipart/form-data' }
+                    }).then(res => {
+                      if (res.data.success) {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.image_path = res.data.path;
+                        setSections(updated);
+                        toast.success('Uploaded successfully!', { id: 'upload-hero-img' });
+                      } else {
+                        toast.error('Upload failed.', { id: 'upload-hero-img' });
+                      }
+                    }).catch(err => {
+                      console.error(err);
+                      toast.error('Upload error.', { id: 'upload-hero-img' });
+                    });
+                  }} />
+                  {editingBlock.data?.image_path && (
+                    <div className="mt-2">
+                      <img src={getLandingPageImageUrl(editingBlock.data.image_path)} alt="Preview" className="img-thumbnail" style={{ maxHeight: '150px' }} />
+                    </div>
+                  )}
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold d-flex justify-content-between align-items-center">
+                    <span>Bullet Highlights</span>
+                    <button type="button" className="btn btn-sm btn-outline-success" onClick={() => {
+                      const updated = [...sections];
+                      if (!updated[editingBlock.index].data.bullets) updated[editingBlock.index].data.bullets = [];
+                      updated[editingBlock.index].data.bullets.push('');
+                      setSections(updated);
+                    }}>+ Add Bullet</button>
+                  </label>
+                  {(editingBlock.data?.bullets || []).map((bullet, idx) => (
+                    <div key={idx} className="d-flex gap-2 mb-2">
+                      <input type="text" className="form-control" value={bullet} onChange={(e) => {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.bullets[idx] = e.target.value;
+                        setSections(updated);
+                      }} />
+                      <button type="button" className="btn btn-outline-danger" onClick={() => {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.bullets.splice(idx, 1);
+                        setSections(updated);
+                      }}>✕</button>
+                    </div>
+                  ))}
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Button Text</label>
+                  <input type="text" className="form-control" value={editingBlock.data?.button_text || ''} onChange={(e) => {
+                    const updated = [...sections];
+                    updated[editingBlock.index].data.button_text = e.target.value;
+                    setSections(updated);
+                  }} />
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <div className="row">
+                    <div className="col-6">
+                      <label className="form-label fw-bold">Background Color</label>
+                      <input type="color" className="form-control form-control-color w-100" value={editingBlock.data?.bg_color || '#ffffff'} onChange={(e) => {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.bg_color = e.target.value;
+                        setSections(updated);
+                      }} />
+                    </div>
+                    <div className="col-6">
+                      <label className="form-label fw-bold">Text Color</label>
+                      <input type="color" className="form-control form-control-color w-100" value={editingBlock.data?.text_color || '#1e293b'} onChange={(e) => {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.text_color = e.target.value;
+                        setSections(updated);
+                      }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-secondary fw-semibold px-4" onClick={() => setEditingBlock(null)}>Close</button>
+                <button type="button" className="btn btn-primary fw-bold px-5" onClick={() => {
+                  saveSectionsToDb(sections);
+                  setEditingBlock(null);
+                }}>Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DYNAMIC EDITING DIALOG FOR `price_box` ── */}
+      {editingBlock && editingBlock.type === 'price_box' && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+          <div className="modal-dialog modal-md">
+            <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+              <div className="modal-header text-white" style={{ background: '#1e3a8a' }}>
+                <h5 className="modal-title fw-bold">Edit Price Box</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setEditingBlock(null)}></button>
+              </div>
+              <div className="modal-body p-4 bg-light" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Package Title</label>
+                  <input type="text" className="form-control" value={editingBlock.data?.title || ''} onChange={(e) => {
+                    const updated = [...sections];
+                    updated[editingBlock.index].data.title = e.target.value;
+                    setSections(updated);
+                  }} />
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Original Price (৳)</label>
+                  <input type="text" className="form-control" value={editingBlock.data?.original_price || ''} onChange={(e) => {
+                    const updated = [...sections];
+                    updated[editingBlock.index].data.original_price = e.target.value;
+                    setSections(updated);
+                  }} />
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Discounted Price (৳)</label>
+                  <input type="text" className="form-control" value={editingBlock.data?.discounted_price || ''} onChange={(e) => {
+                    const updated = [...sections];
+                    updated[editingBlock.index].data.discounted_price = e.target.value;
+                    setSections(updated);
+                  }} />
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Save Amount (৳)</label>
+                  <input type="text" className="form-control" value={editingBlock.data?.save_amount || ''} onChange={(e) => {
+                    const updated = [...sections];
+                    updated[editingBlock.index].data.save_amount = e.target.value;
+                    setSections(updated);
+                  }} />
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Badge Text</label>
+                  <input type="text" className="form-control" value={editingBlock.data?.badge_text || ''} onChange={(e) => {
+                    const updated = [...sections];
+                    updated[editingBlock.index].data.badge_text = e.target.value;
+                    setSections(updated);
+                  }} placeholder="e.g. বেস্ট সেলার" />
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Button Text</label>
+                  <input type="text" className="form-control" value={editingBlock.data?.button_text || ''} onChange={(e) => {
+                    const updated = [...sections];
+                    updated[editingBlock.index].data.button_text = e.target.value;
+                    setSections(updated);
+                  }} />
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <div className="row">
+                    <div className="col-6">
+                      <label className="form-label fw-bold">Background Color</label>
+                      <input type="color" className="form-control form-control-color w-100" value={editingBlock.data?.bg_color || '#f8fafc'} onChange={(e) => {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.bg_color = e.target.value;
+                        setSections(updated);
+                      }} />
+                    </div>
+                    <div className="col-6">
+                      <label className="form-label fw-bold">Text Color</label>
+                      <input type="color" className="form-control form-control-color w-100" value={editingBlock.data?.text_color || '#1e293b'} onChange={(e) => {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.text_color = e.target.value;
+                        setSections(updated);
+                      }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-secondary fw-semibold px-4" onClick={() => setEditingBlock(null)}>Close</button>
+                <button type="button" className="btn btn-primary fw-bold px-5" onClick={() => {
+                  saveSectionsToDb(sections);
+                  setEditingBlock(null);
+                }}>Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DYNAMIC EDITING DIALOG FOR `feature_list` ── */}
+      {editingBlock && editingBlock.type === 'feature_list' && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+              <div className="modal-header text-white" style={{ background: '#1e3a8a' }}>
+                <h5 className="modal-title fw-bold">Edit Product Feature List</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setEditingBlock(null)}></button>
+              </div>
+              <div className="modal-body p-4 bg-light" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Main Title</label>
+                  <input type="text" className="form-control" value={editingBlock.data?.title || ''} onChange={(e) => {
+                    const updated = [...sections];
+                    updated[editingBlock.index].data.title = e.target.value;
+                    setSections(updated);
+                  }} />
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold d-flex justify-content-between align-items-center">
+                    <span>Feature List Items</span>
+                    <button type="button" className="btn btn-sm btn-outline-success" onClick={() => {
+                      const updated = [...sections];
+                      if (!updated[editingBlock.index].data.features) updated[editingBlock.index].data.features = [];
+                      updated[editingBlock.index].data.features.push({ title: 'নতুন ফিচার', desc: '', icon: 'check' });
+                      setSections(updated);
+                    }}>+ Add Feature</button>
+                  </label>
+                  {(editingBlock.data?.features || []).map((feat, idx) => (
+                    <div key={idx} className="border p-3 rounded bg-light mb-3 position-relative">
+                      <button type="button" className="btn-close position-absolute" style={{ top: '10px', right: '10px' }} onClick={() => {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.features.splice(idx, 1);
+                        setSections(updated);
+                      }}></button>
+                      <div className="row g-2">
+                        <div className="col-md-8">
+                          <label className="form-label small fw-semibold">Feature Title</label>
+                          <input type="text" className="form-control mb-2" value={feat.title || ''} onChange={(e) => {
+                            const updated = [...sections];
+                            updated[editingBlock.index].data.features[idx].title = e.target.value;
+                            setSections(updated);
+                          }} />
+                        </div>
+                        <div className="col-md-4">
+                          <label className="form-label small fw-semibold">Icon Type</label>
+                          <select className="form-select mb-2" value={feat.icon || 'check'} onChange={(e) => {
+                            const updated = [...sections];
+                            updated[editingBlock.index].data.features[idx].icon = e.target.value;
+                            setSections(updated);
+                          }}>
+                            <option value="check">Checkmark (✓)</option>
+                            <option value="leaf">Leaf (🌿)</option>
+                            <option value="shield">Shield (🛡)</option>
+                            <option value="clock">Clock (🕒)</option>
+                            <option value="star">Star (⭐)</option>
+                            <option value="award">Award (🏆)</option>
+                            <option value="heart">Heart (❤️)</option>
+                          </select>
+                        </div>
+                        <div className="col-12">
+                          <label className="form-label small fw-semibold">Feature Description</label>
+                          <textarea className="form-control" rows="2" value={feat.desc || ''} onChange={(e) => {
+                            const updated = [...sections];
+                            updated[editingBlock.index].data.features[idx].desc = e.target.value;
+                            setSections(updated);
+                          }}></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <div className="row">
+                    <div className="col-6">
+                      <label className="form-label fw-bold">Background Color</label>
+                      <input type="color" className="form-control form-control-color w-100" value={editingBlock.data?.bg_color || '#ffffff'} onChange={(e) => {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.bg_color = e.target.value;
+                        setSections(updated);
+                      }} />
+                    </div>
+                    <div className="col-6">
+                      <label className="form-label fw-bold">Text Color</label>
+                      <input type="color" className="form-control form-control-color w-100" value={editingBlock.data?.text_color || '#1e293b'} onChange={(e) => {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.text_color = e.target.value;
+                        setSections(updated);
+                      }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-secondary fw-semibold px-4" onClick={() => setEditingBlock(null)}>Close</button>
+                <button type="button" className="btn btn-primary fw-bold px-5" onClick={() => {
+                  saveSectionsToDb(sections);
+                  setEditingBlock(null);
+                }}>Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DYNAMIC EDITING DIALOG FOR `banner_slider` ── */}
+      {editingBlock && editingBlock.type === 'banner_slider' && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+              <div className="modal-header text-white" style={{ background: '#1e3a8a' }}>
+                <h5 className="modal-title fw-bold">Edit Banner Slider</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setEditingBlock(null)}></button>
+              </div>
+              <div className="modal-body p-4 bg-light" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Banner Images</label>
+                  <input type="file" multiple accept="image/*" className="form-control mb-3" onChange={(e) => {
+                    const files = Array.from(e.target.files);
+                    if (files.length === 0) return;
+                    toast.loading('Uploading banner images...', { id: 'upload-banners' });
+                    const uploadPromises = files.map(file => {
+                      const formData = new FormData();
+                      formData.append('image', file);
+                      return axios.post('/api/admin/landingpages/upload-image', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                      }).then(res => res.data.success ? res.data.path : null).catch(() => null);
+                    });
+                    Promise.all(uploadPromises).then(results => {
+                      const uploadedPaths = results.filter(p => p !== null);
+                      if (uploadedPaths.length > 0) {
+                        const updated = [...sections];
+                        if (!updated[editingBlock.index].data.slides) updated[editingBlock.index].data.slides = [];
+                        updated[editingBlock.index].data.slides = [...(editingBlock.data.slides || []), ...uploadedPaths];
+                        setSections(updated);
+                        toast.success('Uploaded successfully!', { id: 'upload-banners' });
+                      } else {
+                        toast.error('Upload failed.', { id: 'upload-banners' });
+                      }
+                    });
+                  }} />
+                  {editingBlock.data?.slides && editingBlock.data.slides.length > 0 && (
+                    <div className="row g-2">
+                      {editingBlock.data.slides.map((img, idx) => (
+                        <div key={idx} className="col-3 position-relative">
+                          <div className="ratio ratio-16x9 border rounded overflow-hidden">
+                            <img src={getLandingPageImageUrl(img)} alt="Slide Preview" style={{ objectFit: 'cover' }} />
+                          </div>
+                          <button type="button" className="btn btn-danger btn-sm rounded-circle position-absolute" style={{ top: '-5px', right: '-5px', width: '20px', height: '20px', padding: 0 }} onClick={() => {
+                            const updated = [...sections];
+                            updated[editingBlock.index].data.slides.splice(idx, 1);
+                            setSections(updated);
+                          }}>✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <div className="form-check form-switch">
+                    <input className="form-check-input" type="checkbox" role="switch" id="autoPlaySwitch" checked={editingBlock.data?.auto_play !== false} onChange={(e) => {
+                      const updated = [...sections];
+                      updated[editingBlock.index].data.auto_play = e.target.checked;
+                      setSections(updated);
+                    }} />
+                    <label className="form-check-label fw-bold" htmlFor="autoPlaySwitch">Auto Play Slides</label>
+                  </div>
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Background Color</label>
+                  <input type="color" className="form-control form-control-color w-100" value={editingBlock.data?.bg_color || '#ffffff'} onChange={(e) => {
+                    const updated = [...sections];
+                    updated[editingBlock.index].data.bg_color = e.target.value;
+                    setSections(updated);
+                  }} />
+                </div>
+              </div>
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-secondary fw-semibold px-4" onClick={() => setEditingBlock(null)}>Close</button>
+                <button type="button" className="btn btn-primary fw-bold px-5" onClick={() => {
+                  saveSectionsToDb(sections);
+                  setEditingBlock(null);
+                }}>Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DYNAMIC EDITING DIALOG FOR `custom_html` ── */}
+      {editingBlock && editingBlock.type === 'custom_html' && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+              <div className="modal-header text-white" style={{ background: '#1e3a8a' }}>
+                <h5 className="modal-title fw-bold">Edit Custom HTML</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setEditingBlock(null)}></button>
+              </div>
+              <div className="modal-body p-4 bg-light" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">HTML Code / Content</label>
+                  <textarea className="form-control font-monospace" rows="10" value={editingBlock.data?.html_content || ''} onChange={(e) => {
+                    const updated = [...sections];
+                    updated[editingBlock.index].data.html_content = e.target.value;
+                    setSections(updated);
+                  }} style={{ fontSize: '13px', lineHeight: '1.5', background: '#0f172a', color: '#e2e8f0' }}></textarea>
+                </div>
+              </div>
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-secondary fw-semibold px-4" onClick={() => setEditingBlock(null)}>Close</button>
+                <button type="button" className="btn btn-primary fw-bold px-5" onClick={() => {
+                  saveSectionsToDb(sections);
+                  setEditingBlock(null);
+                }}>Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DYNAMIC EDITING DIALOG FOR `text_left_image_right` ── */}
+      {editingBlock && editingBlock.type === 'text_left_image_right' && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+              <div className="modal-header text-white" style={{ background: '#1e3a8a' }}>
+                <h5 className="modal-title fw-bold">Edit Text Left, Image Right Section</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setEditingBlock(null)}></button>
+              </div>
+              <div className="modal-body p-4 bg-light" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Title (বাম পাশের টাইটেল)</label>
+                  <textarea className="form-control" rows="3" value={editingBlock.data?.title || ''} onChange={(e) => {
+                    const updated = [...sections];
+                    updated[editingBlock.index].data.title = e.target.value;
+                    setSections(updated);
+                  }}></textarea>
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Description (বাম পাশের বিবরণ)</label>
+                  <textarea className="form-control" rows="5" value={editingBlock.data?.description || ''} onChange={(e) => {
+                    const updated = [...sections];
+                    updated[editingBlock.index].data.description = e.target.value;
+                    setSections(updated);
+                  }}></textarea>
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label fw-bold">Section Image (ডান পাশের ছবি)</label>
+                  <input type="file" className="form-control mb-2" onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    toast.loading('Uploading image...', { id: 'upload-section-img' });
+                    axios.post('/api/admin/landingpages/upload-image', formData, {
+                      headers: { 'Content-Type': 'multipart/form-data' }
+                    }).then(res => {
+                      if (res.data.success) {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.image_path = res.data.path;
+                        setSections(updated);
+                        toast.success('Uploaded successfully!', { id: 'upload-section-img' });
+                      } else {
+                        toast.error('Upload failed.', { id: 'upload-section-img' });
+                      }
+                    }).catch(err => {
+                      console.error(err);
+                      toast.error('Upload error.', { id: 'upload-section-img' });
+                    });
+                  }} />
+                  {editingBlock.data?.image_path && (
+                    <div className="mt-2">
+                      <img src={getLandingPageImageUrl(editingBlock.data.image_path)} alt="Preview" className="img-thumbnail" style={{ maxHeight: '150px' }} />
+                    </div>
+                  )}
+                </div>
+                <div className="mb-3 bg-white p-3 rounded border shadow-sm">
+                  <div className="row">
+                    <div className="col-6">
+                      <label className="form-label fw-bold">Background Color</label>
+                      <input type="color" className="form-control form-control-color w-100" value={editingBlock.data?.bg_color || '#ffffff'} onChange={(e) => {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.bg_color = e.target.value;
+                        setSections(updated);
+                      }} />
+                    </div>
+                    <div className="col-6">
+                      <label className="form-label fw-bold">Text Color</label>
+                      <input type="color" className="form-control form-control-color w-100" value={editingBlock.data?.text_color || '#1e293b'} onChange={(e) => {
+                        const updated = [...sections];
+                        updated[editingBlock.index].data.text_color = e.target.value;
+                        setSections(updated);
+                      }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer bg-white border-top">
+                <button type="button" className="btn btn-secondary fw-semibold px-4" onClick={() => setEditingBlock(null)}>Close</button>
+                <button type="button" className="btn btn-primary fw-bold px-5" onClick={() => {
+                  saveSectionsToDb(sections);
+                  setEditingBlock(null);
+                }}>Save Changes</button>
               </div>
             </div>
           </div>

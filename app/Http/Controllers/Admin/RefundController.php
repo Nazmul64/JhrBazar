@@ -327,10 +327,12 @@ class RefundController extends \App\Http\Controllers\Controller
             ]);
 
             // Log status change
-            activity('refund')
-                ->performedOn($refund)
-                ->withProperties(['old_status' => $refund->getOriginal('refund_status'), 'new_status' => $validated['status']])
-                ->log("Refund status updated to {$validated['status']}");
+            \Illuminate\Support\Facades\Log::info("Refund status updated", [
+                'refund_id' => $refund->id,
+                'old_status' => $refund->getOriginal('refund_status'),
+                'new_status' => $validated['status'],
+                'updated_by' => auth()->id()
+            ]);
 
             DB::commit();
 
@@ -488,13 +490,13 @@ class RefundController extends \App\Http\Controllers\Controller
         foreach ($refunds as $refund) {
             fputcsv($handle, [
                 $refund->id,
-                $refund->order->invoice->invoice_number ?? 'N/A',
+                $refund->order?->invoice?->invoice_number ?? 'N/A',
                 $refund->product_name,
                 $refund->quantity,
                 $refund->total_amount,
                 $refund->getCancelReasonDisplay(),
                 ucfirst($refund->refund_status),
-                $refund->refund_date->format('d-m-Y'),
+                $refund->refund_date?->format('d-m-Y') ?? $refund->created_at?->format('d-m-Y') ?? 'N/A',
             ]);
         }
 

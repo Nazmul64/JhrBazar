@@ -58,15 +58,22 @@ const Footer = () => {
                     {/* Column 1: Brand Info */}
                     <div className="col-lg-4 col-md-12">
                         <div className="mb-3">
-                            <img
-                                src={footerData.settings?.footer_logo || footerData.settings?.logo || "https://ghorerbazar.com/wp-content/uploads/2020/10/Ghorer-Bazar-Logo.png"}
-                                alt={footerData.settings?.website_name || "Ghorer Bazar"}
-                                style={{ maxHeight: '55px' }}
-                            />
+                            {(footerData.settings?.footer_logo || footerData.settings?.logo) ? (
+                                <img
+                                    src={footerData.settings?.footer_logo || footerData.settings?.logo}
+                                    alt={footerData.settings?.website_name || "Logo"}
+                                    style={{ maxHeight: '55px', maxWidth: '220px', objectFit: 'contain' }}
+                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                />
+                            ) : (
+                                <h4 className="fw-bold mb-0" style={{ color: 'var(--brand, #57b500)' }}>
+                                    {footerData.settings?.website_name || "JHR Bazar"}
+                                </h4>
+                            )}
                         </div>
                         <div>
                         <p style={{ color: 'var(--footer-text-color, #333)', opacity: 0.8, lineHeight: '1.8', fontSize: '13px', marginBottom: '25px', maxWidth: '340px' }}>
-                            {footerData.settings?.footer_text || "Ghorer Bazar is an e-commerce platform dedicated to providing safe and reliable food to every home."}
+                            {footerData.settings?.footer_text || (footerData.settings?.website_name ? `${footerData.settings.website_name} is an e-commerce platform dedicated to providing quality products to every home.` : "Welcome to our online store.")}
                         </p>
 
                         {(footerData.settings?.trade_license_number || footerData.settings?.dbid_number) && (
@@ -132,15 +139,23 @@ const Footer = () => {
                         {footerData.settings?.show_download_app == 1 && (footerData.settings.google_playstore_link || footerData.settings.apple_store_link) && (
                             <div className="mt-4">
                                 <p className="mb-3 fw-bold" style={{ fontSize: '13px', color: 'var(--footer-text-color, #333)' }}>Download App on Mobile :</p>
-                                <div className="d-flex gap-2">
+                                <div className="d-flex flex-wrap gap-2">
                                     {footerData.settings.google_playstore_link && (
-                                        <a href={footerData.settings.google_playstore_link} target="_blank" rel="noopener noreferrer" className="app-btn">
-                                            <img src="https://ghorerbazar.com/wp-content/uploads/2021/04/google-play.png" alt="Google Play" style={{ height: '35px' }} />
+                                        <a href={footerData.settings.google_playstore_link} target="_blank" rel="noopener noreferrer" className="btn btn-dark btn-sm d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-white text-decoration-none shadow-sm" style={{ fontSize: '12px' }}>
+                                            <i className="fab fa-google-play fs-5"></i>
+                                            <div className="text-start" style={{ lineHeight: '1.1' }}>
+                                                <div style={{ fontSize: '9px', textTransform: 'uppercase', opacity: 0.8 }}>GET IT ON</div>
+                                                <div className="fw-bold" style={{ fontSize: '12px' }}>Google Play</div>
+                                            </div>
                                         </a>
                                     )}
                                     {footerData.settings.apple_store_link && (
-                                        <a href={footerData.settings.apple_store_link} target="_blank" rel="noopener noreferrer" className="app-btn">
-                                            <img src="https://ghorerbazar.com/wp-content/uploads/2021/04/app-store.png" alt="App Store" style={{ height: '35px' }} />
+                                        <a href={footerData.settings.apple_store_link} target="_blank" rel="noopener noreferrer" className="btn btn-dark btn-sm d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-white text-decoration-none shadow-sm" style={{ fontSize: '12px' }}>
+                                            <i className="fab fa-apple fs-5"></i>
+                                            <div className="text-start" style={{ lineHeight: '1.1' }}>
+                                                <div style={{ fontSize: '9px', textTransform: 'uppercase', opacity: 0.8 }}>Download on the</div>
+                                                <div className="fw-bold" style={{ fontSize: '12px' }}>App Store</div>
+                                            </div>
                                         </a>
                                     )}
                                 </div>

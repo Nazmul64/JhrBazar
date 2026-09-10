@@ -604,6 +604,15 @@
 
         {{-- Filter Bar --}}
         <div class="filter-bar">
+            {{-- Quick Barcode / SKU Scan Input --}}
+            <div style="position: relative; min-width: 220px;">
+                <input type="text" id="barcodeQuickScan"
+                       style="height: 40px; border: 1.5px solid #0f766e; border-radius: var(--radius-sm); padding: 0 12px 0 34px; font-size: 13px; font-weight: 600; color: #0f766e; background: #fff; width: 100%; outline: none;"
+                       placeholder="Scan Barcode / SKU..."
+                       autocomplete="off" autofocus>
+                <i class="bi bi-upc-scan" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #0f766e; font-size: 15px; pointer-events: none;"></i>
+            </div>
+
             <select id="brandFilter">
                 <option value="">Select Brand</option>
                 @foreach($brands as $brand)
@@ -905,6 +914,7 @@
 /* ── Routes ── */
 const ROUTES = {
     products:      '{{ route("admin.pointofsalepos.products") }}',
+    scanBarcode:   '{{ route("admin.pointofsalepos.scan.barcode") }}',
     storeCustomer: '{{ route("admin.pointofsalepos.customers.store") }}',
     applyCoupon:   '{{ route("admin.pointofsalepos.apply.coupon") }}',
     placeOrder:    '{{ route("admin.pointofsalepos.place.order") }}',
@@ -912,6 +922,22 @@ const ROUTES = {
 };
 const CSRF     = '{{ csrf_token() }}';
 const CURRENCY = '{{ $settings->default_currency ?? "৳" }}';
+
+function playScanSound() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.12);
+    } catch(e) {}
+}
 
 /* ── State ── */
 let cart             = [];
@@ -925,6 +951,20 @@ let manualDiscount   = 0;
 /* ════════════════════════════════════════════════════════════
    HELPERS
 ════════════════════════════════════════════════════════════ */
+const NO_IMG_PLACEHOLDER = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3C/svg%3E";
+
+function getPosImgUrl(path) {
+    if (!path || typeof path !== 'string' || !path.trim() || path === 'null' || path === 'undefined') {
+        return NO_IMG_PLACEHOLDER;
+    }
+    const clean = path.trim();
+    if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('data:')) {
+        return clean;
+    }
+    const relative = clean.replace(/^[/\\]+/, '');
+    return window.location.origin + '/' + relative;
+}
+
 function escHtml(str) {
     if (str == null) return '';
     return String(str)
@@ -1031,17 +1071,17 @@ function renderProducts(products) {
         return;
     }
     grid.innerHTML = products.map(p => {
-        const price  = parseFloat(p.discount_price) > 0 ? p.discount_price : p.selling_price;
-        const old    = parseFloat(p.discount_price) > 0 ? p.selling_price  : null;
-        const offPct = old ? Math.round((1 - price / old) * 100) : null;
-        const thumb  = p.thumbnail ? '/' + p.thumbnail : '/images/no-image.png';
-        const left   = parseInt(p.stock_quantity) || 0;
-        const sold   = parseInt(p.sold)           || 0;
-        const encoded = encodeURIComponent(JSON.stringify(p));
+        const price    = parseFloat(p.discount_price) > 0 ? p.discount_price : p.selling_price;
+        const old      = parseFloat(p.discount_price) > 0 ? p.selling_price  : null;
+        const offPct   = old ? Math.round((1 - price / old) * 100) : null;
+        const thumbUrl = getPosImgUrl(p.thumbnail);
+        const left     = parseInt(p.stock_quantity) || 0;
+        const sold     = parseInt(p.sold)           || 0;
+        const encoded  = encodeURIComponent(JSON.stringify(p));
         return `
         <div class="product-card" onclick="addToCart(JSON.parse(decodeURIComponent('${encoded}')))">
-            <img class="pc-img" src="${thumb}" alt="${escHtml(p.name)}"
-                 onerror="this.src='/images/no-image.png'" loading="lazy">
+            <img class="pc-img" src="${thumbUrl}" alt="${escHtml(p.name)}"
+                 onerror="this.onerror=null; this.src=NO_IMG_PLACEHOLDER;" loading="lazy">
             <div class="pc-info">
                 <div class="d-flex align-items-center gap-2">
                     <div class="pc-name">${escHtml(p.name)}</div>
@@ -1143,7 +1183,7 @@ function renderCart() {
         const p         = c.product;
         const price     = parseFloat(p.discount_price) > 0 ? p.discount_price : p.selling_price;
         const old       = parseFloat(p.discount_price) > 0 ? p.selling_price  : null;
-        const thumb     = p.thumbnail ? '/' + p.thumbnail : '/images/no-image.png';
+        const thumbUrl  = getPosImgUrl(p.thumbnail);
         const variant   = [p.size, p.color].filter(Boolean).join(' | ');
         const lineTotal = (parseFloat(price) * c.qty).toFixed(2);
 
@@ -1153,8 +1193,8 @@ function renderCart() {
 
         return `
         <div class="cart-item">
-            <img class="ci-img" src="${thumb}" alt="${escHtml(p.name)}"
-                 onerror="this.src='/images/no-image.png'">
+            <img class="ci-img" src="${thumbUrl}" alt="${escHtml(p.name)}"
+                 onerror="this.onerror=null; this.src=NO_IMG_PLACEHOLDER;">
             <div class="ci-body">
                 <div class="ci-name">
                     ${escHtml(p.name)}
@@ -1309,10 +1349,16 @@ function placeOrder(status = 'completed') {
         if (data.success) {
             document.getElementById('cdOverlay').classList.remove('show');
 
-            if (status === 'completed' && data.invoice_url) {
-                /* ★ নতুন ট্যাবে ইনভয়েস ওপেন করো, POS পেজ এখানেই থাকুক ★ */
-                window.open(data.invoice_url, '_blank');
-                showToast('Order placed! Invoice opened in new tab.', 'success', 3000);
+            if (status === 'completed') {
+                if (data.thermal_url) {
+                    window.open(data.thermal_url + '?autoprint=1', '_blank');
+                    showToast('Order placed! Printing 80mm thermal receipt…', 'success', 4000);
+                } else if (data.invoice_url) {
+                    window.open(data.invoice_url, '_blank');
+                    showToast('Order placed! Invoice opened in new tab.', 'success', 3000);
+                } else {
+                    showToast(data.message, 'success', 5000);
+                }
                 resetCart();
             } else {
                 showToast(data.message, 'success', 5000);
@@ -1339,6 +1385,10 @@ function resetCart() {
     const cashBtn = document.querySelector('.pm-btn[data-method="cash"]');
     if (cashBtn) cashBtn.classList.add('active');
     renderCart();
+    setTimeout(() => {
+        const scanInp = document.getElementById('barcodeQuickScan');
+        if (scanInp) scanInp.focus();
+    }, 200);
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -1486,7 +1536,39 @@ document.querySelectorAll('.pos-modal-bg').forEach(bg => {
     });
 });
 
-/* ── Filter listeners ── */
+/* ── Filter & Barcode listeners ── */
+const barcodeScanInput = document.getElementById('barcodeQuickScan');
+if (barcodeScanInput) {
+    barcodeScanInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const code = this.value.trim();
+            if (!code) return;
+
+            fetch(ROUTES.scanBarcode, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                body: JSON.stringify({ barcode: code })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success && res.product) {
+                    playScanSound();
+                    addToCart(res.product);
+                    showToast(`Added '${res.product.name}' to cart!`, 'success', 2000);
+                    barcodeScanInput.value = '';
+                } else {
+                    showToast(res.message || 'Product not found for scanned barcode.', 'error', 3500);
+                    barcodeScanInput.select();
+                }
+            })
+            .catch(err => {
+                showToast('Barcode scan failed. Check network.', 'error');
+            });
+        }
+    });
+}
+
 document.getElementById('brandFilter').addEventListener('change', () => loadProducts(1));
 document.getElementById('categoryFilter').addEventListener('change', () => loadProducts(1));
 document.getElementById('productSearch').addEventListener('input', function () {
@@ -1499,6 +1581,9 @@ document.getElementById('couponInput').addEventListener('keydown', e => {
 
 /* ── Init ── */
 loadProducts(1);
+if (barcodeScanInput) {
+    setTimeout(() => barcodeScanInput.focus(), 300);
+}
 </script>
 
 @endsection

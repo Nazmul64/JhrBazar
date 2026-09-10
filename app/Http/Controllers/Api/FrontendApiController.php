@@ -33,12 +33,14 @@ class FrontendApiController extends Controller
             $settings = GenaralSetting::first();
 
             if ($settings) {
-                $settings->logo = $settings->logo ? (str_starts_with($settings->logo, 'http') ? $settings->logo : asset(ltrim($settings->logo, '/'))) : null;
-                $settings->footer_logo = $settings->footer_logo ? (str_starts_with($settings->footer_logo, 'http') ? $settings->footer_logo : asset(ltrim($settings->footer_logo, '/'))) : null;
+                $settings->logo = $settings->logo ? (str_starts_with($settings->logo, 'http') ? $settings->logo : '/' . ltrim($settings->logo, '/')) : null;
+                $settings->footer_logo = $settings->footer_logo ? (str_starts_with($settings->footer_logo, 'http') ? $settings->footer_logo : '/' . ltrim($settings->footer_logo, '/')) : null;
+                $settings->favicon = $settings->favicon ? (str_starts_with($settings->favicon, 'http') ? $settings->favicon : '/' . ltrim($settings->favicon, '/')) : null;
+                $settings->og_image = $settings->og_image ? (str_starts_with($settings->og_image, 'http') ? $settings->og_image : '/' . ltrim($settings->og_image, '/')) : null;
             }
 
             $banners = Banner::where('is_active', 1)->latest()->get()->map(function($b) {
-                $image = $b->image ? (str_starts_with($b->image, 'http') ? $b->image : asset(ltrim($b->image, '/'))) : asset('placeholder.jpg');
+                $image = $b->image ? (str_starts_with($b->image, 'http') ? $b->image : '/' . ltrim($b->image, '/')) : '/placeholder.jpg';
                 return [
                     'id' => $b->id,
                     'image' => $image . '?v=' . self::ASSET_VERSION,
@@ -51,11 +53,11 @@ class FrontendApiController extends Controller
                 ->orderBy('name', 'asc')
                 ->get()
                 ->map(function($cat) {
-                    $thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : asset(ltrim($cat->thumbnail, '/'))) : asset('placeholder.jpg');
+                    $thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : '/placeholder.jpg';
                     $cat->thumbnail = $thumbnail . '?v=' . self::ASSET_VERSION;
                     if ($cat->subCategories) {
                         $cat->subCategories->map(function($sub) {
-                            $subThumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : asset(ltrim($sub->thumbnail, '/'))) : asset('placeholder.jpg');
+                            $subThumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : '/' . ltrim($sub->thumbnail, '/')) : '/placeholder.jpg';
                             $sub->thumbnail = $subThumbnail . '?v=' . self::ASSET_VERSION;
                             return $sub;
                         });
@@ -63,7 +65,7 @@ class FrontendApiController extends Controller
                     return $cat;
                 });
 
-            $productColumns = ['id', 'name', 'slug', 'thumbnail', 'selling_price', 'discount_price', 'is_active', 'created_at', 'seller_id', 'cash_on_delivery', 'online_payment', 'frontend_sections', 'stock_quantity'];
+            $productColumns = ['id', 'name', 'slug', 'thumbnail', 'buying_price', 'selling_price', 'discount_price', 'is_active', 'created_at', 'seller_id', 'cash_on_delivery', 'online_payment', 'frontend_sections', 'stock_quantity'];
 
             $popular = $this->getCombinedProducts('is_popular', 10, $productColumns);
             $newArrivals = $this->getCombinedProducts('is_new_arrival', 10, $productColumns);
@@ -83,8 +85,8 @@ class FrontendApiController extends Controller
                         'id'          => $shop->id,
                         'seller_id'   => $shop->user_id,
                         'name'        => $shop->name,
-                        'logo'        => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : asset(ltrim($shop->logo, '/'))) : asset('assets/admin/images/default-avatar.png'),
-                        'banner'      => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : asset(ltrim($shop->banner, '/'))) : asset('placeholder.jpg'),
+                        'logo'        => $shop->logo ? (str_starts_with($shop->logo, 'http') ? $shop->logo : '/' . ltrim($shop->logo, '/')) : '/assets/admin/images/default-avatar.png',
+                        'banner'      => $shop->banner ? (str_starts_with($shop->banner, 'http') ? $shop->banner : '/' . ltrim($shop->banner, '/')) : '/placeholder.jpg',
                         'item_count'  => $shop->item_count,
                         'rating'      => '5.0',
                         'description' => $shop->description,
@@ -97,7 +99,7 @@ class FrontendApiController extends Controller
                 ->map(fn($brand) => [
                     'id'    => $brand->id,
                     'title' => $brand->title,
-                    'image' => $brand->image ? (str_starts_with($brand->image, 'http') ? $brand->image : asset(ltrim($brand->image, '/'))) : asset('placeholder.jpg'),
+                    'image' => $brand->image ? (str_starts_with($brand->image, 'http') ? $brand->image : '/' . ltrim($brand->image, '/')) : '/placeholder.jpg',
                 ]);
 
             $allProducts = $this->getCombinedProducts(null, 20, $productColumns);
@@ -106,7 +108,7 @@ class FrontendApiController extends Controller
             // Group products by frontend_sections for dynamic category sections
             $sectionAdminProducts = Product::where('is_active', 1)
                 ->whereNotNull('frontend_sections')
-                ->select(['id', 'name', 'slug', 'thumbnail', 'selling_price', 'discount_price', 'is_active', 'created_at', 'cash_on_delivery', 'online_payment', 'frontend_sections', 'stock_quantity'])
+                ->select(['id', 'name', 'slug', 'thumbnail', 'buying_price', 'selling_price', 'discount_price', 'is_active', 'created_at', 'cash_on_delivery', 'online_payment', 'frontend_sections', 'stock_quantity'])
                 ->withCount('reviews')->withAvg('reviews', 'rating')
                 ->latest()
                 ->get()
@@ -114,7 +116,7 @@ class FrontendApiController extends Controller
 
             $sectionSellerProducts = SellerProduct::where('is_active', 1)
                 ->whereNotNull('frontend_sections')
-                ->select(['id', 'name', 'slug', 'thumbnail', 'selling_price', 'discount_price', 'is_active', 'created_at', 'seller_id', 'cash_on_delivery', 'online_payment', 'frontend_sections', 'stock_quantity'])
+                ->select(['id', 'name', 'slug', 'thumbnail', 'buying_price', 'selling_price', 'discount_price', 'is_active', 'created_at', 'seller_id', 'cash_on_delivery', 'online_payment', 'frontend_sections', 'stock_quantity'])
                 ->withCount('reviews')->withAvg('reviews', 'rating')
                 ->latest()
                 ->get()
@@ -219,11 +221,11 @@ class FrontendApiController extends Controller
         $data = Cache::remember('general_settings_with_cats', 86400, function() {
             $s = GenaralSetting::first();
             if ($s) {
-                $s->logo = $s->logo ? (str_starts_with($s->logo, 'http') ? $s->logo : asset(ltrim($s->logo, '/'))) : null;
-                $s->favicon = $s->favicon ? (str_starts_with($s->favicon, 'http') ? $s->favicon : asset(ltrim($s->favicon, '/'))) : null;
-                $s->footer_logo = $s->footer_logo ? (str_starts_with($s->footer_logo, 'http') ? $s->footer_logo : asset(ltrim($s->footer_logo, '/'))) : null;
-                $s->app_logo = $s->app_logo ? (str_starts_with($s->app_logo, 'http') ? $s->app_logo : asset(ltrim($s->app_logo, '/'))) : null;
-                $s->og_image = $s->og_image ? (str_starts_with($s->og_image, 'http') ? $s->og_image : asset(ltrim($s->og_image, '/'))) : null;
+                $s->logo = $s->logo ? (str_starts_with($s->logo, 'http') ? $s->logo : '/' . ltrim($s->logo, '/')) : null;
+                $s->favicon = $s->favicon ? (str_starts_with($s->favicon, 'http') ? $s->favicon : '/' . ltrim($s->favicon, '/')) : null;
+                $s->footer_logo = $s->footer_logo ? (str_starts_with($s->footer_logo, 'http') ? $s->footer_logo : '/' . ltrim($s->footer_logo, '/')) : null;
+                $s->app_logo = $s->app_logo ? (str_starts_with($s->app_logo, 'http') ? $s->app_logo : '/' . ltrim($s->app_logo, '/')) : null;
+                $s->og_image = $s->og_image ? (str_starts_with($s->og_image, 'http') ? $s->og_image : '/' . ltrim($s->og_image, '/')) : null;
             }
 
             $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('name', 'asc')])
@@ -231,10 +233,10 @@ class FrontendApiController extends Controller
                 ->orderBy('name', 'asc')
                 ->get()
                 ->map(function($cat) {
-                    $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : asset(ltrim($cat->thumbnail, '/'))) : asset('placeholder.jpg');
+                    $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : '/placeholder.jpg';
                     if ($cat->subCategories) {
                         $cat->subCategories->map(function($sub) {
-                            $sub->thumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : asset(ltrim($sub->thumbnail, '/'))) : asset('placeholder.jpg');
+                            $sub->thumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : '/' . ltrim($sub->thumbnail, '/')) : '/placeholder.jpg';
                             return $sub;
                         });
                     }
@@ -616,6 +618,20 @@ class FrontendApiController extends Controller
             $shop = Shop::where('user_id', $product->seller_id)->first();
         }
 
+        $sellingPrice = (float) $product->selling_price;
+        $discountAmount = (float) ($product->discount_price ?? 0);
+        $buyingPrice = (float) ($product->buying_price ?? 0);
+
+        if ($discountAmount > 0) {
+            $originalPrice = $sellingPrice + $discountAmount;
+        } elseif ($buyingPrice > $sellingPrice) {
+            $originalPrice = $buyingPrice;
+            $discountAmount = $buyingPrice - $sellingPrice;
+        } else {
+            $originalPrice = $sellingPrice;
+        }
+        $discountPercentage = $originalPrice > 0 ? round(($discountAmount / $originalPrice) * 100) : 0;
+
         return [
             'id'                => $product->id,
             'slug'              => $product->slug,
@@ -629,11 +645,16 @@ class FrontendApiController extends Controller
             'name'              => $product->name,
             'short_description' => $product->short_description,
             'description'       => $product->description,
-            'price'             => (float) $product->selling_price,
-            'discount_price'    => (float) $product->discount_price,
-            'old_price'         => (float) ($product->selling_price + $product->discount_price),
-            'discount'          => $product->discount_price > 0 ? round(($product->discount_price / ($product->selling_price + $product->discount_price)) * 100) : 0,
+            'price'             => $sellingPrice,
+            'selling_price'     => $sellingPrice,
+            'buying_price'      => $buyingPrice,
+            'discount_price'    => $discountAmount,
+            'oldPrice'          => $originalPrice,
+            'old_price'         => $originalPrice,
+            'discount'          => $discountPercentage,
+            'discount_percentage'=> $discountPercentage,
             'stock'             => $product->stock_quantity,
+            'stock_quantity'    => $product->stock_quantity,
             'sku'               => $product->sku,
             'thumbnail'         => ($product->thumbnail ? (str_starts_with($product->thumbnail, 'http') ? $product->thumbnail : '/' . ltrim($product->thumbnail, '/')) : '/placeholder.jpg') . '?v=' . self::ASSET_VERSION,
             'gallery'           => collect($product->gallery_images)->map(fn($img) => (str_starts_with($img, 'http') ? $img : '/' . $img) . '?v=' . time()),
@@ -1118,7 +1139,16 @@ class FrontendApiController extends Controller
     {
         $sellingPrice = (float) $product->selling_price;
         $discountAmount = (float) ($product->discount_price ?? 0);
-        $originalPrice = $sellingPrice + $discountAmount;
+        $buyingPrice = (float) ($product->buying_price ?? 0);
+
+        if ($discountAmount > 0) {
+            $originalPrice = $sellingPrice + $discountAmount;
+        } elseif ($buyingPrice > $sellingPrice) {
+            $originalPrice = $buyingPrice;
+            $discountAmount = $buyingPrice - $sellingPrice;
+        } else {
+            $originalPrice = $sellingPrice;
+        }
         $discountPercentage = $originalPrice > 0 ? round(($discountAmount / $originalPrice) * 100) : 0;
 
         return [
@@ -1128,15 +1158,20 @@ class FrontendApiController extends Controller
             'product_type'        => $type,
             'seller_id'           => ($type === 'seller' || $type === 'digital_seller') ? ($product->seller_id ?? 0) : 0,
             'title'               => $product->name,
+            'name'                => $product->name,
             'image'               => (
                                         $product->thumbnail ? (
                                             str_starts_with($product->thumbnail, 'http')
                                             ? $product->thumbnail
-                                            : asset(ltrim(str_starts_with($product->thumbnail, 'uploads/') ? $product->thumbnail : 'uploads/product/' . ltrim($product->thumbnail, '/'), '/'))
-                                        ) : asset('placeholder.jpg')
+                                            : '/' . ltrim(str_starts_with($product->thumbnail, 'uploads/') ? $product->thumbnail : 'uploads/product/' . ltrim($product->thumbnail, '/'), '/')
+                                        ) : '/placeholder.jpg'
                                      ) . '?v=' . self::ASSET_VERSION,
             'price'               => $sellingPrice,
+            'selling_price'       => $sellingPrice,
+            'buying_price'        => $buyingPrice,
+            'discount_price'      => $discountAmount,
             'oldPrice'            => $originalPrice,
+            'old_price'           => $originalPrice,
             'discount'            => $discountPercentage,
             'discount_percentage' => $discountPercentage,
             'rating'              => round($product->reviews_avg_rating ?? ($product->rating ?? 0), 1),

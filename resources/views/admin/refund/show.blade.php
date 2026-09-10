@@ -39,10 +39,14 @@
                             <div class="col-md-6">
                                 <p class="text-muted mb-1"><small>Order ID</small></p>
                                 <p class="fw-bold">
-                                    <a href="{{ route('admin.orders.show', $refund->order->id) }}"
-                                       class="text-decoration-none">
-                                        #{{ $refund->order->invoice->invoice_number ?? $refund->order->id }}
-                                    </a>
+                                    @if($refund->order)
+                                        <a href="{{ route('admin.orders.show', $refund->order->id) }}"
+                                           class="text-decoration-none">
+                                            #{{ $refund->order->invoice->invoice_number ?? $refund->order->id }}
+                                        </a>
+                                    @else
+                                        #{{ $refund->order_id }} (Not Found)
+                                    @endif
                                 </p>
                             </div>
                             <div class="col-md-6">
@@ -87,9 +91,15 @@
                                             }
                                         }
                                     }
-                                    $thumbnail = $orderItem['thumbnail'] ?? null;
+                                    $thumbnail = $orderItem['thumbnail'] ?? ($orderItem['image'] ?? null);
                                     if (!$thumbnail && $refund->product) {
                                         $thumbnail = $refund->product->thumbnail;
+                                    }
+                                    if (!$thumbnail && $refund->product_id) {
+                                        $dbProduct = \App\Models\Product::find($refund->product_id) ?? \App\Models\SellerProduct::find($refund->product_id);
+                                        if ($dbProduct) {
+                                            $thumbnail = $dbProduct->thumbnail;
+                                        }
                                     }
                                 @endphp
 

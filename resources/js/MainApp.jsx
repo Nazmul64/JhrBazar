@@ -32,9 +32,15 @@ import { SettingsProvider } from './context/SettingsContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { Toaster } from 'react-hot-toast';
 import LiveChatWidget from './components/LiveChatWidget';
+import { initTrackingSystem, trackPageView } from './utils/dataLayer';
 
 const RouteTracker = () => {
     const location = useLocation();
+
+    useEffect(() => {
+        // Initialize Tracking & Attribution system
+        initTrackingSystem();
+    }, []);
 
     useEffect(() => {
         let pageName = 'Home Page';
@@ -50,10 +56,11 @@ const RouteTracker = () => {
         else if (path.startsWith('/subcategory/')) pageName = 'Subcategory Page';
         else if (path === '/search') pageName = 'Search Page';
         else if (path === '/customer/dashboard') pageName = 'Customer Dashboard';
+        else if (path.startsWith('/l/')) pageName = 'Landing Page';
         else pageName = path;
 
-        axios.post('/api/track-visit', { page: pageName })
-            .catch(err => console.log('Tracking error:', err));
+        // Dispatch GA4 DataLayer page_view event
+        trackPageView(pageName, path);
     }, [location]);
 
     return null;

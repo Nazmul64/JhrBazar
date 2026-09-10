@@ -32,11 +32,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\CheckBlocked::class,
             \App\Http\Middleware\TrackReturningCustomer::class,
+            \App\Http\Middleware\NormalizeImageUrls::class,
         ]);
 
         $middleware->appendToGroup('api', [
             \App\Http\Middleware\CheckBlocked::class,
             \App\Http\Middleware\TrackReturningCustomer::class,
+            \App\Http\Middleware\NormalizeImageUrls::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

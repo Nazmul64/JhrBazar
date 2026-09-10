@@ -31,7 +31,7 @@ class ReviewController extends Controller
         }
 
         // Check if user has already reviewed this product
-        $existing = Review::where('user_id', auth()->id())
+        $existing = Review::where('user_id', auth('sanctum')->id())
             ->where('product_id', $request->product_id)
             ->where('product_type', $request->product_type)
             ->first();
@@ -58,18 +58,18 @@ class ReviewController extends Controller
         }
 
         $review = Review::create([
-            'user_id'      => auth()->id(),
+            'user_id'      => auth('sanctum')->id(),
             'shop_id'      => $shopId,
             'product_id'   => $request->product_id,
             'product_type' => $request->product_type,
             'rating'       => $request->rating,
             'comment'      => $request->comment,
-            'status'       => 1, // Auto-approve
+            'status'       => 0, // Pending — admin must approve before it shows
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'আপনার রিভিউটি সফলভাবে জমা দেওয়া হয়েছে।',
+            'message' => 'আপনার রিভিউটি সফলভাবে জমা হয়েছে। অ্যাডমিন অনুমোদনের পর প্রোডাক্ট পেজে দেখা যাবে।',
             'data'    => $review
         ]);
     }

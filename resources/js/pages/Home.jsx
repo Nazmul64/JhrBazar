@@ -28,7 +28,7 @@ const Home = () => {
     const [recentReviews, setRecentReviews] = useState(homeData?.recentReviews || []);
     const [frontendSections, setFrontendSections] = useState(homeData?.frontendSections || []);
     const [ourBrands, setOurBrands] = useState(homeData?.ourBrands || []);
-    const [loading, setLoading] = useState(!homeData);
+    const [loading, setLoading] = useState(false);
     const brandSliderRef = useRef(null);
 
     const applyData = (data) => {
@@ -47,6 +47,14 @@ const Home = () => {
     };
 
     useEffect(() => {
+        // If homeData already came from server-side injection, skip the API call entirely.
+        // This eliminates the 4-5s delay on first load.
+        if (homeData) {
+            applyData(homeData);
+            setLoading(false);
+            return;
+        }
+
         const fetchData = async () => {
             try {
                 const res = await axios.get('/api/home-data');

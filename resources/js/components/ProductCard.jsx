@@ -180,9 +180,9 @@ const ProductCard = ({ product }) => {
                     <span className="fw-bold product-price-current" style={{ color: '#ff4d4d', fontSize: '16px' }}>
                         ৳{Number(product.price).toLocaleString('en-BD')}
                     </span>
-                    {product.oldPrice > product.price && (
+                    {Number(product.oldPrice || product.old_price) > Number(product.price) && (
                         <span className="text-muted text-decoration-line-through product-price-old" style={{ fontSize: '12px' }}>
-                            ৳{Number(product.oldPrice).toLocaleString('en-BD')}
+                            ৳{Number(product.oldPrice || product.old_price).toLocaleString('en-BD')}
                         </span>
                     )}
                 </div>

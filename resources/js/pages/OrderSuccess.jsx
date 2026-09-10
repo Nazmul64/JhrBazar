@@ -252,6 +252,10 @@ const OrderSuccess = () => {
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
                 
+                canvas {
+                    pointer-events: none !important;
+                }
+                
                 .order-success-page {
                     font-family: 'Hind Siliguri', sans-serif !important;
                 }

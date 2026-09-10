@@ -7,6 +7,11 @@
         <h4 class="fw-bold mb-0">
             <i class="bi bi-person-check-fill me-2 text-danger"></i> Seller Approvals
         </h4>
+        @if(auth()->user()->hasPermission('shop.list'))
+        <a href="{{ route('admin.shops.create') }}" class="btn btn-primary px-4 fw-bold shadow-sm rounded-3">
+            <i class="bi bi-person-plus-fill me-2"></i> Create Seller
+        </a>
+        @endif
     </div>
 
     {{-- ── PENDING SELLERS ─────────────────────────────────────────────────── --}}

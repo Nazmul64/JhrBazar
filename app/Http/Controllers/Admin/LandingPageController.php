@@ -187,7 +187,7 @@ class LandingPageController extends Controller
             ? Str::slug($request->slug) 
             : $landingpage->slug;
 
-        $landingpage->update([
+        $updateData = [
             'title'                  => $title,
             'slug'                   => $slug,
             'product_id'             => $request->filled('product_id') ? $request->product_id : null,
@@ -203,10 +203,17 @@ class LandingPageController extends Controller
             'reviews'                => $reviews ?: null,
             'short_description'      => $request->short_description,
             'description'            => $request->description,
-            'sections'               => $sections ?: null,
             'status'                 => $request->has('status') ? 1 : 0,
             'is_template'            => $request->has('is_template') ? 1 : 0,
-        ]);
+        ];
+
+        if ($request->has('sections_data')) {
+            $sections = json_decode($request->input('sections_data', '[]'), true);
+            $sections = $this->processUploadedSectionImages($request, $sections);
+            $updateData['sections'] = $sections ?: null;
+        }
+
+        $landingpage->update($updateData);
 
         if ($request->input('action') === 'builder') {
             return redirect('/landing-builder/' . $landingpage->id);
@@ -341,7 +348,9 @@ class LandingPageController extends Controller
             // Handle section image uploads
             $fileKey = "section_image_{$idx}";
             if ($request->hasFile($fileKey)) {
-                $section['data']['image'] = $this->uploadFile($request->file($fileKey));
+                $path = $this->uploadFile($request->file($fileKey));
+                $section['data']['image'] = $path;
+                $section['data']['image_path'] = $path;
             }
 
             // Handle gallery images
@@ -363,6 +372,7 @@ class LandingPageController extends Controller
     private function deleteSectionImages(array $section): void
     {
         $this->deleteFile($section['data']['image'] ?? null);
+        $this->deleteFile($section['data']['image_path'] ?? null);
 
         foreach ($section['data']['gallery'] ?? [] as $img) {
             $this->deleteFile($img);

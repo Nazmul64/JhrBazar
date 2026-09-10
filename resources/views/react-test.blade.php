@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     @php
-        $setting = \App\Models\GenaralSetting::first();
-        $websiteName = $setting ? $setting->website_name : 'Laravel React Integration';
+        // Reuse settings already embedded in homeData to avoid an extra DB query.
+        $setting = isset($homeData->data->settings) ? (object) (array) $homeData->data->settings : \App\Models\GenaralSetting::first();
+        $websiteName = $setting ? $setting->website_name : 'JhrBazar';
     @endphp
     <title>{{ $websiteName }}</title>
     <!-- Bootstrap 5 CSS -->
@@ -30,8 +31,20 @@
             --button-color: {{ $setting->button_color ?? '#57b500' }};
         }
     </style>
+    @php
+        $trackingSetting = \App\Models\TrackingSetting::first();
+    @endphp
+    @if($trackingSetting && $trackingSetting->is_active)
+        @if($trackingSetting->custom_head_script)
+            {!! $trackingSetting->custom_head_script !!}
+        @endif
+    @endif
 </head>
 <body class="bg-light">
+    @if($trackingSetting && $trackingSetting->is_active && $trackingSetting->custom_body_script)
+        {!! $trackingSetting->custom_body_script !!}
+    @endif
     <div id="react-app"></div>
 </body>
 </html>
+

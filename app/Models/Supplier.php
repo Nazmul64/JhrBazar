@@ -10,14 +10,19 @@ class Supplier extends Model
     use HasFactory;
 
     protected $fillable = [
-        'seller_id',
-        'user_id',
+        'name',
+        'phone',
+        'email',
         'address',
         'profile_image',
+        'status',
         'is_active',
+        'seller_id',
+        'user_id',
     ];
 
     protected $casts = [
+        'status'    => 'boolean',
         'is_active' => 'boolean',
     ];
 
@@ -38,20 +43,20 @@ class Supplier extends Model
         return $this->hasMany(Purchase::class);
     }
 
-    // ── Accessors — name/phone/email from user ─
+    // ── Accessors — name/phone/email ──────────
 
     public function getNameAttribute(): string
     {
-        return $this->user?->name ?? '—';
+        return $this->attributes['name'] ?? ($this->user?->name ?? '—');
     }
 
     public function getEmailAttribute(): string
     {
-        return $this->user?->email ?? '—';
+        return $this->attributes['email'] ?? ($this->user?->email ?? '—');
     }
 
     public function getPhoneAttribute(): string
     {
-        return $this->user?->phone ?? '—';
+        return $this->attributes['phone'] ?? ($this->user?->phone ?? '—');
     }
 }

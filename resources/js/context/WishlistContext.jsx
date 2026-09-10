@@ -23,9 +23,11 @@ export const WishlistProvider = ({ children }) => {
 
     const fetchWishlist = async () => {
         try {
-            const res = await axios.get('/api/wishlist', {
-                headers: { 'X-Session-Id': sessionId }
-            });
+            const token = localStorage.getItem('auth_token');
+            const headers = { 'X-Session-Id': sessionId };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const res = await axios.get('/api/wishlist', { headers });
             if (res.data.success) {
                 setWishlist(res.data.data);
             }
@@ -44,25 +46,27 @@ export const WishlistProvider = ({ children }) => {
 
     const toggleWishlist = async (product) => {
         try {
+            const token = localStorage.getItem('auth_token');
+            const headers = { 'X-Session-Id': sessionId };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
             const res = await axios.post('/api/wishlist/toggle', {
                 product_id: product.id,
                 product_type: product.product_type || 'admin'
-            }, {
-                headers: { 'X-Session-Id': sessionId }
-            });
+            }, { headers });
 
             if (res.data.success) {
                 fetchWishlist();
                 if (res.data.action === 'added') {
-                    toast.success('Added to wishlist!');
+                    toast.success('উইশলিস্টে যোগ হয়েছে!');
                 } else {
-                    toast.success('Removed from wishlist!');
+                    toast.success('উইশলিস্ট থেকে সরানো হয়েছে!');
                 }
                 return res.data.action;
             }
         } catch (error) {
             console.error("Error toggling wishlist:", error);
-            toast.error('Something went wrong!');
+            toast.error('কিছু একটা সমস্যা হয়েছে!');
         }
         return null;
     };
@@ -73,10 +77,14 @@ export const WishlistProvider = ({ children }) => {
 
     const syncWishlist = async () => {
         try {
-            await axios.post('/api/wishlist/sync', {}, {
-                headers: { 'X-Session-Id': sessionId }
-            });
-            fetchWishlist();
+            const token = localStorage.getItem('auth_token');
+            if (!token) return; // can only sync if logged in
+            const headers = {
+                'X-Session-Id': sessionId,
+                'Authorization': `Bearer ${token}`
+            };
+            await axios.post('/api/wishlist/sync', {}, { headers });
+            fetchWishlist(); // refresh after sync
         } catch (error) {
             console.error("Error syncing wishlist:", error);
         }

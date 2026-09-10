@@ -249,6 +249,70 @@ class PointOfSalePosController extends Controller
     }
 
     // ──────────────────────────────────────────────────────────────
+    //  THERMAL RECEIPT VIEW (80mm / 58mm)
+    // ──────────────────────────────────────────────────────────────
+    public function thermalReceipt(PosInvoice $invoice)
+    {
+        $invoice->load('customer.user', 'order');
+        $settings = GenaralSetting::first();
+
+        return view('admin.invoice.thermal',
+            compact('invoice', 'settings'));
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  AJAX — Instant Barcode Scanner Lookup
+    // ──────────────────────────────────────────────────────────────
+    public function scanBarcode(Request $request): JsonResponse
+    {
+        $code = trim($request->barcode);
+        if (!$code) {
+            return response()->json(['success' => false, 'message' => 'No barcode provided.'], 422);
+        }
+
+        $product = Product::where('is_active', true)
+            ->where(function($q) use ($code) {
+                $q->where('barcode', $code)
+                  ->orWhere('sku', $code);
+            })
+            ->first();
+
+        if (!$product) {
+            return response()->json(['success' => false, 'message' => "Product not found for barcode: {$code}"], 404);
+        }
+
+        if ($product->stock_quantity <= 0) {
+            return response()->json([
+                'success' => false, 
+                'message' => "Product '{$product->name}' is currently OUT OF STOCK!",
+                'product' => $product
+            ], 422);
+        }
+
+        $price = ((float)($product->discount_price ?? 0)) > 0 
+            ? (float)$product->discount_price 
+            : (float)$product->selling_price;
+
+        return response()->json([
+            'success' => true,
+            'product' => [
+                'id'             => $product->id,
+                'name'           => $product->name,
+                'sku'            => $product->sku,
+                'barcode'        => $product->barcode,
+                'selling_price'  => (float)$product->selling_price,
+                'discount_price' => (float)($product->discount_price ?? 0),
+                'price'          => $price,
+                'stock_quantity' => $product->stock_quantity,
+                'thumbnail'      => $product->thumbnail,
+                'size'           => $product->size,
+                'color'          => $product->color,
+                'unit'           => $product->unit,
+            ]
+        ]);
+    }
+
+    // ──────────────────────────────────────────────────────────────
     //  POS SALES HISTORY — Index (paginated list)
     // ──────────────────────────────────────────────────────────────
     public function salesIndex(Request $request)
@@ -314,7 +378,16 @@ class PointOfSalePosController extends Controller
         ]);
 
         if ($invoice->order) {
-            $invoice->order->update(['status' => $request->status]);
+            $prevStatus = $invoice->order->status;
+            $newStatus  = $request->status;
+
+            $invoice->order->update(['status' => $newStatus]);
+
+            if (in_array($newStatus, ['completed', 'delivered']) && !in_array($prevStatus, ['completed', 'delivered'])) {
+                \App\Services\InventoryService::deductForOrder($invoice->order->id, $invoice->order->items ?? [], auth()->id());
+            } elseif (in_array($prevStatus, ['completed', 'delivered']) && in_array($newStatus, ['cancelled', 'draft'])) {
+                \App\Services\InventoryService::restoreForOrder($invoice->order->id, $invoice->order->items ?? [], 'order_cancelled', 'POS Order status changed to ' . $newStatus, auth()->id());
+            }
         }
 
         return response()->json([
@@ -415,7 +488,7 @@ class PointOfSalePosController extends Controller
         DB::beginTransaction();
         try {
             $productIds = collect($request->items)->pluck('id');
-            $products   = Product::whereIn('id', $productIds)->get()->keyBy('id');
+            $products   = Product::whereIn('id', $productIds)->lockForUpdate()->get()->keyBy('id');
 
             $itemSnapshots = [];
             $subTotal      = 0;
@@ -423,6 +496,14 @@ class PointOfSalePosController extends Controller
             foreach ($request->items as $item) {
                 $product = $products->get($item['id']);
                 if (! $product) continue;
+
+                if (! $product->is_unlimited && $product->stock_quantity < (int)$item['qty']) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Insufficient stock for '{$product->name}'. Available: {$product->stock_quantity}, Requested: {$item['qty']}",
+                    ], 422);
+                }
 
                 $price     = (float)(
                     ((float)($product->discount_price ?? 0)) > 0
@@ -449,10 +530,6 @@ class PointOfSalePosController extends Controller
                     'short_description' => $product->short_description ?? null,
                     'line_total'        => $lineTotal,
                 ];
-
-                if ($status === 'completed') {
-                    $product->decrement('stock_quantity', $qty);
-                }
             }
 
             if (empty($itemSnapshots)) {
@@ -498,8 +575,12 @@ class PointOfSalePosController extends Controller
             ]);
 
             $invoiceUrl = null;
+            $thermalUrl = null;
 
             if ($status === 'completed') {
+                // Deduct stock and log into InventoryLedger
+                \App\Services\InventoryService::deductForOrder($order->id, $itemSnapshots, auth()->id());
+
                 $invoice = PosInvoice::create([
                     'invoice_number'   => PosInvoice::generateInvoiceNumber(),
                     'pointofsalepo_id' => $order->id,
@@ -519,6 +600,7 @@ class PointOfSalePosController extends Controller
                 ]);
 
                 $invoiceUrl = route('admin.pointofsalepos.invoice', $invoice->id);
+                $thermalUrl = route('admin.pointofsalepos.thermal', $invoice->id) . '?autoprint=1';
             }
 
             DB::commit();
@@ -527,6 +609,7 @@ class PointOfSalePosController extends Controller
                 'success'     => true,
                 'order_id'    => $order->id,
                 'invoice_url' => $invoiceUrl,
+                'thermal_url' => $thermalUrl,
                 'message'     => $status === 'draft'
                     ? 'Draft saved successfully.'
                     : 'Order placed successfully.',

@@ -255,7 +255,17 @@
                         <td>{{ $product->category->name ?? '—' }}</td>
                         <td style="font-size:12px;color:var(--muted);font-family:monospace;">{{ $product->sku }}</td>
                         <td>৳{{ number_format($product->selling_price, 0) }}</td>
-                        <td>{{ $product->stock_quantity }}</td>
+                        <td>
+                            @if($product->is_unlimited)
+                                <span class="badge bg-info-subtle text-info fw-semibold"><i class="bi bi-infinity"></i> Unlimited</span>
+                            @elseif($product->stock_quantity <= 0)
+                                <span class="badge bg-danger-subtle text-danger fw-bold">0 (Out)</span>
+                            @elseif($product->isLowStock())
+                                <span class="badge bg-warning-subtle text-warning-emphasis fw-bold">{{ $product->stock_quantity }} (Low)</span>
+                            @else
+                                <span class="badge bg-success-subtle text-success fw-bold">{{ $product->stock_quantity }}</span>
+                            @endif
+                        </td>
                         <td style="text-align:center;">
                             <form action="{{ route('products.toggle', $product->id) }}" method="POST">
                                 @csrf

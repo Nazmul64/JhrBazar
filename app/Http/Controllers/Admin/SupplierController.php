@@ -21,10 +21,15 @@ class SupplierController extends Controller
 
         if ($request->filled('search')) {
             $s = $request->search;
-            $query->whereHas('user', function ($q) use ($s) {
-                $q->where('name',  'like', "%{$s}%")
+            $query->where(function($q) use ($s) {
+                $q->where('name', 'like', "%{$s}%")
                   ->orWhere('phone', 'like', "%{$s}%")
-                  ->orWhere('email', 'like', "%{$s}%");
+                  ->orWhere('email', 'like', "%{$s}%")
+                  ->orWhereHas('user', function ($uq) use ($s) {
+                      $uq->where('name',  'like', "%{$s}%")
+                         ->orWhere('phone', 'like', "%{$s}%")
+                         ->orWhere('email', 'like', "%{$s}%");
+                  });
             });
         }
 
@@ -47,19 +52,23 @@ class SupplierController extends Controller
     {
         $request->validate([
             'name'          => 'required|string|max:255',
-            'phone'         => 'required|string|max:20',
-            'email'         => 'required|email|unique:users,email',
+            'phone'         => 'nullable|string|max:20',
+            'email'         => 'nullable|email|max:191',
             'address'       => 'nullable|string|max:500',
-            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        $user = User::create([
-            'name'     => $request->name,
-            'phone'    => $request->phone,
-            'email'    => $request->email,
-            'password' => Hash::make($request->phone), // default password = phone number
-            'role'     => 'vendor',
-        ]);
+        $userId = null;
+        if ($request->filled('email') && !User::where('email', $request->email)->exists()) {
+            $user = User::create([
+                'name'     => $request->name,
+                'phone'    => $request->phone ?? '',
+                'email'    => $request->email,
+                'password' => Hash::make($request->phone ?: '12345678'),
+                'role'     => 'vendor',
+            ]);
+            $userId = $user->id;
+        }
 
         $imagePath = null;
         if ($request->hasFile('profile_image')) {
@@ -67,9 +76,14 @@ class SupplierController extends Controller
         }
 
         Supplier::create([
-            'user_id'       => $user->id,
+            'name'          => $request->name,
+            'phone'         => $request->phone,
+            'email'         => $request->email,
+            'user_id'       => $userId,
             'address'       => $request->address,
             'profile_image' => $imagePath,
+            'status'        => 1,
+            'is_active'     => 1,
         ]);
 
         return redirect()->route('admin.supplier.index')
@@ -128,19 +142,26 @@ class SupplierController extends Controller
     {
         $request->validate([
             'name'          => 'required|string|max:255',
-            'phone'         => 'required|string|max:20',
-            'email'         => 'required|email|unique:users,email,' . $supplier->user_id,
+            'phone'         => 'nullable|string|max:20',
+            'email'         => 'nullable|email|max:191',
             'address'       => 'nullable|string|max:500',
-            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        $supplier->user->update([
-            'name'  => $request->name,
-            'phone' => $request->phone,
-            'email' => $request->email,
-        ]);
+        if ($supplier->user) {
+            $supplier->user->update([
+                'name'  => $request->name,
+                'phone' => $request->phone ?? $supplier->user->phone,
+                'email' => $request->email ?? $supplier->user->email,
+            ]);
+        }
 
-        $data = ['address' => $request->address];
+        $data = [
+            'name'    => $request->name,
+            'phone'   => $request->phone,
+            'email'   => $request->email,
+            'address' => $request->address,
+        ];
 
         if ($request->hasFile('profile_image')) {
             $this->deleteImage($supplier->profile_image);
@@ -159,7 +180,10 @@ class SupplierController extends Controller
     public function destroy(Supplier $supplier)
     {
         $this->deleteImage($supplier->profile_image);
-        $supplier->user->delete(); // cascades to supplier row
+        if ($supplier->user) {
+            $supplier->user->delete();
+        }
+        $supplier->delete();
         return redirect()->route('admin.supplier.index')
             ->with('success', 'Supplier deleted successfully.');
     }
@@ -169,8 +193,12 @@ class SupplierController extends Controller
     // ══════════════════════════════════════════════════
     public function toggleStatus(Supplier $supplier)
     {
-        $supplier->update(['is_active' => !$supplier->is_active]);
-        return redirect()->back()->with('success', 'Status updated.');
+        $newStatus = !$supplier->status;
+        $supplier->update([
+            'status'    => $newStatus,
+            'is_active' => $newStatus,
+        ]);
+        return redirect()->back()->with('success', 'Supplier status updated.');
     }
 
     // ══════════════════════════════════════════════════

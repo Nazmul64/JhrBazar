@@ -389,6 +389,12 @@
                                         <li class="d-flex align-items-center gap-2 mb-2">
                                             @php
                                                 $imgUrl = $item['image'] ?? ($item['thumbnail'] ?? null);
+                                                if (!$imgUrl && isset($item['id'])) {
+                                                    $dbProduct = \App\Models\Product::find($item['id']) ?? \App\Models\SellerProduct::find($item['id']);
+                                                    if ($dbProduct) {
+                                                        $imgUrl = $dbProduct->thumbnail;
+                                                    }
+                                                }
                                                 if ($imgUrl) {
                                                     $imgUrl = ltrim($imgUrl, '/');
                                                     if (str_starts_with($imgUrl, 'http')) {

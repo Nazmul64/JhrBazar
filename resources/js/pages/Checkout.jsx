@@ -4,6 +4,9 @@ import { useCart } from '../context/CartContext';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { trackBeginCheckout, trackAddShippingInfo, trackPurchase } from '../utils/dataLayer';
+import { getAttributionData } from '../utils/attribution';
+
 
 const generateCanvasFingerprint = () => {
     let fp = localStorage.getItem('device_fingerprint_secure');
@@ -184,20 +187,10 @@ const Checkout = () => {
     // Data Layer: begin_checkout
     useEffect(() => {
         if (cartItems.length > 0) {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-                event: 'begin_checkout',
-                currency: 'BDT',
-                value: Number(cartTotal),
-                items: cartItems.map(item => ({
-                    item_id: String(item.id),
-                    item_name: item.name,
-                    price: Number(item.price),
-                    quantity: Number(item.qty)
-                }))
-            });
+            trackBeginCheckout(cartItems, cartTotal);
         }
-    }, [cartItems, cartTotal]);
+    }, [cartItems.length, cartTotal]);
+
 
     // Lead Capture Logic (Incomplete Orders)
     useEffect(() => {
@@ -308,7 +301,7 @@ const Checkout = () => {
     };
 
     const shippingAmount = selectedShipping ? Number(selectedShipping.charge) : 0;
-    const finalTotal = (cartTotal + shippingAmount) - couponDiscount;
+    const finalTotal = cartTotal - couponDiscount;
     const selectedGateway = availableGateways.find(gateway => gateway.key === formData.online_gateway);
     const submitButtonLabel = otpSent
         ? 'ওটিপি যাচাই করে অর্ডার নিশ্চিত করুন (Verify & Confirm)'
@@ -363,7 +356,8 @@ const Checkout = () => {
 
         setLoading(true);
         try {
-            const res = await axios.post('/api/place-order', {
+            const attribution = getAttributionData();
+            const orderPayload = {
                 ...formData,
                 city: selectedShipping ? selectedShipping.area_name : 'N/A',
                 items: cartItems,
@@ -374,10 +368,35 @@ const Checkout = () => {
                 browser: getBrowserName(),
                 os: getOSName(),
                 device_type: getDeviceType(),
-                otp_code: otpSent ? otpCode : null
-            });
+                otp_code: otpSent ? otpCode : null,
+                // Attribution Data
+                session_id: attribution.session_id,
+                utm_source: attribution.utm_source,
+                utm_medium: attribution.utm_medium,
+                utm_campaign: attribution.utm_campaign,
+                click_id: attribution.click_id,
+                click_id_type: attribution.click_id_type,
+                detected_platform: attribution.detected_platform,
+            };
+
+            const res = await axios.post('/api/place-order', orderPayload);
 
             if (res.data.success) {
+                // Dispatch GA4, Meta & TikTok Purchase event with full customer information
+                const firstOrder = res.data.orders?.[0] || {
+                    id: res.data.order_id || Date.now(),
+                    total: finalTotal + shippingAmount,
+                    shipping_charge: shippingAmount,
+                    payment_method: formData.payment_method,
+                };
+                trackPurchase(firstOrder, {
+                    name: formData.name,
+                    phone: formData.phone,
+                    email: formData.email,
+                    address: formData.address,
+                    district: selectedShipping ? selectedShipping.area_name : 'Dhaka',
+                }, cartItems);
+
                 if (res.data.payment_url) {
                     window.location.href = res.data.payment_url;
                 } else {
@@ -390,6 +409,7 @@ const Checkout = () => {
             } else {
                 toast.error(res.data.message || "Failed to place order");
             }
+
         } catch (error) {
             console.error("Order error", error);
             const msg = error.response?.data?.message || "Something went wrong. Please try again.";
@@ -912,7 +932,7 @@ const Checkout = () => {
                                         </div>
                                         <div className="d-flex justify-content-between mb-2">
                                             <span className="text-muted small">Shipping Charge ({selectedShipping?.area_name})</span>
-                                            <span className="fw-bold small text-dark">৳{Number(shippingAmount).toLocaleString()}</span>
+                                            <span className="fw-bold small text-dark">৳{Number(shippingAmount).toLocaleString()} <span className="text-muted fw-normal" style={{ fontSize: '11px' }}>(হাতে প্রদান)</span></span>
                                         </div>
                                         {couponDiscount > 0 && (
                                             <div className="d-flex justify-content-between mb-2 text-danger">
@@ -921,7 +941,7 @@ const Checkout = () => {
                                             </div>
                                         )}
                                         <div className="d-flex justify-content-between pt-2 border-top mt-2">
-                                            <span className="fw-bold">Total Amount</span>
+                                            <span className="fw-bold">Total Payable</span>
                                             <span className="fw-bold h4 mb-0" style={{ color: mainColor }}>৳{Number(finalTotal).toLocaleString()}</span>
                                         </div>
                                     </div>

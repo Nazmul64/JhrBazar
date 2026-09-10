@@ -394,11 +394,11 @@
                         <span class="tog-track"></span>
                     </label>
                 </div>
-                <div class="card-row">
+                <div class="card-row" @if(($shop->products_count ?? 0) == 0) title="এখনো কোনো প্রোডাক্ট আপলোড হয় নাই।" @endif>
                     <span class="card-row-label">Products</span>
                     <span class="badge-ct badge-dark">{{ $shop->products_count ?? 0 }}</span>
                 </div>
-                <div class="card-row">
+                <div class="card-row" @if(($shop->orders_count ?? 0) == 0) title="এখনো কোনো অর্ডার হয় নাই।" @endif>
                     <span class="card-row-label">Orders</span>
                     <span class="badge-ct badge-pink">{{ $shop->orders_count ?? 0 }}</span>
                 </div>
@@ -475,10 +475,10 @@
                                     <span class="tog-track"></span>
                                 </label>
                             </td>
-                            <td style="text-align:center">
+                            <td style="text-align:center" @if(($shop->products_count ?? 0) == 0) title="এখনো কোনো প্রোডাক্ট আপলোড হয় নাই।" @endif>
                                 <span class="badge-ct badge-dark">{{ $shop->products_count ?? 0 }}</span>
                             </td>
-                            <td style="text-align:center">
+                            <td style="text-align:center" @if(($shop->orders_count ?? 0) == 0) title="এখনো কোনো অর্ডার হয় নাই।" @endif>
                                 <span class="badge-ct badge-pink">{{ $shop->orders_count ?? 0 }}</span>
                             </td>
                             <td>

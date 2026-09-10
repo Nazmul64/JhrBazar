@@ -18,33 +18,13 @@
 
  // Landing Page Public View Route (must be before catch-all)
  Route::get('/l/{slug}', function () {
-     $homeData = null;
-     try {
-         $response = app(\App\Http\Controllers\Api\FrontendApiController::class)->getHomeData();
-         if ($response instanceof \Symfony\Component\HttpFoundation\Response) {
-             $homeData = json_decode($response->getContent());
-         } else {
-             $homeData = json_decode(json_encode($response));
-         }
-     } catch (\Exception $e) {
-         // Fallback
-     }
+     $homeData = (object) ['success' => true, 'data' => (object) ['categories' => []]];
      return view('react-test', compact('homeData'));
  })->where('slug', '.+');
 
  // Landing Page Builder Route (must be before catch-all)
  Route::get('/landing-builder/{id}', function () {
-     $homeData = null;
-     try {
-         $response = app(\App\Http\Controllers\Api\FrontendApiController::class)->getHomeData();
-         if ($response instanceof \Symfony\Component\HttpFoundation\Response) {
-             $homeData = json_decode($response->getContent());
-         } else {
-             $homeData = json_decode(json_encode($response));
-         }
-     } catch (\Exception $e) {
-         // Fallback
-     }
+     $homeData = (object) ['success' => true, 'data' => (object) ['categories' => []]];
      return view('react-test', compact('homeData'));
  })->where('id', '[0-9]+');
 
@@ -90,6 +70,7 @@ use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\GeneralSettingController;
 use App\Http\Controllers\Admin\PointOfSalePosController;
 use App\Http\Controllers\Admin\ProductControllerController;
+use App\Http\Controllers\Admin\InventoryLedgerController;
 use App\Http\Controllers\Admin\PromocodeController;
 use App\Http\Controllers\Admin\SociallinkListController;
 use App\Http\Controllers\Admin\ThemecolorssettingController;
@@ -424,6 +405,14 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
     Route::get('products/{product}/barcode',          [ProductControllerController::class, 'barcode'])         ->name('products.barcode');
     Route::resource('products', ProductControllerController::class)->names('products');
 
+    // ── Stock Management & Inventory Ledger ───────────────────────────────────
+    Route::prefix('stock-management')->name('admin.inventory.')->group(function () {
+        Route::get('/',                 [InventoryLedgerController::class, 'index'])->name('index');
+        Route::post('/adjust',          [InventoryLedgerController::class, 'adjustStock'])->name('adjust');
+        Route::get('/history/{product}',[InventoryLedgerController::class, 'history'])->name('history');
+        Route::get('/alerts',           [InventoryLedgerController::class, 'lowStockAlerts'])->name('alerts');
+    });
+
     // ── Digital Products (Admin) ──────────────────────────────────────────────
     Route::get('admin-digital-products/subcategories/{categoryId}', [\App\Http\Controllers\Admin\DigitalProductController::class, 'getSubCategories'])->name('admin.digital_product.subcategories');
     Route::post('admin-digital-products/{id}/toggle', [\App\Http\Controllers\Admin\DigitalProductController::class, 'toggleStatus'])->name('admin.digital_product.toggle');
@@ -444,11 +433,34 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
     Route::post('promocode/{id}/toggle', [PromocodeController::class, 'toggleStatus'])->name('admin.promocode.toggle');
     Route::resource('promocode', PromocodeController::class)->names('admin.promocode');
 
+    // ── Local Purchases & Supplier Stock Replenishment ────────────────────────
+    Route::prefix('purchases')->name('admin.purchases.')->group(function () {
+        Route::get('/',              [\App\Http\Controllers\Admin\PurchaseController::class, 'index'])->name('index');
+        Route::get('/create',        [\App\Http\Controllers\Admin\PurchaseController::class, 'create'])->name('create');
+        Route::post('/store',        [\App\Http\Controllers\Admin\PurchaseController::class, 'store'])->name('store');
+        Route::get('/{purchase}',    [\App\Http\Controllers\Admin\PurchaseController::class, 'show'])->name('show');
+        Route::delete('/{purchase}', [\App\Http\Controllers\Admin\PurchaseController::class, 'destroy'])->name('destroy');
+    });
+
+    // ── Accounts Ledger & Cashbook (Income & Expense) ─────────────────────────
+    Route::prefix('accounts')->name('admin.accounts.')->group(function () {
+        Route::get('/',                         [\App\Http\Controllers\Admin\AccountsLedgerController::class, 'index'])->name('index');
+        Route::post('/store',                   [\App\Http\Controllers\Admin\AccountsLedgerController::class, 'store'])->name('store');
+        Route::delete('/{id}',                  [\App\Http\Controllers\Admin\AccountsLedgerController::class, 'destroy'])->name('destroy');
+        Route::get('/categories',               [\App\Http\Controllers\Admin\AccountsLedgerController::class, 'categories'])->name('categories');
+        Route::post('/categories',              [\App\Http\Controllers\Admin\AccountsLedgerController::class, 'storeCategory'])->name('categories.store');
+        Route::put('/categories/{id}',          [\App\Http\Controllers\Admin\AccountsLedgerController::class, 'updateCategory'])->name('categories.update');
+        Route::delete('/categories/{id}',       [\App\Http\Controllers\Admin\AccountsLedgerController::class, 'destroyCategory'])->name('categories.destroy');
+        Route::get('/report',                   [\App\Http\Controllers\Admin\AccountsLedgerController::class, 'printReport'])->name('report');
+    });
+
     // ── Point of Sale (POS) ───────────────────────────────────────────────────
     Route::prefix('pointofsalepos')->name('admin.pointofsalepos.')->group(function () {
         Route::get('/',                         [PointOfSalePosController::class, 'index'])          ->name('index');
         Route::get('invoice/{invoice}',         [PointOfSalePosController::class, 'invoice'])        ->name('invoice');
+        Route::get('thermal/{invoice}',         [PointOfSalePosController::class, 'thermalReceipt']) ->name('thermal');
         Route::get('products',                  [PointOfSalePosController::class, 'getProducts'])    ->name('products');
+        Route::post('scan-barcode',             [PointOfSalePosController::class, 'scanBarcode'])    ->name('scan.barcode');
         Route::get('customers/search',          [PointOfSalePosController::class, 'searchCustomers'])->name('customers.search');
         Route::post('customers/store',          [PointOfSalePosController::class, 'storeCustomer'])  ->name('customers.store');
         Route::post('apply-coupon',             [PointOfSalePosController::class, 'applyCoupon'])    ->name('apply.coupon');
@@ -691,9 +703,16 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
     Route::patch('landingpages/{landingpage}/toggle-status', [LandingPageController::class, 'toggleStatus'])->name('admin.landingpages.toggle-status');
     Route::post('landingpages/upload-section-image', [LandingPageController::class, 'uploadSectionImage'])->name('admin.landingpages.upload-section-image');
 
-    // ── Google Tag Manager ────────────────────────────────────────────────────
+    // ── Google Tag Manager & Advanced Tracking ──────────────────────────────
     Route::resource('googletagmanager', GoogleTagManagerController::class)->names('admin.googletagmanager')->except(['show']);
     Route::patch('googletagmanager/{googletagmanager}/toggle-status', [GoogleTagManagerController::class, 'toggleStatus'])->name('admin.googletagmanager.toggle-status');
+
+    // ── Marketing & Tracking (Advanced GTM, Pixels, Attribution) ─────────────
+    Route::get('tracking/settings', [\App\Http\Controllers\Admin\TrackingSettingController::class, 'index'])->name('admin.tracking.settings');
+    Route::post('tracking/settings', [\App\Http\Controllers\Admin\TrackingSettingController::class, 'update'])->name('admin.tracking.settings.update');
+    Route::get('tracking/attribution-report', [\App\Http\Controllers\Admin\MarketingAttributionController::class, 'index'])->name('admin.tracking.attribution');
+    Route::get('tracking/attribution-export-csv', [\App\Http\Controllers\Admin\MarketingAttributionController::class, 'exportCsv'])->name('admin.tracking.attribution.export-csv');
+
 
     // ── Duplicate Order Setting ───────────────────────────────────────────────
     Route::resource('duplicateordersetting', DuplicateordersettingController::class)->names('admin.duplicateordersetting')->except(['show']);
@@ -776,6 +795,14 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
     }); // end fraud group
 
 
+});
+
+// ── Admin Landing Page Builder API (Web Session Authenticated) ────────
+Route::middleware(['auth', 'admin'])->prefix('api/admin/landingpages')->name('api.admin.landingpage.')->group(function () {
+    Route::get('/{id}/sections',       [\App\Http\Controllers\Api\AdminLandingPageBuilderController::class, 'getSections'])->name('sections');
+    Route::post('/{id}/save-sections', [\App\Http\Controllers\Api\AdminLandingPageBuilderController::class, 'saveSections'])->name('save-sections');
+    Route::post('/{id}/save-settings', [\App\Http\Controllers\Api\AdminLandingPageBuilderController::class, 'saveSettings'])->name('save-settings');
+    Route::post('/upload-image',       [\App\Http\Controllers\Api\AdminLandingPageBuilderController::class, 'uploadImage'])->name('upload-image');
 });
 
 // ── Role-Based Dashboards ────────────────────────────────────────────────────

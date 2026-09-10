@@ -3,9 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import MasterLayout from '../layouts/MasterLayout';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { useWishlist } from '../context/WishlistContext';
 
 const Login = () => {
     const navigate = useNavigate();
+    const { syncWishlist } = useWishlist();
     const mainColor = '#57b500';
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -31,7 +33,9 @@ const Login = () => {
             if (res.data.success) {
                 localStorage.setItem('auth_token', res.data.access_token);
                 localStorage.setItem('user', JSON.stringify(res.data.user));
-                toast.success("Login successful!");
+                // Migrate any guest wishlist items to this user's account
+                await syncWishlist();
+                toast.success("সফলভাবে লগইন হয়েছে!");
                 navigate('/customer/dashboard');
             }
         } catch (err) {

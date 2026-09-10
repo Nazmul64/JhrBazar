@@ -19,6 +19,7 @@ class PathaoCourierController extends Controller
         $gateway->username = $request->username;
         $gateway->password = $request->password;
         $gateway->grant_type = $request->grant_type;
+        $gateway->status = $request->has('status') ? 1 : 0;
 
         if ($request->hasFile('logo')) {
             if ($gateway->logo) {

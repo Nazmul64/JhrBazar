@@ -355,6 +355,7 @@
                             <th>Order ID</th>
                             <th>Items</th>
                             <th>Customer</th>
+                            <th class="text-center" width="150">Platform</th>
                             <th width="140">Staff</th>
                             <th width="140">Status</th>
                             <th width="140">Payment</th>
@@ -425,6 +426,12 @@
                                         <div class="d-flex align-items-center gap-2 mb-1">
                                             @php
                                                 $img = $item['thumbnail'] ?? ($item['image'] ?? null);
+                                                if (!$img && isset($item['id'])) {
+                                                    $dbProduct = \App\Models\Product::find($item['id']) ?? \App\Models\SellerProduct::find($item['id']);
+                                                    if ($dbProduct) {
+                                                        $img = $dbProduct->thumbnail;
+                                                    }
+                                                }
                                                 if ($img) {
                                                     $img = ltrim($img, '/');
                                                     if (str_starts_with($img, 'http')) {
@@ -473,6 +480,34 @@
                                     </div>
                                 </div>
                             </td>
+                            <td class="text-center align-middle">
+                                @php
+                                    $attr = \App\Models\MarketingAttribution::where('invoice_id', $order->id)
+                                        ->orWhere('order_id', $order->pointofsalepo_id ?? ($order->order->id ?? 0))
+                                        ->first();
+                                    $platform = $attr ? ($attr->traffic_source ?: $attr->detected_platform) : 'Direct Visit';
+                                    $pLower = strtolower($platform);
+                                    
+                                    $pBg = '#f1f5f9'; $pColor = '#475569'; $pDot = '#94a3b8';
+                                    if (str_contains($pLower, 'facebook ads')) {
+                                        $pBg = '#e0f2fe'; $pColor = '#0369a1'; $pDot = '#0284c7';
+                                    } elseif (str_contains($pLower, 'google ads') || str_contains($pLower, 'google search')) {
+                                        $pBg = '#fee2e2'; $pColor = '#b91c1c'; $pDot = '#ef4444';
+                                    } elseif (str_contains($pLower, 'tiktok')) {
+                                        $pBg = '#0f172a'; $pColor = '#ffffff'; $pDot = '#38bdf8';
+                                    } elseif (str_contains($pLower, 'instagram')) {
+                                        $pBg = '#fdf2f8'; $pColor = '#be185d'; $pDot = '#ec4899';
+                                    } elseif (str_contains($pLower, 'youtube')) {
+                                        $pBg = '#ffe4e6'; $pColor = '#be123c'; $pDot = '#f43f5e';
+                                    } elseif (str_contains($pLower, 'organic')) {
+                                        $pBg = '#ecfdf5'; $pColor = '#047857'; $pDot = '#10b981';
+                                    }
+                                @endphp
+                                <span class="badge rounded-pill px-3 py-2 text-uppercase fw-bold" style="background-color: {{ $pBg }}; color: {{ $pColor }}; font-size: 11px; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: nowrap;">
+                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: {{ $pDot }};"></span>
+                                    {{ $platform }}
+                                </span>
+                            </td>
                             <td>
                                 @if(isset($order->order) && $order->order->staff)
                                     <span class="badge" style="background: rgba(67, 97, 238, 0.1); color: #4361ee; font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 8px;">
@@ -495,9 +530,11 @@
                             <td>
                                 <select class="form-select form-select-sm border-0 bg-light" onchange="updatePaymentStatus({{ $order->id }}, this.value)" style="font-size: 13px; min-width: 120px;">
                                     <option value="pending" {{ ($order->order->payment_status ?? 'pending') == 'pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="processing" {{ ($order->order->payment_status ?? 'pending') == 'processing' ? 'selected' : '' }}>Processing</option>
+                                    <option value="shipped" {{ ($order->order->payment_status ?? 'pending') == 'shipped' ? 'selected' : '' }}>Shipped</option>
+                                    <option value="delivered" {{ ($order->order->payment_status ?? 'pending') == 'delivered' ? 'selected' : '' }}>Delivered</option>
+                                    <option value="cancelled" {{ ($order->order->payment_status ?? 'pending') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                                     <option value="paid" {{ ($order->order->payment_status ?? 'pending') == 'paid' ? 'selected' : '' }}>Paid</option>
-                                    <option value="partial" {{ ($order->order->payment_status ?? 'pending') == 'partial' ? 'selected' : '' }}>Partial</option>
-                                    <option value="refunded" {{ ($order->order->payment_status ?? 'pending') == 'refunded' ? 'selected' : '' }}>Refunded</option>
                                 </select>
                                 <div class="mt-1" style="font-size: 12px; font-weight: 600; color: #666;">
                                     <i class="bi bi-wallet2 me-1"></i>{{ strtoupper($order->payment_method ?? 'COD') }}
@@ -522,8 +559,8 @@
                                     <span class="text-muted" style="font-size: 12px;">No Courier</span>
                                 @endif
                             </td>
-                            <td>
-                                <div class="d-flex flex-wrap gap-1">
+                            <td style="min-width: 130px; width: 130px; vertical-align: middle;">
+                                <div style="display: flex; flex-wrap: wrap; gap: 4px; width: 110px; margin: 0 auto;">
                                     <a href="{{ route('admin.orders.show', $order->id) }}" class="action-btn btn-view" title="View"><i class="bi bi-eye"></i></a>
                                     <button onclick="performFraudCheck('{{ $customerPhone }}')" class="action-btn btn-fraud" title="Fraud Check" style="background: #f59e0b; border: none;"><i class="bi bi-shield-lock-fill"></i></button>
                                     <a href="javascript:void(0)" onclick="generateBulkInvoice([{{ $order->id }}])" class="action-btn btn-edit" title="Invoice" style="background: var(--info);"><i class="bi bi-file-earmark-pdf"></i></a>

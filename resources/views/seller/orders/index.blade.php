@@ -394,7 +394,17 @@
                                 <div class="text-muted small">{{ $order->created_at->format('d M, h:i A') }}</div>
                                 @if($firstItem)
                                     <div class="d-flex align-items-center gap-2 mt-2">
-                                        <img src="{{ $firstItem['thumbnail'] ?? $firstItem['image'] ?? asset('assets/images/default-product.png') }}" alt="Product" width="40" height="40" class="rounded">
+                                        @php
+                                            $thumb = $firstItem['thumbnail'] ?? $firstItem['image'] ?? null;
+                                            if (!$thumb && isset($firstItem['id'])) {
+                                                $dbProduct = \App\Models\Product::find($firstItem['id']) ?? \App\Models\SellerProduct::find($firstItem['id']);
+                                                if ($dbProduct) {
+                                                    $thumb = $dbProduct->thumbnail;
+                                                }
+                                            }
+                                            $imgUrl = $thumb ? asset($thumb) : asset('assets/images/default-product.png');
+                                        @endphp
+                                        <img src="{{ $imgUrl }}" alt="Product" width="40" height="40" class="rounded">
                                         <div>
                                             <div class="small text-muted">{{ $firstItem['name'] ?? $firstItem['title'] ?? 'Product item' }}</div>
                                             <div class="small text-muted">Qty: {{ $firstItem['qty'] ?? 1 }}</div>

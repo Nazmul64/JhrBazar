@@ -168,6 +168,8 @@ class OrderHubController extends Controller
                     'price'          => $itemPrice,
                     'qty'            => $qty,
                     'discount'       => $itemDiscount,
+                    'size'           => $item['size'] ?? null,
+                    'color'          => $item['color'] ?? null,
                     'line_total'     => $lineTotal,
                 ];
 
@@ -191,6 +193,12 @@ class OrderHubController extends Controller
                 'note'           => "Area: " . ($request->delivery_area ?? 'N/A') . ". " . ($request->trx_id ? "TrxID: " . $request->trx_id : ""),
             ]);
 
+            if ($request->order_date) {
+                $createdAt = \Carbon\Carbon::parse($request->order_date);
+                $order->created_at = $createdAt;
+                $order->save();
+            }
+
             // 4. Create Invoice
             $invoice = PosInvoice::create([
                 'invoice_number'   => PosInvoice::generateInvoiceNumber(),
@@ -203,6 +211,12 @@ class OrderHubController extends Controller
                 'payment_method'   => $request->payment_method ?? 'cod',
                 'note'             => $request->trx_id ? "TrxID: " . $request->trx_id : null,
             ]);
+
+            if ($request->order_date) {
+                $createdAt = \Carbon\Carbon::parse($request->order_date);
+                $invoice->created_at = $createdAt;
+                $invoice->save();
+            }
 
             DB::commit();
 
@@ -417,8 +431,11 @@ class OrderHubController extends Controller
                     'note'            => $request->note ?? 'Status updated by admin',
                 ]);
 
-                // Handle Delivered Status for Seller Balance
+                // Handle Delivered Status for Stock & Seller Balance
                 if ($request->status === 'delivered' && $previousStatus !== 'delivered') {
+                    // Deduct stock for delivered order
+                    \App\Services\InventoryService::deductForOrder($invoice->order->id, $invoice->order->items ?? [], auth()->id());
+
                     if ($invoice->seller) {
                         $existingNet = $this->getSellerOrderTransactionNet($invoice);
                         if ($existingNet <= 0) {
@@ -445,6 +462,10 @@ class OrderHubController extends Controller
 
                 // Reversal: If previous was Delivered and new is NOT Delivered (e.g. Returned/Cancelled)
                 if ($previousStatus === 'delivered' && $request->status !== 'delivered') {
+                    // Restore stock for cancelled/returned order
+                    $restockType = $request->status === 'returned' ? 'order_returned' : 'order_cancelled';
+                    \App\Services\InventoryService::restoreForOrder($invoice->order->id, $invoice->order->items ?? [], $restockType, $request->note ?? null, auth()->id());
+
                     if ($invoice->seller) {
                         $settings = GenaralSetting::first();
                         $commissionPercent = $settings->seller_commission ?? 10;
@@ -527,7 +548,7 @@ class OrderHubController extends Controller
 
         $ids = $request->ids;
         $action = $request->action;
-        $invoices = PosInvoice::with('order', 'seller')->whereIn('id', $ids)->get();
+        $invoices = PosInvoice::with(['order', 'seller', 'customer.user'])->whereIn('id', $ids)->get();
 
         switch ($action) {
             case 'delete':
@@ -566,6 +587,9 @@ class OrderHubController extends Controller
                                 ]);
 
                                 if ($newStatus === 'delivered' && $previousStatus !== 'delivered') {
+                                    // Deduct stock for delivered order
+                                    \App\Services\InventoryService::deductForOrder($inv->order->id, $inv->order->items ?? [], auth()->id());
+
                                     if ($inv->seller) {
                                         $existingNet = $this->getSellerOrderTransactionNet($inv);
                                         if ($existingNet <= 0) {
@@ -589,6 +613,12 @@ class OrderHubController extends Controller
                                         }
                                     }
                                 }
+
+                                if ($previousStatus === 'delivered' && $newStatus !== 'delivered') {
+                                    // Restore stock for cancelled/returned order
+                                    $restockType = $newStatus === 'returned' ? 'order_returned' : 'order_cancelled';
+                                    \App\Services\InventoryService::restoreForOrder($inv->order->id, $inv->order->items ?? [], $restockType, 'Bulk status update by admin', auth()->id());
+                                }
                             }
                         }
                         DB::commit();
@@ -609,12 +639,17 @@ class OrderHubController extends Controller
     private function bulkSendToSteadfast($invoices)
     {
         $gateway = SteadfastCourier::first();
-        if (!$gateway || !$gateway->status) {
+        if (!$gateway || !$gateway->status || empty($gateway->api_key) || empty($gateway->secret_key)) {
             return response()->json(['success' => false, 'message' => 'Steadfast Courier is not active or configured.'], 422);
         }
 
         $successCount = 0;
         $errors = [];
+
+        $endpoint = rtrim($gateway->url ?: 'https://portal.steadfast.com.bd/api/v1/create_order', '/');
+        if (!str_ends_with($endpoint, 'create_order')) {
+            $endpoint .= '/create_order';
+        }
 
         foreach ($invoices as $inv) {
             if (!$inv->order) continue;
@@ -622,36 +657,55 @@ class OrderHubController extends Controller
             // Skip if already sent
             if ($inv->order->steadfast_order_id) continue;
 
-            $response = Http::withHeaders([
-                'Api-Key' => $gateway->api_key,
-                'Secret-Key' => $gateway->secret_key,
-                'Content-Type' => 'application/json'
-            ])->post($gateway->url, [
-                'invoice' => $inv->invoice_number,
-                'recipient_name' => $inv->customer?->user?->name ?? 'Customer',
-                'recipient_phone' => $inv->customer?->user?->phone ?? '',
-                'recipient_address' => $inv->customer?->address ?? 'N/A',
-                'cod_amount' => $inv->grand_total,
-                'note' => $inv->note ?? ''
-            ]);
+            $recipientName = trim(($inv->customer?->first_name ?? '') . ' ' . ($inv->customer?->last_name ?? ''));
+            if (!$recipientName) $recipientName = $inv->customer?->user?->name ?? $inv->order?->customer_name ?? 'Customer';
+            $recipientPhone = $inv->customer?->user?->phone ?? $inv->order?->customer_phone ?? $inv->order?->phone ?? '';
+            $recipientAddress = $inv->customer?->address ?? $inv->order?->shipping_address ?? $inv->order?->address ?? 'N/A';
 
-            if ($response->successful() && $response->json('status') == 200) {
-                $inv->order->update([
-                    'steadfast_order_id' => $response->json('order.consignment_id'),
-                    'courier_name' => 'Steadfast',
-                    'courier_status' => 'sent'
+            try {
+                $response = Http::withHeaders([
+                    'Api-Key' => $gateway->api_key,
+                    'Secret-Key' => $gateway->secret_key,
+                    'Content-Type' => 'application/json'
+                ])->post($endpoint, [
+                    'invoice' => $inv->invoice_number,
+                    'recipient_name' => $recipientName,
+                    'recipient_phone' => $recipientPhone,
+                    'recipient_address' => $recipientAddress,
+                    'cod_amount' => (float)$inv->grand_total,
+                    'note' => $inv->note ?? ''
                 ]);
-                $successCount++;
-            } else {
-                $errors[] = "Invoice {$inv->invoice_number}: " . ($response->json('message') ?? 'Unknown Error');
+
+                if ($response->successful() && ($response->json('status') == 200 || $response->json('status') === 'success' || isset($response->json('order')['consignment_id']))) {
+                    $consignmentId = $response->json('order.consignment_id') ?? $response->json('consignment.consignment_id') ?? $response->json('consignment_id');
+                    $inv->order->update([
+                        'steadfast_order_id' => $consignmentId,
+                        'courier_name' => 'Steadfast',
+                        'courier_status' => 'sent'
+                    ]);
+                    $successCount++;
+                } else {
+                    $errText = $response->json('message') ?? ($response->json('errors') ? json_encode($response->json('errors')) : 'HTTP ' . $response->status());
+                    $errors[] = "Invoice {$inv->invoice_number}: {$errText}";
+                }
+            } catch (\Exception $e) {
+                $errors[] = "Invoice {$inv->invoice_number}: " . $e->getMessage();
             }
         }
 
+        if ($successCount > 0) {
+            return response()->json([
+                'success' => true,
+                'message' => "Successfully sent {$successCount} orders to Steadfast." . (count($errors) ? " (Some failed: " . implode('; ', $errors) . ")" : ""),
+                'errors' => $errors
+            ]);
+        }
+
         return response()->json([
-            'success' => true,
-            'message' => "Successfully sent {$successCount} orders to Steadfast.",
+            'success' => false,
+            'message' => count($errors) ? implode('; ', $errors) : "No eligible orders were sent to Steadfast.",
             'errors' => $errors
-        ]);
+        ], 422);
     }
 
     /**

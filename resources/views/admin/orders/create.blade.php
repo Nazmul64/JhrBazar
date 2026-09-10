@@ -28,7 +28,9 @@
                                     data-name="{{ $product->name }}" 
                                     data-price="{{ $product->discount_price > 0 ? $product->discount_price : $product->selling_price }}"
                                     data-image="{{ $product->thumbnail ? asset($product->thumbnail) : 'https://placehold.co/50x50/f3f4f6/6b7280?text=No+Image' }}"
-                                    data-sku="{{ $product->sku }}">
+                                    data-sku="{{ $product->sku }}"
+                                    data-color="{{ $product->color }}"
+                                    data-size="{{ $product->size }}">
                                 {{ $product->name }} ({{ $product->sku }}) - ৳{{ $product->discount_price > 0 ? $product->discount_price : $product->selling_price }}
                             </option>
                             @endforeach
@@ -41,6 +43,8 @@
                                 <tr>
                                     <th style="width: 80px;">Image</th>
                                     <th>Product Name</th>
+                                    <th>Size</th>
+                                    <th>Color</th>
                                     <th style="width: 150px;">Quantity</th>
                                     <th>Unit Price</th>
                                     <th>Discount</th>
@@ -50,7 +54,7 @@
                             </thead>
                             <tbody>
                                 <tr id="empty-cart-row">
-                                    <td colspan="7" class="text-center py-5 text-muted">
+                                    <td colspan="9" class="text-center py-5 text-muted">
                                         উপরে থেকে পণ্য নির্বাচন করুন
                                     </td>
                                 </tr>
@@ -116,8 +120,11 @@
                         <label class="form-label small fw-semibold">পেমেন্ট স্ট্যাটাস</label>
                         <select id="payment-status" class="form-select">
                             <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
                             <option value="paid">Paid</option>
-                            <option value="partial">Partial</option>
                         </select>
                     </div>
                     <div class="mb-0">
@@ -231,6 +238,11 @@ $(document).ready(function() {
         let price = parseFloat(selectedOption.data('price'));
         let image = selectedOption.data('image');
         let sku = selectedOption.data('sku');
+        let rawColors = selectedOption.data('color') || '';
+        let rawSizes = selectedOption.data('size') || '';
+
+        let colors = rawColors ? rawColors.split(',').map(c => c.trim()).filter(Boolean) : [];
+        let sizes = rawSizes ? rawSizes.split(',').map(s => s.trim()).filter(Boolean) : [];
 
         let existingItem = cart.find(item => item.id == productId);
         if (existingItem) {
@@ -243,7 +255,11 @@ $(document).ready(function() {
                 image: image,
                 sku: sku,
                 qty: 1,
-                discount: 0
+                discount: 0,
+                colors: colors,
+                sizes: sizes,
+                selectedColor: colors.length > 0 ? colors[0] : 'N/A',
+                selectedSize: sizes.length > 0 ? sizes[0] : 'N/A'
             });
         }
 
@@ -257,11 +273,23 @@ $(document).ready(function() {
         let subtotal = 0;
 
         if (cart.length === 0) {
-            html = `<tr><td colspan="7" class="text-center py-5 text-muted">উপরে থেকে পণ্য নির্বাচন করুন</td></tr>`;
+            html = `<tr><td colspan="9" class="text-center py-5 text-muted">উপরে থেকে পণ্য নির্বাচন করুন</td></tr>`;
         } else {
             cart.forEach((item, index) => {
                 let lineTotal = (item.price * item.qty) - (item.discount || 0);
                 subtotal += lineTotal;
+
+                // Color options
+                let colorOptionsHtml = '<option value="N/A">N/A</option>';
+                if (item.colors && item.colors.length > 0) {
+                    colorOptionsHtml = item.colors.map(c => `<option value="${c.trim()}" ${item.selectedColor == c.trim() ? 'selected' : ''}>${c.trim()}</option>`).join('');
+                }
+                
+                // Size options
+                let sizeOptionsHtml = '<option value="N/A">N/A</option>';
+                if (item.sizes && item.sizes.length > 0) {
+                    sizeOptionsHtml = item.sizes.map(s => `<option value="${s.trim()}" ${item.selectedSize == s.trim() ? 'selected' : ''}>${s.trim()}</option>`).join('');
+                }
 
                 html += `
                     <tr>
@@ -269,6 +297,16 @@ $(document).ready(function() {
                         <td>
                             <div class="fw-bold">${item.name}</div>
                             <small class="text-muted">SKU: ${item.sku}</small>
+                        </td>
+                        <td>
+                            <select class="form-select form-select-sm" onchange="updateItemSize(${index}, this.value)">
+                                ${sizeOptionsHtml}
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-select form-select-sm" onchange="updateItemColor(${index}, this.value)">
+                                ${colorOptionsHtml}
+                            </select>
                         </td>
                         <td>
                             <div class="d-flex align-items-center">
@@ -315,6 +353,14 @@ $(document).ready(function() {
         renderCart();
     };
 
+    window.updateItemSize = function(index, val) {
+        cart[index].selectedSize = val;
+    };
+
+    window.updateItemColor = function(index, val) {
+        cart[index].selectedColor = val;
+    };
+
     $('#clear-cart').on('click', function() {
         cart = [];
         renderCart();
@@ -356,7 +402,14 @@ $(document).ready(function() {
             payment_status: $('#payment-status').val(),
             order_date: $('#order-date').val(),
             shipping_charge: $('#manual-shipping').val(),
-            items: cart,
+            items: cart.map(item => ({
+                id: item.id,
+                qty: item.qty,
+                price: item.price,
+                discount: item.discount,
+                size: item.selectedSize,
+                color: item.selectedColor
+            })),
             _token: '{{ csrf_token() }}'
         };
 

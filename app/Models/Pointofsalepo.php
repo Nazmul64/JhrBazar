@@ -135,6 +135,10 @@ class Pointofsalepo extends Model
         return match ($this->payment_method) {
             'card'   => 'Card Payment',
             'mobile' => 'Mobile Payment',
+            'bkash'  => 'bKash',
+            'nagad'  => 'Nagad',
+            'rocket' => 'Rocket',
+            'bank'   => 'Bank Transfer',
             default  => 'Cash Payment',
         };
     }

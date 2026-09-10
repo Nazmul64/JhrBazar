@@ -110,7 +110,7 @@
                                         <td>
                                             <a href="{{ route('admin.orders.show', $refund->order_id) }}"
                                                class="text-primary text-decoration-none fw-bold">
-                                                #{{ $refund->order->invoice->invoice_number ?? $refund->order_id }}
+                                                #{{ $refund->order?->invoice?->invoice_number ?? $refund->order_id }}
                                             </a>
                                         </td>
                                         <td>
@@ -125,9 +125,15 @@
                                                             }
                                                         }
                                                     }
-                                                    $thumbnail = $orderItem['thumbnail'] ?? null;
+                                                    $thumbnail = $orderItem['thumbnail'] ?? ($orderItem['image'] ?? null);
                                                     if (!$thumbnail && $refund->product) {
                                                         $thumbnail = $refund->product->thumbnail;
+                                                    }
+                                                    if (!$thumbnail && $refund->product_id) {
+                                                        $dbProduct = \App\Models\Product::find($refund->product_id) ?? \App\Models\SellerProduct::find($refund->product_id);
+                                                        if ($dbProduct) {
+                                                            $thumbnail = $dbProduct->thumbnail;
+                                                        }
                                                     }
                                                 @endphp
                                                 @if($thumbnail)
@@ -146,7 +152,7 @@
                                         </td>
                                         <td>
                                             <span class="badge bg-light text-dark border">
-                                                {{ $refund->courier->name ?? $refund->order->courier_name ?? 'N/A' }}
+                                                {{ $refund->courier->name ?? $refund->order?->courier_name ?? 'N/A' }}
                                             </span>
                                             @if($refund->order && $refund->order->courier_status)
                                                 <small class="d-block text-muted mt-1 text-capitalize">{{ strtolower($refund->order->courier_status) }}</small>

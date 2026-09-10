@@ -43,6 +43,11 @@ use App\Http\Controllers\Admin\AdminSupportController;
 Route::post('/register', [AuthController::class, 'register'])->name('api.register');
 Route::post('/login',    [AuthController::class, 'login'])->name('api.login');
 
+// ── Marketing & Tracking Public APIs ──────────────────────────────────────
+Route::get('/tracking-config', [\App\Http\Controllers\Admin\TrackingSettingController::class, 'getPublicConfig'])->name('api.tracking-config');
+Route::post('/track-visit',     [\App\Http\Controllers\Admin\MarketingAttributionController::class, 'trackVisit'])->name('api.track-visit');
+
+
 
 /*
 |─────────────────────────────────────────────────────────────────────────────
@@ -73,13 +78,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // ── Wishlist Sync (Call right after login — transfers guest → user) ───
     Route::post('/wishlist/sync', [WishlistController::class, 'sync'])->name('api.wishlist.sync');
 
-    // ── Admin Landing Page Builder ────────────────────────────────────────
-    Route::prefix('admin/landingpages')->name('api.admin.landingpage.')->group(function () {
-        Route::get('/{id}/sections',       [AdminLandingPageBuilderController::class, 'getSections'])->name('sections');
-        Route::post('/{id}/save-sections', [AdminLandingPageBuilderController::class, 'saveSections'])->name('save-sections');
-        Route::post('/{id}/save-settings', [AdminLandingPageBuilderController::class, 'saveSettings'])->name('save-settings');
-        Route::post('/upload-image',       [AdminLandingPageBuilderController::class, 'uploadImage'])->name('upload-image');
-    });
+    // ── Admin Landing Page Builder (Moved to web.php for Web Session Auth) ───
+    // Route::prefix('admin/landingpages')->name('api.admin.landingpage.')->group(function () {
+    //     Route::get('/{id}/sections',       [AdminLandingPageBuilderController::class, 'getSections'])->name('sections');
+    //     Route::post('/{id}/save-sections', [AdminLandingPageBuilderController::class, 'saveSections'])->name('save-sections');
+    //     Route::post('/{id}/save-settings', [AdminLandingPageBuilderController::class, 'saveSettings'])->name('save-settings');
+    //     Route::post('/upload-image',       [AdminLandingPageBuilderController::class, 'uploadImage'])->name('upload-image');
+    // });
 
     // Review Routes
     Route::post('/reviews', [ReviewController::class, 'store']);
@@ -264,8 +269,8 @@ Route::post('/leads/save', [LeadController::class, 'store'])->name('api.leads.sa
 |  16. TRACKING & SECURITY  (Public)
 |─────────────────────────────────────────────────────────────────────────────
 */
-Route::post('/track-visit',     [CustomerDetectorController::class, 'trackVisit'])->name('api.track-visit');
 Route::get('/check-ip-blocked', [FraudCheckerController::class, 'checkIpBlocked'])->name('api.check-ip');
+
 
 
 /*

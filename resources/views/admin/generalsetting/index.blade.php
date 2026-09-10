@@ -836,73 +836,17 @@
     </div>
 
     {{-- =============================================
-         SECTION 5.5 – Tracking & Analytics
+         SECTION 5.5 – Visitor Notification Alert
     ============================================= --}}
     <div class="gs-section">
         <div class="gs-section-title">
             <div class="title-left">
-                <span class="title-icon">📊</span>
-                <span>Tracking & Analytics</span>
+                <span class="title-icon">🔔</span>
+                <span>Customer Visit Notification Alert</span>
             </div>
         </div>
 
         <div class="gs-row">
-            {{-- Google Analytics --}}
-            <div class="gs-col" style="border: 1px solid var(--border); padding: 20px; border-radius: 12px; background: #fcfcfc;">
-                <label class="gs-label fw-bold"><i class="bi bi-google text-primary"></i> Google Analytics (Universal/GA4)</label>
-                <input type="text" name="google_analytics_id" class="gs-input mb-3"
-                       placeholder="UA-XXXXX-Y or G-XXXXXXX"
-                       value="{{ old('google_analytics_id', $setting->google_analytics_id ?? '') }}">
-
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <label class="toggle-switch">
-                        <input type="checkbox" name="enable_analytics"
-                               {{ old('enable_analytics', $setting->enable_analytics ?? 0) ? 'checked' : '' }}
-                               onchange="ajaxToggle(this, '{{ $setting ? route('admin.generalsettings.toggle', $setting->id) : '#' }}', 'enable_analytics')">
-                        <span class="toggle-slider"></span>
-                    </label>
-                    <span style="font-size:13px;font-weight:600;color:#333;">Enable Analytics Tracking</span>
-                </div>
-            </div>
-
-            {{-- Facebook Pixel --}}
-            <div class="gs-col" style="border: 1px solid var(--border); padding: 20px; border-radius: 12px; background: #fcfcfc;">
-                <label class="gs-label fw-bold"><i class="bi bi-facebook text-primary"></i> Facebook Pixel ID</label>
-                <input type="text" name="facebook_pixel_id" class="gs-input mb-3"
-                       placeholder="Enter Pixel ID"
-                       value="{{ old('facebook_pixel_id', $setting->facebook_pixel_id ?? '') }}">
-
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <label class="toggle-switch">
-                        <input type="checkbox" name="enable_pixel"
-                               {{ old('enable_pixel', $setting->enable_pixel ?? 0) ? 'checked' : '' }}
-                               onchange="ajaxToggle(this, '{{ $setting ? route('admin.generalsettings.toggle', $setting->id) : '#' }}', 'enable_pixel')">
-                        <span class="toggle-slider"></span>
-                    </label>
-                    <span style="font-size:13px;font-weight:600;color:#333;">Enable Facebook Pixel Tracking</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="gs-row" style="margin-top: 20px;">
-            {{-- Google Tag Manager --}}
-            <div class="gs-col" style="border: 1px solid var(--border); padding: 20px; border-radius: 12px; background: #fcfcfc;">
-                <label class="gs-label fw-bold"><i class="bi bi-code-slash text-success"></i> Google Tag Manager (GTM) ID</label>
-                <input type="text" name="gtm_id" class="gs-input mb-3"
-                       placeholder="GTM-XXXXXXX"
-                       value="{{ old('gtm_id', $setting->gtm_id ?? '') }}">
-
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <label class="toggle-switch">
-                        <input type="checkbox" name="enable_gtm"
-                               {{ old('enable_gtm', $setting->enable_gtm ?? 0) ? 'checked' : '' }}
-                               onchange="ajaxToggle(this, '{{ $setting ? route('admin.generalsettings.toggle', $setting->id) : '#' }}', 'enable_gtm')">
-                        <span class="toggle-slider"></span>
-                    </label>
-                    <span style="font-size:13px;font-weight:600;color:#333;">Enable GTM Tracking</span>
-                </div>
-            </div>
-            
             {{-- Customer Visit Notification --}}
             <div class="gs-col" style="border: 1px solid var(--border); padding: 20px; border-radius: 12px; background: #fcfcfc;">
                 <label class="gs-label fw-bold"><i class="bi bi-bell text-danger"></i> Returning Customer Visit Alert</label>
@@ -920,6 +864,7 @@
             </div>
         </div>
     </div>
+
 
     {{-- =============================================
          SECTION 5.6 – Security / IP Block Settings

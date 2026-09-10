@@ -390,6 +390,12 @@ function posShowFmt($num, $cur) {
                                         <div class="prod-cell">
                                             @php
                                                 $thumb = $item['thumbnail'] ?? $item['image'] ?? '';
+                                                if (empty($thumb) && isset($item['id'])) {
+                                                    $dbProduct = \App\Models\Product::find($item['id']) ?? \App\Models\SellerProduct::find($item['id']);
+                                                    if ($dbProduct) {
+                                                        $thumb = $dbProduct->thumbnail;
+                                                    }
+                                                }
                                                 $name = $item['name'] ?? $item['title'] ?? 'Product';
                                             @endphp
                                             @if(!empty($thumb))

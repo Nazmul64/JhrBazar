@@ -62,7 +62,7 @@ class AdminLandingPageBuilderController extends Controller
         $page = Landingpage::findOrFail($id);
 
         $request->validate([
-            'sections' => 'required|array'
+            'sections' => 'nullable|array'
         ]);
 
         $page->update([

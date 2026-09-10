@@ -17,10 +17,12 @@ class WishlistController extends Controller
      */
     public function index(Request $request)
     {
+        // Use sanctum first (Bearer token), then fall back to web session
+        $userId = auth('sanctum')->id() ?? Auth::id();
         $query = Wishlist::query();
 
-        if (Auth::check()) {
-            $query->where('user_id', Auth::id());
+        if ($userId) {
+            $query->where('user_id', $userId);
         } else {
             $query->where('session_id', $request->header('X-Session-Id'));
         }
@@ -75,7 +77,9 @@ class WishlistController extends Controller
             'product_type' => 'required'
         ]);
 
-        $userId = Auth::id();
+        // Prefer sanctum (Bearer token) over web session so API customers
+        // are correctly identified even on public routes
+        $userId    = auth('sanctum')->id() ?? Auth::id();
         $sessionId = $request->header('X-Session-Id');
 
         $query = Wishlist::where('product_id', $request->product_id)
@@ -117,7 +121,8 @@ class WishlistController extends Controller
      */
     public function sync(Request $request)
     {
-        if (!Auth::check()) return response()->json(['success' => false]);
+        $userId = auth('sanctum')->id() ?? Auth::id();
+        if (!$userId) return response()->json(['success' => false]);
 
         $sessionId = $request->header('X-Session-Id');
         if (!$sessionId) return response()->json(['success' => false]);
@@ -126,14 +131,14 @@ class WishlistController extends Controller
 
         foreach ($guestItems as $item) {
             // Check if user already has this item
-            $exists = Wishlist::where('user_id', Auth::id())
+            $exists = Wishlist::where('user_id', $userId)
                               ->where('product_id', $item->product_id)
                               ->where('product_type', $item->product_type)
                               ->first();
 
             if (!$exists) {
                 $item->update([
-                    'user_id'    => Auth::id(),
+                    'user_id'    => $userId,
                     'session_id' => null
                 ]);
             } else {

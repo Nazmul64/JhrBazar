@@ -387,6 +387,20 @@ const ROUTES = {
     draft: '{{ route("seller.pos.draft") }}'
 };
 
+const NO_IMG_PLACEHOLDER = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3C/svg%3E";
+
+function getPosImgUrl(path) {
+    if (!path || typeof path !== 'string' || !path.trim() || path === 'null' || path === 'undefined') {
+        return NO_IMG_PLACEHOLDER;
+    }
+    const clean = path.trim();
+    if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('data:')) {
+        return clean;
+    }
+    const relative = clean.replace(/^[/\\]+/, '');
+    return window.location.origin + '/' + relative;
+}
+
 function loadProducts(page = 1) {
     currentPage = page;
     const search = document.getElementById('productSearch').value;
@@ -407,10 +421,11 @@ function renderProducts(products) {
         const price = p.discount_price > 0 ? p.discount_price : p.selling_price;
         const old = p.discount_price > 0 ? p.selling_price : '';
         const off = old ? Math.round((1 - price/old)*100) : 0;
+        const thumbUrl = getPosImgUrl(p.thumbnail);
         return `
             <div class="product-card" onclick='addToCart(${JSON.stringify(p)})'>
                 <div class="pc-img-wrap">
-                    <img src="/${p.thumbnail}" class="pc-img" onerror="this.src='/images/no-image.png'">
+                    <img src="${thumbUrl}" class="pc-img" onerror="this.onerror=null; this.src=NO_IMG_PLACEHOLDER;" loading="lazy">
                     ${p.product_type === 'digital' ? '<span class="badge bg-primary position-absolute top-0 end-0 m-2" style="font-size: 10px;">Digital</span>' : ''}
                 </div>
                 <div class="pc-info">
@@ -465,9 +480,11 @@ function renderCart() {
         return;
     }
     
-    list.innerHTML = cart.map((item, index) => `
+    list.innerHTML = cart.map((item, index) => {
+        const thumbUrl = getPosImgUrl(item.thumbnail);
+        return `
         <div class="cart-item">
-            <img src="/${item.thumbnail}" class="ci-img" onerror="this.src='/images/no-image.png'">
+            <img src="${thumbUrl}" class="ci-img" onerror="this.onerror=null; this.src=NO_IMG_PLACEHOLDER;">
             <div class="ci-info">
                 <div class="ci-name">${item.name}</div>
                 <div class="ci-price">৳${item.price} <small class="text-muted">(${item.product_type})</small></div>
@@ -478,8 +495,8 @@ function renderCart() {
                 </div>
             </div>
             <i class="bi bi-trash ci-del" onclick="removeFromCart(${index})"></i>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
     
     updateTotals();
 }

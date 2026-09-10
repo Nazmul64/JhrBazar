@@ -112,8 +112,27 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>Stock Quantity</th>
-                        <td>{{ $product->stock_quantity >= 999999 ? 'Unlimited' : $product->stock_quantity }}</td>
+                        <th>Stock Information</th>
+                        <td>
+                            @if($product->is_unlimited)
+                                <span class="badge bg-primary"><i class="bi bi-infinity"></i> Unlimited Stock</span>
+                            @else
+                                <strong class="fs-6 {{ $product->stock_quantity <= 0 ? 'text-danger' : ($product->isLowStock() ? 'text-warning' : 'text-success') }}">
+                                    {{ $product->stock_quantity }} units
+                                </strong>
+                                @if($product->isOutOfStock())
+                                    <span class="badge bg-danger ms-2">Out of Stock</span>
+                                @elseif($product->isLowStock())
+                                    <span class="badge bg-warning text-dark ms-2">Low Stock (Threshold: {{ $product->low_stock_threshold }})</span>
+                                @else
+                                    <span class="badge bg-success ms-2">In Stock</span>
+                                @endif
+                                <div class="text-muted small mt-1">
+                                    <span>Total Stock In: <strong>{{ $product->total_in }}</strong></span> | 
+                                    <span>Total Sold: <strong>{{ $product->total_sold }}</strong></span>
+                                </div>
+                            @endif
+                        </td>
                     </tr>
                     @if($product->brand)
                     <tr>

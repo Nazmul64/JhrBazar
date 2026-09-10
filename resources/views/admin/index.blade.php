@@ -225,13 +225,23 @@
                     </span>
                     <h1 class="fw-bold mb-3" style="font-family: 'Sora', sans-serif; font-size: clamp(24px, 5vw, 36px);">{{ $gs->website_name ?? 'Jhr Bazar' }} <span class="text-white-50">Command Center</span></h1>
                     <p class="opacity-75 mb-4 fw-medium" style="max-width: 580px; font-size: 15px; line-height: 1.6;">Monitor your ecosystem in real-time. Manage sellers, analyze customer behavior, and optimize your revenue streams with our unified dashboard.</p>
-                    <div class="d-flex flex-wrap gap-3">
-                        <button class="btn btn-light rounded-pill px-4 py-2 fw-bold text-primary shadow-sm border-0 transition-all hover-scale" style="font-size: 14px;">
-                            <i class="bi bi-graph-up-arrow me-2"></i> Analytics Hub
-                        </button>
-                        <button onclick="scrollToRecentOrders()" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold hover-bg-white hover-text-primary" style="font-size: 14px;">
-                            Recent Activity
-                        </button>
+                    <div class="d-flex flex-wrap gap-2 pt-2">
+                        <a href="{{ route('admin.inventory.index') }}" class="btn btn-warning rounded-pill px-3 py-2 fw-bold text-dark shadow-sm d-flex align-items-center gap-2" style="font-size: 13.5px;">
+                            <i class="bi bi-box-seam-fill"></i> Stock Management
+                            @php $lowStockCount = \App\Models\Product::where('is_active', 1)->where('is_unlimited', 0)->where('stock_quantity', '<=', 5)->count(); @endphp
+                            @if($lowStockCount > 0)
+                                <span class="badge bg-danger rounded-pill">{{ $lowStockCount }} Low</span>
+                            @endif
+                        </a>
+                        <a href="{{ route('admin.purchases.create') }}" class="btn btn-light rounded-pill px-3 py-2 fw-bold text-primary shadow-sm d-flex align-items-center gap-2" style="font-size: 13.5px;">
+                            <i class="bi bi-cart-plus-fill"></i> Local Purchase (Stock In)
+                        </a>
+                        <a href="{{ route('admin.pointofsalepos.index') }}" class="btn btn-outline-light rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-2" style="font-size: 13.5px;">
+                            <i class="bi bi-display"></i> POS Billing
+                        </a>
+                        <a href="{{ route('admin.accounts.index') }}" class="btn btn-outline-light rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-2" style="font-size: 13.5px;">
+                            <i class="bi bi-journal-bookmark-fill"></i> Accounts & Cashbook
+                        </a>
                     </div>
                 </div>
                 <div class="d-none d-xl-block">

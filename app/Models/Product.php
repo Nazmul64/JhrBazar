@@ -13,7 +13,8 @@ class Product extends Model
         'category_id', 'sub_category_id', 'brand_id',
         'color', 'unit', 'size', 'sku', 'barcode',
         'buying_price', 'selling_price', 'discount_price',
-        'stock_quantity', 'thumbnail', 'gallery_images',
+        'stock_quantity', 'is_unlimited', 'low_stock_threshold', 'total_in', 'total_sold',
+        'thumbnail', 'gallery_images',
         'video_type', 'video',
         'meta_title', 'meta_description', 'meta_keywords',
         'is_active', 'rating',
@@ -24,6 +25,11 @@ class Product extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_unlimited' => 'boolean',
+        'low_stock_threshold' => 'integer',
+        'total_in' => 'integer',
+        'total_sold' => 'integer',
+        'stock_quantity' => 'integer',
         'is_new_arrival' => 'boolean',
         'is_best_seller' => 'boolean',
         'is_hot_product' => 'boolean',
@@ -59,6 +65,40 @@ class Product extends Model
     public function reviews()
     {
         return $this->hasMany(Review::class, 'product_id')->where('product_type', 'admin')->where('status', 1);
+    }
+
+    public function inventoryLedgers()
+    {
+        return $this->hasMany(InventoryLedger::class, 'product_id')->latest();
+    }
+
+    // ── Stock Status Helpers ───────────────────────────────
+    public function getStockStatusAttribute(): string
+    {
+        if ($this->is_unlimited) {
+            return 'unlimited';
+        }
+        if ($this->stock_quantity <= 0) {
+            return 'out_of_stock';
+        }
+        $threshold = $this->low_stock_threshold > 0 ? $this->low_stock_threshold : 3;
+        if ($this->stock_quantity <= $threshold) {
+            return 'low_stock';
+        }
+        return 'in_stock';
+    }
+
+    public function isLowStock(): bool
+    {
+        if ($this->is_unlimited) return false;
+        $threshold = $this->low_stock_threshold > 0 ? $this->low_stock_threshold : 3;
+        return $this->stock_quantity > 0 && $this->stock_quantity <= $threshold;
+    }
+
+    public function isOutOfStock(): bool
+    {
+        if ($this->is_unlimited) return false;
+        return $this->stock_quantity <= 0;
     }
 
     // ── Barcode display value ──────────────────────────────

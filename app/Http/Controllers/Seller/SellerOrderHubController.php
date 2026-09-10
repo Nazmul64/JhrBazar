@@ -198,38 +198,66 @@ class SellerOrderHubController extends Controller
     private function bulkSendToSteadfast($invoices)
     {
         $gateway = SteadfastCourier::first();
-        if (!$gateway || !$gateway->status) {
-            return response()->json(['success' => false, 'message' => 'Steadfast Courier is not active.'], 422);
+        if (!$gateway || !$gateway->status || empty($gateway->api_key) || empty($gateway->secret_key)) {
+            return response()->json(['success' => false, 'message' => 'Steadfast Courier is not active or configured.'], 422);
+        }
+
+        $endpoint = rtrim($gateway->url ?: 'https://portal.steadfast.com.bd/api/v1/create_order', '/');
+        if (!str_ends_with($endpoint, 'create_order')) {
+            $endpoint .= '/create_order';
         }
 
         $successCount = 0;
+        $errors = [];
+
         foreach ($invoices as $inv) {
             if (!$inv->order || $inv->order->steadfast_order_id) continue;
 
-            $response = Http::withHeaders([
-                'Api-Key' => $gateway->api_key,
-                'Secret-Key' => $gateway->secret_key,
-                'Content-Type' => 'application/json'
-            ])->post($gateway->url, [
-                'invoice' => $inv->invoice_number,
-                'recipient_name' => $inv->customer?->user?->name ?? 'Customer',
-                'recipient_phone' => $inv->customer?->user?->phone ?? '',
-                'recipient_address' => $inv->customer?->address ?? 'N/A',
-                'cod_amount' => $inv->grand_total,
-                'note' => $inv->note ?? ''
-            ]);
+            $recipientName = trim(($inv->customer?->first_name ?? '') . ' ' . ($inv->customer?->last_name ?? ''));
+            if (!$recipientName) $recipientName = $inv->customer?->user?->name ?? $inv->order?->customer_name ?? 'Customer';
+            $recipientPhone = $inv->customer?->user?->phone ?? $inv->order?->customer_phone ?? $inv->order?->phone ?? '';
+            $recipientAddress = $inv->customer?->address ?? $inv->order?->shipping_address ?? $inv->order?->address ?? 'N/A';
 
-            if ($response->successful() && $response->json('status') == 200) {
-                $inv->order->update([
-                    'steadfast_order_id' => $response->json('order.consignment_id'),
-                    'courier_name' => 'Steadfast',
-                    'courier_status' => 'sent'
+            try {
+                $response = Http::withHeaders([
+                    'Api-Key' => $gateway->api_key,
+                    'Secret-Key' => $gateway->secret_key,
+                    'Content-Type' => 'application/json'
+                ])->post($endpoint, [
+                    'invoice' => $inv->invoice_number,
+                    'recipient_name' => $recipientName,
+                    'recipient_phone' => $recipientPhone,
+                    'recipient_address' => $recipientAddress,
+                    'cod_amount' => (float)$inv->grand_total,
+                    'note' => $inv->note ?? ''
                 ]);
-                $successCount++;
+
+                if ($response->successful() && ($response->json('status') == 200 || $response->json('status') === 'success' || isset($response->json('order')['consignment_id']))) {
+                    $consignmentId = $response->json('order.consignment_id') ?? $response->json('consignment.consignment_id') ?? $response->json('consignment_id');
+                    $inv->order->update([
+                        'steadfast_order_id' => $consignmentId,
+                        'courier_name' => 'Steadfast',
+                        'courier_status' => 'sent'
+                    ]);
+                    $successCount++;
+                } else {
+                    $errText = $response->json('message') ?? ($response->json('errors') ? json_encode($response->json('errors')) : 'HTTP ' . $response->status());
+                    $errors[] = "Invoice {$inv->invoice_number}: {$errText}";
+                }
+            } catch (\Exception $e) {
+                $errors[] = "Invoice {$inv->invoice_number}: " . $e->getMessage();
             }
         }
 
-        return response()->json(['success' => true, 'message' => "Successfully sent {$successCount} orders to Steadfast."]);
+        if ($successCount > 0) {
+            return response()->json(['success' => true, 'message' => "Successfully sent {$successCount} orders to Steadfast."]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => count($errors) ? implode('; ', $errors) : "No eligible orders were sent to Steadfast.",
+            'errors' => $errors
+        ], 422);
     }
 
     /**

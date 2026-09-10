@@ -15,7 +15,8 @@ class SteadfastCourierController extends Controller
 
         $gateway->api_key = $request->api_key;
         $gateway->secret_key = $request->secret_key;
-        $gateway->url = $request->url;
+        $gateway->url = $request->url ?: 'https://portal.steadfast.com.bd/api/v1/create_order';
+        $gateway->status = $request->has('status') ? 1 : 0;
 
         if ($request->hasFile('logo')) {
             if ($gateway->logo) {

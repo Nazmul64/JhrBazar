@@ -3,9 +3,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import MasterLayout from '../layouts/MasterLayout';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { useWishlist } from '../context/WishlistContext';
 
 const UserDashboard = () => {
     const navigate = useNavigate();
+    const { toggleWishlist } = useWishlist();
     const [user, setUser] = useState(null);
     const [stats, setStats] = useState({ order_count: 0, wishlist_count: 0 });
     const [orders, setOrders] = useState([]);
@@ -42,8 +44,14 @@ const UserDashboard = () => {
             try {
                 const headers = { Authorization: `Bearer ${token}` };
                 
-                // Fetch User
-                const userRes = await axios.get('/api/user', { headers });
+                // Fetch all dashboard requirements concurrently to eliminate sequential delay
+                const [userRes, dashRes, ordersRes, wishlistRes] = await Promise.all([
+                    axios.get('/api/user', { headers }),
+                    axios.get('/api/customer/dashboard', { headers }),
+                    axios.get('/api/customer/orders', { headers }),
+                    axios.get('/api/customer/wishlist', { headers })
+                ]);
+
                 setUser(userRes.data);
                 setProfileData({
                     name: userRes.data.name || '',
@@ -52,8 +60,6 @@ const UserDashboard = () => {
                     address: userRes.data.address || ''
                 });
 
-                // Fetch Full Dashboard Data (Stats + Recent Orders)
-                const dashRes = await axios.get('/api/customer/dashboard', { headers });
                 if (dashRes.data.success) {
                     setStats({
                         order_count: dashRes.data.data.order_count,
@@ -61,14 +67,10 @@ const UserDashboard = () => {
                     });
                 }
 
-                // Fetch Full Order History
-                const ordersRes = await axios.get('/api/customer/orders', { headers });
                 if (ordersRes.data.success) {
                     setOrders(ordersRes.data.data);
                 }
 
-                // Fetch Wishlist
-                const wishlistRes = await axios.get('/api/customer/wishlist', { headers });
                 if (wishlistRes.data.success) {
                     setWishlist(wishlistRes.data.data);
                 }
@@ -403,22 +405,30 @@ const UserDashboard = () => {
                                                         <td className="small text-muted">{order.payment_method}</td>
                                                         <td className="fw-bold">৳{order.grand_total}</td>
                                                         <td>
-                                                            <span className={`badge rounded-pill bg-opacity-10 py-2 px-3 text-${order.status === 'completed' ? 'success bg-success' : order.status === 'cancelled' ? 'danger bg-danger' : 'warning bg-warning'}`}>
-                                                                {order.status}
+                                                            <span className={`badge rounded-pill bg-opacity-10 py-2 px-3 text-${
+                                                                ['completed','delivered'].includes(order.status) ? 'success bg-success' 
+                                                                : order.status === 'cancelled' ? 'danger bg-danger' 
+                                                                : 'warning bg-warning'
+                                                            }`}>
+                                                                {order.status === 'delivered' ? '✅ ডেলিভারি হয়েছে' 
+                                                                 : order.status === 'completed' ? '✅ সম্পন্ন'
+                                                                 : order.status === 'cancelled' ? '❌ বাতিল'
+                                                                 : order.status === 'processing' ? '⏳ প্রসেস হচ্ছে'
+                                                                 : '🕐 অপেক্ষায়'}
                                                             </span>
                                                         </td>
                                                         <td className="text-end">
-                                                            {order.status === 'completed' && (
+                                                            {(['completed', 'delivered'].includes(order.status)) && (
                                                                 <div className="d-flex flex-column align-items-end gap-1">
                                                                     {(order.items || []).map((item, idx) => (
                                                                         <button 
                                                                             key={idx}
-                                                                            onClick={() => openReviewModal(item)}
+                                                                            onClick={() => openReviewModal({ ...item, name: item.title || item.name })}
                                                                             className="btn btn-warning btn-sm fw-bold rounded-pill px-2 py-1"
                                                                             style={{ fontSize: '10px', whiteSpace: 'nowrap' }}
-                                                                            title={item.name}
+                                                                            title={item.title || item.name}
                                                                         >
-                                                                            {item.name?.substring(0, 12)}... রিভিউ
+                                                                            ⭐ {(item.title || item.name)?.substring(0, 10)}... রিভিউ
                                                                         </button>
                                                                     ))}
                                                                 </div>
@@ -456,13 +466,18 @@ const UserDashboard = () => {
                                                             >
                                                                 দেখুন
                                                             </button>
-                                                            <button 
-                                                                className="btn btn-outline-danger btn-sm rounded-circle"
-                                                                title="মুছে ফেলুন"
-                                                                onClick={() => toast.success("উইশলিস্ট থেকে সরানো হয়েছে (ডাইনামিক রিমুভ শীঘ্রই আসবে)")}
-                                                            >
-                                                                <i className="bi bi-trash"></i>
-                                                            </button>
+                                                                                                                         <button 
+                                                                 className="btn btn-outline-danger btn-sm rounded-circle"
+                                                                 title="উইশলিস্ট থেকে সরান"
+                                                                 onClick={async () => {
+                                                                     await toggleWishlist({ id: item.id, product_type: item.product_type });
+                                                                     const t = localStorage.getItem('auth_token');
+                                                                     const r = await axios.get('/api/customer/wishlist', { headers: { Authorization: `Bearer ${t}` } });
+                                                                     if (r.data.success) setWishlist(r.data.data);
+                                                                 }}
+                                                             >
+                                                                 <i className="bi bi-trash"></i>
+                                                             </button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -613,9 +628,13 @@ const UserDashboard = () => {
                             </div>
                             <div className="modal-body p-4">
                                 <div className="d-flex align-items-center gap-3 mb-4 p-3 bg-light rounded-4">
-                                    <img src={reviewProduct?.thumbnail} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '12px' }} alt="" />
+                                    {reviewProduct?.thumbnail ? (
+                                        <img src={reviewProduct.thumbnail.startsWith('http') ? reviewProduct.thumbnail : '/' + reviewProduct.thumbnail.replace(/^\//, '')} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '12px' }} alt="" />
+                                    ) : (
+                                        <div style={{ width: '60px', height: '60px', borderRadius: '12px', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px' }}>🛍️</div>
+                                    )}
                                     <div className="overflow-hidden">
-                                        <h6 className="fw-bold mb-0 text-truncate">{reviewProduct?.name}</h6>
+                                        <h6 className="fw-bold mb-0 text-truncate">{reviewProduct?.name || reviewProduct?.title}</h6>
                                         <div className="small text-muted">রেটিং দিন</div>
                                     </div>
                                 </div>

@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import SEO from '../components/SEO';
 import { useSettings } from '../context/SettingsContext';
+import { trackViewItem } from '../utils/dataLayer';
 
 const ProductDetails = () => {
     const { slug } = useParams();
@@ -43,6 +44,8 @@ const ProductDetails = () => {
                     setProduct(pData);
                     setReviews(pData.reviews || []);
                     setRelatedProducts(pData.related || []);
+                    // Dispatch GA4 & Pixel view_item DataLayer event
+                    trackViewItem(pData);
                 }
             } catch (error) {
                 console.error("Error fetching product details:", error);
@@ -502,9 +505,9 @@ const ProductDetails = () => {
 
                                 <div className="d-flex align-items-center gap-3 mb-4">
                                     <h2 className="fw-bold mb-0 product-price-responsive" style={{ color: mainColor, fontSize: '36px' }}>৳{Number(product.price).toLocaleString('en-BD')}</h2>
-                                    {product.old_price > product.price && (
+                                    {Number(product.old_price || product.oldPrice) > Number(product.price) && (
                                         <span className="text-muted text-decoration-line-through">
-                                            ৳{Number(product.old_price).toLocaleString('en-BD')}
+                                            ৳{Number(product.old_price || product.oldPrice).toLocaleString('en-BD')}
                                         </span>
                                     )}
                                 </div>
@@ -763,9 +766,9 @@ const ProductDetails = () => {
                                                 <div className="flex-grow-1 min-width-0">
                                                     <div className="small fw-bold text-truncate">{prod.title}</div>
                                                     <div className="d-flex align-items-center gap-2">
-                                                        <span className="fw-bold" style={{ color: mainColor }}>${prod.price.toFixed(2)}</span>
-                                                        {prod.old_price > prod.price && (
-                                                            <span className="text-muted text-decoration-line-through" style={{ fontSize: '10px' }}>${prod.old_price.toFixed(2)}</span>
+                                                        <span className="fw-bold" style={{ color: mainColor }}>৳{Number(prod.price).toLocaleString('en-BD')}</span>
+                                                        {Number(prod.old_price || prod.oldPrice) > Number(prod.price) && (
+                                                            <span className="text-muted text-decoration-line-through" style={{ fontSize: '10px' }}>৳{Number(prod.old_price || prod.oldPrice).toLocaleString('en-BD')}</span>
                                                         )}
                                                     </div>
                                                     <div className="d-flex align-items-center justify-content-between mt-1">

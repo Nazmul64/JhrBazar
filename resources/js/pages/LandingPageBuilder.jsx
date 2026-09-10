@@ -8,6 +8,13 @@ import {
   Video, Star, FileText, CheckCircle2, AlertCircle, Percent
 } from 'lucide-react';
 
+const getLandingPageImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  if (url.startsWith('/')) return url;
+  return '/' + url;
+};
+
 const LandingPageBuilder = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
@@ -760,7 +767,7 @@ const LandingPageBuilder = () => {
                       />
                       {editingBlock.data?.bottom_image && (
                         <div className="mt-2 border rounded p-1" style={{ maxWidth: '100px' }}>
-                          <img src={editingBlock.data.bottom_image.startsWith('http') ? editingBlock.data.bottom_image : '/' + editingBlock.data.bottom_image} alt="uploaded" className="img-fluid rounded" />
+                          <img src={getLandingPageImageUrl(editingBlock.data.bottom_image)} alt="uploaded" className="img-fluid rounded" />
                         </div>
                       )}
                     </div>
@@ -1014,7 +1021,7 @@ const LandingPageBuilder = () => {
                           <div key={idx} className="col-4 col-md-3 position-relative group">
                             <div className="border rounded overflow-hidden shadow-sm ratio ratio-1x1" style={{ backgroundColor: '#fff' }}>
                               <img 
-                                src={img.startsWith('http') ? img : '/' + img} 
+                                src={getLandingPageImageUrl(img)} 
                                 alt={`gallery-${idx}`} 
                                 className="img-fluid object-cover w-100 h-100" 
                               />

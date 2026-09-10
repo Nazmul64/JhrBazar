@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import MasterLayout from '../layouts/MasterLayout';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { trackViewCart } from '../utils/dataLayer';
 
 const Cart = () => {
     const mainColor = '#57b500';
@@ -9,6 +10,12 @@ const Cart = () => {
 
     const shipping = 0;
     const total = cartTotal + shipping;
+
+    useEffect(() => {
+        if (cartItems.length > 0) {
+            trackViewCart(cartItems, total);
+        }
+    }, [cartItems.length]);
 
     return (
         <MasterLayout>

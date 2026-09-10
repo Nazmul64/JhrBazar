@@ -237,6 +237,12 @@
                             <div class="product-meta">
                                 @php
                                     $thumb = $item['thumbnail'] ?? $item['image'] ?? '';
+                                    if (empty($thumb) && isset($item['id'])) {
+                                        $dbProduct = \App\Models\Product::find($item['id']) ?? \App\Models\SellerProduct::find($item['id']);
+                                        if ($dbProduct) {
+                                            $thumb = $dbProduct->thumbnail;
+                                        }
+                                    }
                                     $name = $item['name'] ?? $item['title'] ?? 'Product';
                                 @endphp
                                 <img src="{{ !empty($thumb) ? asset($thumb) : asset('images/no-image.png') }}" class="product-img">

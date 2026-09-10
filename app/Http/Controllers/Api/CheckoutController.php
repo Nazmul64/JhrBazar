@@ -272,10 +272,10 @@ class CheckoutController extends Controller
                 ], 422);
             }
 
-            if (isset($product->stock_quantity) && $product->stock_quantity < $item['qty']) {
+            if (!($product->is_unlimited ?? false) && isset($product->stock_quantity) && $product->stock_quantity < $item['qty']) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'পণ্যের স্টক সীমা পেরিয়ে গেছেন: ' . ($product->name ?? $product->title ?? 'Unknown Product')
+                    'message' => 'পণ্যের স্টক পর্যাপ্ত নেই: ' . ($product->name ?? $product->title ?? 'Unknown Product')
                 ], 422);
             }
 
@@ -299,6 +299,7 @@ class CheckoutController extends Controller
                 'size'             => $item['size'] ?? null,
                 'cash_on_delivery' => $product->cash_on_delivery ?? true,
                 'online_payment'   => $product->online_payment ?? true,
+                'thumbnail'        => $product->thumbnail ?? null,
             ];
         }
 
@@ -579,7 +580,7 @@ class CheckoutController extends Controller
                 }
                 $orderShipping = $totalOrderAmount > 0 ? $shippingCharge * ($subTotal / $totalOrderAmount) : 0;
 
-                $grandTotal = ($subTotal + $orderShipping) - $orderDiscount;
+                $grandTotal = $subTotal - $orderDiscount;
 
                 $customerId = auth('sanctum')->check() ? auth('sanctum')->id() : null;
 
@@ -623,7 +624,38 @@ class CheckoutController extends Controller
                 // Attach invoice_number so frontend receives the 8-digit number
                 $order->invoice_number = $invoice->invoice_number;
                 $orders[] = $order;
+
+                // 4. Record Marketing & Channel Attribution
+                try {
+                    $attrSessionId = $request->input('session_id') ?: session()->getId();
+                    $attrUtmSource = $request->input('utm_source');
+                    $attrUtmMedium = $request->input('utm_medium');
+                    $attrUtmCampaign = $request->input('utm_campaign');
+                    $attrClickId = $request->input('click_id');
+                    $attrClickIdType = $request->input('click_id_type');
+                    $attrPlatform = $request->input('detected_platform') ?: 'Direct Visit';
+
+                    \App\Models\MarketingAttribution::create([
+                        'session_id' => $attrSessionId,
+                        'ip_address' => $request->ip(),
+                        'user_agent' => substr($request->userAgent() ?? '', 0, 500),
+                        'utm_source' => $attrUtmSource,
+                        'utm_medium' => $attrUtmMedium,
+                        'utm_campaign' => $attrUtmCampaign,
+                        'click_id' => $attrClickId,
+                        'click_id_type' => $attrClickIdType,
+                        'detected_platform' => $attrPlatform,
+                        'landing_page' => $request->header('referer') ?: url()->current(),
+                        'order_id' => $order->id,
+                        'invoice_id' => $invoice->id,
+                        'revenue' => $grandTotal,
+                        'conversion_status' => 'placed',
+                    ]);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Marketing attribution log failed: ' . $e->getMessage());
+                }
             }
+
 
             $paymentUrl = null;
             if ($request->payment_method === 'online' && $request->online_gateway === 'sslcommerz') {

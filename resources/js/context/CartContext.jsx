@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { trackAddToCart, trackRemoveFromCart } from '../utils/dataLayer';
 
 const CartContext = createContext(null);
 
@@ -19,6 +20,9 @@ export const CartProvider = ({ children }) => {
     }, [cartItems]);
 
     const addToCart = (product, quantity = 1, color = null, size = null) => {
+        // Track GA4 & Pixel AddToCart event
+        trackAddToCart(product, quantity);
+
         setCartItems(prev => {
             const existing = prev.find(item => item.uid === product.uid && item.color === color && item.size === size);
             if (existing) {
@@ -48,6 +52,10 @@ export const CartProvider = ({ children }) => {
     };
 
     const removeFromCart = (uid) => {
+        const itemToRemove = cartItems.find(item => item.uid === uid);
+        if (itemToRemove) {
+            trackRemoveFromCart(itemToRemove, itemToRemove.qty);
+        }
         setCartItems(prev => prev.filter(item => item.uid !== uid));
         toast.success('Removed from cart!');
     };

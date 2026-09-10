@@ -11,6 +11,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
+// ─── Helper: strip leading +88 / 880 so phone comparisons don't fail ────────
+function normalizePhone(?string $phone): ?string
+{
+    if (!$phone) return null;
+    // Remove non-digit prefix chars so +8801XXXXXXXX → 01XXXXXXXX
+    $phone = preg_replace('/^\+88/', '', $phone);
+    $phone = preg_replace('/^880/', '0', $phone);
+    return $phone;
+}
+
 class CustomerDashboardController extends Controller
 {
     /**
@@ -18,11 +28,23 @@ class CustomerDashboardController extends Controller
      */
     public function index()
     {
-        $user = auth()->user();
-        
-        $orderCount = Pointofsalepo::where('customer_id', $user->id)
-            ->orWhere('phone', $user->phone)
-            ->count();
+        $user  = auth('sanctum')->user();
+
+        // Normalize phone for flexible matching (e.g. +8801XXXXXXXX ↔ 01XXXXXXXX)
+        $rawPhone   = $user->phone ?? '';
+        $cleanPhone = normalizePhone($rawPhone);
+        $phones     = array_filter(array_unique([
+            $rawPhone,
+            $cleanPhone,
+            $cleanPhone ? '+88' . $cleanPhone : null,
+        ]));
+
+        $orderCount = Pointofsalepo::where(function ($q) use ($user, $phones) {
+            $q->where('customer_id', $user->id);
+            if (count($phones)) {
+                $q->orWhereIn('phone', array_values($phones));
+            }
+        })->count();
 
         $wishlistCount = Wishlist::where('user_id', $user->id)->count();
 
@@ -40,10 +62,24 @@ class CustomerDashboardController extends Controller
      */
     public function orders()
     {
-        $user = auth()->user();
+        $user  = auth('sanctum')->user();
+
+        // Normalize phone for flexible matching
+        $rawPhone   = $user->phone ?? '';
+        $cleanPhone = normalizePhone($rawPhone);
+        $phones     = array_filter(array_unique([
+            $rawPhone,
+            $cleanPhone,
+            $cleanPhone ? '+88' . $cleanPhone : null,
+        ]));
+
         $orders = Pointofsalepo::with('invoice')
-            ->where('customer_id', $user->id)
-            ->orWhere('phone', $user->phone)
+            ->where(function ($q) use ($user, $phones) {
+                $q->where('customer_id', $user->id);
+                if (count($phones)) {
+                    $q->orWhereIn('phone', array_values($phones));
+                }
+            })
             ->latest()
             ->get();
 
@@ -58,20 +94,41 @@ class CustomerDashboardController extends Controller
      */
     public function wishlist()
     {
-        $user = auth()->user();
+        $user = auth('sanctum')->user();
         $wishlistItems = Wishlist::where('user_id', $user->id)
             ->latest()
             ->get();
+
+        // Group IDs by product_type
+        $groupedIds = [];
+        foreach ($wishlistItems as $item) {
+            $groupedIds[$item->product_type][] = $item->product_id;
+        }
+
+        // Fetch products in batch
+        $adminProducts = [];
+        $sellerProducts = [];
+        $digitalProducts = [];
+
+        if (!empty($groupedIds['admin'])) {
+            $adminProducts = \App\Models\Product::whereIn('id', $groupedIds['admin'])->get()->keyBy('id');
+        }
+        if (!empty($groupedIds['seller'])) {
+            $sellerProducts = \App\Models\SellerProduct::whereIn('id', $groupedIds['seller'])->get()->keyBy('id');
+        }
+        if (!empty($groupedIds['digital'])) {
+            $digitalProducts = \App\Models\DigitalProduct::whereIn('id', $groupedIds['digital'])->get()->keyBy('id');
+        }
 
         $products = [];
         foreach ($wishlistItems as $item) {
             $product = null;
             if ($item->product_type === 'admin') {
-                $product = \App\Models\Product::find($item->product_id);
+                $product = $adminProducts[$item->product_id] ?? null;
             } elseif ($item->product_type === 'seller') {
-                $product = \App\Models\SellerProduct::find($item->product_id);
+                $product = $sellerProducts[$item->product_id] ?? null;
             } elseif ($item->product_type === 'digital') {
-                $product = \App\Models\DigitalProduct::find($item->product_id);
+                $product = $digitalProducts[$item->product_id] ?? null;
             }
 
             if ($product) {
@@ -101,7 +158,7 @@ class CustomerDashboardController extends Controller
      */
     public function updateProfile(Request $request)
     {
-        $user = auth()->user();
+        $user = auth('sanctum')->user();
 
         $validator = Validator::make($request->all(), [
             'name'          => 'required|string|max:255',
@@ -157,7 +214,7 @@ class CustomerDashboardController extends Controller
      */
     public function updatePassword(Request $request)
     {
-        $user = auth()->user();
+        $user = auth('sanctum')->user();
 
         $validator = Validator::make($request->all(), [
             'current_password' => 'required',

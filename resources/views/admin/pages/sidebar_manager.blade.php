@@ -257,6 +257,26 @@
             <i class="bi bi-grid-fill"></i> Dashboard
         </a>
 
+        {{-- Stock Management (Front & Center) --}}
+        <a class="nav-item-custom {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }}"
+           href="{{ route('admin.inventory.index') }}">
+            <i class="bi bi-box-seam-fill text-warning"></i> Stock Management
+        </a>
+
+        {{-- Local Purchases (Front & Center) --}}
+        <a class="nav-item-custom {{ request()->routeIs('admin.purchases.*') ? 'active' : '' }}"
+           href="{{ route('admin.purchases.index') }}">
+            <i class="bi bi-cart-check-fill text-primary"></i> Local Purchases
+        </a>
+
+        {{-- POS Terminal (Front & Center) --}}
+        @if(auth()->user()->hasPermission('pos.list'))
+        <a class="nav-item-custom {{ request()->routeIs('admin.pointofsalepos.index') ? 'active' : '' }}"
+           href="{{ route('admin.pointofsalepos.index') }}">
+            <i class="bi bi-display text-info"></i> POS Terminal
+        </a>
+        @endif
+
         {{-- ══════════════ ORDERS HUB ══════════════ --}}
         @if(auth()->user()->hasPermission('order.list'))
         <div class="nav-item-custom has-sub {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}" data-sub="orders-hub">
@@ -398,6 +418,18 @@
             @endif
         </div>
         @endif
+
+        {{-- Stock Management (Top-Level Highlighted) --}}
+        <a class="nav-item-custom {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }}"
+           href="{{ route('admin.inventory.index') }}">
+            <i class="bi bi-box-seam-fill text-warning"></i> Stock Management
+        </a>
+
+        {{-- Local Purchases (Stock In) --}}
+        <a class="nav-item-custom {{ request()->routeIs('admin.purchases.*') ? 'active' : '' }}"
+           href="{{ route('admin.purchases.index') }}">
+            <i class="bi bi-cart-check-fill text-primary"></i> Local Purchases
+        </a>
 
         {{-- Product Management --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('products.*') ? 'active' : '' }}"
@@ -914,6 +946,34 @@
             trigger.classList.add('open');
         }
     });
+
+    /* ── Preserve scroll position & scroll active item into view ── */
+    var scrollEl = document.getElementById('sidebar') || document.querySelector('.sidebar-inner');
+    if (scrollEl) {
+        var activeItem = scrollEl.querySelector('.nav-item-custom.active');
+        if (activeItem) {
+            try {
+                activeItem.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
+            } catch (e) {
+                activeItem.scrollIntoView(false);
+            }
+        } else {
+            var savedScroll = sessionStorage.getItem('manager_sidebar_scroll');
+            if (savedScroll !== null) {
+                scrollEl.scrollTop = parseInt(savedScroll, 10);
+            }
+        }
+
+        scrollEl.addEventListener('scroll', function () {
+            sessionStorage.setItem('manager_sidebar_scroll', scrollEl.scrollTop);
+        }, { passive: true });
+
+        scrollEl.querySelectorAll('a').forEach(function (link) {
+            link.addEventListener('click', function () {
+                sessionStorage.setItem('manager_sidebar_scroll', scrollEl.scrollTop);
+            });
+        });
+    }
 
     /* ── Mobile: overlay closes sidebar ── */
     var overlay = document.getElementById('sidebar-overlay');

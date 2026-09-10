@@ -448,6 +448,45 @@
             Dashboard
         </a>
 
+        {{-- Stock Management (Front & Center) --}}
+        <a class="sb-item {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }}"
+           href="{{ route('admin.inventory.index') }}">
+            <span class="sb-icon"><i class="bi bi-box-seam-fill text-warning"></i></span>
+            <span style="font-weight:600;">Stock Management</span>
+            @php 
+                $lowStockCount = \App\Models\Product::where('is_active', 1)->where('is_unlimited', 0)->where('stock_quantity', '<=', 5)->count(); 
+            @endphp
+            @if($lowStockCount > 0)
+                <span class="sb-badge" style="background:#f59e0b;">{{ $lowStockCount }} Low</span>
+            @endif
+        </a>
+
+        {{-- Local Purchases (Stock In) (Front & Center) --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.purchases.*') ? 'active open' : '' }}" data-sub="top-purchases">
+            <span class="sb-icon"><i class="bi bi-cart-check-fill text-primary"></i></span>
+            <span style="font-weight:600;">Local Purchases</span>
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.purchases.*') ? 'open' : '' }}" id="sub-top-purchases">
+            <a class="sb-item {{ request()->routeIs('admin.purchases.create') ? 'active' : '' }}"
+               href="{{ route('admin.purchases.create') }}">
+                <span class="sb-icon"><i class="bi bi-plus-circle"></i></span> New Purchase (Stock In)
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.purchases.index') ? 'active' : '' }}"
+               href="{{ route('admin.purchases.index') }}">
+                <span class="sb-icon"><i class="bi bi-list-ul"></i></span> Purchase History
+            </a>
+        </div>
+
+        {{-- POS Terminal (Front & Center) --}}
+        @if(auth()->user()->hasPermission('pos.list'))
+        <a class="sb-item {{ request()->routeIs('admin.pointofsalepos.index') ? 'active' : '' }}"
+           href="{{ route('admin.pointofsalepos.index') }}">
+            <span class="sb-icon"><i class="bi bi-display text-info"></i></span>
+            <span style="font-weight:600;">POS Terminal</span>
+        </a>
+        @endif
+
         <a class="sb-item {{ request()->routeIs('admin.ourbrands.*') ? 'active' : '' }}"
            href="{{ route('admin.ourbrands.index') }}">
             <span class="sb-icon"><i class="bi bi-image"></i></span>
@@ -637,7 +676,7 @@
              SECTION 5 · CATALOG
         ══════════════════════════════════════════ --}}
         @if(auth()->user()->hasPermission('product.list'))
-        <div class="sb-section">Catalog</div>
+        <div class="sb-section">Product Catalog</div>
 
         {{-- Categories --}}
         <div class="sb-item has-sub {{ request()->routeIs('admin.categories.*') || request()->routeIs('admin.subcategory.*') ? 'active open' : '' }}" data-sub="category">
@@ -665,12 +704,12 @@
         </div>
 
         {{-- Products --}}
-        <div class="sb-item has-sub {{ request()->routeIs('products.*') ? 'active open' : '' }}" data-sub="product">
-            <span class="sb-icon"><i class="bi bi-box-seam"></i></span>
+        <div class="sb-item has-sub {{ request()->routeIs('products.*') || request()->routeIs('admin.digital_product.*') ? 'active open' : '' }}" data-sub="product">
+            <span class="sb-icon"><i class="bi bi-boxes"></i></span>
             Products
             <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="sb-sub {{ request()->routeIs('products.*') ? 'open' : '' }}" id="sub-product">
+        <div class="sb-sub {{ request()->routeIs('products.*') || request()->routeIs('admin.digital_product.*') ? 'open' : '' }}" id="sub-product">
             <a class="sb-item {{ request()->routeIs('products.index') ? 'active' : '' }}"
                href="{{ route('products.index') }}">
                 <span class="sb-icon"><i class="bi bi-boxes"></i></span> All Products
@@ -734,17 +773,29 @@
         @if(auth()->user()->hasPermission('seller_approval.list') || auth()->user()->hasPermission('bank.list') || auth()->user()->hasPermission('shop.list') || auth()->user()->hasPermission('promo_code.list') || auth()->user()->hasPermission('flash_sale.list') || auth()->user()->hasPermission('banner.list'))
         <div class="sb-section">Shop & Promotions</div>
 
-        {{-- Seller Approvals --}}
+        {{-- Seller Management --}}
         @if(auth()->user()->hasPermission('seller_approval.list'))
-        <a class="sb-item {{ request()->routeIs('admin.sellers.approvals') ? 'active' : '' }}"
-           href="{{ route('admin.sellers.approvals') }}">
-            <span class="sb-icon"><i class="bi bi-person-check-fill"></i></span>
-            Seller Approvals
-            @php $pendingCount = \App\Models\User::where('role','seller')->where('status','pending')->count(); @endphp
-            @if($pendingCount > 0)
-                <span class="sb-badge">{{ $pendingCount }}</span>
+        <div class="sb-item has-sub {{ request()->routeIs('admin.sellers.*') || (request()->routeIs('admin.shops.create') && request()->get('for') === 'seller') ? 'active open' : '' }}" data-sub="seller">
+            <span class="sb-icon"><i class="bi bi-people-fill"></i></span>
+            <span style="font-weight:600;">Seller Management</span>
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.sellers.*') || (request()->routeIs('admin.shops.create') && request()->get('for') === 'seller') ? 'open' : '' }}" id="sub-seller">
+            <a class="sb-item {{ request()->routeIs('admin.sellers.approvals') ? 'active' : '' }}"
+               href="{{ route('admin.sellers.approvals') }}">
+                <span class="sb-icon"><i class="bi bi-person-check-fill"></i></span> Seller Approvals
+                @php $pendingCount = \App\Models\User::where('role','seller')->where('status','pending')->count(); @endphp
+                @if($pendingCount > 0)
+                    <span class="sb-badge">{{ $pendingCount }}</span>
+                @endif
+            </a>
+            @if(auth()->user()->hasPermission('shop.list'))
+            <a class="sb-item {{ request()->routeIs('admin.shops.create') ? 'active' : '' }}"
+               href="{{ route('admin.shops.create') }}">
+                <span class="sb-icon"><i class="bi bi-person-plus-fill"></i></span> Create Seller
+            </a>
             @endif
-        </a>
+        </div>
         @endif
 
         {{-- Shop Management --}}
@@ -813,6 +864,27 @@
         </a>
         @endif
         @endif
+
+        {{-- ══════════════════════════════════════════
+             SECTION · MARKETING & TRACKING
+        ══════════════════════════════════════════ --}}
+        <div class="sb-section">Marketing & Tracking</div>
+        <div class="sb-item has-sub {{ request()->routeIs('admin.tracking.*') ? 'active open' : '' }}" data-sub="marketing-tracking">
+            <span class="sb-icon"><i class="bi bi-graph-up-arrow"></i></span>
+            Marketing & Tracking
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.tracking.*') ? 'open' : '' }}" id="sub-marketing-tracking">
+            <a class="sb-item {{ request()->routeIs('admin.tracking.settings') ? 'active' : '' }}"
+               href="{{ route('admin.tracking.settings') }}">
+                <span class="sb-icon"><i class="bi bi-sliders"></i></span> Tracking Settings
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.tracking.attribution*') ? 'active' : '' }}"
+               href="{{ route('admin.tracking.attribution') }}">
+                <span class="sb-icon"><i class="bi bi-pie-chart-fill"></i></span> Attribution Reports
+            </a>
+        </div>
+
 
 
         {{-- ══════════════════════════════════════════
@@ -960,6 +1032,26 @@
             <a class="sb-item" href="#"
                onclick="event.preventDefault(); document.getElementById('openGenerateModal')?.click();">
                 <span class="sb-icon"><i class="bi bi-gear"></i></span> Generate Payroll
+            </a>
+        </div>
+
+        {{-- Accounts & Cashbook --}}
+        <div class="sb-item has-sub {{ request()->routeIs('admin.accounts.*') ? 'active open' : '' }}" data-sub="accounts-cashbook">
+            <span class="sb-icon"><i class="bi bi-journal-bookmark-fill text-success"></i></span>
+            Accounts & Cashbook
+            <i class="bi bi-chevron-right sb-arrow"></i>
+        </div>
+        <div class="sb-sub {{ request()->routeIs('admin.accounts.*') ? 'open' : '' }}" id="sub-accounts-cashbook">
+            <a class="sb-item {{ request()->routeIs('admin.accounts.index') ? 'active' : '' }}"
+               href="{{ route('admin.accounts.index') }}">
+                <span class="sb-icon"><i class="bi bi-wallet2"></i></span> Income & Expense
+            </a>
+            <a class="sb-item {{ request()->routeIs('admin.accounts.categories*') ? 'active' : '' }}"
+               href="{{ route('admin.accounts.categories') }}">
+                <span class="sb-icon"><i class="bi bi-tags-fill"></i></span> Purpose Categories
+            </a>
+            <a class="sb-item" href="{{ route('admin.accounts.report') }}" target="_blank">
+                <span class="sb-icon"><i class="bi bi-printer-fill"></i></span> Financial Statement
             </a>
         </div>
 
@@ -1342,6 +1434,36 @@
         }
         if (trigger) trigger.classList.add('open');
     });
+
+    /* ── Preserve scroll position & scroll active item into view ── */
+    var scrollEl = document.querySelector('.sb-scroll');
+    if (scrollEl) {
+        // Find active item
+        var activeItem = scrollEl.querySelector('.sb-item.active');
+        if (activeItem) {
+            // Scroll active item to comfortable center of sidebar viewport
+            try {
+                activeItem.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
+            } catch (e) {
+                activeItem.scrollIntoView(false);
+            }
+        } else {
+            var savedScroll = sessionStorage.getItem('admin_sidebar_scroll');
+            if (savedScroll !== null) {
+                scrollEl.scrollTop = parseInt(savedScroll, 10);
+            }
+        }
+
+        scrollEl.addEventListener('scroll', function () {
+            sessionStorage.setItem('admin_sidebar_scroll', scrollEl.scrollTop);
+        }, { passive: true });
+
+        scrollEl.querySelectorAll('a').forEach(function (link) {
+            link.addEventListener('click', function () {
+                sessionStorage.setItem('admin_sidebar_scroll', scrollEl.scrollTop);
+            });
+        });
+    }
 
     /* ── Mobile overlay ── */
     if (overlay && sidebar) {

@@ -12,7 +12,15 @@ class PurchaseItem extends Model
         'product_id',
         'quantity',
         'unit_price',
+        'subtotal',
         'sub_total',
+    ];
+
+    protected $casts = [
+        'unit_price' => 'decimal:2',
+        'subtotal'   => 'decimal:2',
+        'sub_total'  => 'decimal:2',
+        'quantity'   => 'integer',
     ];
 
     public function purchase(): BelongsTo
@@ -22,6 +30,6 @@ class PurchaseItem extends Model
 
     public function product(): BelongsTo
     {
-        return $this->belongsTo(SellerProduct::class, 'product_id');
+        return $this->belongsTo(Product::class, 'product_id');
     }
 }
