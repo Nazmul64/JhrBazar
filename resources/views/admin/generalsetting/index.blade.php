@@ -889,6 +889,28 @@
     </div>
 
     {{-- =============================================
+         SECTION 5.7 – Order Button Animation Settings
+    ============================================= --}}
+    <div class="gs-section">
+        <div class="gs-section-title">
+            <div class="title-left">
+                <span class="title-icon">⚡</span>
+                <span>Order Button Animation (অর্ডার বাটন এনিমেশন)</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:13px;font-weight:600;color:#333;">Enable Order Button Pulse / Zoom Animation</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="order_button_animation" id="toggle_order_button_animation"
+                           {{ old('order_button_animation', $setting->order_button_animation ?? 1) ? 'checked' : '' }}
+                           onchange="ajaxToggle(this, '{{ $setting ? route('admin.generalsettings.toggle', $setting->id) : '#' }}', 'order_button_animation')">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+        <p style="font-size:12px; color:#666; margin: 0;">যখন এই অপশনটি অন (Enable) থাকবে, তখন ওয়েবসাইট ও প্রোডাক্ট পেজের "অর্ডার করুন" (Order Now) বাটনে আকর্ষণীয় পালস/জুম ইন-আউট এনিমেশন সক্রিয় থাকবে। সুইচ অফ থাকলে সাধারণ বাটন দেখাবে।</p>
+    </div>
+
+    {{-- =============================================
          SECTION 6 – Layout & Product Grid
     ============================================= --}}
     <div class="gs-section">

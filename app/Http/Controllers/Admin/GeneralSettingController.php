@@ -142,6 +142,7 @@ class GeneralSettingController extends Controller
         $data['enable_gtm'] = $request->has('enable_gtm') ? 1 : 0;
         $data['customer_visit_notification_status'] = $request->has('customer_visit_notification_status') ? 1 : 0;
         $data['ip_block_status'] = $request->has('ip_block_status') ? 1 : 0;
+        $data['order_button_animation'] = $request->has('order_button_animation') ? 1 : 0;
 
         $uploadPath = public_path('uploads/generalsetting');
         if (!file_exists($uploadPath)) {
@@ -237,7 +238,7 @@ class GeneralSettingController extends Controller
         $setting = GenaralSetting::findOrFail($id);
         $field   = $request->field;
 
-        if (in_array($field, ['show_download_app', 'show_footer_section', 'top_rated_shops_status', 'show_product_stats', 'show_marquee', 'show_membership_section', 'enable_analytics', 'enable_pixel', 'enable_gtm', 'customer_visit_notification_status', 'ip_block_status'])) {
+        if (in_array($field, ['show_download_app', 'show_footer_section', 'top_rated_shops_status', 'show_product_stats', 'show_marquee', 'show_membership_section', 'enable_analytics', 'enable_pixel', 'enable_gtm', 'customer_visit_notification_status', 'ip_block_status', 'order_button_animation'])) {
             $setting->$field = !$setting->$field;
             $setting->save();
 

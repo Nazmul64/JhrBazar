@@ -255,14 +255,14 @@ const Checkout = () => {
 
     useEffect(() => {
         const canCOD = cartItems.every(item => item.cash_on_delivery ?? true);
-        const canOnline = cartItems.every(item => item.online_payment ?? true);
+        const canOnline = (availableGateways && availableGateways.length > 0) && cartItems.every(item => item.online_payment ?? true);
 
         if (formData.payment_method === 'cod' && !canCOD && canOnline) {
             setFormData(prev => ({ ...prev, payment_method: 'online' }));
-        } else if (formData.payment_method === 'online' && !canOnline && canCOD) {
+        } else if (formData.payment_method === 'online' && (!canOnline || !availableGateways || availableGateways.length === 0) && canCOD) {
             setFormData(prev => ({ ...prev, payment_method: 'cod', online_gateway: '' }));
         }
-    }, [cartItems]);
+    }, [cartItems, availableGateways]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -722,7 +722,7 @@ const Checkout = () => {
                                         <div className="row g-3">
                                             {/* COD Option */}
                                             {cartItems.every(item => item.cash_on_delivery ?? true) ? (
-                                                <div className="col-md-6">
+                                                <div className={(availableGateways && availableGateways.length > 0) ? "col-md-6" : "col-12"}>
                                                     <label className={`card border p-3 h-100 transition-all ${formData.payment_method === 'cod' ? 'border-success bg-light' : ''}`} style={{ borderRadius: '15px', cursor: 'pointer' }}>
                                                         <div className="d-flex align-items-center gap-3">
                                                             <input
@@ -738,7 +738,7 @@ const Checkout = () => {
                                                     </label>
                                                 </div>
                                             ) : (
-                                                <div className="col-md-6">
+                                                <div className={(availableGateways && availableGateways.length > 0) ? "col-md-6" : "col-12"}>
                                                     <div className="card border p-3 h-100 bg-light opacity-75" style={{ borderRadius: '15px', borderStyle: 'dashed' }}>
                                                         <div className="d-flex align-items-center gap-3">
                                                             <div className="text-muted"><i className="fas fa-ban"></i></div>
@@ -751,39 +751,41 @@ const Checkout = () => {
                                                 </div>
                                             )}
 
-                                            {/* Online Payment Option */}
-                                            {cartItems.every(item => item.online_payment ?? true) ? (
-                                                <div className="col-md-6">
-                                                    <label className={`card border p-3 h-100 transition-all ${formData.payment_method === 'online' ? 'border-success bg-light' : ''}`} style={{ borderRadius: '15px', cursor: 'pointer' }}>
-                                                        <div className="d-flex align-items-center gap-3">
-                                                            <input
-                                                                type="radio" name="payment_method" value="online"
-                                                                checked={formData.payment_method === 'online'} onChange={handleChange}
-                                                                className="form-check-input mt-0"
-                                                            />
-                                                            <div>
-                                                                <div className="fw-bold">Online Payment</div>
-                                                                <div className="small text-muted">Pay via Mobile Banking or Card</div>
+                                            {/* Online Payment Option - Only show when at least one online gateway is active */}
+                                            {availableGateways && availableGateways.length > 0 && (
+                                                cartItems.every(item => item.online_payment ?? true) ? (
+                                                    <div className="col-md-6">
+                                                        <label className={`card border p-3 h-100 transition-all ${formData.payment_method === 'online' ? 'border-success bg-light' : ''}`} style={{ borderRadius: '15px', cursor: 'pointer' }}>
+                                                            <div className="d-flex align-items-center gap-3">
+                                                                <input
+                                                                    type="radio" name="payment_method" value="online"
+                                                                    checked={formData.payment_method === 'online'} onChange={handleChange}
+                                                                    className="form-check-input mt-0"
+                                                                />
+                                                                <div>
+                                                                    <div className="fw-bold">Online Payment</div>
+                                                                    <div className="small text-muted">Pay via Mobile Banking or Card</div>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </label>
-                                                </div>
-                                            ) : (
-                                                <div className="col-md-6">
-                                                    <div className="card border p-3 h-100 bg-light opacity-75" style={{ borderRadius: '15px', borderStyle: 'dashed' }}>
-                                                        <div className="d-flex align-items-center gap-3">
-                                                            <div className="text-muted"><i className="fas fa-ban"></i></div>
-                                                            <div>
-                                                                <div className="fw-bold text-muted">Online Payment</div>
-                                                                <div className="small text-danger" style={{ fontSize: '10px' }}>Not available for some items</div>
+                                                        </label>
+                                                    </div>
+                                                ) : (
+                                                    <div className="col-md-6">
+                                                        <div className="card border p-3 h-100 bg-light opacity-75" style={{ borderRadius: '15px', borderStyle: 'dashed' }}>
+                                                            <div className="d-flex align-items-center gap-3">
+                                                                <div className="text-muted"><i className="fas fa-ban"></i></div>
+                                                                <div>
+                                                                    <div className="fw-bold text-muted">Online Payment</div>
+                                                                    <div className="small text-danger" style={{ fontSize: '10px' }}>Not available for some items</div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                )
                                             )}
                                         </div>
 
-                                        {formData.payment_method === 'online' && (
+                                        {availableGateways && availableGateways.length > 0 && formData.payment_method === 'online' && (
                                             <div className="mt-4 p-3 border rounded-4 bg-light shadow-inner animation-slide-down">
                                                 <div className="small fw-bold text-muted mb-3 uppercase">Select Payment Gateway</div>
                                                 <div className="d-flex flex-wrap gap-2">

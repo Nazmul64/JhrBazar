@@ -90,6 +90,7 @@ class GenaralSetting extends Model
         'dbid_number',
         'free_shipping_text',
         'ip_block_status',
+        'order_button_animation',
     ];
 
     protected $casts = [
@@ -107,6 +108,7 @@ class GenaralSetting extends Model
         'slider_speed' => 'integer',
         'category_slide_speed' => 'integer',
         'ip_block_status' => 'boolean',
+        'order_button_animation' => 'boolean',
     ];
     public function getLogoUrlAttribute(): ?string
     {

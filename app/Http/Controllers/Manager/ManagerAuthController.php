@@ -70,8 +70,8 @@ class ManagerAuthController extends Controller
         $request->validate(['email' => 'required|email']);
 
         $user = \App\Models\User::where('email', $request->email)->first();
-        if (!$user || !in_array($user->role, ['manager', 'admin'])) {
-            return back()->withErrors(['email' => 'We could not find a manager with that email address.']);
+        if (!$user || !in_array($user->role, ['manager', 'admin', 'super_admin'])) {
+            return back()->withErrors(['email' => 'We could not find a manager account with that email address.']);
         }
 
         $response = \Illuminate\Support\Facades\Password::broker()->sendResetLink(

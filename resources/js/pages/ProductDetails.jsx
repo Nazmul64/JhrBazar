@@ -589,7 +589,7 @@ const ProductDetails = () => {
                                             </button>
                                             <button
                                                 onClick={handleBuyNow}
-                                                className="btn flex-grow-1 text-white fw-bold product-btn-responsive"
+                                                className={`btn flex-grow-1 text-white fw-bold product-btn-responsive ${(settings?.order_button_animation !== false && settings?.order_button_animation !== 0 && settings?.order_button_animation !== '0') ? 'order-btn-animate' : ''}`}
                                                 style={{
                                                     backgroundColor: mainColor,
                                                     borderRadius: '8px',

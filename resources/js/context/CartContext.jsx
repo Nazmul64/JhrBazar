@@ -26,14 +26,12 @@ export const CartProvider = ({ children }) => {
         setCartItems(prev => {
             const existing = prev.find(item => item.uid === product.uid && item.color === color && item.size === size);
             if (existing) {
-                toast.success('Quantity updated in cart!');
                 return prev.map(item =>
                     (item.uid === product.uid && item.color === color && item.size === size)
                         ? { ...item, qty: item.qty + quantity }
                         : item
                 );
             }
-            toast.success('Added to cart!');
             return [...prev, {
                 uid: product.uid,
                 id: product.id,
@@ -49,6 +47,13 @@ export const CartProvider = ({ children }) => {
                 online_payment: product.online_payment,
             }];
         });
+
+        const existing = cartItems.find(item => item.uid === product.uid && item.color === color && item.size === size);
+        if (existing) {
+            toast.success('Quantity updated in cart!');
+        } else {
+            toast.success('Added to cart!');
+        }
     };
 
     const removeFromCart = (uid) => {

@@ -70,8 +70,8 @@ class EmployeeAuthController extends Controller
         $request->validate(['email' => 'required|email']);
 
         $user = \App\Models\User::where('email', $request->email)->first();
-        if (!$user || !in_array($user->role, ['employee', 'admin', 'manager'])) {
-            return back()->withErrors(['email' => 'We could not find an employee with that email address.']);
+        if (!$user || !in_array($user->role, ['employee', 'admin', 'super_admin', 'manager'])) {
+            return back()->withErrors(['email' => 'We could not find an employee account with that email address.']);
         }
 
         $response = \Illuminate\Support\Facades\Password::broker()->sendResetLink(

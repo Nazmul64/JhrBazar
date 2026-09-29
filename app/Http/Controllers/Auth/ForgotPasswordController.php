@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
+use App\Models\User;
 
 class ForgotPasswordController extends Controller
 {
@@ -23,22 +26,34 @@ class ForgotPasswordController extends Controller
     /**
      * Display the form to request a password reset link.
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     * @return \Illuminate\View\View
      */
     public function showLinkRequestForm()
     {
-        $role = session('forgot_password_role');
+        return view('auth.passwords.email');
+    }
 
-        if ($role === 'admin') {
-            return redirect()->route('admin.password.request');
-        } elseif ($role === 'employee') {
-            return redirect()->route('employee.password.request');
-        } elseif ($role === 'manager') {
-            return redirect()->route('manager.password.request');
-        } elseif ($role === 'seller') {
-            return redirect()->route('seller.password.request');
+    /**
+     * Send a reset link to the given user.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     */
+    public function sendResetLinkEmail(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return back()->withErrors(['email' => 'We could not find an account with that email address.']);
         }
 
-        return view('auth.passwords.email');
+        $response = Password::broker()->sendResetLink(
+            $request->only('email')
+        );
+
+        return $response == Password::RESET_LINK_SENT
+            ? back()->with('status', trans($response))
+            : back()->withErrors(['email' => trans($response)]);
     }
 }

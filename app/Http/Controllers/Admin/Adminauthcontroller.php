@@ -75,8 +75,8 @@ class Adminauthcontroller extends Controller
         $request->validate(['email' => 'required|email']);
 
         $user = \App\Models\User::where('email', $request->email)->first();
-        if (!$user || !in_array($user->role, ['admin', 'manager', 'employee'])) {
-            return back()->withErrors(['email' => 'We could not find an administrator with that email address.']);
+        if (!$user || !in_array($user->role, ['admin', 'super_admin', 'manager', 'employee'])) {
+            return back()->withErrors(['email' => 'We could not find an administrator account with that email address.']);
         }
 
         $response = \Illuminate\Support\Facades\Password::broker()->sendResetLink(

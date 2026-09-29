@@ -5,6 +5,7 @@ import { useSettings } from '../context/SettingsContext';
 import confetti from 'canvas-confetti';
 import { CheckCircle, Truck, ShoppingBag, ArrowRight, Package, Calendar, MapPin } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import axios from 'axios';
 
 const OrderSuccess = () => {
     const { settings } = useSettings();
@@ -30,20 +31,18 @@ const OrderSuccess = () => {
         }
     }, [location.search, fetchedOrders.length]);
 
-    // Redirect to home if no order data and accessed directly
+    // Clear cart on successful order landing
     useEffect(() => {
-        if (orderData.length === 0 && !location.state?.fromCheckout && !new URLSearchParams(location.search).get('invoice')) {
-            // navigate('/');
-        } else if (orderData.length > 0) {
+        if (orderData.length > 0) {
             clearCart();
         }
-    }, [orderData, navigate, location.state, location.search, clearCart]);
+    }, [orderData, clearCart]);
 
     useEffect(() => {
-        // Trigger fireworks effect
-        const duration = 4 * 1000;
+        // Trigger fireworks effect safely
+        const duration = 3.5 * 1000;
         const animationEnd = Date.now() + duration;
-        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 999 };
 
         const randomInRange = (min, max) => Math.random() * (max - min) + min;
 
@@ -54,19 +53,25 @@ const OrderSuccess = () => {
                 return clearInterval(interval);
             }
 
-            const particleCount = 40 * (timeLeft / duration);
+            const particleCount = 35 * (timeLeft / duration);
             confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
             confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
         }, 250);
 
         confetti({
-            particleCount: 150,
+            particleCount: 120,
             spread: 70,
             origin: { y: 0.6 },
-            colors: [mainColor, '#ffffff', '#ffd700']
+            colors: [mainColor, '#ffffff', '#ffd700'],
+            zIndex: 999
         });
 
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+            try {
+                confetti.reset();
+            } catch (e) {}
+        };
     }, [mainColor]);
 
     // Data Layer: purchase
@@ -74,14 +79,12 @@ const OrderSuccess = () => {
         if (orderData.length > 0) {
             window.dataLayer = window.dataLayer || [];
             
-            // Collect all items from all orders
             const allItems = [];
             let totalValue = 0;
-            // Use the first invoice number as the primary transaction ID for the event
             const transactionId = orderData[0].invoice_number || orderData[0].id; 
             
             orderData.forEach(order => {
-                totalValue += Number(order.total_amount);
+                totalValue += Number(order.total_amount || order.grand_total || 0);
                 if (order.items) {
                     order.items.forEach(item => {
                         allItems.push({
@@ -103,6 +106,10 @@ const OrderSuccess = () => {
             });
         }
     }, [orderData]);
+
+    // Primary invoice number for tracking navigation
+    const queryParams = new URLSearchParams(location.search);
+    const primaryInvoice = orderData[0]?.invoice_number || queryParams.get('invoice') || '';
 
     return (
         <MasterLayout>
@@ -138,7 +145,7 @@ const OrderSuccess = () => {
                                     <div className="row g-4">
                                         {/* Order Info Column */}
                                         <div className="col-md-6">
-                                            <div className="info-box p-4 h-100" style={{ background: '#f8fafc', borderRadius: '18px', border: '1px solid #e2e8f0' }}>
+                                             <div className="info-box p-4 h-100" style={{ background: '#f8fafc', borderRadius: '18px', border: '1px solid #e2e8f0' }}>
                                                 <h5 className="fw-700 mb-4 d-flex align-items-center gap-2">
                                                     <Package size={20} color={mainColor} />
                                                     অর্ডার তথ্য
@@ -153,7 +160,7 @@ const OrderSuccess = () => {
                                                             </div>
                                                             <div className="d-flex justify-content-between">
                                                                 <span className="text-secondary small">মোট পরিশোধযোগ্য</span>
-                                                                <span className="fw-800 fs-5" style={{ color: mainColor }}>৳{Number(order.grand_total).toLocaleString('en-BD')}</span>
+                                                                <span className="fw-800 fs-5" style={{ color: mainColor }}>৳{Number(order.grand_total || order.total_amount || 0).toLocaleString('en-BD')}</span>
                                                             </div>
                                                         </div>
                                                     ))
@@ -207,11 +214,12 @@ const OrderSuccess = () => {
                                         </div>
                                     </div>
 
-                                    {/* Actions */}
+                                    {/* Action Buttons */}
                                     <div className="mt-5 pt-4 border-top border-light d-flex flex-sm-row flex-column gap-3 justify-content-center">
                                         <Link
-                                            to="/order-tracking"
-                                            className="btn btn-lg d-flex align-items-center justify-content-center gap-2 px-5 py-3 shadow-sm hover-up"
+                                            to={primaryInvoice ? `/order-tracking?invoice=${primaryInvoice}` : "/order-tracking"}
+                                            state={{ invoice: primaryInvoice }}
+                                            className="btn btn-lg d-flex align-items-center justify-content-center gap-2 px-5 py-3 shadow-sm hover-up text-decoration-none"
                                             style={{ 
                                                 backgroundColor: mainColor, 
                                                 color: '#fff', 
@@ -226,11 +234,12 @@ const OrderSuccess = () => {
                                         </Link>
                                         <Link
                                             to="/"
-                                            className="btn btn-lg btn-light d-flex align-items-center justify-content-center gap-2 px-5 py-3 border hover-up"
+                                            className="btn btn-lg btn-light d-flex align-items-center justify-content-center gap-2 px-5 py-3 border hover-up text-decoration-none"
                                             style={{ 
                                                 borderRadius: '16px',
                                                 fontWeight: '600',
-                                                color: '#475569'
+                                                color: '#475569',
+                                                backgroundColor: '#f8fafc'
                                             }}
                                         >
                                             <ShoppingBag size={20} />
@@ -238,11 +247,6 @@ const OrderSuccess = () => {
                                         </Link>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            {/* Help text */}
-                            <div className="text-center mt-4">
-                                <p className="text-muted small">কোনো জিজ্ঞাসা আছে? আমাদের কল করুন: <strong>{settings?.phone || '01XXXXXXXXX'}</strong></p>
                             </div>
                         </div>
                     </div>
@@ -304,7 +308,7 @@ const OrderSuccess = () => {
                 }
                 .hover-up:hover {
                     transform: translateY(-3px);
-                    filter: brightness(1.1);
+                    filter: brightness(1.05);
                 }
                 
                 .last-child-no-border:last-child {

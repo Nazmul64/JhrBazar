@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PageCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class PageCategoryController extends Controller
@@ -33,6 +34,8 @@ class PageCategoryController extends Controller
             'status' => $request->status,
         ]);
 
+        Cache::forget('footer_data_v2');
+
         return redirect()->route('admin.page_categories.index')->with('success', 'Page Category created successfully.');
     }
 
@@ -56,6 +59,8 @@ class PageCategoryController extends Controller
             'status' => $request->status,
         ]);
 
+        Cache::forget('footer_data_v2');
+
         return redirect()->route('admin.page_categories.index')->with('success', 'Page Category updated successfully.');
     }
 
@@ -63,6 +68,9 @@ class PageCategoryController extends Controller
     {
         $category = PageCategory::findOrFail($id);
         $category->delete();
+
+        Cache::forget('footer_data_v2');
+
         return redirect()->route('admin.page_categories.index')->with('success', 'Page Category deleted successfully.');
     }
 
@@ -71,6 +79,8 @@ class PageCategoryController extends Controller
         $category = PageCategory::findOrFail($id);
         $category->status = $category->status == 1 ? 0 : 1;
         $category->save();
+
+        Cache::forget('footer_data_v2');
 
         return response()->json(['success' => true, 'status' => $category->status]);
     }

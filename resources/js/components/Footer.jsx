@@ -165,14 +165,14 @@ const Footer = () => {
                     </div> {/* end col-lg-4 */}
 
                     {/* Dynamic Page Categories (Information, Support, Policy, etc.) */}
-                    {footerData.page_categories.map((cat) => (
+                    {footerData.page_categories && footerData.page_categories.map((cat) => (
                         <div key={cat.id} className="col-lg-2 col-md-6 col-6">
                             <h6 style={headingStyle}>{cat.name}</h6>
                             <ul className="list-unstyled d-flex flex-column gap-3">
-                                {cat.pages.map(page => (
+                                {cat.pages && cat.pages.map(page => (
                                     <li key={page.id}>
                                         <Link to={`/page/${page.slug || page.id}`} style={linkStyle} className="footer-link">
-                                            {page.name}
+                                            {page.title || page.name}
                                         </Link>
                                     </li>
                                 ))}

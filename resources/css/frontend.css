@@ -15,6 +15,10 @@ body {
   color: var(--text-dark);
 }
 
+canvas {
+  pointer-events: none !important;
+}
+
 a {
   text-decoration: none;
   color: inherit;
@@ -302,3 +306,30 @@ a:hover {
 canvas {
   pointer-events: none !important;
 }
+
+/* Order Button Pulse / Zoom Animation */
+@keyframes orderBtnPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.order-btn-animate {
+  animation: orderBtnPulse 1.6s infinite ease-in-out !important;
+  will-change: transform;
+}
+
+.order-btn-animate:hover {
+  animation-play-state: paused !important;
+  transform: scale(1.05) !important;
+}
+

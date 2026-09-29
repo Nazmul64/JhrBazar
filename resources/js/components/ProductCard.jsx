@@ -220,7 +220,7 @@ const ProductCard = ({ product }) => {
 
                     <button
                         onClick={handleBuyNow}
-                        className="btn btn-sm flex-grow-1 d-flex align-items-center justify-content-center fw-bold text-white buy-now-btn"
+                        className={`btn btn-sm flex-grow-1 d-flex align-items-center justify-content-center fw-bold text-white buy-now-btn ${(settings?.order_button_animation !== false && settings?.order_button_animation !== 0 && settings?.order_button_animation !== '0') ? 'order-btn-animate' : ''}`}
                         style={{
                             backgroundColor: 'var(--button-color, #57b500)',
                             borderRadius: '10px', fontSize: '13px',

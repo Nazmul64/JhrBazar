@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\PageCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class PageController extends Controller
@@ -44,17 +45,24 @@ class PageController extends Controller
             'status'           => 'nullable',
         ]);
 
+        $slug = Str::slug($request->name);
+        if (empty($slug)) {
+            $slug = 'page-' . time();
+        }
+
         Page::create([
             'page_category_id' => $request->page_category_id,
             'name'             => $request->name,
             'title'            => $request->title,
-            'slug'             => Str::slug($request->name),
+            'slug'             => $slug,
             'description'      => $request->description,
             'meta_title'       => $request->meta_title,
             'meta_description' => $request->meta_description,
             'meta_keywords'    => $request->meta_keywords,
             'status'           => $request->has('status') ? 1 : 0,
         ]);
+
+        Cache::forget('footer_data_v2');
 
         return redirect()->route('admin.pages.index')
             ->with('success', 'Page created successfully.');
@@ -85,17 +93,24 @@ class PageController extends Controller
             'status'           => 'nullable',
         ]);
 
+        $slug = Str::slug($request->name);
+        if (empty($slug)) {
+            $slug = 'page-' . $page->id;
+        }
+
         $page->update([
             'page_category_id' => $request->page_category_id,
             'name'             => $request->name,
             'title'            => $request->title,
-            'slug'             => Str::slug($request->name),
+            'slug'             => $slug,
             'description'      => $request->description,
             'meta_title'       => $request->meta_title,
             'meta_description' => $request->meta_description,
             'meta_keywords'    => $request->meta_keywords,
             'status'           => $request->has('status') ? 1 : 0,
         ]);
+
+        Cache::forget('footer_data_v2');
 
         return redirect()->route('admin.pages.index')
             ->with('success', 'Page updated successfully.');
@@ -107,6 +122,8 @@ class PageController extends Controller
     public function destroy(Page $page)
     {
         $page->delete();
+
+        Cache::forget('footer_data_v2');
 
         return redirect()->route('admin.pages.index')
             ->with('success', 'Page deleted successfully.');
@@ -125,6 +142,7 @@ class PageController extends Controller
                 'slug'   => $slug,
                 'status' => 1,
             ]);
+            Cache::forget('footer_data_v2');
         }
         $categories = PageCategory::where('status', 1)->get();
         return view('admin.pagescreate.edit', compact('page', 'categories'));

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import MasterLayout from '../layouts/MasterLayout';
 import { useSettings } from '../context/SettingsContext';
 import axios from 'axios';
@@ -6,10 +7,28 @@ import { toast } from 'react-hot-toast';
 
 const OrderTracking = () => {
     const { settings } = useSettings();
+    const location = useLocation();
     const mainColor = settings?.primary_color || window.initialSettings?.primary_color || '#57b500';
     const [invoiceNo, setInvoiceNo] = useState('');
     const [orderInfo, setOrderInfo] = useState(null);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const inv = queryParams.get('invoice') || location.state?.invoice;
+        if (inv) {
+            setInvoiceNo(inv);
+            setLoading(true);
+            axios.get(`/api/track-order/${inv}`)
+                .then(res => {
+                    if (res.data.success) {
+                        setOrderInfo(res.data.data);
+                    }
+                })
+                .catch(() => {})
+                .finally(() => setLoading(false));
+        }
+    }, [location.search, location.state]);
 
     const handleTrack = async (e) => {
         e.preventDefault();

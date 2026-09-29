@@ -976,13 +976,13 @@ class FrontendApiController extends Controller
      */
     public function getFooterData()
     {
-        $data = Cache::remember('footer_data_v2', 86400, function() {
+        $data = Cache::remember('footer_data_v2', 3600, function() {
             $productCategories = Category::where('is_active', 1)->select('id', 'name')->orderBy('name', 'asc')->get();
 
             $pageCategories = \App\Models\PageCategory::with(['pages' => function($q) {
-                    $q->where('status', 1)->select('id', 'page_category_id', 'name', 'slug')->orderBy('created_at', 'asc');
+                    $q->where('status', 1)->select('id', 'page_category_id', 'name', 'title', 'slug')->orderBy('created_at', 'asc');
                 }])
-                ->where('status', 1)->select('id', 'name')->orderBy('created_at', 'asc')->get();
+                ->where('status', 1)->select('id', 'name', 'slug')->orderBy('created_at', 'asc')->get();
 
             $settings = GenaralSetting::first();
             if ($settings) {

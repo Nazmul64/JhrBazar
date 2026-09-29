@@ -1,11 +1,14 @@
-{{-- resources/views/admin/auth/passwords/email.blade.php --}}
-
+@php
+  $gs = $gs ?? \App\Models\GenaralSetting::first();
+  $siteName = $gs->website_name ?? 'JHR Bazar';
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Forgot Password – {{ $gs->website_name ?? 'Jhr Bazar' }}</title>
+  <title>Admin Forgot Password – {{ $siteName }}</title>
+  <link rel="icon" href="{{ !empty($gs->favicon) ? asset($gs->favicon) : asset('favicon.ico') }}"/>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>

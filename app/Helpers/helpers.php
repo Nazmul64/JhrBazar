@@ -20,3 +20,20 @@ if (!function_exists('format_price')) {
         return number_format($value, 2) . " " . $currency;
     }
 }
+
+if (!function_exists('clean')) {
+    /**
+     * Clean/sanitize HTML string safely.
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    function clean($value = '')
+    {
+        if (is_null($value)) {
+            return '';
+        }
+        return is_string($value) ? strip_tags($value) : $value;
+    }
+}
+

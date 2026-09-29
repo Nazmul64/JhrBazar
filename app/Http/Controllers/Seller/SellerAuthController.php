@@ -79,8 +79,8 @@ class SellerAuthController extends Controller
         $request->validate(['email' => 'required|email']);
 
         $user = \App\Models\User::where('email', $request->email)->first();
-        if (!$user || !in_array($user->role, ['seller', 'admin'])) {
-            return back()->withErrors(['email' => 'We could not find a seller with that email address.']);
+        if (!$user || !in_array($user->role, ['seller', 'reseller', 'admin'])) {
+            return back()->withErrors(['email' => 'We could not find a seller account with that email address.']);
         }
 
         $response = \Illuminate\Support\Facades\Password::broker()->sendResetLink(
