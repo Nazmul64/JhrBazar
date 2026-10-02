@@ -478,15 +478,6 @@
             </a>
         </div>
 
-        {{-- POS Terminal (Front & Center) --}}
-        @if(auth()->user()->hasPermission('pos.list'))
-        <a class="sb-item {{ request()->routeIs('admin.pointofsalepos.index') ? 'active' : '' }}"
-           href="{{ route('admin.pointofsalepos.index') }}">
-            <span class="sb-icon"><i class="bi bi-display text-info"></i></span>
-            <span style="font-weight:600;">POS Terminal</span>
-        </a>
-        @endif
-
         <a class="sb-item {{ request()->routeIs('admin.ourbrands.*') ? 'active' : '' }}"
            href="{{ route('admin.ourbrands.index') }}">
             <span class="sb-icon"><i class="bi bi-image"></i></span>
@@ -501,12 +492,12 @@
         <div class="sb-section">Orders</div>
 
         {{-- Orders Hub (parent) --}}
-        <div class="sb-item has-sub {{ request()->routeIs('admin.orders.*') ? 'active open' : '' }}" data-sub="orders-hub">
+        <div class="sb-item has-sub {{ request()->routeIs('admin.orders.*') && !request()->routeIs('admin.orders.staff_assignments') && !request()->routeIs('admin.orders.activity_history') ? 'active open' : '' }}" data-sub="orders-hub">
             <span class="sb-icon gradient"><i class="bi bi-bag-fill" style="color:white;"></i></span>
             <span style="font-weight:600;">Orders Hub</span>
             <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="sb-sub {{ request()->routeIs('admin.orders.*') ? 'open' : '' }}" id="sub-orders-hub">
+        <div class="sb-sub {{ request()->routeIs('admin.orders.*') && !request()->routeIs('admin.orders.staff_assignments') && !request()->routeIs('admin.orders.activity_history') ? 'open' : '' }}" id="sub-orders-hub">
             <a class="sb-item {{ request()->routeIs('admin.orders.index') && request()->route('status') == 'all' ? 'active' : '' }}"
                href="{{ route('admin.orders.index', 'all') }}">
                 <span class="sb-icon"><i class="bi bi-basket"></i></span> All Orders
@@ -538,14 +529,14 @@
         </div>
 
         {{-- Order Tools --}}
-        <div class="sb-item has-sub {{ request()->routeIs('admin.orders.staff_assignments') || request()->routeIs('admin.orders.activity_history') || request()->routeIs('admin.pointofsalepos.index') ? 'open' : '' }}" data-sub="order-tools">
+        <div class="sb-item has-sub {{ request()->routeIs('admin.orders.create') || request()->routeIs('admin.orders.staff_assignments') || request()->routeIs('admin.orders.activity_history') ? 'open' : '' }}" data-sub="order-tools">
             <span class="sb-icon"><i class="bi bi-tools"></i></span>
             <span>Order Tools</span>
             <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
-        <div class="sb-sub {{ request()->routeIs('admin.orders.staff_assignments') || request()->routeIs('admin.orders.activity_history') || request()->routeIs('admin.pointofsalepos.index') ? 'open' : '' }}" id="sub-order-tools">
-            <a class="sb-item {{ request()->routeIs('admin.pointofsalepos.index') ? 'active' : '' }}"
-               href="{{ route('admin.pointofsalepos.index') }}">
+        <div class="sb-sub {{ request()->routeIs('admin.orders.create') || request()->routeIs('admin.orders.staff_assignments') || request()->routeIs('admin.orders.activity_history') ? 'open' : '' }}" id="sub-order-tools">
+            <a class="sb-item {{ request()->routeIs('admin.orders.create') ? 'active' : '' }}"
+               href="{{ route('admin.orders.create') }}">
                 <span class="sb-icon"><i class="bi bi-plus-circle"></i></span> Create Order
             </a>
             <a class="sb-item {{ request()->routeIs('admin.orders.staff_assignments') ? 'active' : '' }}"

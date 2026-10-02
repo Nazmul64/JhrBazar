@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { useTheme } from '../context/LanguageThemeContext';
 
 const Footer = () => {
+    const { isDark } = useTheme();
     const [footerData, setFooterData] = useState({
         product_categories: [],
         page_categories: [],
@@ -36,7 +38,7 @@ const Footer = () => {
     const socialIconStyle = {
         width: '32px',
         height: '32px',
-        backgroundColor: '#fff',
+        backgroundColor: isDark ? '#1b2640' : '#fff',
         borderRadius: '50%',
         display: 'flex',
         alignItems: 'center',
@@ -45,14 +47,16 @@ const Footer = () => {
         color: '#e67e22',
         textDecoration: 'none',
         transition: 'all 0.3s ease',
-        border: '1px solid #eee'
+        border: isDark ? '1px solid #243048' : '1px solid #eee'
     };
 
-    const headingStyle = { color: 'var(--footer-text-color, #333)', fontWeight: 'bold', marginBottom: '20px', fontSize: '16px' };
-    const linkStyle = { textDecoration: 'none', color: 'var(--footer-text-color, #666)', opacity: 0.85, fontSize: '13px', transition: 'all 0.2s' };
+    const textColor = isDark ? '#f8fafc' : 'var(--footer-text-color, #333)';
+    const mutedColor = isDark ? '#cbd5e1' : 'var(--footer-text-color, #666)';
+    const headingStyle = { color: textColor, fontWeight: 'bold', marginBottom: '20px', fontSize: '16px' };
+    const linkStyle = { textDecoration: 'none', color: mutedColor, opacity: 0.9, fontSize: '13px', transition: 'all 0.2s' };
 
     return (
-        <footer className="custom-footer" style={{ backgroundColor: 'var(--footer-bg, #fff)', color: 'var(--footer-text-color, #333)', padding: '80px 0 30px 0', borderTop: '1px solid rgba(0,0,0,0.08)', fontFamily: "'Poppins', sans-serif" }}>
+        <footer className="custom-footer" style={{ backgroundColor: isDark ? '#070a12' : 'var(--footer-bg, #fff)', color: textColor, padding: '80px 0 30px 0', borderTop: `1px solid ${isDark ? '#1e293b' : 'rgba(0,0,0,0.08)'}`, fontFamily: "'Poppins', sans-serif" }}>
             <div className="container">
                 <div className="row g-4 mb-5">
                     {/* Column 1: Brand Info */}
@@ -72,26 +76,26 @@ const Footer = () => {
                             )}
                         </div>
                         <div>
-                        <p style={{ color: 'var(--footer-text-color, #333)', opacity: 0.8, lineHeight: '1.8', fontSize: '13px', marginBottom: '25px', maxWidth: '340px' }}>
+                        <p style={{ color: mutedColor, lineHeight: '1.8', fontSize: '13px', marginBottom: '25px', maxWidth: '340px' }}>
                             {footerData.settings?.footer_text || (footerData.settings?.website_name ? `${footerData.settings.website_name} is an e-commerce platform dedicated to providing quality products to every home.` : "Welcome to our online store.")}
                         </p>
 
                         {(footerData.settings?.trade_license_number || footerData.settings?.dbid_number) && (
                             <div style={{ marginBottom: '20px', maxWidth: '340px' }}>
                                 {footerData.settings?.trade_license_number && (
-                                    <p className="mb-1" style={{ fontSize: '13px', color: 'var(--footer-text-color, #333)' }}>
+                                    <p className="mb-1" style={{ fontSize: '13px', color: textColor }}>
                                         <strong>Trade License:</strong> {footerData.settings.trade_license_number}
                                     </p>
                                 )}
                                 {footerData.settings?.dbid_number && (
-                                    <p className="mb-0" style={{ fontSize: '13px', color: 'var(--footer-text-color, #333)' }}>
+                                    <p className="mb-0" style={{ fontSize: '13px', color: textColor }}>
                                         <strong>DBID:</strong> {footerData.settings.dbid_number}
                                     </p>
                                 )}
                             </div>
                         )}
 
-                        <div className="d-flex flex-column gap-3 mb-4" style={{ fontSize: '13px', color: 'var(--footer-text-color, #333)', opacity: 0.85 }}>
+                        <div className="d-flex flex-column gap-3 mb-4" style={{ fontSize: '13px', color: mutedColor }}>
                             {footerData.settings?.address && (
                                 <div className="d-flex align-items-start gap-2">
                                     <i className="fas fa-map-marker-alt mt-1" style={{ color: '#e67e22' }}></i>
@@ -138,7 +142,7 @@ const Footer = () => {
 
                         {footerData.settings?.show_download_app == 1 && (footerData.settings.google_playstore_link || footerData.settings.apple_store_link) && (
                             <div className="mt-4">
-                                <p className="mb-3 fw-bold" style={{ fontSize: '13px', color: 'var(--footer-text-color, #333)' }}>Download App on Mobile :</p>
+                                <p className="mb-3 fw-bold" style={{ fontSize: '13px', color: textColor }}>Download App on Mobile :</p>
                                 <div className="d-flex flex-wrap gap-2">
                                     {footerData.settings.google_playstore_link && (
                                         <a href={footerData.settings.google_playstore_link} target="_blank" rel="noopener noreferrer" className="btn btn-dark btn-sm d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-white text-decoration-none shadow-sm" style={{ fontSize: '12px' }}>
@@ -205,7 +209,7 @@ const Footer = () => {
                         {footerData.settings?.payment_methods_logo && (
                             <div className={footerData.membership_logos && footerData.membership_logos.length > 0 ? "col-lg-7 text-center text-lg-end" : "col-lg-12 text-center"}>
                                 <div className={`d-flex align-items-center gap-3 flex-wrap ${footerData.membership_logos && footerData.membership_logos.length > 0 ? "justify-content-center justify-content-lg-end" : "justify-content-center"}`}>
-                                    <span style={{ fontSize: '13px', color: 'var(--footer-text-color, #333)', fontWeight: 'bold' }}>Pay With</span>
+                                    <span style={{ fontSize: '13px', color: textColor, fontWeight: 'bold' }}>Pay With</span>
                                     <div className="d-flex gap-1 flex-wrap justify-content-center">
                                         <img
                                             src={footerData.settings.payment_methods_logo}
@@ -222,7 +226,7 @@ const Footer = () => {
                 <div style={{ borderTop: '0px solid #f0f0f0', paddingTop: '10px' }}>
                     <div className="row justify-content-center">
                         <div className="col-12 text-center">
-                            <p className="mb-0" style={{ fontSize: '13px', color: 'var(--footer-text-color, #333)', opacity: 0.6 }}>
+                            <p className="mb-0" style={{ fontSize: '13px', color: mutedColor }}>
                                 {footerData.settings?.footer_copyright_text || `Copyright © ${new Date().getFullYear()} ${footerData.settings?.website_name || "JhrBazar"}`}
                             </p>
                         </div>

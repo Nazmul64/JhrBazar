@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useSettings } from '../context/SettingsContext';
+import { useLanguage } from '../context/LanguageThemeContext';
 
 const HeroSection = ({ banners: initialBanners, categories: initialCategories, loading }) => {
     const { settings } = useSettings();
+    const { t } = useLanguage();
     const behavior = settings?.sidebar_behavior || 'fixed';
     
     const [slides, setSlides] = useState([]);
@@ -74,7 +76,7 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                 {settings && behavior === 'fixed' && categories.length > 0 && (
                     <div className="col-lg-3 d-none d-lg-block">
                         <div 
-                            className="bg-white shadow-sm border hero-sidebar-container" 
+                            className="bg-white shadow-sm border hero-sidebar-container category-dropdown-box" 
                             onMouseLeave={() => setActiveCatId(null)}
                             style={{ 
                                 borderRadius: '12px', 
@@ -94,7 +96,7 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                                     cursor: 'default'
                                 }}
                             >
-                                <span style={{ fontSize: '18px' }}>☰</span> সব ক্যাটাগরি
+                                <span style={{ fontSize: '18px' }}>☰</span> {t('all_categories')}
                             </div>
                             
                             <div 
@@ -114,8 +116,8 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                                         style={{ 
                                             cursor: 'pointer',
                                             fontSize: '14px',
-                                            color: activeCatId === cat.id ? 'var(--button-color, #57b500)' : '#444',
-                                            backgroundColor: activeCatId === cat.id ? '#f8f9fa' : 'transparent',
+                                            color: activeCatId === cat.id ? 'var(--button-color, #57b500)' : 'inherit',
+                                            backgroundColor: activeCatId === cat.id ? 'var(--bg-card-hover, #f8f9fa)' : 'transparent',
                                             transition: 'all 0.2s',
                                             display: 'flex',
                                             alignItems: 'center',
@@ -133,7 +135,7 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
 
                             {/* Subcategories Panel (Appears on Hover) */}
                             {activeCatId && (activeCategory?.sub_categories?.length > 0 || activeCategory?.subCategories?.length > 0) && (
-                                <div className="position-absolute bg-white shadow-lg border" style={{ 
+                                <div className="position-absolute bg-white shadow-lg border category-dropdown-box" style={{ 
                                     top: 0, 
                                     left: '100%', 
                                     width: '280px', 

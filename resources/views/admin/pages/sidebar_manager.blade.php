@@ -269,13 +269,6 @@
             <i class="bi bi-cart-check-fill text-primary"></i> Local Purchases
         </a>
 
-        {{-- POS Terminal (Front & Center) --}}
-        @if(auth()->user()->hasPermission('pos.list'))
-        <a class="nav-item-custom {{ request()->routeIs('admin.pointofsalepos.index') ? 'active' : '' }}"
-           href="{{ route('admin.pointofsalepos.index') }}">
-            <i class="bi bi-display text-info"></i> POS Terminal
-        </a>
-        @endif
 
         {{-- ══════════════ ORDERS HUB ══════════════ --}}
         @if(auth()->user()->hasPermission('order.list'))
@@ -311,7 +304,7 @@
             <a class="nav-item-custom {{ request()->routeIs('admin.customer-detector.*') ? 'active' : '' }}" href="{{ route('admin.customer-detector.index') }}">
                 <i class="bi bi-eye-fill"></i> Customer Detector 🚨
             </a>
-            <a class="nav-item-custom" href="{{ route('admin.pointofsalepos.index') }}">
+            <a class="nav-item-custom {{ request()->routeIs('admin.orders.create') ? 'active' : '' }}" href="{{ route('admin.orders.create') }}">
                 <i class="bi bi-plus-lg"></i> Create Order
             </a>
             <a class="nav-item-custom {{ request()->routeIs('admin.orders.staff_assignments') ? 'active' : '' }}" href="{{ route('admin.orders.staff_assignments') }}">

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useLanguage } from '../context/LanguageThemeContext';
 
 const ProductCard = ({ product }) => {
     const navigate = useNavigate();
@@ -13,6 +14,7 @@ const ProductCard = ({ product }) => {
     const cardRef = useRef(null);
     const { addToCart } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
+    const { t, formatNumber } = useLanguage();
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -208,12 +210,12 @@ const ProductCard = ({ product }) => {
                     <button
                         onClick={handleAddToCart}
                         className="btn btn-sm d-flex align-items-center justify-content-center cart-btn-hover"
-                        title="কার্টে যোগ করুন"
+                        title={t('add_to_cart')}
                         style={{
                             width: '40px', height: '40px',
                             border: `1.5px solid var(--button-color, ${mainColor})`,
                             color: `var(--button-color, ${mainColor})`, borderRadius: '10px',
-                            backgroundColor: '#fff', transition: 'all 0.3s',
+                            backgroundColor: 'var(--bg-card, #fff)', transition: 'all 0.3s',
                             flexShrink: 0
                         }}
                     >🛒</button>
@@ -229,7 +231,7 @@ const ProductCard = ({ product }) => {
                             whiteSpace: 'nowrap',
                             overflow: 'hidden'
                         }}
-                    >অর্ডার করুন</button>
+                    >{t('order_now')}</button>
                 </div>
             </div>
 

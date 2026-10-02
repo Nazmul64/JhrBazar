@@ -17,12 +17,13 @@ const CategoryDropdown = ({ isOpen }) => {
 
     return (
         <div 
+            className="category-dropdown-box"
             onMouseLeave={() => setActiveCatId(null)}
             style={{
                 position: 'absolute', top: '100%', left: 0, width: '250px',
-                backgroundColor: '#fff', boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+                backgroundColor: 'var(--bg-dropdown, #fff)', boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
                 zIndex: 11000, borderRadius: '0 0 10px 10px',
-                overflow: 'visible', border: '1px solid #eee',
+                overflow: 'visible', border: '1px solid var(--border-color, #eee)',
                 padding: '10px 0'
             }}
         >
@@ -78,10 +79,10 @@ const CategoryDropdown = ({ isOpen }) => {
 
                         {/* Subcategories Side Panel */}
                         {activeCatId && (activeCategory?.sub_categories?.length > 0 || activeCategory?.subCategories?.length > 0) && (
-                            <div style={{
+                            <div className="category-dropdown-box" style={{
                                 position: 'absolute', top: '-1px', left: '100%', width: '250px',
-                                backgroundColor: '#fff', boxShadow: '15px 10px 30px rgba(0,0,0,0.1)',
-                                border: '1px solid #eee', borderRadius: '0 10px 10px 0',
+                                backgroundColor: 'var(--bg-dropdown, #fff)', boxShadow: '15px 10px 30px rgba(0,0,0,0.15)',
+                                border: '1px solid var(--border-color, #eee)', borderRadius: '0 10px 10px 0',
                                 padding: '20px', minHeight: '100%', zIndex: 11001
                             }}>
                                 <h6 className="fw-bold mb-3 border-bottom pb-2" style={{ color: 'var(--button-color, #57b500)', fontSize: '14px' }}>

@@ -215,14 +215,17 @@
                     <div class="gw-form-group" style="display:flex;align-items:center;gap:14px;margin-top:24px;">
                         <label style="margin:0;">Status</label>
                         <label class="toggle-switch">
-                            <input type="checkbox" name="status" value="1" {{ $steadfast && $steadfast->status ? 'checked' : '' }}>
-                            <span class="toggle-slider" style="background:#26c6a6;"></span>
+                            <input type="checkbox" name="status" value="1" id="steadfast_toggle" {{ $steadfast && $steadfast->status ? 'checked' : '' }} onchange="toggleCourier('{{ route('admin.steadfast.toggle') }}', this)">
+                            <span class="toggle-slider" style="background: {{ $steadfast && $steadfast->status ? '#26c6a6' : '#ccc' }};"></span>
                         </label>
+                        <span id="steadfast_status_text" style="font-size:13px;font-weight:600;color:{{ $steadfast && $steadfast->status ? '#26c6a6' : '#888' }};">
+                            {{ $steadfast && $steadfast->status ? 'Active' : 'Inactive' }}
+                        </span>
                     </div>
                 </div>
             </div>
             <div style="padding:0 24px 20px;">
-                <button type="submit" class="btn-submit-teal">Submit</button>
+                <button type="submit" class="btn-submit-teal">Save Steadfast Settings</button>
             </div>
         </form>
     </div>
@@ -278,10 +281,12 @@
                     <div class="gw-form-group" style="display:flex;align-items:center;gap:14px;margin-top:24px;">
                         <label style="margin:0;">Status</label>
                         <label class="toggle-switch">
-                            <input type="checkbox" name="status" value="1" {{ $pathao && $pathao->status ? 'checked' : '' }}>
-                            <span class="toggle-slider" style="background:#26c6a6;"></span>
+                            <input type="checkbox" name="status" value="1" id="pathao_toggle" {{ $pathao && $pathao->status ? 'checked' : '' }} onchange="toggleCourier('{{ route('admin.pathao.toggle') }}', this)">
+                            <span class="toggle-slider" style="background: {{ $pathao && $pathao->status ? '#26c6a6' : '#ccc' }};"></span>
                         </label>
-                        <span style="font-size:13px;color:#444;">Active</span>
+                        <span id="pathao_status_text" style="font-size:13px;font-weight:600;color:{{ $pathao && $pathao->status ? '#26c6a6' : '#888' }};">
+                            {{ $pathao && $pathao->status ? 'Active' : 'Inactive' }}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -292,7 +297,51 @@
     </div>
 </div>
 
+<div id="dynamic-toast" class="gw-toast"></div>
+
 <script>
+    function showToast(msg) {
+        var toast = document.getElementById('dynamic-toast');
+        if (!toast) return;
+        toast.innerText = '✓ ' + msg;
+        toast.style.display = 'block';
+        setTimeout(function(){
+            toast.style.display = 'none';
+        }, 3500);
+    }
+
+    function toggleCourier(url, checkbox) {
+        var isChecked = checkbox.checked;
+        var parent = checkbox.closest('.gw-form-group');
+        var textSpan = parent ? parent.querySelector('span[id$="_status_text"]') : null;
+        var slider = parent ? parent.querySelector('.toggle-slider') : null;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            var active = data.status;
+            checkbox.checked = !!active;
+            if (slider) slider.style.background = active ? '#26c6a6' : '#ccc';
+            if (textSpan) {
+                textSpan.innerText = active ? 'Active' : 'Inactive';
+                textSpan.style.color = active ? '#26c6a6' : '#888';
+            }
+            showToast('Courier status updated: ' + (active ? 'Active' : 'Inactive'));
+        })
+        .catch(err => {
+            console.error(err);
+            checkbox.checked = !isChecked; // revert
+            alert('Failed to update courier status.');
+        });
+    }
+
     setTimeout(function(){
         var toasts = document.querySelectorAll('.gw-toast');
         toasts.forEach(t => t.style.display='none');

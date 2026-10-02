@@ -7,10 +7,12 @@ import ProductCard from '../components/ProductCard';
 import TopRatedShops from '../components/TopRatedShops';
 import axios from 'axios';
 import { useSettings } from '../context/SettingsContext';
+import { useLanguage } from '../context/LanguageThemeContext';
 import SEO from '../components/SEO';
 
 const Home = () => {
     const { settings, homeData, setHomeData } = useSettings();
+    const { t } = useLanguage();
     const mainColor = settings?.primary_color || window.initialSettings?.primary_color || '#57b500';
     const importantColor = settings?.important_color || window.initialSettings?.important_color || '#ffffff';
     const importantBgColor = settings?.important_background_color || window.initialSettings?.important_background_color || '#dc3545';
@@ -216,8 +218,8 @@ const Home = () => {
             {!loading && popularProducts.length > 0 && (
                 <section className="container mb-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-                        <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Popular Products</h4>
-                        <Link to="/products-all/popular" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
+                        <h4 className="fw-bold mb-0">{t('popular_products')}</h4>
+                        <Link to="/products-all/popular" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>{t('view_all')} →</Link>
                     </div>
                     {renderProductGrid(popularProducts)}
                 </section>
@@ -227,8 +229,8 @@ const Home = () => {
             {!loading && newArrivals.length > 0 && (
                 <section className="container mb-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-                        <h4 className="fw-bold mb-0" style={{ color: '#333' }}>New Arrivals</h4>
-                        <Link to="/products-all/new-arrivals" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
+                        <h4 className="fw-bold mb-0">{t('new_arrivals')}</h4>
+                        <Link to="/products-all/new-arrivals" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>{t('view_all')} →</Link>
                     </div>
                     {renderProductGrid(newArrivals)}
                 </section>
@@ -239,10 +241,10 @@ const Home = () => {
                 <section className="container mb-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <div className="d-flex align-items-center gap-2">
-                            <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Best Deals</h4>
+                            <h4 className="fw-bold mb-0">{t('best_deals')}</h4>
                             <span className="badge rounded-pill" style={{ backgroundColor: importantBgColor, color: importantColor, fontSize: '10px' }}>BIG SAVINGS</span>
                         </div>
-                        <Link to="/products-all/best-deal" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
+                        <Link to="/products-all/best-deal" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>{t('view_all')} →</Link>
                     </div>
                     {renderProductGrid(bestDeals)}
                 </section>
@@ -253,10 +255,10 @@ const Home = () => {
                 <section className="container mb-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <div className="d-flex align-items-center gap-2">
-                            <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Digital Products</h4>
+                            <h4 className="fw-bold mb-0">{t('digital_products')}</h4>
                             <span className="badge rounded-pill" style={{ backgroundColor: importantBgColor, color: importantColor, fontSize: '10px' }}>E-BOOKS &amp; SOFTWARES</span>
                         </div>
-                        <Link to="/products-all/digital" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
+                        <Link to="/products-all/digital" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>{t('view_all')} →</Link>
                     </div>
                     {renderProductGrid(digitalProducts)}
                 </section>
@@ -272,7 +274,7 @@ const Home = () => {
                 <section className="container mb-4 mt-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <div className="d-flex align-items-center gap-2">
-                            <h4 className="fw-bold mb-0" style={{ color: '#333' }}>কাস্টমার রিভিউ</h4>
+                            <h4 className="fw-bold mb-0">{t('customer_reviews')}</h4>
                             <span className="badge rounded-pill" style={{ backgroundColor: importantBgColor, color: importantColor, fontSize: '10px' }}>REVIEWS</span>
                         </div>
                     </div>
@@ -305,15 +307,15 @@ const Home = () => {
             {!loading && justForYouProducts.length > 0 && (
                 <section className="container mb-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-                        <h4 className="fw-bold mb-0" style={{ color: '#333' }}>Just For You</h4>
-                        <Link to="/products-all/just-for-you" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>View All →</Link>
+                        <h4 className="fw-bold mb-0">{t('featured_products')}</h4>
+                        <Link to="/products-all/just-for-you" className="btn btn-link text-muted text-decoration-none small" style={{ fontSize: '13px' }}>{t('view_all')} →</Link>
                     </div>
                     <>
                         {renderProductGrid(justForYouProducts, 'col-4 col-md-4 col-lg-3')}
                         <div className="text-center mt-5">
                             <Link to="/products-all/just-for-you" style={{
                                 padding: '12px 50px',
-                                backgroundColor: '#fff',
+                                backgroundColor: 'var(--bg-card, #fff)',
                                 color: mainColor,
                                 border: `1.5px solid ${mainColor}`,
                                 borderRadius: '30px',
@@ -324,7 +326,7 @@ const Home = () => {
                                 display: 'inline-block',
                                 textDecoration: 'none'
                             }} className="load-more-btn">
-                                Load More Products
+                                {t('view_all')}
                             </Link>
                         </div>
                     </>
@@ -336,7 +338,7 @@ const Home = () => {
                 <section key={section.title} className="container mb-4 mt-4">
                     <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                         <div className="d-flex align-items-center gap-2">
-                            <h4 className="fw-bold mb-0" style={{ color: '#333' }}>{section.title}</h4>
+                            <h4 className="fw-bold mb-0">{section.title}</h4>
                             <span className="badge rounded-pill" style={{ backgroundColor: importantBgColor, color: importantColor, fontSize: '10px' }}>FEATURED</span>
                         </div>
                     </div>

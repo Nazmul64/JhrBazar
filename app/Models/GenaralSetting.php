@@ -10,6 +10,8 @@ class GenaralSetting extends Model
 
     protected $fillable = [
         'admin_theme',
+        'default_language',
+        'default_theme_mode',
         'website_name',
         'website_title',
         'meta_description',

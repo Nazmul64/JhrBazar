@@ -47,6 +47,11 @@ Route::post('/login',    [AuthController::class, 'login'])->name('api.login');
 Route::get('/tracking-config', [\App\Http\Controllers\Admin\TrackingSettingController::class, 'getPublicConfig'])->name('api.tracking-config');
 Route::post('/track-visit',     [\App\Http\Controllers\Admin\MarketingAttributionController::class, 'trackVisit'])->name('api.track-visit');
 
+// ── Theme & Language Preferences ──────────────────────────────────────────
+Route::get('/preferences',             [\App\Http\Controllers\Api\PreferenceController::class, 'getPreferences'])->name('api.preferences.get');
+Route::post('/preferences',            [\App\Http\Controllers\Api\PreferenceController::class, 'savePreferences'])->name('api.preferences.save');
+Route::get('/translations/{lang?}',    [\App\Http\Controllers\Api\PreferenceController::class, 'getTranslations'])->name('api.translations');
+
 
 
 /*

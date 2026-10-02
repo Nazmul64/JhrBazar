@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import SEO from '../components/SEO';
 import { useSettings } from '../context/SettingsContext';
+import { useLanguage } from '../context/LanguageThemeContext';
 import { trackViewItem } from '../utils/dataLayer';
 
 const ProductDetails = () => {
@@ -25,6 +26,7 @@ const ProductDetails = () => {
     const [relatedProducts, setRelatedProducts] = useState([]);
     const { addToCart } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
+    const { t, isBangla, formatNumber } = useLanguage();
     const [supportSettings, setSupportSettings] = useState(null);
     const navigate = useNavigate();
 
@@ -562,10 +564,10 @@ const ProductDetails = () => {
                                     <div className="d-flex flex-column flex-md-row align-items-md-end gap-3 mb-4">
                                         {/* Quantity Selection */}
                                         <div>
-                                            <label className="small fw-bold mb-2">পরিমাণ:</label>
+                                            <label className="small fw-bold mb-2">{isBangla ? 'পরিমাণ:' : 'Quantity:'}</label>
                                             <div className="d-flex align-items-center" style={{ width: '120px', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
                                                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="btn btn-light border-0 px-3 py-2" style={{ borderRadius: 0, backgroundColor: '#f8f9fa', fontSize: '18px', fontWeight: 'bold' }}>-</button>
-                                                <input type="text" value={quantity} readOnly className="form-control border-0 text-center px-0 bg-white fw-bold" style={{ width: '40px', fontSize: '16px', borderRadius: 0, boxShadow: 'none' }} />
+                                                <input type="text" value={formatNumber(quantity)} readOnly className="form-control border-0 text-center px-0 bg-white fw-bold" style={{ width: '40px', fontSize: '16px', borderRadius: 0, boxShadow: 'none' }} />
                                                 <button onClick={() => setQuantity(quantity + 1)} className="btn btn-light border-0 px-3 py-2" style={{ borderRadius: 0, backgroundColor: '#f8f9fa', fontSize: '18px', fontWeight: 'bold' }}>+</button>
                                             </div>
                                         </div>
@@ -578,14 +580,14 @@ const ProductDetails = () => {
                                                 style={{
                                                     border: `1.5px solid ${mainColor}`,
                                                     color: mainColor,
-                                                    backgroundColor: '#fff',
+                                                    backgroundColor: 'var(--bg-card, #fff)',
                                                     borderRadius: '8px',
                                                     fontSize: '16px',
                                                     fontWeight: 'bold',
                                                     padding: '12px'
                                                 }}
                                             >
-                                                🛒 কার্টে যোগ করুন
+                                                🛒 {t('add_to_cart')}
                                             </button>
                                             <button
                                                 onClick={handleBuyNow}
@@ -597,7 +599,7 @@ const ProductDetails = () => {
                                                     padding: '12px'
                                                 }}
                                             >
-                                                অর্ডার করুন
+                                                {t('order_now')}
                                             </button>
                                         </div>
                                     </div>

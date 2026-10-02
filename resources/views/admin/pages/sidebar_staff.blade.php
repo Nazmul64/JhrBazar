@@ -83,13 +83,6 @@
             <i class="bi bi-cart-check-fill text-primary"></i> Local Purchases
         </a>
 
-        {{-- POS Terminal (Front & Center) --}}
-        @if(auth()->user()->hasPermission('pos.list'))
-        <a class="nav-item-custom {{ request()->routeIs('admin.pointofsalepos.index') ? 'active' : '' }}"
-           href="{{ route('admin.pointofsalepos.index') }}">
-            <i class="bi bi-display text-info"></i> POS Terminal
-        </a>
-        @endif
 
         {{-- ══════════════ ORDERS HUB ══════════════ --}}
         @if(auth()->user()->hasPermission('order.list'))

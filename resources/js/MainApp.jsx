@@ -30,6 +30,7 @@ import LandingPageView from './pages/LandingPageView';
 import { CartProvider } from './context/CartContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { WishlistProvider } from './context/WishlistContext';
+import { LanguageThemeProvider } from './context/LanguageThemeContext';
 import { Toaster } from 'react-hot-toast';
 import LiveChatWidget from './components/LiveChatWidget';
 import { initTrackingSystem, trackPageView } from './utils/dataLayer';
@@ -69,49 +70,51 @@ const RouteTracker = () => {
 const MainApp = () => {
     return (
         <SettingsProvider>
-            <WishlistProvider>
-                <CartProvider>
-                    <Router>
-                        <RouteTracker />
-                        <Toaster position="top-right" reverseOrder={false} />
-                        <LiveChatWidget />
-                        <Routes>
-                            {/* Main Routes */}
-                            <Route path="/" element={<Home />} />
-                            <Route path="/products" element={<Products />} />
-                            <Route path="/best-deal" element={<BestDeal />} />
-                            <Route path="/contact" element={<Contact />} />
-                            <Route path="/blogs" element={<Blogs />} />
-                            <Route path="/blog/:slug" element={<BlogDetail />} />
-                            <Route path="/customer/login" element={<Login />} />
-                            <Route path="/customer/register" element={<Register />} />
-                            <Route path="/about" element={<About />} />
-                            <Route path="/terms" element={<PrivacyPolicy />} />
-                            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                            <Route path="/category/:id" element={<CategoryProducts />} />
-                            <Route path="/subcategory/:id" element={<CategoryProducts />} />
-                            <Route path="/products-all/:type" element={<AllProducts />} />
-                            <Route path="/shop/:id" element={<ShopDetails />} />
-                            <Route path="/product/:slug" element={<ProductDetails />} />
-                            <Route path="/search" element={<SearchResults />} />
-                            <Route path="/page/:slug" element={<PageView />} />
-                            <Route path="/landing-builder/:id" element={<LandingPageBuilder />} />
-                            <Route path="/l/:slug" element={<LandingPageView />} />
+            <LanguageThemeProvider>
+                <WishlistProvider>
+                    <CartProvider>
+                        <Router>
+                            <RouteTracker />
+                            <Toaster position="top-right" reverseOrder={false} />
+                            <LiveChatWidget />
+                            <Routes>
+                                {/* Main Routes */}
+                                <Route path="/" element={<Home />} />
+                                <Route path="/products" element={<Products />} />
+                                <Route path="/best-deal" element={<BestDeal />} />
+                                <Route path="/contact" element={<Contact />} />
+                                <Route path="/blogs" element={<Blogs />} />
+                                <Route path="/blog/:slug" element={<BlogDetail />} />
+                                <Route path="/customer/login" element={<Login />} />
+                                <Route path="/customer/register" element={<Register />} />
+                                <Route path="/about" element={<About />} />
+                                <Route path="/terms" element={<PrivacyPolicy />} />
+                                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                                <Route path="/category/:id" element={<CategoryProducts />} />
+                                <Route path="/subcategory/:id" element={<CategoryProducts />} />
+                                <Route path="/products-all/:type" element={<AllProducts />} />
+                                <Route path="/shop/:id" element={<ShopDetails />} />
+                                <Route path="/product/:slug" element={<ProductDetails />} />
+                                <Route path="/search" element={<SearchResults />} />
+                                <Route path="/page/:slug" element={<PageView />} />
+                                <Route path="/landing-builder/:id" element={<LandingPageBuilder />} />
+                                <Route path="/l/:slug" element={<LandingPageView />} />
 
-                            {/* Shopping Routes */}
-                            <Route path="/cart" element={<Cart />} />
-                            <Route path="/checkout" element={<Checkout />} />
-                            <Route path="/order-success" element={<OrderSuccess />} />
-                            <Route path="/order-tracking" element={<OrderTracking />} />
-                            <Route path="/customer/dashboard" element={<UserDashboard />} />
-                            <Route path="/wishlist" element={<Wishlist />} />
+                                {/* Shopping Routes */}
+                                <Route path="/cart" element={<Cart />} />
+                                <Route path="/checkout" element={<Checkout />} />
+                                <Route path="/order-success" element={<OrderSuccess />} />
+                                <Route path="/order-tracking" element={<OrderTracking />} />
+                                <Route path="/customer/dashboard" element={<UserDashboard />} />
+                                <Route path="/wishlist" element={<Wishlist />} />
 
-                            {/* Catch-all Route */}
-                            <Route path="*" element={<NotFound />} />
-                        </Routes>
-                    </Router>
-                </CartProvider>
-            </WishlistProvider>
+                                {/* Catch-all Route */}
+                                <Route path="*" element={<NotFound />} />
+                            </Routes>
+                        </Router>
+                    </CartProvider>
+                </WishlistProvider>
+            </LanguageThemeProvider>
         </SettingsProvider>
     );
 };

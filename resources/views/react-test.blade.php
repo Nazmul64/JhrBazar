@@ -40,7 +40,7 @@
         @endif
     @endif
 </head>
-<body class="bg-light">
+<body>
     @if($trackingSetting && $trackingSetting->is_active && $trackingSetting->custom_body_script)
         {!! $trackingSetting->custom_body_script !!}
     @endif

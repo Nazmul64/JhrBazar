@@ -2,9 +2,11 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useSettings } from '../context/SettingsContext';
+import { useLanguage } from '../context/LanguageThemeContext';
 
 const Categories = ({ categories, loading }) => {
   const { settings } = useSettings();
+  const { t } = useLanguage();
   const scrollRef = useRef(null);
   const [isDown, setIsDown] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -102,10 +104,10 @@ const Categories = ({ categories, loading }) => {
     <section className="container mb-3">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div className="d-flex align-items-center gap-2">
-            <div style={{ width: '5px', height: '25px', backgroundColor: '#57b500', borderRadius: '10px' }}></div>
-            <h3 className="fw-bold mb-0">Explore Categories</h3>
+            <div style={{ width: '5px', height: '25px', backgroundColor: 'var(--primary-color, #57b500)', borderRadius: '10px' }}></div>
+            <h3 className="fw-bold mb-0">{t('explore_categories')}</h3>
         </div>
-        <Link to="/products-all/all" className="btn btn-link text-decoration-none small" style={{ color: '#57b500' }}>View All ›</Link>
+        <Link to="/products-all/all" className="btn btn-link text-decoration-none small" style={{ color: 'var(--primary-color, #57b500)' }}>{t('view_all')} ›</Link>
       </div>
 
       <div 
@@ -151,8 +153,8 @@ const Categories = ({ categories, loading }) => {
               <div 
                 onClick={() => handleCategoryClick(cat.id)}
                 style={{
-                backgroundColor: '#fff',
-                border: '1px solid #f0f0f0',
+                backgroundColor: 'var(--bg-card, #fff)',
+                border: '1px solid var(--border-color, #f0f0f0)',
                 borderRadius: '15px',
                 padding: '10px',
                 textAlign: 'center',

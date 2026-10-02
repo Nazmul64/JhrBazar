@@ -195,6 +195,75 @@ class SellerOrderHubController extends Controller
         return response()->json(['success' => false, 'message' => 'Invalid action.'], 422);
     }
 
+    /**
+     * Resolve recipient name, phone, address, and item notes from order/invoice.
+     */
+    private function resolveOrderCustomerDetails($inv): array
+    {
+        $order = $inv->order;
+        $note = $inv->note ?: ($order?->note ?: '');
+
+        // 1. Name
+        $name = trim(($inv->customer?->first_name ?? '') . ' ' . ($inv->customer?->last_name ?? ''));
+        if (!$name || $name === '') {
+            $name = $inv->customer?->user?->name ?? '';
+        }
+        if (!$name && $note && preg_match('/Name:\s*([^\r\n]+)/i', $note, $m)) {
+            $name = trim($m[1]);
+        }
+        if (!$name) {
+            $name = 'Customer';
+        }
+
+        // 2. Phone
+        $phone = $inv->customer?->user?->phone ?? ($order?->phone ?? '');
+        if (!$phone && $note && preg_match('/(?:Phone|Mobile):\s*([0-9\+\-\s]+)/i', $note, $m)) {
+            $phone = trim($m[1]);
+        }
+        if (!$phone && $note && preg_match('/(01[3-9]\d{8})/', $note, $m)) {
+            $phone = trim($m[1]);
+        }
+        $phone = preg_replace('/[^0-9]/', '', (string)$phone);
+        if (str_starts_with($phone, '8801')) {
+            $phone = substr($phone, 2);
+        }
+
+        // 3. Address
+        $address = $inv->customer?->address ?? ($inv->customer?->user?->address ?? '');
+        if (!$address && $order) {
+            $address = $order->shipping_address ?? ($order->address ?? '');
+        }
+        if (!$address && $note && preg_match('/Address:\s*([^\r\n]+)/i', $note, $m)) {
+            $address = trim($m[1]);
+        }
+        if (!$address || $address === 'N/A' || $address === '') {
+            $address = 'Bangladesh';
+        }
+
+        // 4. Product description / Note for courier label
+        $items = $inv->items ?? ($order?->items ?? []);
+        $itemSummaries = [];
+        if (is_array($items)) {
+            foreach ($items as $item) {
+                $pName = $item['name'] ?? ($item['title'] ?? 'Product');
+                $qty = $item['qty'] ?? 1;
+                $price = $item['price'] ?? 0;
+                $itemSummaries[] = "{$pName} (x{$qty} BDT {$price})";
+            }
+        }
+        $courierNote = implode(', ', $itemSummaries);
+        if (strlen($courierNote) > 240) {
+            $courierNote = substr($courierNote, 0, 237) . '...';
+        }
+
+        return [
+            'name'    => $name,
+            'phone'   => $phone,
+            'address' => $address,
+            'note'    => $courierNote,
+        ];
+    }
+
     private function bulkSendToSteadfast($invoices)
     {
         $gateway = SteadfastCourier::first();
@@ -213,10 +282,7 @@ class SellerOrderHubController extends Controller
         foreach ($invoices as $inv) {
             if (!$inv->order || $inv->order->steadfast_order_id) continue;
 
-            $recipientName = trim(($inv->customer?->first_name ?? '') . ' ' . ($inv->customer?->last_name ?? ''));
-            if (!$recipientName) $recipientName = $inv->customer?->user?->name ?? $inv->order?->customer_name ?? 'Customer';
-            $recipientPhone = $inv->customer?->user?->phone ?? $inv->order?->customer_phone ?? $inv->order?->phone ?? '';
-            $recipientAddress = $inv->customer?->address ?? $inv->order?->shipping_address ?? $inv->order?->address ?? 'N/A';
+            $cData = $this->resolveOrderCustomerDetails($inv);
 
             try {
                 $response = Http::withHeaders([
@@ -224,20 +290,20 @@ class SellerOrderHubController extends Controller
                     'Secret-Key' => $gateway->secret_key,
                     'Content-Type' => 'application/json'
                 ])->post($endpoint, [
-                    'invoice' => $inv->invoice_number,
-                    'recipient_name' => $recipientName,
-                    'recipient_phone' => $recipientPhone,
-                    'recipient_address' => $recipientAddress,
-                    'cod_amount' => (float)$inv->grand_total,
-                    'note' => $inv->note ?? ''
+                    'invoice'           => $inv->invoice_number,
+                    'recipient_name'    => $cData['name'],
+                    'recipient_phone'   => $cData['phone'],
+                    'recipient_address' => $cData['address'],
+                    'cod_amount'        => (float)$inv->grand_total,
+                    'note'              => $cData['note']
                 ]);
 
                 if ($response->successful() && ($response->json('status') == 200 || $response->json('status') === 'success' || isset($response->json('order')['consignment_id']))) {
                     $consignmentId = $response->json('order.consignment_id') ?? $response->json('consignment.consignment_id') ?? $response->json('consignment_id');
                     $inv->order->update([
                         'steadfast_order_id' => $consignmentId,
-                        'courier_name' => 'Steadfast',
-                        'courier_status' => 'sent'
+                        'courier_name'       => 'Steadfast',
+                        'courier_status'     => 'sent'
                     ]);
                     $successCount++;
                 } else {

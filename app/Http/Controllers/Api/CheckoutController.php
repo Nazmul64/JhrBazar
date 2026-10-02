@@ -580,7 +580,7 @@ class CheckoutController extends Controller
                 }
                 $orderShipping = $totalOrderAmount > 0 ? $shippingCharge * ($subTotal / $totalOrderAmount) : 0;
 
-                $grandTotal = $subTotal - $orderDiscount;
+                $grandTotal = ($subTotal - $orderDiscount) + $orderShipping;
 
                 $customerId = auth('sanctum')->check() ? auth('sanctum')->id() : null;
 
@@ -670,7 +670,7 @@ class CheckoutController extends Controller
                     $post_data = [
                         'store_id' => $sslcommerz->store_id,
                         'store_passwd' => $sslcommerz->store_password,
-                        'total_amount' => $grandTotal,
+                        'total_amount' => round($grandTotalForFraud, 2),
                         'currency' => 'BDT',
                         'tran_id' => $tran_id,
                         'success_url' => route('sslcommerz.success'),
@@ -696,8 +696,8 @@ class CheckoutController extends Controller
 
                     $response = \Illuminate\Support\Facades\Http::asForm()->post($post_url, $post_data);
 
-                    if ($response->successful() && $response->json('status') === 'SUCCESS') {
-                        $paymentUrl = $response->json('GatewayPageURL');
+                    if ($response->successful() && ($response->json('status') === 'SUCCESS' || $response->json('status') === 'success')) {
+                        $paymentUrl = $response->json('GatewayPageURL') ?: ($response->json('redirectGatewayURL') ?: null);
                     } else {
                         throw new \Exception('Payment Gateway Error: ' . ($response->json('failedreason') ?: 'Unable to initiate SSLCommerz payment.'));
                     }

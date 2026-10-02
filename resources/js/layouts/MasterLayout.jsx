@@ -123,7 +123,7 @@ const MasterLayout = ({ children }) => {
             <Header />
 
             {/* Main Content (The Dynamic Part) */}
-            <main style={{ flexGrow: 1, backgroundColor: '#f9f9f9', paddingBottom: '100px', minHeight: 'calc(100vh - 200px)' }}>
+            <main style={{ flexGrow: 1, backgroundColor: 'var(--bg-main, #f9f9f9)', paddingBottom: '100px', minHeight: 'calc(100vh - 200px)' }}>
                 <div style={{ padding: '0', animation: 'fadeIn 0.5s ease-in-out' }}>
                     {children}
                 </div>

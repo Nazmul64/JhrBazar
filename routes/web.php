@@ -1045,10 +1045,10 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // ── Public SSLCommerz Payment Callbacks ──────────────────────────────────────
-Route::post('/payment/sslcommerz/success', [App\Http\Controllers\Api\CheckoutController::class, 'successCallback'])->name('sslcommerz.success');
-Route::post('/payment/sslcommerz/fail',    [App\Http\Controllers\Api\CheckoutController::class, 'failCallback'])   ->name('sslcommerz.fail');
-Route::post('/payment/sslcommerz/cancel',  [App\Http\Controllers\Api\CheckoutController::class, 'cancelCallback']) ->name('sslcommerz.cancel');
-Route::post('/payment/sslcommerz/ipn',     [App\Http\Controllers\Api\CheckoutController::class, 'ipnCallback'])    ->name('sslcommerz.ipn');
+Route::match(['get', 'post'], '/payment/sslcommerz/success', [App\Http\Controllers\Api\CheckoutController::class, 'successCallback'])->name('sslcommerz.success');
+Route::match(['get', 'post'], '/payment/sslcommerz/fail',    [App\Http\Controllers\Api\CheckoutController::class, 'failCallback'])   ->name('sslcommerz.fail');
+Route::match(['get', 'post'], '/payment/sslcommerz/cancel',  [App\Http\Controllers\Api\CheckoutController::class, 'cancelCallback']) ->name('sslcommerz.cancel');
+Route::match(['get', 'post'], '/payment/sslcommerz/ipn',     [App\Http\Controllers\Api\CheckoutController::class, 'ipnCallback'])    ->name('sslcommerz.ipn');
 
 // ── Public bKash Payment Callback ───────────────────────────────────────────
 Route::get('/payment/bkash/callback', [App\Http\Controllers\Api\CheckoutController::class, 'bkashCallback'])->name('bkash.callback');

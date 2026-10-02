@@ -301,7 +301,7 @@ const Checkout = () => {
     };
 
     const shippingAmount = selectedShipping ? Number(selectedShipping.charge) : 0;
-    const finalTotal = cartTotal - couponDiscount;
+    const finalTotal = (Number(cartTotal) - Number(couponDiscount)) + Number(shippingAmount);
     const selectedGateway = availableGateways.find(gateway => gateway.key === formData.online_gateway);
     const submitButtonLabel = otpSent
         ? 'ওটিপি যাচাই করে অর্ডার নিশ্চিত করুন (Verify & Confirm)'
@@ -933,8 +933,8 @@ const Checkout = () => {
                                             <span className="fw-bold small text-dark">৳{Number(cartTotal).toLocaleString()}</span>
                                         </div>
                                         <div className="d-flex justify-content-between mb-2">
-                                            <span className="text-muted small">Shipping Charge ({selectedShipping?.area_name})</span>
-                                            <span className="fw-bold small text-dark">৳{Number(shippingAmount).toLocaleString()} <span className="text-muted fw-normal" style={{ fontSize: '11px' }}>(হাতে প্রদান)</span></span>
+                                            <span className="text-muted small">Shipping Charge ({selectedShipping?.area_name || 'Delivery Area'})</span>
+                                            <span className="fw-bold small text-dark">+ ৳{Number(shippingAmount).toLocaleString()}</span>
                                         </div>
                                         {couponDiscount > 0 && (
                                             <div className="d-flex justify-content-between mb-2 text-danger">
