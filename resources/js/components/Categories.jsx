@@ -145,6 +145,7 @@ const Categories = ({ categories, loading }) => {
         `}</style>
         
         {categories.map(cat => {
+          const hasThumb = cat.thumbnail && typeof cat.thumbnail === 'string' && !cat.thumbnail.includes('placeholder') && !cat.thumbnail.includes('no_image');
           const cardWidth = settings?.category_img_width && !settings.category_img_width.includes('%') 
               ? `calc(${settings.category_img_width} + 20px)` 
               : '160px';
@@ -156,25 +157,29 @@ const Categories = ({ categories, loading }) => {
                 backgroundColor: 'var(--bg-card, #fff)',
                 border: '1px solid var(--border-color, #f0f0f0)',
                 borderRadius: '15px',
-                padding: '10px',
+                padding: '15px 10px',
                 textAlign: 'center',
                 transition: 'all 0.3s',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
                 userSelect: 'none',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: hasThumb ? 'auto' : '80px'
               }} className="category-card-hover">
-                <div style={{ 
-                    width: '100%', 
-                    height: settings?.category_img_height || '100px', 
-                    borderRadius: 'var(--category-border-radius, 12px)', 
-                    overflow: 'hidden',
-                    marginBottom: '10px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: 'rgba(87, 181, 0, 0.05)'
-                }}>
-                  {cat.thumbnail ? (
+                {hasThumb && (
+                  <div style={{ 
+                      width: '100%', 
+                      height: settings?.category_img_height || '100px', 
+                      borderRadius: 'var(--category-border-radius, 12px)', 
+                      overflow: 'hidden',
+                      marginBottom: '10px',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center'
+                  }}>
                     <img 
                       src={cat.thumbnail} 
                       alt={cat.name} 
@@ -186,28 +191,9 @@ const Categories = ({ categories, loading }) => {
                         pointerEvents: 'none',
                         borderRadius: 'var(--category-border-radius, 12px)'
                       }} 
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        if (e.currentTarget.nextElementSibling) {
-                          e.currentTarget.nextElementSibling.style.display = 'flex';
-                        }
-                      }}
                     />
-                  ) : null}
-                  <div 
-                    style={{ 
-                      display: cat.thumbnail ? 'none' : 'flex',
-                      width: '100%', 
-                      height: '100%', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      color: 'var(--button-color, #57b500)',
-                      fontSize: '32px'
-                    }}
-                  >
-                    <i className="fas fa-layer-group"></i>
                   </div>
-                </div>
+                )}
               <div style={{ 
                 fontSize: '13px', 
                 fontWeight: 'bold', 

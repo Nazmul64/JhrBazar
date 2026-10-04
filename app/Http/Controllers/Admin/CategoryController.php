@@ -36,16 +36,14 @@ class CategoryController extends Controller
         $request->validate([
             'name'        => 'required|string|max:255|unique:categories,name',
             'thumbnail'   => 'nullable|image|mimes:jpg,jpeg,png,webp,svg,gif|max:10240',
-            'description' => 'nullable|string|max:1000',
         ]);
 
         $thumbnailPath = $request->hasFile('thumbnail') ? $this->uploadImage($request->file('thumbnail')) : null;
 
         Category::create([
-            'name'        => $request->name,
-            'thumbnail'   => $thumbnailPath,
-            'description' => $request->description,
-            'is_active'   => true,
+            'name'      => $request->name,
+            'thumbnail' => $thumbnailPath,
+            'is_active' => true,
         ]);
 
         Cache::forget('home_data_v2');
@@ -78,14 +76,12 @@ class CategoryController extends Controller
     public function update(Request $request, Category $category)
     {
         $request->validate([
-            'name'        => 'required|string|max:255|unique:categories,name,' . $category->id,
-            'thumbnail'   => 'nullable|image|mimes:jpg,jpeg,png,webp,svg,gif|max:10240',
-            'description' => 'nullable|string|max:1000',
+            'name'      => 'required|string|max:255|unique:categories,name,' . $category->id,
+            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp,svg,gif|max:10240',
         ]);
 
         $data = [
-            'name'        => $request->name,
-            'description' => $request->description,
+            'name' => $request->name,
         ];
 
         if ($request->hasFile('thumbnail')) {

@@ -54,11 +54,11 @@ class FrontendApiController extends Controller
                 ->get()
                 ->map(function($cat) {
                     $thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : null;
-                    $cat->thumbnail = $thumbnail ? ($thumbnail . '?v=' . self::ASSET_VERSION) : null;
+                    $cat->thumbnail = $thumbnail ? $thumbnail . '?v=' . self::ASSET_VERSION : null;
                     if ($cat->subCategories) {
                         $cat->subCategories->map(function($sub) {
                             $subThumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : '/' . ltrim($sub->thumbnail, '/')) : null;
-                            $sub->thumbnail = $subThumbnail ? ($subThumbnail . '?v=' . self::ASSET_VERSION) : null;
+                            $sub->thumbnail = $subThumbnail ? $subThumbnail . '?v=' . self::ASSET_VERSION : null;
                             return $sub;
                         });
                     }
@@ -233,12 +233,10 @@ class FrontendApiController extends Controller
                 ->orderBy('name', 'asc')
                 ->get()
                 ->map(function($cat) {
-                    $thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : null;
-                    $cat->thumbnail = $thumbnail ? ($thumbnail . '?v=' . self::ASSET_VERSION) : null;
+                    $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : null;
                     if ($cat->subCategories) {
                         $cat->subCategories->map(function($sub) {
-                            $subThumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : '/' . ltrim($sub->thumbnail, '/')) : null;
-                            $sub->thumbnail = $subThumbnail ? ($subThumbnail . '?v=' . self::ASSET_VERSION) : null;
+                            $sub->thumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : '/' . ltrim($sub->thumbnail, '/')) : null;
                             return $sub;
                         });
                     }
@@ -271,12 +269,10 @@ class FrontendApiController extends Controller
                 ->orderBy('name', 'asc')
                 ->get()
                 ->map(function($cat) {
-                    $thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : null;
-                    $cat->thumbnail = $thumbnail ? ($thumbnail . '?v=' . self::ASSET_VERSION) : null;
+                    $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : null;
                     if ($cat->subCategories) {
                         $cat->subCategories->map(function($sub) {
-                            $subThumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : '/' . ltrim($sub->thumbnail, '/')) : null;
-                            $sub->thumbnail = $subThumbnail ? ($subThumbnail . '?v=' . self::ASSET_VERSION) : null;
+                            $sub->thumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : '/' . ltrim($sub->thumbnail, '/')) : null;
                             return $sub;
                         });
                     }
@@ -322,12 +318,10 @@ class FrontendApiController extends Controller
             ->orderBy('id', 'asc')
             ->get()
             ->map(function($cat) {
-                $thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : null;
-                $cat->thumbnail = $thumbnail ? ($thumbnail . '?v=' . self::ASSET_VERSION) : null;
+                $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : null;
                 if ($cat->subCategories) {
                     $cat->subCategories->map(function($sub) {
-                        $subThumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : '/' . ltrim($sub->thumbnail, '/')) : null;
-                        $sub->thumbnail = $subThumbnail ? ($subThumbnail . '?v=' . self::ASSET_VERSION) : null;
+                        $sub->thumbnail = $sub->thumbnail ? (str_starts_with($sub->thumbnail, 'http') ? $sub->thumbnail : '/' . ltrim($sub->thumbnail, '/')) : null;
                         return $sub;
                     });
                 }

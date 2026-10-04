@@ -66,17 +66,7 @@
                 @enderror
             </div>
 
-            {{-- Description --}}
-            <div class="mb-5">
-                <label class="form-label fw-semibold">Description</label>
-                <textarea name="description"
-                          class="form-control @error('description') is-invalid @enderror"
-                          rows="4"
-                          placeholder="Enter description">{{ old('description') }}</textarea>
-                @error('description')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
+
 
             {{-- Buttons --}}
             <div class="d-flex justify-content-between">

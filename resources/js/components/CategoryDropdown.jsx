@@ -65,14 +65,13 @@ const CategoryDropdown = ({ isOpen }) => {
                                         }}
                                         className="category-dropdown-item"
                                     >
-                                        {cat.thumbnail ? (
+                                        {cat.thumbnail && typeof cat.thumbnail === 'string' && !cat.thumbnail.includes('placeholder') && !cat.thumbnail.includes('no_image') && (
                                             <img 
                                                 src={formatImagePath(cat.thumbnail)} 
                                                 alt="" 
-                                                style={{ width: '28px', height: '28px', objectFit: 'cover', borderRadius: '6px' }} 
-                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '6px' }} 
                                             />
-                                        ) : null}
+                                        )}
                                         <span style={{ flexGrow: 1 }}>{cat.name}</span>
                                         {(cat.sub_categories?.length > 0 || cat.subCategories?.length > 0) && <span style={{ fontSize: '10px' }}>▶</span>}
                                     </Link>
@@ -101,15 +100,12 @@ const CategoryDropdown = ({ isOpen }) => {
                                             onMouseEnter={(e) => e.target.style.color = 'var(--button-color, #57b500)'}
                                             onMouseLeave={(e) => e.target.style.color = 'inherit'}
                                         >
-                                            {sub.thumbnail ? (
+                                            {sub.thumbnail && typeof sub.thumbnail === 'string' && !sub.thumbnail.includes('placeholder') && !sub.thumbnail.includes('no_image') && (
                                                 <img 
                                                     src={formatImagePath(sub.thumbnail)} 
                                                     alt="" 
-                                                    style={{ width: '24px', height: '24px', objectFit: 'cover', borderRadius: '5px' }} 
-                                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                    style={{ width: '26px', height: '26px', objectFit: 'cover', borderRadius: '5px' }} 
                                                 />
-                                            ) : (
-                                                <span className="text-muted" style={{ fontSize: '12px' }}>•</span>
                                             )}
                                             <span>{sub.name}</span>
                                         </Link>

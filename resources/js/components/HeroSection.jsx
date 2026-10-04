@@ -125,15 +125,9 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                                         }}
                                     >
                                         <div className="d-flex align-items-center gap-2">
-                                            {cat.thumbnail ? (
-                                                <img 
-                                                    src={cat.thumbnail} 
-                                                    alt={cat.name} 
-                                                    loading="lazy" 
-                                                    style={{ width: '28px', height: '28px', objectFit: 'cover', borderRadius: '6px' }} 
-                                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                />
-                                            ) : null}
+                                            {cat.thumbnail && typeof cat.thumbnail === 'string' && !cat.thumbnail.includes('placeholder') && !cat.thumbnail.includes('no_image') && (
+                                                <img src={cat.thumbnail} alt="" loading="lazy" style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '6px' }} />
+                                            )}
                                             <Link to={`/category/${cat.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>{cat.name}</Link>
                                         </div>
                                         {(cat.sub_categories?.length > 0 || cat.subCategories?.length > 0) && <span style={{ fontSize: '10px' }}>▶</span>}
@@ -162,15 +156,8 @@ const HeroSection = ({ banners: initialBanners, categories: initialCategories, l
                                                 className="text-decoration-none text-muted small hover-primary d-flex align-items-center gap-2 py-1"
                                                 style={{ transition: 'color 0.2s' }}
                                             >
-                                                {sub.thumbnail ? (
-                                                    <img 
-                                                        src={sub.thumbnail} 
-                                                        alt={sub.name} 
-                                                        style={{ width: '24px', height: '24px', objectFit: 'cover', borderRadius: '5px' }} 
-                                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                    />
-                                                ) : (
-                                                    <span className="text-muted" style={{ fontSize: '12px' }}>•</span>
+                                                {sub.thumbnail && typeof sub.thumbnail === 'string' && !sub.thumbnail.includes('placeholder') && !sub.thumbnail.includes('no_image') && (
+                                                    <img src={sub.thumbnail} alt="" style={{ width: '26px', height: '26px', objectFit: 'cover', borderRadius: '5px' }} />
                                                 )}
                                                 <span>{sub.name}</span>
                                             </Link>
