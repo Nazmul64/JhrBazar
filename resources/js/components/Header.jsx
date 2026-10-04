@@ -292,17 +292,30 @@ const Header = () => {
                             {/* Logo & Mobile Menu Toggle */}
                             <div className="col-4 col-lg-2 d-flex align-items-center gap-2">
                                 <button className="btn d-lg-none p-0 border-0 text-dark" onClick={() => setIsMobileMenuOpen(true)} style={{ fontSize: '24px' }}>☰</button>
-                                <Link to="/" onClick={(e) => {
+                                <Link to="/" className="text-decoration-none d-flex align-items-center" onClick={(e) => {
                                     if (window.location.pathname === '/') {
                                         e.preventDefault();
                                         window.location.reload();
                                     }
                                 }}>
-                                    <img
-                                        src={settings?.logo || "https://demo.readyecommerce.app/public/assets/front-end/img/logo.png"}
-                                        alt={settings?.website_name || "Logo"}
-                                        style={{ maxHeight: '42px', maxWidth: '160px', objectFit: 'contain' }}
-                                    />
+                                    {settings?.logo ? (
+                                        <img
+                                            src={settings.logo}
+                                            alt={settings?.website_name || "Logo"}
+                                            style={{ maxHeight: '42px', maxWidth: '160px', objectFit: 'contain' }}
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                const fallback = e.target.parentElement.querySelector('.brand-text-logo');
+                                                if (fallback) fallback.style.display = 'inline-block';
+                                            }}
+                                        />
+                                    ) : null}
+                                    <span 
+                                        className="brand-text-logo fw-bold fs-4 text-success" 
+                                        style={{ display: settings?.logo ? 'none' : 'inline-block', letterSpacing: '-0.5px' }}
+                                    >
+                                        {settings?.website_name || "JHR Bazar"}
+                                    </span>
                                 </Link>
                             </div>
 
