@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\ContactApiController;
 use App\Http\Controllers\Admin\CustomerDetectorController;
 use App\Http\Controllers\Admin\FraudCheckerController;
 use App\Http\Controllers\Admin\AdminSupportController;
@@ -113,6 +114,8 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/settings',    [FrontendApiController::class, 'getSettings'])->name('api.settings');
 Route::get('/banners',     [FrontendApiController::class, 'getBanners'])->name('api.banners');
 Route::get('/footer-data', [FrontendApiController::class, 'getFooterData'])->name('api.footer');
+Route::get('/contact-info',    [ContactApiController::class, 'getContactInfo'])->name('api.contact-info');
+Route::post('/contact/submit', [ContactApiController::class, 'submitMessage'])->name('api.contact.submit');
 
 // Checkout OTP Routes
 Route::get('/checkout/otp-settings', [CheckoutController::class, 'getOtpSettings']);

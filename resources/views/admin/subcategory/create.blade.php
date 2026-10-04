@@ -94,7 +94,7 @@
             {{-- ── Thumbnail Upload ── --}}
             <div class="mb-5">
                 <label class="form-label fw-semibold">
-                    Thumbnail (Ratio 1:1) <span class="text-danger">*</span>
+                    Thumbnail (Ratio 1:1) <span class="text-muted fw-normal" style="font-size:12px;">(Optional)</span>
                 </label>
                 <input type="file"
                        name="thumbnail"

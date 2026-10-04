@@ -39,10 +39,10 @@ class SubCategoryController extends Controller
             'category_ids'   => 'required|array|min:1',
             'category_ids.*' => 'exists:categories,id',
             'name'           => 'required|string|max:255|unique:sub_categories,name',
-            'thumbnail'      => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'thumbnail'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        $thumbnailPath = $this->uploadImage($request->file('thumbnail'));
+        $thumbnailPath = $request->hasFile('thumbnail') ? $this->uploadImage($request->file('thumbnail')) : null;
 
         $sub = SubCategory::create([
             'name'      => $request->name,

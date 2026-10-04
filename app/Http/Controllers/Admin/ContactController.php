@@ -44,7 +44,7 @@ class ContactController extends Controller
             'map_embed_code'  => 'nullable|string',
         ]);
 
-        $data = $request->except(['_token', 'contact_image']);
+        $data = $request->only(['phone_number', 'whatsapp_number', 'messenger_link', 'email_address', 'map_embed_code']);
 
         $uploadPath = public_path('uploads/contact');
         if (!file_exists($uploadPath)) {
@@ -88,7 +88,7 @@ class ContactController extends Controller
         ]);
 
         $contact = Contact::findOrFail($id);
-        $data = $request->except(['_token', '_method', 'contact_image']);
+        $data = $request->only(['phone_number', 'whatsapp_number', 'messenger_link', 'email_address', 'map_embed_code']);
 
         $uploadPath = public_path('uploads/contact');
         if (!file_exists($uploadPath)) {

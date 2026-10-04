@@ -35,11 +35,11 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name'        => 'required|string|max:255|unique:categories,name',
-            'thumbnail'   => 'required|image|mimes:jpg,jpeg,png,webp,svg,gif|max:10240',
+            'thumbnail'   => 'nullable|image|mimes:jpg,jpeg,png,webp,svg,gif|max:10240',
             'description' => 'nullable|string|max:1000',
         ]);
 
-        $thumbnailPath = $this->uploadImage($request->file('thumbnail'));
+        $thumbnailPath = $request->hasFile('thumbnail') ? $this->uploadImage($request->file('thumbnail')) : null;
 
         Category::create([
             'name'        => $request->name,
