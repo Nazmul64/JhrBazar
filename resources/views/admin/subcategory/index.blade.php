@@ -10,14 +10,6 @@
     </a>
 </div>
 
-{{-- Flash Message --}}
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
 {{-- Table Card --}}
 <div class="card shadow-sm border-0">
     <div class="card-body p-0">

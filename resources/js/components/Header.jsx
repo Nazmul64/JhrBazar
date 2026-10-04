@@ -479,7 +479,14 @@ const Header = () => {
                                 <div key={cat.id} className="border-bottom" style={{ borderColor: isDark ? '#1f2937' : '#f0f0f0' }}>
                                     <div onClick={() => toggleCategory(cat.id)} style={{ padding: '12px 20px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
                                         <div className="d-flex align-items-center gap-2">
-                                            <img src={cat.thumbnail || '/placeholder.jpg'} alt="" style={{ width: '30px', height: '30px', objectFit: 'cover', borderRadius: '6px' }} />
+                                            {cat.thumbnail ? (
+                                                <img 
+                                                    src={cat.thumbnail} 
+                                                    alt="" 
+                                                    style={{ width: '28px', height: '28px', objectFit: 'cover', borderRadius: '6px' }} 
+                                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                />
+                                            ) : null}
                                             <Link to={`/category/${cat.id}`} onClick={() => setIsMobileMenuOpen(false)} className="text-decoration-none text-dark">{cat.name}</Link>
                                         </div>
                                         {(cat.sub_categories?.length > 0 || cat.subCategories?.length > 0) && <span>{expandedCategory === cat.id ? '▼' : '▶'}</span>}
@@ -494,11 +501,16 @@ const Header = () => {
                                                     className="d-flex align-items-center gap-2 py-2 text-decoration-none text-muted"
                                                     style={{ fontSize: '13px' }}
                                                 >
-                                                    <img 
-                                                        src={sub.thumbnail ? (sub.thumbnail.startsWith('http') ? sub.thumbnail : sub.thumbnail) : '/placeholder.jpg'} 
-                                                        alt="" 
-                                                        style={{ width: '24px', height: '24px', objectFit: 'cover', borderRadius: '5px' }} 
-                                                    />
+                                                    {sub.thumbnail ? (
+                                                        <img 
+                                                            src={sub.thumbnail} 
+                                                            alt="" 
+                                                            style={{ width: '22px', height: '22px', objectFit: 'cover', borderRadius: '5px' }} 
+                                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                        />
+                                                    ) : (
+                                                        <span className="text-muted" style={{ fontSize: '12px' }}>•</span>
+                                                    )}
                                                     <span>{sub.name}</span>
                                                 </Link>
                                             ))}

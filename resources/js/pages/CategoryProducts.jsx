@@ -298,12 +298,14 @@ const CategoryProducts = () => {
                                                     className={`d-flex justify-content-between align-items-center px-3 py-2.5 text-decoration-none transition-all ${isActive ? 'bg-light-success text-success fw-bold' : 'text-dark hover-bg-light'}`}
                                                 >
                                                     <div className="d-flex align-items-center gap-2">
-                                                        <img
-                                                            src={formatImagePath(cat.thumbnail)}
-                                                            alt=""
-                                                            style={{ width: '22px', height: '22px', objectFit: 'contain' }}
-                                                            onError={(e) => { e.target.src = '/placeholder.jpg'; }}
-                                                        />
+                                                        {cat.thumbnail ? (
+                                                            <img
+                                                                src={formatImagePath(cat.thumbnail)}
+                                                                alt=""
+                                                                style={{ width: '22px', height: '22px', objectFit: 'contain' }}
+                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                            />
+                                                        ) : null}
                                                         <span className="small">{cat.name}</span>
                                                     </div>
                                                     <i className={`fas ${isActive ? 'fa-chevron-down text-success' : 'fa-chevron-right text-muted'} small`} style={{ fontSize: '11px' }}></i>

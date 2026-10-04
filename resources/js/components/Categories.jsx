@@ -171,20 +171,42 @@ const Categories = ({ categories, loading }) => {
                     marginBottom: '10px',
                     display: 'flex',
                     justifyContent: 'center',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(87, 181, 0, 0.05)'
                 }}>
-                  <img 
-                    src={cat.thumbnail} 
-                    alt={cat.name} 
-                    loading="lazy" 
+                  {cat.thumbnail ? (
+                    <img 
+                      src={cat.thumbnail} 
+                      alt={cat.name} 
+                      loading="lazy" 
+                      style={{ 
+                        width: settings?.category_img_width || '100%', 
+                        height: '100%', 
+                        objectFit: 'cover', 
+                        pointerEvents: 'none',
+                        borderRadius: 'var(--category-border-radius, 12px)'
+                      }} 
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        if (e.currentTarget.nextElementSibling) {
+                          e.currentTarget.nextElementSibling.style.display = 'flex';
+                        }
+                      }}
+                    />
+                  ) : null}
+                  <div 
                     style={{ 
-                      width: settings?.category_img_width || '100%', 
+                      display: cat.thumbnail ? 'none' : 'flex',
+                      width: '100%', 
                       height: '100%', 
-                      objectFit: 'cover', 
-                      pointerEvents: 'none',
-                      borderRadius: 'var(--category-border-radius, 12px)'
-                    }} 
-                  />
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      color: 'var(--button-color, #57b500)',
+                      fontSize: '32px'
+                    }}
+                  >
+                    <i className="fas fa-layer-group"></i>
+                  </div>
                 </div>
               <div style={{ 
                 fontSize: '13px', 
