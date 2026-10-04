@@ -1,0 +1,40 @@
+{
+  "_frontend-BIT8d-6e.js": {
+    "file": "assets/frontend-BIT8d-6e.js",
+    "name": "frontend",
+    "css": [
+      "assets/frontend-BunfvKVn.css"
+    ]
+  },
+  "_frontend-BunfvKVn.css": {
+    "file": "assets/frontend-BunfvKVn.css",
+    "src": "_frontend-BunfvKVn.css"
+  },
+  "resources/js/app.jsx": {
+    "file": "assets/app-DIZ75kx9.js",
+    "name": "app",
+    "src": "resources/js/app.jsx",
+    "isEntry": true,
+    "imports": [
+      "_frontend-BIT8d-6e.js"
+    ]
+  },
+  "resources/js/builder-entry.jsx": {
+    "file": "assets/builder-entry-BiXG2Vhr.js",
+    "name": "builder-entry",
+    "src": "resources/js/builder-entry.jsx",
+    "isEntry": true,
+    "imports": [
+      "_frontend-BIT8d-6e.js"
+    ]
+  },
+  "resources/sass/app.scss": {
+    "file": "assets/app-CqdYSNPV.css",
+    "src": "resources/sass/app.scss",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  }
+}
