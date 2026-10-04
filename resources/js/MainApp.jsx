@@ -85,6 +85,8 @@ const MainApp = () => {
                                 <Route path="/contact" element={<Contact />} />
                                 <Route path="/blogs" element={<Blogs />} />
                                 <Route path="/blog/:slug" element={<BlogDetail />} />
+                                <Route path="/login" element={<Login />} />
+                                <Route path="/register" element={<Register />} />
                                 <Route path="/customer/login" element={<Login />} />
                                 <Route path="/customer/register" element={<Register />} />
                                 <Route path="/about" element={<About />} />

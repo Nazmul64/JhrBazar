@@ -15,6 +15,22 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->redirectGuestsTo(function (\Illuminate\Http\Request $request) {
+            if ($request->is('admin') || $request->is('admin/*')) {
+                return route('admin.login');
+            }
+            if ($request->is('seller') || $request->is('seller/*')) {
+                return route('seller.login');
+            }
+            if ($request->is('manager') || $request->is('manager/*')) {
+                return route('manager.login');
+            }
+            if ($request->is('employee') || $request->is('employee/*')) {
+                return route('employee.login');
+            }
+            return route('admin.login');
+        });
+
         $middleware->alias([
             'admin'      => AdminMiddleware::class,
             'role'       => \App\Http\Middleware\CheckRole::class,

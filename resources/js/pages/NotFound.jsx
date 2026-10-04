@@ -2,10 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import MasterLayout from '../layouts/MasterLayout';
 import { useSettings } from '../context/SettingsContext';
+import { useLanguage } from '../context/LanguageThemeContext';
 import { Home, Search, ArrowLeft, ShoppingBag } from 'lucide-react';
 
 const NotFound = () => {
     const { settings } = useSettings();
+    const { isBangla } = useLanguage();
     const mainColor = settings?.primary_color || '#ff4d4d';
 
     return (
@@ -17,7 +19,6 @@ const NotFound = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: '40px 20px',
-                fontFamily: "'Hind Siliguri', sans-serif"
             }}>
                 <div style={{ textAlign: 'center', maxWidth: '560px' }}>
                     {/* Animated 404 Number */}
@@ -70,7 +71,7 @@ const NotFound = () => {
                         color: '#0f172a',
                         marginBottom: '12px'
                     }}>
-                        পেজটি খুঁজে পাওয়া যায়নি
+                        {isBangla ? 'পেজটি খুঁজে পাওয়া যায়নি' : 'Page Not Found'}
                     </h2>
                     <p style={{
                         fontSize: '16px',
@@ -80,7 +81,9 @@ const NotFound = () => {
                         maxWidth: '420px',
                         margin: '0 auto 36px'
                     }}>
-                        দুঃখিত! আপনি যে পেজটি খুঁজছেন সেটি পাওয়া যায়নি। পেজটি মুছে ফেলা হয়েছে, নাম পরিবর্তন করা হয়েছে, অথবা সাময়িকভাবে অনুপলব্ধ।
+                        {isBangla 
+                            ? 'দুঃখিত! আপনি যে পেজটি খুঁজছেন সেটি পাওয়া যায়নি। পেজটি মুছে ফেলা হয়েছে, নাম পরিবর্তন করা হয়েছে, অথবা সাময়িকভাবে অনুপলব্ধ।'
+                            : 'Sorry! The page you are looking for does not exist. It may have been moved, deleted, or is temporarily unavailable.'}
                     </p>
 
                     {/* Action Buttons */}
@@ -116,7 +119,7 @@ const NotFound = () => {
                             }}
                         >
                             <Home size={18} />
-                            হোমপেজে ফিরুন
+                            {isBangla ? 'হোমপেজে ফিরুন' : 'Back to Home'}
                         </Link>
                         <Link
                             to="/products"
@@ -146,7 +149,7 @@ const NotFound = () => {
                             }}
                         >
                             <ShoppingBag size={18} />
-                            প্রোডাক্ট দেখুন
+                            {isBangla ? 'প্রোডাক্ট দেখুন' : 'Browse Products'}
                         </Link>
                     </div>
 
@@ -170,14 +173,12 @@ const NotFound = () => {
                         onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
                     >
                         <ArrowLeft size={16} />
-                        অথবা আগের পেজে ফিরে যান
+                        {isBangla ? 'অথবা আগের পেজে ফিরে যান' : 'Or go back to previous page'}
                     </button>
                 </div>
             </div>
 
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
-
                 @keyframes float404 {
                     0%, 100% { transform: translateY(0px); }
                     50% { transform: translateY(-15px); }
