@@ -401,6 +401,7 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
 
     // ── Products ──────────────────────────────────────────────────────────────
     Route::get('products/subcategories/{categoryId}', [ProductControllerController::class, 'getSubCategories'])->name('products.subcategories');
+    Route::post('products/bulk-status',               [ProductControllerController::class, 'bulkStatusUpdate'])->name('products.bulk-status');
     Route::post('products/{product}/toggle',          [ProductControllerController::class, 'toggleStatus'])    ->name('products.toggle');
     Route::get('products/{product}/barcode',          [ProductControllerController::class, 'barcode'])         ->name('products.barcode');
     Route::resource('products', ProductControllerController::class)->names('products');
@@ -492,6 +493,15 @@ Route::delete('hrm/payroll/{id}', [App\Http\Controllers\Admin\PayrollController:
         Route::get('/pathao/zones/{cityId}',  [OrderHubController::class, 'getPathaoZones'])->name('pathao.zones');
         Route::get('/pathao/areas/{zoneId}',  [OrderHubController::class, 'getPathaoAreas'])->name('pathao.areas');
         Route::get('/pathao/stores',          [OrderHubController::class, 'getPathaoStores'])->name('pathao.stores');
+    });
+
+    // ── Seller Products Management (Approval & Review) ──────────────────────
+    Route::prefix('seller-products')->name('admin.seller-products.')->group(function () {
+        Route::get('/',                     [\App\Http\Controllers\Admin\SellerProductController::class, 'index'])->name('index');
+        Route::get('/{id}/edit',            [\App\Http\Controllers\Admin\SellerProductController::class, 'edit'])->name('edit');
+        Route::put('/{id}',                 [\App\Http\Controllers\Admin\SellerProductController::class, 'update'])->name('update');
+        Route::patch('/{id}/status',        [\App\Http\Controllers\Admin\SellerProductController::class, 'updateStatus'])->name('status');
+        Route::delete('/{id}',              [\App\Http\Controllers\Admin\SellerProductController::class, 'destroy'])->name('destroy');
     });
 
     // ── Refund Management ──────────────────────────────────────────────────────
@@ -918,11 +928,12 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/banners/{id}', [App\Http\Controllers\Seller\SellerBannerController::class, 'destroy'])->name('banner.destroy');
         Route::post('/banners/{id}/toggle', [App\Http\Controllers\Seller\SellerBannerController::class, 'toggleStatus'])->name('banner.toggle');
 
-        // Refund Management (Read-Only + Note Addition)
+        // Refund Management (Review & Feedback)
         Route::prefix('refunds')->name('refunds.')->group(function () {
             Route::get('/', [App\Http\Controllers\Seller\RefundController::class, 'index'])->name('index');
             Route::get('/{refund}', [App\Http\Controllers\Seller\RefundController::class, 'show'])->name('show');
             Route::post('/{refund}/note', [App\Http\Controllers\Seller\RefundController::class, 'addNote'])->name('note');
+            Route::post('/{refund}/review', [App\Http\Controllers\Seller\RefundController::class, 'review'])->name('review');
         });
 
         // My Shop (Seller)

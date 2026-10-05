@@ -307,7 +307,9 @@ class SellerPosController extends Controller
                 return response()->json([
                     'success' => true, 
                     'message' => 'Order placed successfully!',
-                    'invoice_id' => $invoice->id
+                    'invoice_id' => $invoice->id,
+                    'invoice_url' => route('seller.pos.invoice', $invoice->id),
+                    'order_id' => $order->id,
                 ]);
             }
 
@@ -322,7 +324,8 @@ class SellerPosController extends Controller
     public function printInvoice($id)
     {
         $invoice = PosInvoice::where('seller_id', Auth::id())->with(['customer.user', 'order'])->findOrFail($id);
+        $settings = GenaralSetting::first();
         $shop = Shop::where('user_id', Auth::id())->first();
-        return view('seller.pos.invoice', compact('invoice', 'shop'));
+        return view('admin.invoice.invoice', compact('invoice', 'settings', 'shop'));
     }
 }

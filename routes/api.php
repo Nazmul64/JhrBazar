@@ -118,6 +118,7 @@ Route::get('/contact-info',    [ContactApiController::class, 'getContactInfo'])-
 Route::post('/contact/submit', [ContactApiController::class, 'submitMessage'])->name('api.contact.submit');
 
 // Checkout OTP Routes
+Route::get('/check-coupons-available', [CheckoutController::class, 'checkCouponsAvailable']);
 Route::get('/checkout/otp-settings', [CheckoutController::class, 'getOtpSettings']);
 Route::post('/checkout/send-otp', [CheckoutController::class, 'sendOtp']);
 Route::post('/checkout/verify-otp', [CheckoutController::class, 'verifyOtp']);
@@ -342,3 +343,28 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('payments', [PaymentController::class, 'pay'])->name('payments');
     });
 });
+
+/*
+|─────────────────────────────────────────────────────────────────────────────
+|  3.  MULTI-VENDOR SELLER PRODUCT & REFUND MANAGEMENT APIS
+|─────────────────────────────────────────────────────────────────────────────
+*/
+Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+    // Seller Products Control
+    Route::get('/seller-products', [\App\Http\Controllers\Api\Admin\SellerProductController::class, 'index']);
+    Route::put('/seller-products/{id}', [\App\Http\Controllers\Api\Admin\SellerProductController::class, 'update']);
+    Route::patch('/seller-products/{id}/status', [\App\Http\Controllers\Api\Admin\SellerProductController::class, 'updateStatus']);
+    Route::delete('/seller-products/{id}', [\App\Http\Controllers\Api\Admin\SellerProductController::class, 'destroy']);
+
+    // Refund Control
+    Route::get('/refunds', [\App\Http\Controllers\Api\Admin\RefundController::class, 'index']);
+    Route::post('/refunds/{id}/action', [\App\Http\Controllers\Api\Admin\RefundController::class, 'handleRefund']);
+});
+
+Route::middleware(['auth:sanctum'])->prefix('seller')->group(function () {
+    Route::get('/products', [\App\Http\Controllers\Api\Seller\ProductController::class, 'index']);
+    Route::post('/products', [\App\Http\Controllers\Api\Seller\ProductController::class, 'store']);
+    Route::get('/refunds', [\App\Http\Controllers\Api\Seller\SellerRefundController::class, 'index']);
+    Route::post('/refunds/{id}/review', [\App\Http\Controllers\Api\Seller\SellerRefundController::class, 'review']);
+});
+

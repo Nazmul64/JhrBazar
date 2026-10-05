@@ -25,7 +25,8 @@
     }
     .btn-add:hover { background:var(--brand-hover); color:#fff; transform:translateY(-1px); }
 
-    .alert-ok { background:#f0fdf4; color:#15803d; border-left:3.5px solid #22c55e; border-radius:var(--r-md); padding:12px 16px; font-size:13.5px; margin-bottom:1.2rem; display:flex; align-items:center; gap:9px; }
+    .alert-ok { position:fixed; top:24px; right:24px; z-index:9999; background:#f0fdf4; color:#15803d; border-left:4px solid #22c55e; border-radius:var(--r-md); padding:14px 20px; font-size:14px; font-weight:600; box-shadow:0 10px 30px rgba(0,0,0,.15); display:flex; align-items:center; gap:10px; min-width:320px; animation:toastSlideIn .3s cubic-bezier(.16,1,.3,1); }
+    @keyframes toastSlideIn { from { transform: translateX(110%); opacity:0; } to { transform: translateX(0); opacity:1; } }
 
     /* Product Grid Styling */
     .product-grid {
@@ -182,8 +183,26 @@
                 </div>
                 <div class="product-body">
                     <div class="product-title" title="{{ $product->name }}">{{ $product->name }}</div>
-                    <div class="product-desc">{{ $product->short_description ?? 'No description provided.' }}</div>
-                    
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        @if(($product->admin_status ?? 'approved') === 'pending')
+                            <span class="badge bg-warning text-dark" style="font-size: 11px; padding: 4px 8px;">
+                                <i class="bi bi-hourglass-split me-1"></i> Pending Review
+                            </span>
+                        @elseif(($product->admin_status ?? 'approved') === 'rejected')
+                            <span class="badge bg-danger" style="font-size: 11px; padding: 4px 8px;" title="{{ $product->rejection_reason ?? 'Rejected by Admin' }}">
+                                <i class="bi bi-x-circle me-1"></i> Rejected
+                            </span>
+                        @else
+                            <span class="badge bg-success" style="font-size: 11px; padding: 4px 8px;">
+                                <i class="bi bi-check-circle me-1"></i> Approved
+                            </span>
+                        @endif
+
+                        @if(($product->admin_status ?? 'approved') === 'rejected' && $product->rejection_reason)
+                            <small class="text-danger fw-bold" style="font-size: 10px;">{{ Str::limit($product->rejection_reason, 25) }}</small>
+                        @endif
+                    </div>
+
                     <div class="product-price-row">
                         <span class="price-main">৳{{ number_format($product->selling_price, 0) }}</span>
                         @if($product->discount_price > 0)
@@ -224,4 +243,12 @@
         @endforelse
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(function() {
+        var alerts = document.querySelectorAll('.alert-ok');
+        alerts.forEach(function(a) { a.style.opacity = '0'; a.style.transition = 'opacity 0.5s'; setTimeout(function(){ a.remove(); }, 500); });
+    }, 4000);
+});
+</script>
 @endsection

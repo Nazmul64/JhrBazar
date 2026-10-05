@@ -36,10 +36,10 @@ class DigitalProductController extends Controller
             'category_id' => 'required',
             'buying_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
-            'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'thumbnail' => 'nullable|file|max:20480',
         ]);
 
-        $thumbnailPath = $this->saveFile($request->file('thumbnail'));
+        $thumbnailPath = $request->hasFile('thumbnail') ? $this->saveFile($request->file('thumbnail')) : null;
         
         $additionalThumbs = [];
         if ($request->hasFile('additional_thumbnails')) {

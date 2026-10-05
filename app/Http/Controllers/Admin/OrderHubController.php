@@ -439,10 +439,8 @@ class OrderHubController extends Controller
                     if ($invoice->seller) {
                         $existingNet = $this->getSellerOrderTransactionNet($invoice);
                         if ($existingNet <= 0) {
-                            $settings = GenaralSetting::first();
-                            $commissionPercent = $settings->seller_commission ?? 10;
-                            $commissionAmount = ($invoice->grand_total * $commissionPercent) / 100;
-                            $netAmount = $invoice->grand_total - $commissionAmount;
+                            $productAmount = $this->getInvoiceProductAmount($invoice);
+                            $netAmount = $productAmount;
 
                             $invoice->seller->increment('balance', $netAmount);
 
@@ -450,11 +448,11 @@ class OrderHubController extends Controller
                                 'seller_id'      => $invoice->seller->id,
                                 'transaction_id' => 'EARN-' . strtoupper(Str::random(10)),
                                 'type'           => 'earning',
-                                'amount'         => $invoice->grand_total,
-                                'commission'     => $commissionAmount,
+                                'amount'         => $productAmount,
+                                'commission'     => 0,
                                 'net_amount'     => $netAmount,
                                 'status'         => 'completed',
-                                'description'    => 'Earning from Order #' . $invoice->invoice_number,
+                                'description'    => 'Product Earning from Order #' . $invoice->invoice_number,
                             ]);
                         }
                     }
@@ -467,10 +465,8 @@ class OrderHubController extends Controller
                     \App\Services\InventoryService::restoreForOrder($invoice->order->id, $invoice->order->items ?? [], $restockType, $request->note ?? null, auth()->id());
 
                     if ($invoice->seller) {
-                        $settings = GenaralSetting::first();
-                        $commissionPercent = $settings->seller_commission ?? 10;
-                        $commissionAmount = ($invoice->grand_total * $commissionPercent) / 100;
-                        $netAmount = $invoice->grand_total - $commissionAmount;
+                        $productAmount = $this->getInvoiceProductAmount($invoice);
+                        $netAmount = $productAmount;
 
                         $invoice->seller->decrement('balance', $netAmount);
 
@@ -478,8 +474,8 @@ class OrderHubController extends Controller
                             'seller_id'      => $invoice->seller->id,
                             'transaction_id' => 'REV-' . strtoupper(Str::random(10)),
                             'type'           => 'adjustment', // Reversal/Adjustment
-                            'amount'         => -$invoice->grand_total,
-                            'commission'     => -$commissionAmount,
+                            'amount'         => -$productAmount,
+                            'commission'     => 0,
                             'net_amount'     => -$netAmount,
                             'status'         => 'completed',
                             'description'    => 'Reversal from Order #' . $invoice->invoice_number . ' (Status: ' . $request->status . ')',
@@ -593,22 +589,20 @@ class OrderHubController extends Controller
                                     if ($inv->seller) {
                                         $existingNet = $this->getSellerOrderTransactionNet($inv);
                                         if ($existingNet <= 0) {
-                                            $settings = GenaralSetting::first();
-                                            $commissionPercent = $settings->seller_commission ?? 10;
-                                            $commissionAmount = ($inv->grand_total * $commissionPercent) / 100;
-                                            $netAmount = $inv->grand_total - $commissionAmount;
+                                            $productAmount = $this->getInvoiceProductAmount($inv);
+                                            $netAmount = $productAmount;
 
                                             $inv->seller->increment('balance', $netAmount);
 
                                             \App\Models\SellerTransaction::create([
                                                 'seller_id'      => $inv->seller->id,
-                                                'transaction_id' => 'EARN-' . strtoupper(str_random(10)),
+                                                'transaction_id' => 'EARN-' . strtoupper(Str::random(10)),
                                                 'type'           => 'earning',
-                                                'amount'         => $inv->grand_total,
-                                                'commission'     => $commissionAmount,
+                                                'amount'         => $productAmount,
+                                                'commission'     => 0,
                                                 'net_amount'     => $netAmount,
                                                 'status'         => 'completed',
-                                                'description'    => 'Bulk earning from Order #' . $inv->invoice_number,
+                                                'description'    => 'Bulk product earning from Order #' . $inv->invoice_number,
                                             ]);
                                         }
                                     }
@@ -631,6 +625,24 @@ class OrderHubController extends Controller
         }
 
         return response()->json(['success' => false, 'message' => 'Invalid action.'], 422);
+    }
+
+    /**
+     * Calculate pure product price for seller, excluding shipping costs.
+     */
+    private function getInvoiceProductAmount($invoice): float
+    {
+        $productAmount = 0;
+        if (is_array($invoice->items) && count($invoice->items) > 0) {
+            foreach ($invoice->items as $item) {
+                $productAmount += ((float)($item['price'] ?? 0) * (int)($item['qty'] ?? 1));
+            }
+        }
+        if ($productAmount <= 0) {
+            $shipping = (float)($invoice->shipping_cost ?? $invoice->shipping_charge ?? $invoice->order?->shipping_charge ?? 0);
+            $productAmount = max(0, (float)$invoice->grand_total - $shipping);
+        }
+        return (float)$productAmount;
     }
 
     /**
@@ -784,58 +796,104 @@ class OrderHubController extends Controller
             return response()->json(['success' => false, 'message' => 'Pathao Courier is not active or configured.'], 422);
         }
 
-        // Logic for Pathao token and order creation would go here
-        $gateway = PathaoCourier::first();
-        if (!$gateway || !$gateway->status) {
-            return response()->json(['success' => false, 'message' => 'Pathao Courier is not active or configured.'], 422);
+        $auth = $this->getPathaoToken($gateway);
+        if (!$auth['token']) {
+            return response()->json(['success' => false, 'message' => $auth['error']], 422);
         }
-
-        $token = $this->getPathaoToken($gateway);
-        if (!$token) {
-            return response()->json(['success' => false, 'message' => 'Failed to authenticate with Pathao.'], 422);
-        }
+        $token = $auth['token'];
 
         $successCount = 0;
         $errors = [];
+        $baseUrl = rtrim($gateway->base_url ?: 'https://api-hermes.pathao.com', '/');
 
         foreach ($invoices as $inv) {
             if (!$inv->order || $inv->order->pathao_consignment_id) continue;
 
-            $response = Http::withToken($token)->post($gateway->base_url . '/aladdin/api/v1/orders', [
-                'store_id'            => $request->store_id,
-                'merchant_order_id'   => $inv->invoice_number,
-                'recipient_name'      => $inv->customer?->user?->name ?? 'Customer',
-                'recipient_phone'     => $inv->customer?->user?->phone ?? '',
-                'recipient_address'   => $inv->customer?->address ?? 'N/A',
-                'recipient_city'      => $request->city_id,
-                'recipient_zone'      => $request->zone_id,
-                'recipient_area'      => $request->area_id,
+            $cData = $this->resolveOrderCustomerDetails($inv);
+
+            // 1. Sanitize phone: must be 11 digits (e.g. 017xxxxxxxx)
+            $phone = preg_replace('/[^0-9]/', '', (string)$cData['phone']);
+            if (str_starts_with($phone, '8801')) {
+                $phone = substr($phone, 2);
+            } elseif (strlen($phone) === 10 && str_starts_with($phone, '1')) {
+                $phone = '0' . $phone;
+            }
+
+            // 2. Sanitize address: Pathao requires minimum 10 characters
+            $address = trim((string)$cData['address']);
+            if (mb_strlen($address) < 10) {
+                $address = $address . ', Bangladesh';
+            }
+            if (mb_strlen($address) < 10) {
+                $address = 'Delivery Address: ' . $address;
+            }
+
+            $recipientName = trim((string)$cData['name']) ?: 'Customer';
+
+            $payload = [
+                'store_id'            => (int)$request->store_id,
+                'merchant_order_id'   => (string)$inv->invoice_number,
+                'recipient_name'      => $recipientName,
+                'recipient_phone'     => $phone,
+                'recipient_address'   => $address,
+                'recipient_city'      => (int)$request->city_id,
+                'recipient_zone'      => (int)$request->zone_id,
                 'delivery_type'       => 48, // Standard
                 'item_type'           => 2,  // Parcel
-                'special_instruction' => $inv->note ?? '',
-                'item_quantity'       => $inv->total_qty,
+                'special_instruction' => $cData['note'] ?: ($inv->note ?? ''),
+                'item_quantity'       => max(1, (int)$inv->total_qty),
                 'item_weight'         => 0.5,
-                'amount_to_collect'   => $inv->grand_total,
+                'amount_to_collect'   => (float)$inv->grand_total,
                 'item_description'    => 'Order #' . $inv->invoice_number
-            ]);
+            ];
 
-            if ($response->successful() && $response->json('type') == 'success') {
-                $inv->order->update([
-                    'pathao_consignment_id' => $response->json('data.consignment_id'),
-                    'courier_name' => 'Pathao',
-                    'courier_status' => 'sent'
-                ]);
-                $successCount++;
-            } else {
-                $errors[] = "Invoice {$inv->invoice_number}: " . ($response->json('message') ?? 'Unknown Error');
+            if ($request->filled('area_id') && (int)$request->area_id > 0) {
+                $payload['recipient_area'] = (int)$request->area_id;
+            }
+
+            try {
+                $response = Http::withToken($token)->post($baseUrl . '/aladdin/api/v1/orders', $payload);
+
+                if ($response->successful() && ($response->json('type') == 'success' || $response->json('data.consignment_id') || $response->json('order.consignment_id') || $response->json('consignment_id'))) {
+                    $consignmentId = $response->json('data.consignment_id') ?? $response->json('order.consignment_id') ?? $response->json('consignment_id');
+                    $inv->order->update([
+                        'pathao_consignment_id' => $consignmentId,
+                        'courier_name'          => 'Pathao',
+                        'courier_status'        => 'sent'
+                    ]);
+                    $successCount++;
+                } else {
+                    $rawErrors = $response->json('errors');
+                    if (is_array($rawErrors) && count($rawErrors)) {
+                        $errParts = [];
+                        foreach ($rawErrors as $field => $fieldErrors) {
+                            $msg = is_array($fieldErrors) ? implode(', ', $fieldErrors) : (string)$fieldErrors;
+                            $errParts[] = "{$field}: {$msg}";
+                        }
+                        $errText = implode(' | ', $errParts);
+                    } else {
+                        $errText = $response->json('message') ?? ('HTTP ' . $response->status());
+                    }
+                    $errors[] = "Invoice {$inv->invoice_number}: {$errText}";
+                }
+            } catch (\Exception $e) {
+                $errors[] = "Invoice {$inv->invoice_number}: " . $e->getMessage();
             }
         }
 
+        if ($successCount > 0) {
+            return response()->json([
+                'success' => true,
+                'message' => "Successfully sent {$successCount} orders to Pathao." . (count($errors) ? " (Some failed: " . implode('; ', $errors) . ")" : ""),
+                'errors'  => $errors
+            ]);
+        }
+
         return response()->json([
-            'success' => true,
-            'message' => "Successfully sent {$successCount} orders to Pathao.",
-            'errors' => $errors
-        ]);
+            'success' => false,
+            'message' => count($errors) ? implode('; ', $errors) : "No eligible orders were sent to Pathao.",
+            'errors'  => $errors
+        ], 422);
     }
 
     /**
@@ -855,7 +913,17 @@ class OrderHubController extends Controller
      */
     private function getPathaoToken($gateway)
     {
-        $response = Http::post($gateway->base_url . '/aladdin/api/v1/issue-token', [
+        if (!$gateway || !$gateway->status) {
+            return ['token' => null, 'error' => 'Pathao Courier is not active or configured. Please check Courier Management settings.'];
+        }
+
+        if (empty($gateway->client_id) || empty($gateway->client_secret) || empty($gateway->username) || empty($gateway->password)) {
+            return ['token' => null, 'error' => 'Pathao credentials (Client ID, Client Secret, Username, Password) are incomplete.'];
+        }
+
+        $baseUrl = rtrim($gateway->base_url ?? 'https://api-hermes.pathao.com', '/');
+
+        $response = Http::post($baseUrl . '/aladdin/api/v1/issue-token', [
             'client_id'     => $gateway->client_id,
             'client_secret' => $gateway->client_secret,
             'username'      => $gateway->username,
@@ -863,39 +931,72 @@ class OrderHubController extends Controller
             'grant_type'    => $gateway->grant_type ?? 'password',
         ]);
 
-        return $response->successful() ? $response->json('access_token') : null;
+        if ($response->successful() && $response->json('access_token')) {
+            return ['token' => $response->json('access_token'), 'error' => null];
+        }
+
+        $errorMsg = $response->json('message') ?? 'Failed to authenticate with Pathao. Please verify your Pathao credentials and Base URL in Courier Management.';
+        return ['token' => null, 'error' => $errorMsg];
     }
 
     public function getPathaoCities()
     {
         $gateway = PathaoCourier::first();
-        $token = $this->getPathaoToken($gateway);
-        $response = Http::withToken($token)->get($gateway->base_url . '/aladdin/api/v1/cities');
-        return response()->json($response->json('data.data') ?? []);
+        $auth = $this->getPathaoToken($gateway);
+        if (!$auth['token']) {
+            return response()->json(['success' => false, 'message' => $auth['error']], 422);
+        }
+
+        $baseUrl = rtrim($gateway->base_url, '/');
+        $response = Http::withToken($auth['token'])->get($baseUrl . '/aladdin/api/v1/countries/1/city-list');
+        if (!$response->successful()) {
+            $response = Http::withToken($auth['token'])->get($baseUrl . '/aladdin/api/v1/cities');
+        }
+
+        $data = $response->json('data.data') ?? $response->json('data') ?? [];
+        return response()->json(['success' => true, 'data' => $data]);
     }
 
     public function getPathaoZones($cityId)
     {
         $gateway = PathaoCourier::first();
-        $token = $this->getPathaoToken($gateway);
-        $response = Http::withToken($token)->get($gateway->base_url . "/aladdin/api/v1/cities/{$cityId}/zone-list");
-        return response()->json($response->json('data.data') ?? []);
+        $auth = $this->getPathaoToken($gateway);
+        if (!$auth['token']) {
+            return response()->json(['success' => false, 'message' => $auth['error']], 422);
+        }
+
+        $baseUrl = rtrim($gateway->base_url, '/');
+        $response = Http::withToken($auth['token'])->get($baseUrl . "/aladdin/api/v1/cities/{$cityId}/zone-list");
+        $data = $response->json('data.data') ?? $response->json('data') ?? [];
+        return response()->json(['success' => true, 'data' => $data]);
     }
 
     public function getPathaoAreas($zoneId)
     {
         $gateway = PathaoCourier::first();
-        $token = $this->getPathaoToken($gateway);
-        $response = Http::withToken($token)->get($gateway->base_url . "/aladdin/api/v1/zones/{$zoneId}/area-list");
-        return response()->json($response->json('data.data') ?? []);
+        $auth = $this->getPathaoToken($gateway);
+        if (!$auth['token']) {
+            return response()->json(['success' => false, 'message' => $auth['error']], 422);
+        }
+
+        $baseUrl = rtrim($gateway->base_url, '/');
+        $response = Http::withToken($auth['token'])->get($baseUrl . "/aladdin/api/v1/zones/{$zoneId}/area-list");
+        $data = $response->json('data.data') ?? $response->json('data') ?? [];
+        return response()->json(['success' => true, 'data' => $data]);
     }
 
     public function getPathaoStores()
     {
         $gateway = PathaoCourier::first();
-        $token = $this->getPathaoToken($gateway);
-        $response = Http::withToken($token)->get($gateway->base_url . '/aladdin/api/v1/stores');
-        return response()->json($response->json('data.data') ?? []);
+        $auth = $this->getPathaoToken($gateway);
+        if (!$auth['token']) {
+            return response()->json(['success' => false, 'message' => $auth['error']], 422);
+        }
+
+        $baseUrl = rtrim($gateway->base_url, '/');
+        $response = Http::withToken($auth['token'])->get($baseUrl . '/aladdin/api/v1/stores');
+        $data = $response->json('data.data') ?? $response->json('data') ?? [];
+        return response()->json(['success' => true, 'data' => $data]);
     }
 
     /**

@@ -189,11 +189,6 @@
             <i class="bi bi-grid-fill"></i> Dashboard
         </a>
 
-        {{-- My Profile --}}
-        <a class="nav-item-custom {{ request()->routeIs('seller.profile.*') ? 'active' : '' }}" href="{{ route('seller.profile.index') }}">
-            <i class="bi bi-person-bounding-box"></i> My Profile
-        </a>
-
         {{-- Orders Hub --}}
         <div class="nav-item-custom has-sub {{ request()->routeIs('seller.orders.*') ? 'active' : '' }}" data-sub="orders-hub">
             <div class="orders-hub-icon">
@@ -202,30 +197,62 @@
             <span style="font-weight: 600;">Orders Hub</span>
             <i class="bi bi-chevron-down ms-auto"></i>
         </div>
+        @php
+            $sellerAuthId = auth()->id();
+            $sellerOrderCounts = [
+                'all'        => \App\Models\PosInvoice::where('seller_id', $sellerAuthId)->count(),
+                'pending'    => \App\Models\PosInvoice::where('seller_id', $sellerAuthId)->whereHas('order', fn($q) => $q->where('status', 'pending'))->count(),
+                'processing' => \App\Models\PosInvoice::where('seller_id', $sellerAuthId)->whereHas('order', fn($q) => $q->where('status', 'processing'))->count(),
+                'shipped'    => \App\Models\PosInvoice::where('seller_id', $sellerAuthId)->whereHas('order', fn($q) => $q->where('status', 'shipped'))->count(),
+                'delivered'  => \App\Models\PosInvoice::where('seller_id', $sellerAuthId)->whereHas('order', fn($q) => $q->whereIn('status', ['delivered', 'completed']))->count(),
+                'cancelled'  => \App\Models\PosInvoice::where('seller_id', $sellerAuthId)->whereHas('order', fn($q) => $q->where('status', 'cancelled'))->count(),
+            ];
+        @endphp
+
         <div class="nav-submenu nav-submenu-orders" id="sub-orders-hub">
-            <a class="nav-item-custom" href="{{ route('seller.orders.index', 'all') }}">
-                <i class="bi bi-basket"></i> All Orders
+            <a class="nav-item-custom d-flex align-items-center justify-content-between" href="{{ route('seller.orders.index', 'all') }}">
+                <div><i class="bi bi-basket"></i> All Orders</div>
+                <span class="badge rounded-pill bg-secondary" style="font-size:10px;">{{ $sellerOrderCounts['all'] }}</span>
             </a>
-            <a class="nav-item-custom" href="{{ route('seller.orders.index', 'pending') }}">
-                <i class="bi bi-hourglass-split"></i> Pending
+            <a class="nav-item-custom d-flex align-items-center justify-content-between" href="{{ route('seller.orders.index', 'pending') }}">
+                <div><i class="bi bi-hourglass-split"></i> Pending</div>
+                @if($sellerOrderCounts['pending'] > 0)
+                    <span class="badge rounded-pill bg-warning text-dark" style="font-size:10px;">{{ $sellerOrderCounts['pending'] }}</span>
+                @else
+                    <span class="badge rounded-pill bg-light text-muted border" style="font-size:10px;">0</span>
+                @endif
             </a>
-            <a class="nav-item-custom" href="{{ route('seller.orders.index', 'processing') }}">
-                <i class="bi bi-arrow-repeat"></i> Processing
+            <a class="nav-item-custom d-flex align-items-center justify-content-between" href="{{ route('seller.orders.index', 'processing') }}">
+                <div><i class="bi bi-arrow-repeat"></i> Processing</div>
+                @if($sellerOrderCounts['processing'] > 0)
+                    <span class="badge rounded-pill bg-primary" style="font-size:10px;">{{ $sellerOrderCounts['processing'] }}</span>
+                @else
+                    <span class="badge rounded-pill bg-light text-muted border" style="font-size:10px;">0</span>
+                @endif
             </a>
-            <a class="nav-item-custom" href="{{ route('seller.orders.index', 'shipped') }}">
-                <i class="bi bi-truck"></i> Shipped
+            <a class="nav-item-custom d-flex align-items-center justify-content-between" href="{{ route('seller.orders.index', 'shipped') }}">
+                <div><i class="bi bi-truck"></i> Shipped</div>
+                @if($sellerOrderCounts['shipped'] > 0)
+                    <span class="badge rounded-pill bg-info text-dark" style="font-size:10px;">{{ $sellerOrderCounts['shipped'] }}</span>
+                @else
+                    <span class="badge rounded-pill bg-light text-muted border" style="font-size:10px;">0</span>
+                @endif
             </a>
-            <a class="nav-item-custom" href="{{ route('seller.orders.index', 'delivered') }}">
-                <i class="bi bi-check-circle"></i> Delivered
+            <a class="nav-item-custom d-flex align-items-center justify-content-between" href="{{ route('seller.orders.index', 'delivered') }}">
+                <div><i class="bi bi-check-circle"></i> Delivered</div>
+                <span class="badge rounded-pill bg-success" style="font-size:10px;">{{ $sellerOrderCounts['delivered'] }}</span>
             </a>
-            <a class="nav-item-custom" href="{{ route('seller.orders.index', 'cancelled') }}">
-                <i class="bi bi-x-circle"></i> Cancelled
+            <a class="nav-item-custom d-flex align-items-center justify-content-between" href="{{ route('seller.orders.index', 'cancelled') }}">
+                <div><i class="bi bi-x-circle"></i> Cancelled</div>
+                @if($sellerOrderCounts['cancelled'] > 0)
+                    <span class="badge rounded-pill bg-danger" style="font-size:10px;">{{ $sellerOrderCounts['cancelled'] }}</span>
+                @else
+                    <span class="badge rounded-pill bg-light text-muted border" style="font-size:10px;">0</span>
+                @endif
             </a>
             <a class="nav-item-custom" href="{{ route('seller.pos.index') }}">
                 <i class="bi bi-plus-lg"></i> Create Order
             </a>
-
-
         </div>
 
         {{-- POS Management --}}
@@ -376,6 +403,11 @@
             <a class="nav-item-custom" href="{{ route('seller.import-export.product-import') }}">Product Import</a>
             <a class="nav-item-custom" href="{{ route('seller.import-export.gallery-import') }}">Gallery Import</a>
         </div>
+
+        {{-- My Profile --}}
+        <a class="nav-item-custom {{ request()->routeIs('seller.profile.*') ? 'active' : '' }}" href="{{ route('seller.profile.index') }}">
+            <i class="bi bi-person-bounding-box"></i> My Profile
+        </a>
 
     </div>
 

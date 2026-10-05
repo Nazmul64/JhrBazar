@@ -301,36 +301,44 @@ const LiveChatWidget = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '15px', alignItems: 'flex-end', animation: 'slideUp 0.25s ease-out' }}>
 
                     {/* Live Chat */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ backgroundColor: '#fff', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.12)', fontSize: '13px', fontWeight: 'bold', color: '#1e293b' }}>Live Chat</div>
-                        <button onClick={() => { setActiveReceiver(null); setIsOpen(true); setIsMenuOpen(false); }} style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#20c950', color: '#fff', border: 'none', boxShadow: '0 4px 15px rgba(32,201,80,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}>
-                            <MessageSquare size={20} />
-                        </button>
-                    </div>
+                    {(supportSettings?.is_active !== false && supportSettings?.is_active !== 0) && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ backgroundColor: '#fff', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.12)', fontSize: '13px', fontWeight: 'bold', color: '#1e293b' }}>Live Chat</div>
+                            <button onClick={() => { setActiveReceiver(null); setIsOpen(true); setIsMenuOpen(false); }} style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#20c950', color: '#fff', border: 'none', boxShadow: '0 4px 15px rgba(32,201,80,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}>
+                                <MessageSquare size={20} />
+                            </button>
+                        </div>
+                    )}
 
-                    {/* Messenger */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ backgroundColor: '#fff', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.12)', fontSize: '13px', fontWeight: 'bold', color: '#1e293b' }}>Messenger</div>
-                        <a href={supportSettings?.messenger_url || "https://m.me/yourpage"} target="_blank" rel="noreferrer" style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#0084ff', color: '#fff', boxShadow: '0 4px 15px rgba(0,132,255,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', fontSize: '22px', textDecoration: 'none' }}>
-                            <i className="fab fa-facebook-messenger"></i>
-                        </a>
-                    </div>
+                    {/* Messenger (Only if configured) */}
+                    {supportSettings?.messenger_url && supportSettings.messenger_url.trim() !== '' && supportSettings.messenger_url !== 'https://m.me/yourpage' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ backgroundColor: '#fff', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.12)', fontSize: '13px', fontWeight: 'bold', color: '#1e293b' }}>Messenger</div>
+                            <a href={supportSettings.messenger_url.startsWith('http') ? supportSettings.messenger_url : `https://m.me/${supportSettings.messenger_url.replace('@', '')}`} target="_blank" rel="noreferrer" style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#0084ff', color: '#fff', boxShadow: '0 4px 15px rgba(0,132,255,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', fontSize: '22px', textDecoration: 'none' }}>
+                                <i className="fab fa-facebook-messenger"></i>
+                            </a>
+                        </div>
+                    )}
 
-                    {/* WhatsApp */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ backgroundColor: '#fff', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.12)', fontSize: '13px', fontWeight: 'bold', color: '#1e293b' }}>WhatsApp</div>
-                        <a href={`https://wa.me/${supportSettings?.whatsapp_number || "yournumber"}`} target="_blank" rel="noreferrer" style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#25d366', color: '#fff', boxShadow: '0 4px 15px rgba(37,211,102,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', fontSize: '22px', textDecoration: 'none' }}>
-                            <i className="fab fa-whatsapp"></i>
-                        </a>
-                    </div>
+                    {/* WhatsApp (Only if configured) */}
+                    {supportSettings?.whatsapp_number && supportSettings.whatsapp_number.trim() !== '' && supportSettings.whatsapp_number !== '01700000000' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ backgroundColor: '#fff', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.12)', fontSize: '13px', fontWeight: 'bold', color: '#1e293b' }}>WhatsApp</div>
+                            <a href={`https://wa.me/${supportSettings.whatsapp_number.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#25d366', color: '#fff', boxShadow: '0 4px 15px rgba(37,211,102,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', fontSize: '22px', textDecoration: 'none' }}>
+                                <i className="fab fa-whatsapp"></i>
+                            </a>
+                        </div>
+                    )}
 
-                    {/* Call Us */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ backgroundColor: '#fff', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.12)', fontSize: '13px', fontWeight: 'bold', color: '#1e293b' }}>Call Us</div>
-                        <a href={`tel:${supportSettings?.phone_number || settings?.hotline_number || settings?.mobile_number || ''}`} style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#334155', color: '#fff', boxShadow: '0 4px 15px rgba(51,65,85,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', textDecoration: 'none' }}>
-                            <Phone size={18} />
-                        </a>
-                    </div>
+                    {/* Call Us (Only if phone number is configured) */}
+                    {Boolean((supportSettings?.phone_number && supportSettings.phone_number !== '01700000000' ? supportSettings.phone_number : null) || (settings?.hotline_number && settings.hotline_number !== '01700000000' ? settings.hotline_number : null) || (settings?.mobile_number && settings.mobile_number !== '01700000000' ? settings.mobile_number : null)) && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ backgroundColor: '#fff', padding: '6px 14px', borderRadius: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.12)', fontSize: '13px', fontWeight: 'bold', color: '#1e293b' }}>Call Us</div>
+                            <a href={`tel:${(supportSettings?.phone_number && supportSettings.phone_number !== '01700000000' ? supportSettings.phone_number : null) || settings?.hotline_number || settings?.mobile_number}`} style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#334155', color: '#fff', boxShadow: '0 4px 15px rgba(51,65,85,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', textDecoration: 'none' }}>
+                                <Phone size={18} />
+                            </a>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -339,8 +347,20 @@ const LiveChatWidget = () => {
                 <div style={{ position: 'relative' }}>
                     <button
                         onClick={() => {
-                            setIsMenuOpen(!isMenuOpen);
-                            if (isMenuOpen && unreadCount > 0) setUnreadCount(0);
+                            const hasMessenger = Boolean(supportSettings?.messenger_url && supportSettings.messenger_url.trim() !== '' && supportSettings.messenger_url !== 'https://m.me/yourpage');
+                            const hasWhatsApp = Boolean(supportSettings?.whatsapp_number && supportSettings.whatsapp_number.trim() !== '' && supportSettings.whatsapp_number !== '01700000000');
+                            const hasPhone = Boolean((supportSettings?.phone_number && supportSettings.phone_number !== '01700000000' ? supportSettings.phone_number : null) || (settings?.hotline_number && settings.hotline_number !== '01700000000' ? settings.hotline_number : null) || (settings?.mobile_number && settings.mobile_number !== '01700000000' ? settings.mobile_number : null));
+                            const hasExternal = hasMessenger || hasWhatsApp || hasPhone;
+
+                            if (!hasExternal) {
+                                // Direct toggle chat window
+                                setActiveReceiver(null);
+                                setIsOpen(true);
+                                setIsMenuOpen(false);
+                            } else {
+                                setIsMenuOpen(!isMenuOpen);
+                            }
+                            if (unreadCount > 0) setUnreadCount(0);
                         }}
                         aria-label="Support Chat"
                         style={{

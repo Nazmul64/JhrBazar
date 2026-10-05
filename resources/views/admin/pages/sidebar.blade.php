@@ -497,34 +497,73 @@
             <span style="font-weight:600;">Orders Hub</span>
             <i class="bi bi-chevron-right sb-arrow"></i>
         </div>
+        @php
+            $adminOrderCounts = [
+                'all'        => \App\Models\PosInvoice::count(),
+                'pending'    => \App\Models\PosInvoice::whereHas('order', fn($q) => $q->where('status', 'pending'))->count(),
+                'processing' => \App\Models\PosInvoice::whereHas('order', fn($q) => $q->where('status', 'processing'))->count(),
+                'shipped'    => \App\Models\PosInvoice::whereHas('order', fn($q) => $q->where('status', 'shipped'))->count(),
+                'delivered'  => \App\Models\PosInvoice::whereHas('order', fn($q) => $q->whereIn('status', ['delivered', 'completed']))->count(),
+                'cancelled'  => \App\Models\PosInvoice::whereHas('order', fn($q) => $q->where('status', 'cancelled'))->count(),
+                'incomplete' => class_exists(\App\Models\IncompleteOrder::class) ? \App\Models\IncompleteOrder::where('status', 'incomplete')->count() : 0,
+            ];
+        @endphp
+
         <div class="sb-sub {{ request()->routeIs('admin.orders.*') && !request()->routeIs('admin.orders.staff_assignments') && !request()->routeIs('admin.orders.activity_history') ? 'open' : '' }}" id="sub-orders-hub">
             <a class="sb-item {{ request()->routeIs('admin.orders.index') && request()->route('status') == 'all' ? 'active' : '' }}"
                href="{{ route('admin.orders.index', 'all') }}">
                 <span class="sb-icon"><i class="bi bi-basket"></i></span> All Orders
+                <span class="sb-badge" style="background:#64748b;">{{ $adminOrderCounts['all'] }}</span>
             </a>
             <a class="sb-item {{ request()->routeIs('admin.orders.index') && request()->route('status') == 'pending' ? 'active' : '' }}"
                href="{{ route('admin.orders.index', 'pending') }}">
                 <span class="sb-icon"><i class="bi bi-hourglass-split"></i></span> Pending
+                @if($adminOrderCounts['pending'] > 0)
+                    <span class="sb-badge" style="background:#f59e0b;">{{ $adminOrderCounts['pending'] }}</span>
+                @else
+                    <span class="sb-badge" style="background:#cbd5e1; color:#475569;">0</span>
+                @endif
             </a>
             <a class="sb-item {{ request()->routeIs('admin.orders.index') && request()->route('status') == 'processing' ? 'active' : '' }}"
                href="{{ route('admin.orders.index', 'processing') }}">
                 <span class="sb-icon"><i class="bi bi-arrow-repeat"></i></span> Processing
+                @if($adminOrderCounts['processing'] > 0)
+                    <span class="sb-badge" style="background:#3b82f6;">{{ $adminOrderCounts['processing'] }}</span>
+                @else
+                    <span class="sb-badge" style="background:#cbd5e1; color:#475569;">0</span>
+                @endif
             </a>
             <a class="sb-item {{ request()->routeIs('admin.orders.index') && request()->route('status') == 'shipped' ? 'active' : '' }}"
                href="{{ route('admin.orders.index', 'shipped') }}">
                 <span class="sb-icon"><i class="bi bi-truck"></i></span> Shipped
+                @if($adminOrderCounts['shipped'] > 0)
+                    <span class="sb-badge" style="background:#8b5cf6;">{{ $adminOrderCounts['shipped'] }}</span>
+                @else
+                    <span class="sb-badge" style="background:#cbd5e1; color:#475569;">0</span>
+                @endif
             </a>
             <a class="sb-item {{ request()->routeIs('admin.orders.index') && request()->route('status') == 'delivered' ? 'active' : '' }}"
                href="{{ route('admin.orders.index', 'delivered') }}">
                 <span class="sb-icon"><i class="bi bi-check-circle"></i></span> Delivered
+                <span class="sb-badge" style="background:#10b981;">{{ $adminOrderCounts['delivered'] }}</span>
             </a>
             <a class="sb-item {{ request()->routeIs('admin.orders.index') && request()->route('status') == 'cancelled' ? 'active' : '' }}"
                href="{{ route('admin.orders.index', 'cancelled') }}">
                 <span class="sb-icon"><i class="bi bi-x-circle"></i></span> Cancelled
+                @if($adminOrderCounts['cancelled'] > 0)
+                    <span class="sb-badge" style="background:#ef4444;">{{ $adminOrderCounts['cancelled'] }}</span>
+                @else
+                    <span class="sb-badge" style="background:#cbd5e1; color:#475569;">0</span>
+                @endif
             </a>
             <a class="sb-item {{ request()->routeIs('admin.orders.incomplete') ? 'active' : '' }}"
                href="{{ route('admin.orders.incomplete') }}">
                 <span class="sb-icon"><i class="bi bi-clipboard-x"></i></span> Incomplete Orders
+                @if($adminOrderCounts['incomplete'] > 0)
+                    <span class="sb-badge" style="background:#ec4899;">{{ $adminOrderCounts['incomplete'] }}</span>
+                @else
+                    <span class="sb-badge" style="background:#cbd5e1; color:#475569;">0</span>
+                @endif
             </a>
         </div>
 
@@ -550,12 +589,27 @@
         </div>
         @endif
 
+        {{-- Seller Products (Approval & Review) --}}
+        <a class="sb-item {{ request()->routeIs('admin.seller-products.*') ? 'active' : '' }}"
+           href="{{ route('admin.seller-products.index') }}">
+            <span class="sb-icon"><i class="bi bi-box-arrow-in-up-right"></i></span>
+            Seller Products
+            @php $pendingSellerProds = \App\Models\SellerProduct::where('admin_status', 'pending')->count(); @endphp
+            @if($pendingSellerProds > 0)
+                <span class="sb-badge" style="background:#ef4444;">{{ $pendingSellerProds }}</span>
+            @endif
+        </a>
+
         {{-- Refund Management --}}
         @if(auth()->user()->hasPermission('return_order.list'))
         <a class="sb-item {{ request()->routeIs('admin.refunds.*') ? 'active' : '' }}"
            href="{{ route('admin.refunds.index') }}">
             <span class="sb-icon"><i class="bi bi-arrow-return-left"></i></span>
             Refund Management
+            @php $pendingRefunds = \App\Models\Refund::where('refund_status', 'pending')->count(); @endphp
+            @if($pendingRefunds > 0)
+                <span class="sb-badge" style="background:#f59e0b;">{{ $pendingRefunds }}</span>
+            @endif
         </a>
         @endif
 

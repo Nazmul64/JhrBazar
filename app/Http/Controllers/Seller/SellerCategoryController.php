@@ -12,7 +12,7 @@ class SellerCategoryController extends Controller
 {
     public function categories()
     {
-        $categories = Category::orderBy('name', 'asc')->get();
+        $categories = Category::orderBy('id', 'asc')->get();
         return view('seller.categories.index', compact('categories'));
     }
 

@@ -13,9 +13,9 @@ class AdminSupportController extends Controller
         $support = AdminSupport::first();
         if (!$support) {
             $support = AdminSupport::create([
-                'messenger_url' => 'https://m.me/yourpage',
-                'whatsapp_number' => '01700000000',
-                'phone_number' => '01700000000',
+                'messenger_url' => null,
+                'whatsapp_number' => null,
+                'phone_number' => null,
                 'is_active' => true,
             ]);
         }

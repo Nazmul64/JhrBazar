@@ -39,6 +39,28 @@ use Illuminate\Support\Facades\Mail;
 class CheckoutController extends Controller
 {
     /**
+     * Check if any active coupons exist.
+     */
+    public function checkCouponsAvailable()
+    {
+        $hasPromocode = Promocode::where('status', 1)
+            ->where(function($q) {
+                $q->whereNull('start_date')->orWhere('start_date', '<=', now());
+            })
+            ->where(function($q) {
+                $q->whereNull('expired_date')->orWhere('expired_date', '>=', now());
+            })
+            ->exists();
+
+        $hasVoucher = SellerVoucher::where('status', 1)->exists();
+
+        return response()->json([
+            'success'     => true,
+            'has_coupons' => $hasPromocode || $hasVoucher
+        ]);
+    }
+
+    /**
      * Get all active shipping charges.
      */
     public function getShippingCharges()

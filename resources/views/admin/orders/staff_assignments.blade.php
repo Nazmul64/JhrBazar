@@ -550,10 +550,15 @@
                                 </div>
                             </td>
                             <td>
-                                @if($order->order->courier_name)
-                                    <div class="badge bg-soft-success text-success p-2 w-100" style="font-size: 12px;">
+                                @if($order->order?->courier_name)
+                                    <div class="badge bg-soft-success text-success p-2 w-100" style="font-size: 12px; border: 1px solid rgba(12,166,120,0.2);">
                                         <div class="fw-bold"><i class="bi bi-truck me-1"></i>{{ $order->order->courier_name }}</div>
-                                        <div class="mt-1 text-uppercase">{{ $order->order->courier_status }}</div>
+                                        <div class="mt-1 text-uppercase" style="font-size: 11px;">{{ $order->order->courier_status ?? 'Sent' }}</div>
+                                        @if($order->order->steadfast_order_id)
+                                            <div class="mt-1 text-muted" style="font-size: 10px; font-weight: 500;">ID: #{{ $order->order->steadfast_order_id }}</div>
+                                        @elseif($order->order->pathao_consignment_id)
+                                            <div class="mt-1 text-muted" style="font-size: 10px; font-weight: 500;">ID: #{{ $order->order->pathao_consignment_id }}</div>
+                                        @endif
                                     </div>
                                 @else
                                     <span class="text-muted" style="font-size: 12px;">No Courier</span>
@@ -564,11 +569,15 @@
                                     <a href="{{ route('admin.orders.show', $order->id) }}" class="action-btn btn-view" title="View"><i class="bi bi-eye"></i></a>
                                     <button onclick="performFraudCheck('{{ $customerPhone }}')" class="action-btn btn-fraud" title="Fraud Check" style="background: #f59e0b; border: none;"><i class="bi bi-shield-lock-fill"></i></button>
                                     <a href="javascript:void(0)" onclick="generateBulkInvoice([{{ $order->id }}])" class="action-btn btn-edit" title="Invoice" style="background: var(--info);"><i class="bi bi-file-earmark-pdf"></i></a>
-                                    @if(!$order->order->steadfast_order_id)
-                                        <a href="javascript:void(0)" onclick="sendIndividualCourier({{ $order->id }}, 'steadfast')" class="action-btn btn-steadfast" title="Steadfast"><i class="bi bi-truck"></i></a>
+                                    @if(!$order->order?->steadfast_order_id && $order->order?->courier_name !== 'Steadfast')
+                                        <a href="javascript:void(0)" onclick="sendIndividualCourier({{ $order->id }}, 'steadfast')" class="action-btn btn-steadfast" title="Send to Steadfast"><i class="bi bi-truck"></i></a>
+                                    @else
+                                        <span class="action-btn" title="Already sent to Steadfast (ID: {{ $order->order?->steadfast_order_id ?? 'Sent' }})" style="background: #e6fcf5; color: #0ca678; border: 1px solid #0ca678; cursor: default;"><i class="bi bi-check2-circle"></i></span>
                                     @endif
-                                    @if(!$order->order->pathao_consignment_id)
-                                        <a href="javascript:void(0)" onclick="sendIndividualCourier({{ $order->id }}, 'pathao')" class="action-btn btn-pathao" title="Pathao"><i class="bi bi-send"></i></a>
+                                    @if(!$order->order?->pathao_consignment_id && $order->order?->courier_name !== 'Pathao')
+                                        <a href="javascript:void(0)" onclick="sendIndividualCourier({{ $order->id }}, 'pathao')" class="action-btn btn-pathao" title="Send to Pathao"><i class="bi bi-send"></i></a>
+                                    @else
+                                        <span class="action-btn" title="Already sent to Pathao (ID: {{ $order->order?->pathao_consignment_id ?? 'Sent' }})" style="background: #fff5f5; color: #e63946; border: 1px solid #e63946; cursor: default;"><i class="bi bi-check2-circle"></i></span>
                                     @endif
                                     <a href="javascript:void(0)" onclick="deleteOrder({{ $order->id }})" class="action-btn btn-delete" title="Delete"><i class="bi bi-trash"></i></a>
                                 </div>
@@ -821,15 +830,30 @@
 
         fetch(url)
             .then(res => res.json())
-            .then(data => {
+            .then(resData => {
                 const select = document.getElementById(targetId);
                 select.innerHTML = `<option value="">Select ${type.charAt(0).toUpperCase() + type.slice(1, -1)}</option>`;
-                data.forEach(item => {
+
+                if (resData.success === false) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Pathao API Error',
+                        text: resData.message || 'Failed to load data from Pathao API.',
+                        footer: '<a href="{{ route("admin.courier.index") }}" style="color: #4361ee; font-weight: 600;">Go to Courier Management to verify credentials</a>'
+                    });
+                    return;
+                }
+
+                const list = Array.isArray(resData) ? resData : (resData.data || []);
+                list.forEach(item => {
                     const id = item.city_id || item.zone_id || item.area_id || item.store_id;
                     const name = item.city_name || item.zone_name || item.area_name || item.store_name;
                     select.innerHTML += `<option value="${id}">${name}</option>`;
                 });
                 select.disabled = false;
+            })
+            .catch(err => {
+                Swal.fire('Error', 'Failed to connect to Pathao endpoint: ' + err.message, 'error');
             });
     }
 

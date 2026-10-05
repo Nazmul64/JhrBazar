@@ -112,6 +112,9 @@ class SellerOrderHubController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate(['status' => 'required|string']);
+        if ($request->status === 'delivered') {
+            return response()->json(['success' => false, 'message' => 'Sellers cannot mark orders as delivered. Delivery is confirmed by Admin or Courier.'], 403);
+        }
         $invoice = PosInvoice::where('seller_id', Auth::id())->findOrFail($id);
         
         if ($invoice->order) {
@@ -142,14 +145,7 @@ class SellerOrderHubController extends Controller
      */
     public function updatePaymentStatus(Request $request, $id)
     {
-        $request->validate(['payment_status' => 'required|string']);
-        $invoice = PosInvoice::where('seller_id', Auth::id())->findOrFail($id);
-        
-        if ($invoice->order) {
-            $invoice->order->update(['payment_status' => $request->payment_status]);
-            return response()->json(['success' => true, 'message' => 'Payment status updated to ' . ucfirst($request->payment_status)]);
-        }
-        return response()->json(['success' => false, 'message' => 'Order link not found.'], 422);
+        return response()->json(['success' => false, 'message' => 'Payment status can only be updated by Admin.'], 403);
     }
 
     /**
@@ -185,6 +181,9 @@ class SellerOrderHubController extends Controller
             default:
                 if (str_starts_with($action, 'status:')) {
                     $newStatus = str_replace('status:', '', $action);
+                    if ($newStatus === 'delivered') {
+                        return response()->json(['success' => false, 'message' => 'Sellers cannot mark orders as delivered.'], 403);
+                    }
                     foreach ($invoices as $inv) {
                         if ($inv->order) $inv->order->update(['status' => $newStatus]);
                     }
@@ -336,52 +335,104 @@ class SellerOrderHubController extends Controller
             return response()->json(['success' => false, 'message' => 'Pathao Courier is not active or configured.'], 422);
         }
 
-        $token = $this->getPathaoToken($gateway);
-        if (!$token) {
-            return response()->json(['success' => false, 'message' => 'Failed to authenticate with Pathao.'], 422);
+        $auth = $this->getPathaoToken($gateway);
+        if (!$auth['token']) {
+            return response()->json(['success' => false, 'message' => $auth['error']], 422);
         }
+        $token = $auth['token'];
 
         $successCount = 0;
         $errors = [];
+        $baseUrl = rtrim($gateway->base_url ?: 'https://api-hermes.pathao.com', '/');
 
         foreach ($invoices as $inv) {
             if (!$inv->order || $inv->order->pathao_consignment_id) continue;
 
-            $response = Http::withToken($token)->post($gateway->base_url . '/aladdin/api/v1/orders', [
-                'store_id'            => $request->store_id,
-                'merchant_order_id'   => $inv->invoice_number,
-                'recipient_name'      => $inv->customer?->user?->name ?? 'Customer',
-                'recipient_phone'     => $inv->customer?->user?->phone ?? '',
-                'recipient_address'   => $inv->customer?->address ?? 'N/A',
-                'recipient_city'      => $request->city_id,
-                'recipient_zone'      => $request->zone_id,
-                'recipient_area'      => $request->area_id,
+            $cData = $this->resolveOrderCustomerDetails($inv);
+
+            // 1. Sanitize phone: must be 11 digits (e.g. 017xxxxxxxx)
+            $phone = preg_replace('/[^0-9]/', '', (string)$cData['phone']);
+            if (str_starts_with($phone, '8801')) {
+                $phone = substr($phone, 2);
+            } elseif (strlen($phone) === 10 && str_starts_with($phone, '1')) {
+                $phone = '0' . $phone;
+            }
+
+            // 2. Sanitize address: Pathao requires minimum 10 characters
+            $address = trim((string)$cData['address']);
+            if (mb_strlen($address) < 10) {
+                $address = $address . ', Bangladesh';
+            }
+            if (mb_strlen($address) < 10) {
+                $address = 'Delivery Address: ' . $address;
+            }
+
+            $recipientName = trim((string)$cData['name']) ?: 'Customer';
+
+            $payload = [
+                'store_id'            => (int)$request->store_id,
+                'merchant_order_id'   => (string)$inv->invoice_number,
+                'recipient_name'      => $recipientName,
+                'recipient_phone'     => $phone,
+                'recipient_address'   => $address,
+                'recipient_city'      => (int)$request->city_id,
+                'recipient_zone'      => (int)$request->zone_id,
                 'delivery_type'       => 48, // Standard
                 'item_type'           => 2,  // Parcel
-                'special_instruction' => $inv->note ?? '',
-                'item_quantity'       => $inv->total_qty,
+                'special_instruction' => $cData['note'] ?: ($inv->note ?? ''),
+                'item_quantity'       => max(1, (int)$inv->total_qty),
                 'item_weight'         => 0.5,
-                'amount_to_collect'   => $inv->grand_total,
+                'amount_to_collect'   => (float)$inv->grand_total,
                 'item_description'    => 'Order #' . $inv->invoice_number
-            ]);
+            ];
 
-            if ($response->successful() && $response->json('type') == 'success') {
-                $inv->order->update([
-                    'pathao_consignment_id' => $response->json('data.consignment_id'),
-                    'courier_name' => 'Pathao',
-                    'courier_status' => 'sent'
-                ]);
-                $successCount++;
-            } else {
-                $errors[] = "Invoice {$inv->invoice_number}: " . ($response->json('message') ?? 'Unknown Error');
+            if ($request->filled('area_id') && (int)$request->area_id > 0) {
+                $payload['recipient_area'] = (int)$request->area_id;
+            }
+
+            try {
+                $response = Http::withToken($token)->post($baseUrl . '/aladdin/api/v1/orders', $payload);
+
+                if ($response->successful() && ($response->json('type') == 'success' || $response->json('data.consignment_id') || $response->json('order.consignment_id') || $response->json('consignment_id'))) {
+                    $consignmentId = $response->json('data.consignment_id') ?? $response->json('order.consignment_id') ?? $response->json('consignment_id');
+                    $inv->order->update([
+                        'pathao_consignment_id' => $consignmentId,
+                        'courier_name'          => 'Pathao',
+                        'courier_status'        => 'sent'
+                    ]);
+                    $successCount++;
+                } else {
+                    $rawErrors = $response->json('errors');
+                    if (is_array($rawErrors) && count($rawErrors)) {
+                        $errParts = [];
+                        foreach ($rawErrors as $field => $fieldErrors) {
+                            $msg = is_array($fieldErrors) ? implode(', ', $fieldErrors) : (string)$fieldErrors;
+                            $errParts[] = "{$field}: {$msg}";
+                        }
+                        $errText = implode(' | ', $errParts);
+                    } else {
+                        $errText = $response->json('message') ?? ('HTTP ' . $response->status());
+                    }
+                    $errors[] = "Invoice {$inv->invoice_number}: {$errText}";
+                }
+            } catch (\Exception $e) {
+                $errors[] = "Invoice {$inv->invoice_number}: " . $e->getMessage();
             }
         }
 
+        if ($successCount > 0) {
+            return response()->json([
+                'success' => true,
+                'message' => "Successfully sent {$successCount} orders to Pathao." . (count($errors) ? " (Some failed: " . implode('; ', $errors) . ")" : ""),
+                'errors'  => $errors
+            ]);
+        }
+
         return response()->json([
-            'success' => true,
-            'message' => "Successfully sent {$successCount} orders to Pathao.",
-            'errors' => $errors
-        ]);
+            'success' => false,
+            'message' => count($errors) ? implode('; ', $errors) : "No eligible orders were sent to Pathao.",
+            'errors'  => $errors
+        ], 422);
     }
 
     /**
@@ -406,7 +457,17 @@ class SellerOrderHubController extends Controller
      */
     private function getPathaoToken($gateway)
     {
-        $response = Http::post($gateway->base_url . '/aladdin/api/v1/issue-token', [
+        if (!$gateway || !$gateway->status) {
+            return ['token' => null, 'error' => 'Pathao Courier is not active or configured. Please check Courier Management settings.'];
+        }
+
+        if (empty($gateway->client_id) || empty($gateway->client_secret) || empty($gateway->username) || empty($gateway->password)) {
+            return ['token' => null, 'error' => 'Pathao credentials (Client ID, Client Secret, Username, Password) are incomplete.'];
+        }
+
+        $baseUrl = rtrim($gateway->base_url ?? 'https://api-hermes.pathao.com', '/');
+
+        $response = Http::post($baseUrl . '/aladdin/api/v1/issue-token', [
             'client_id'     => $gateway->client_id,
             'client_secret' => $gateway->client_secret,
             'username'      => $gateway->username,
@@ -414,38 +475,71 @@ class SellerOrderHubController extends Controller
             'grant_type'    => $gateway->grant_type ?? 'password',
         ]);
 
-        return $response->successful() ? $response->json('access_token') : null;
+        if ($response->successful() && $response->json('access_token')) {
+            return ['token' => $response->json('access_token'), 'error' => null];
+        }
+
+        $errorMsg = $response->json('message') ?? 'Failed to authenticate with Pathao. Please verify your Pathao credentials and Base URL in Courier Management.';
+        return ['token' => null, 'error' => $errorMsg];
     }
 
     public function getPathaoCities()
     {
         $gateway = PathaoCourier::first();
-        $token = $this->getPathaoToken($gateway);
-        $response = Http::withToken($token)->get($gateway->base_url . '/aladdin/api/v1/cities');
-        return response()->json($response->json('data.data') ?? []);
+        $auth = $this->getPathaoToken($gateway);
+        if (!$auth['token']) {
+            return response()->json(['success' => false, 'message' => $auth['error']], 422);
+        }
+
+        $baseUrl = rtrim($gateway->base_url, '/');
+        $response = Http::withToken($auth['token'])->get($baseUrl . '/aladdin/api/v1/countries/1/city-list');
+        if (!$response->successful()) {
+            $response = Http::withToken($auth['token'])->get($baseUrl . '/aladdin/api/v1/cities');
+        }
+
+        $data = $response->json('data.data') ?? $response->json('data') ?? [];
+        return response()->json(['success' => true, 'data' => $data]);
     }
 
     public function getPathaoZones($cityId)
     {
         $gateway = PathaoCourier::first();
-        $token = $this->getPathaoToken($gateway);
-        $response = Http::withToken($token)->get($gateway->base_url . "/aladdin/api/v1/cities/{$cityId}/zone-list");
-        return response()->json($response->json('data.data') ?? []);
+        $auth = $this->getPathaoToken($gateway);
+        if (!$auth['token']) {
+            return response()->json(['success' => false, 'message' => $auth['error']], 422);
+        }
+
+        $baseUrl = rtrim($gateway->base_url, '/');
+        $response = Http::withToken($auth['token'])->get($baseUrl . "/aladdin/api/v1/cities/{$cityId}/zone-list");
+        $data = $response->json('data.data') ?? $response->json('data') ?? [];
+        return response()->json(['success' => true, 'data' => $data]);
     }
 
     public function getPathaoAreas($zoneId)
     {
         $gateway = PathaoCourier::first();
-        $token = $this->getPathaoToken($gateway);
-        $response = Http::withToken($token)->get($gateway->base_url . "/aladdin/api/v1/zones/{$zoneId}/area-list");
-        return response()->json($response->json('data.data') ?? []);
+        $auth = $this->getPathaoToken($gateway);
+        if (!$auth['token']) {
+            return response()->json(['success' => false, 'message' => $auth['error']], 422);
+        }
+
+        $baseUrl = rtrim($gateway->base_url, '/');
+        $response = Http::withToken($auth['token'])->get($baseUrl . "/aladdin/api/v1/zones/{$zoneId}/area-list");
+        $data = $response->json('data.data') ?? $response->json('data') ?? [];
+        return response()->json(['success' => true, 'data' => $data]);
     }
 
     public function getPathaoStores()
     {
         $gateway = PathaoCourier::first();
-        $token = $this->getPathaoToken($gateway);
-        $response = Http::withToken($token)->get($gateway->base_url . '/aladdin/api/v1/stores');
-        return response()->json($response->json('data.data') ?? []);
+        $auth = $this->getPathaoToken($gateway);
+        if (!$auth['token']) {
+            return response()->json(['success' => false, 'message' => $auth['error']], 422);
+        }
+
+        $baseUrl = rtrim($gateway->base_url, '/');
+        $response = Http::withToken($auth['token'])->get($baseUrl . '/aladdin/api/v1/stores');
+        $data = $response->json('data.data') ?? $response->json('data') ?? [];
+        return response()->json(['success' => true, 'data' => $data]);
     }
 }

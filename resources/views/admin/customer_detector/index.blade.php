@@ -1205,13 +1205,30 @@
 
         fetch(url)
             .then(res => res.json())
-            .then(data => {
+            .then(resData => {
                 const select = document.getElementById(targetId);
                 select.innerHTML = `<option value="">Select ${type.charAt(0).toUpperCase() + type.slice(1, -1)}</option>`;
-                data.forEach(item => {
-                    select.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+
+                if (resData.success === false) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Pathao API Error',
+                        text: resData.message || 'Failed to load data from Pathao API.',
+                        footer: '<a href="{{ route("admin.courier.index") }}" style="color: #4361ee; font-weight: 600;">Go to Courier Management to verify credentials</a>'
+                    });
+                    return;
+                }
+
+                const list = Array.isArray(resData) ? resData : (resData.data || []);
+                list.forEach(item => {
+                    const id = item.city_id || item.zone_id || item.area_id || item.store_id || item.id;
+                    const name = item.city_name || item.zone_name || item.area_name || item.store_name || item.name;
+                    select.innerHTML += `<option value="${id}">${name}</option>`;
                 });
                 select.disabled = false;
+            })
+            .catch(err => {
+                Swal.fire('Error', 'Failed to connect to Pathao endpoint: ' + err.message, 'error');
             });
     }
 

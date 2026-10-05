@@ -137,6 +137,7 @@ const Checkout = () => {
     const [couponDiscount, setCouponDiscount] = useState(0);
     const [couponApplied, setCouponApplied] = useState(false);
     const [applyingCoupon, setApplyingCoupon] = useState(false);
+    const [hasCouponsAvailable, setHasCouponsAvailable] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -180,8 +181,20 @@ const Checkout = () => {
             }
         };
 
+        const checkCoupons = async () => {
+            try {
+                const res = await axios.get('/api/check-coupons-available');
+                if (res.data.success) {
+                    setHasCouponsAvailable(res.data.has_coupons);
+                }
+            } catch (err) {
+                console.error("Error checking coupons", err);
+            }
+        };
+
         fetchShipping();
         fetchGateways();
+        checkCoupons();
     }, []);
 
     // Data Layer: begin_checkout
@@ -901,6 +914,7 @@ const Checkout = () => {
                                     </div>
 
                                     {/* Coupon Section */}
+                                    {hasCouponsAvailable && (
                                     <div className="mb-4">
                                         <label className="form-label small fw-bold text-muted uppercase">Have a coupon?</label>
                                         <div className="input-group">
@@ -926,6 +940,7 @@ const Checkout = () => {
                                             </div>
                                         )}
                                     </div>
+                                    )}
 
                                     <div className="bg-light p-3 rounded-4 mb-4 border">
                                         <div className="d-flex justify-content-between mb-2">

@@ -87,6 +87,9 @@ class ProductControllerController extends Controller
     public function store(Request $request)
     {
         $isUnlimited = $request->boolean('is_unlimited');
+        if ($isUnlimited) {
+            $request->merge(['stock_quantity' => 0]);
+        }
 
         $request->validate([
             'name'                => 'required|string|max:255',
@@ -106,8 +109,8 @@ class ProductControllerController extends Controller
             'stock_quantity'      => $isUnlimited ? 'nullable|integer|min:0' : 'required|integer|min:0',
             'is_unlimited'        => 'nullable|boolean',
             'low_stock_threshold' => 'nullable|integer|min:0',
-            'thumbnail'           => 'required|image|mimes:jpg,jpeg,png,webp,svg,gif|max:10240',
-            'gallery_images.*'    => 'nullable|image|mimes:jpg,jpeg,png,webp,svg,gif|max:10240',
+            'thumbnail'           => 'nullable|file|max:20480',
+            'gallery_images.*'    => 'nullable|file|max:20480',
             'video_type'          => 'nullable|in:file,url,youtube',
             'video_file'          => 'nullable|file|mimes:mp4,avi,mov,wmv|max:51200',
             'video_url'           => 'nullable|string|max:500',
@@ -117,7 +120,7 @@ class ProductControllerController extends Controller
         ]);
 
         // ── Thumbnail → public/uploads/product/ ──
-        $thumbnailPath = $this->saveFile($request->file('thumbnail'));
+        $thumbnailPath = $request->hasFile('thumbnail') ? $this->saveFile($request->file('thumbnail')) : null;
 
         // ── Gallery → public/uploads/product/ ──
         $galleryPaths = [];
@@ -225,6 +228,9 @@ class ProductControllerController extends Controller
     public function update(Request $request, Product $product)
     {
         $isUnlimited = $request->boolean('is_unlimited');
+        if ($isUnlimited) {
+            $request->merge(['stock_quantity' => 0]);
+        }
 
         $request->validate([
             'name'                => 'required|string|max:255',
@@ -245,8 +251,8 @@ class ProductControllerController extends Controller
             'stock_quantity'      => $isUnlimited ? 'nullable|integer|min:0' : 'required|integer|min:0',
             'is_unlimited'        => 'nullable|boolean',
             'low_stock_threshold' => 'nullable|integer|min:0',
-            'thumbnail'           => 'nullable|image|mimes:jpg,jpeg,png,webp,svg,gif|max:10240',
-            'gallery_images.*'    => 'nullable|image|mimes:jpg,jpeg,png,webp,svg,gif|max:10240',
+            'thumbnail'           => 'nullable|file|max:20480',
+            'gallery_images.*'    => 'nullable|file|max:20480',
             'remove_images'       => 'nullable|array',
             'video_type'          => 'nullable|in:file,url,youtube',
             'video_file'          => 'nullable|file|mimes:mp4,avi,mov,wmv|max:51200',
@@ -387,8 +393,33 @@ class ProductControllerController extends Controller
         $product->update(['is_active' => !$product->is_active]);
         Cache::forget('homepage_data_v2');
         Cache::forget('home_data_v2');
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success'   => true,
+                'is_active' => (bool)$product->is_active,
+                'message'   => 'Product status updated.'
+            ]);
+        }
         return redirect()->back()->with('success', 'Product status updated.');
+    }
 
+    public function bulkStatusUpdate(Request $request)
+    {
+        $request->validate([
+            'ids'    => 'required|array',
+            'ids.*'  => 'exists:products,id',
+            'status' => 'required|boolean',
+        ]);
+
+        Product::whereIn('id', $request->ids)->update(['is_active' => $request->status]);
+
+        Cache::forget('homepage_data_v2');
+        Cache::forget('home_data_v2');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status updated for ' . count($request->ids) . ' products.'
+        ]);
     }
 
     // ──────────────────────────────────────────────────────────────

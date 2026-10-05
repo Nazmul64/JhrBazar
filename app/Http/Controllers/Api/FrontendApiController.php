@@ -48,9 +48,9 @@ class FrontendApiController extends Controller
                 ];
             });
 
-            $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('name', 'asc')])
+            $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('id', 'asc')])
                 ->where('is_active', 1)
-                ->orderBy('name', 'asc')
+                ->orderBy('id', 'asc')
                 ->get()
                 ->map(function($cat) {
                     $thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : null;
@@ -228,9 +228,9 @@ class FrontendApiController extends Controller
                 $s->og_image = $s->og_image ? (str_starts_with($s->og_image, 'http') ? $s->og_image : '/' . ltrim($s->og_image, '/')) : null;
             }
 
-            $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('name', 'asc')])
+            $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('id', 'asc')])
                 ->where('is_active', 1)
-                ->orderBy('name', 'asc')
+                ->orderBy('id', 'asc')
                 ->get()
                 ->map(function($cat) {
                     $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : null;
@@ -264,9 +264,9 @@ class FrontendApiController extends Controller
     public function getCategoriesWithSub()
     {
         return Cache::remember('categories_with_sub_v2', 86400, function() {
-            $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('name', 'asc')])
+            $categories = Category::with(['subCategories' => fn($q) => $q->where('is_active', 1)->orderBy('id', 'asc')])
                 ->where('is_active', 1)
-                ->orderBy('name', 'asc')
+                ->orderBy('id', 'asc')
                 ->get()
                 ->map(function($cat) {
                     $cat->thumbnail = $cat->thumbnail ? (str_starts_with($cat->thumbnail, 'http') ? $cat->thumbnail : '/' . ltrim($cat->thumbnail, '/')) : null;

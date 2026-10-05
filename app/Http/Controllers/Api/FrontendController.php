@@ -441,7 +441,7 @@ class FrontendApiController extends Controller
     public function getFooterData(): JsonResponse
     {
         $setting    = GenaralSetting::first();
-        $categories = Category::where('is_active', true)->orderBy('name')->limit(8)->get(['id', 'name', 'slug']);
+        $categories = Category::where('is_active', true)->orderBy('id', 'asc')->limit(8)->get(['id', 'name', 'slug']);
 
         return $this->success([
             'shop_name'      => $setting?->shop_name,
@@ -620,9 +620,9 @@ class FrontendApiController extends Controller
         $baseUrl   = rtrim(config('app.url'), '/');
         $cacheBust = '?v=' . config('app.version', '1.0.0');
 
-        return Category::with(['subCategories' => fn($q) => $q->where('is_active', true)->orderBy('name')])
+        return Category::with(['subCategories' => fn($q) => $q->where('is_active', true)->orderBy('id', 'asc')])
             ->where('is_active', true)
-            ->orderBy('name')
+            ->orderBy('id', 'asc')
             ->get()
             ->map(function ($cat) use ($baseUrl, $cacheBust) {
                 return [

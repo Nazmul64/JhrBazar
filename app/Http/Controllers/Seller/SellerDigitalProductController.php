@@ -37,7 +37,7 @@ class SellerDigitalProductController extends Controller
             'category_id' => 'required|integer',
             'buying_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
-            'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'thumbnail' => 'nullable|file|max:20480',
             'digital_file' => 'nullable|file|max:51200', // 50MB max
         ];
 
@@ -48,7 +48,7 @@ class SellerDigitalProductController extends Controller
         }
         $request->validate($rules);
 
-        $thumbnailPath = $this->saveFile($request->file('thumbnail'));
+        $thumbnailPath = $request->hasFile('thumbnail') ? $this->saveFile($request->file('thumbnail')) : null;
         
         $additionalThumbs = [];
         if ($request->hasFile('additional_thumbnails')) {

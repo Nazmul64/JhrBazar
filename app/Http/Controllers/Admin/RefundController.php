@@ -319,6 +319,8 @@ class RefundController extends \App\Http\Controllers\Controller
             'admin_note' => 'nullable|string|max:1000',
         ]);
 
+        $oldStatus = $refund->refund_status;
+
         DB::beginTransaction();
         try {
             $refund->update([
@@ -326,10 +328,56 @@ class RefundController extends \App\Http\Controllers\Controller
                 'admin_note' => $validated['admin_note'] ?? $refund->admin_note,
             ]);
 
+            // Handle seller balance deduction/reversal upon refund status change
+            $isNewApprovedOrCompleted = in_array($validated['status'], ['approved', 'completed']);
+            $wasApprovedOrCompleted = in_array($oldStatus, ['approved', 'completed']);
+
+            if ($isNewApprovedOrCompleted && !$wasApprovedOrCompleted) {
+                if ($refund->seller_id) {
+                    $seller = \App\Models\User::find($refund->seller_id);
+                    if ($seller) {
+                        $netAmount = (float)$refund->total_amount;
+
+                        $seller->decrement('balance', $netAmount);
+
+                        \App\Models\SellerTransaction::create([
+                            'seller_id'      => $seller->id,
+                            'transaction_id' => 'REF-' . strtoupper(\Illuminate\Support\Str::random(10)),
+                            'type'           => 'refund',
+                            'amount'         => -$refund->total_amount,
+                            'commission'     => 0,
+                            'net_amount'     => -$netAmount,
+                            'status'         => 'completed',
+                            'description'    => 'Refund for Order #' . ($refund->order->invoice->invoice_number ?? $refund->order_id),
+                        ]);
+                    }
+                }
+            } elseif (!$isNewApprovedOrCompleted && $wasApprovedOrCompleted) {
+                if ($refund->seller_id) {
+                    $seller = \App\Models\User::find($refund->seller_id);
+                    if ($seller) {
+                        $netAmount = (float)$refund->total_amount;
+
+                        $seller->increment('balance', $netAmount);
+
+                        \App\Models\SellerTransaction::create([
+                            'seller_id'      => $seller->id,
+                            'transaction_id' => 'REV-REF-' . strtoupper(\Illuminate\Support\Str::random(10)),
+                            'type'           => 'adjustment',
+                            'amount'         => $refund->total_amount,
+                            'commission'     => 0,
+                            'net_amount'     => $netAmount,
+                            'status'         => 'completed',
+                            'description'    => 'Reversal of Refund for Order #' . ($refund->order->invoice->invoice_number ?? $refund->order_id),
+                        ]);
+                    }
+                }
+            }
+
             // Log status change
             \Illuminate\Support\Facades\Log::info("Refund status updated", [
                 'refund_id' => $refund->id,
-                'old_status' => $refund->getOriginal('refund_status'),
+                'old_status' => $oldStatus,
                 'new_status' => $validated['status'],
                 'updated_by' => auth()->id()
             ]);
@@ -350,30 +398,50 @@ class RefundController extends \App\Http\Controllers\Controller
     }
 
     /**
-     * Approve refund
+     * Approve and execute refund with payment method (gateway/wallet/manual)
      */
-    public function approve(Refund $refund): JsonResponse
+    public function approve(Request $request, Refund $refund, \App\Services\RefundExecutionService $service): JsonResponse
     {
-        return $this->updateStatus(request(), $refund);
+        $validated = $request->validate([
+            'refund_method' => 'nullable|in:gateway,wallet,manual',
+            'admin_note'    => 'nullable|string|max:1000',
+            'transaction_id'=> 'nullable|string|max:255',
+        ]);
+
+        try {
+            $method = $validated['refund_method'] ?? ($request->refund_method ?? 'gateway');
+            $service->executeAdminRefund($refund, $method, $validated['admin_note'] ?? null, $validated['transaction_id'] ?? null);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Refund executed successfully. Stock restocked & seller balance adjusted!',
+                'refund'  => $refund
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error executing refund: ' . $e->getMessage()
+            ], 422);
+        }
     }
 
     /**
      * Reject refund
      */
-    public function reject(Request $request, Refund $refund): JsonResponse
+    public function reject(Request $request, Refund $refund, \App\Services\RefundExecutionService $service): JsonResponse
     {
         $validated = $request->validate([
-            'reason' => 'required|string|max:500',
+            'reason'     => 'nullable|string|max:500',
+            'admin_note' => 'nullable|string|max:500',
         ]);
 
-        $refund->update([
-            'refund_status' => 'rejected',
-            'admin_note' => $validated['reason'],
-        ]);
+        $note = $validated['reason'] ?? ($validated['admin_note'] ?? 'Refund rejected by admin');
+        $service->rejectRefund($refund, $note);
 
         return response()->json([
             'success' => true,
             'message' => 'Refund rejected successfully!',
+            'refund'  => $refund
         ]);
     }
 

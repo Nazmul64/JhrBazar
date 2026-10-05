@@ -19,7 +19,8 @@
     .search-input{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:9px 14px;font-size:13px;outline:none;min-width:240px;transition:border-color .15s;color:var(--dark)}
     .search-input:focus{border-color:var(--brand)}
     .btn-search{background:var(--brand);color:#fff;border:none;border-radius:var(--r-sm);padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
-    .alert-ok{background:#f0fdf4;color:#15803d;border-left:3.5px solid #22c55e;border-radius:var(--r-md);padding:12px 16px;font-size:13.5px;margin-bottom:1.2rem;display:flex;align-items:center;gap:9px}
+    .alert-ok{position:fixed;top:24px;right:24px;z-index:9999;background:#f0fdf4;color:#15803d;border-left:4px solid #22c55e;border-radius:var(--r-md);padding:14px 20px;font-size:14px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.15);display:flex;align-items:center;gap:10px;min-width:320px;animation:toastSlideIn .3s cubic-bezier(.16,1,.3,1)}
+    @keyframes toastSlideIn { from { transform: translateX(110%); opacity:0; } to { transform: translateX(0); opacity:1; } }
 
     /* ── Grid ── */
     .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0px}
@@ -345,6 +346,10 @@ function setView(v) {
 }
 document.addEventListener('DOMContentLoaded', function () {
     setView(localStorage.getItem('productView') || 'grid');
+    setTimeout(function() {
+        var alerts = document.querySelectorAll('.alert-ok');
+        alerts.forEach(function(a) { a.style.opacity = '0'; a.style.transition = 'opacity 0.5s'; setTimeout(function(){ a.remove(); }, 500); });
+    }, 4000);
 });
 
 function switchImg(pid, src, el) {

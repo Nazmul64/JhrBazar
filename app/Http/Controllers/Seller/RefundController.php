@@ -71,4 +71,34 @@ class RefundController extends \App\Http\Controllers\Controller
 
         return redirect()->back()->with('success', 'Note added successfully!');
     }
+
+    /**
+     * Seller review & feedback (Approve / Reject product return)
+     */
+    public function review(Request $request, Refund $refund)
+    {
+        if ($refund->seller_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'seller_approval' => 'required|in:approved,rejected',
+            'seller_note'     => 'nullable|string|max:1000',
+        ]);
+
+        $refund->update([
+            'seller_approval' => $validated['seller_approval'],
+            'seller_note'     => $validated['seller_note'] ?? $refund->seller_note,
+        ]);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Seller review recorded successfully.',
+                'refund'  => $refund
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Seller review submitted successfully.');
+    }
 }

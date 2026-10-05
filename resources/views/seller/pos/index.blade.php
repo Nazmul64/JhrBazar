@@ -674,16 +674,23 @@ function placeOrder(status) {
     .then(res => res.json())
     .then(data => {
         if(data.success) {
-            alert(data.message);
-            if(data.invoice_id) {
-                window.open(`{{ url('seller/pos/invoice') }}/${data.invoice_id}`, '_blank');
-            }
             cart = [];
             renderCart();
             closeCheckout();
             loadProducts(1); // Refresh stock
+
+            if (status === 'completed') {
+                const invoiceUrl = data.invoice_url || (data.invoice_id ? `{{ url('seller/pos/invoice') }}/${data.invoice_id}` : null);
+                if (invoiceUrl) {
+                    window.location.href = invoiceUrl;
+                } else {
+                    alert(data.message || 'Order placed successfully!');
+                }
+            } else {
+                alert(data.message || 'Draft saved successfully!');
+            }
         } else {
-            alert(data.message);
+            alert(data.message || 'Failed to place order');
         }
     });
 }

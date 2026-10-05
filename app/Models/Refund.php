@@ -11,6 +11,7 @@ class Refund extends Model
     protected $fillable = [
         'order_id',
         'order_item_id',
+        'customer_id',
         'product_id',
         'seller_id',
         'product_name',
@@ -20,19 +21,31 @@ class Refund extends Model
         'courier_id',
         'cancel_reason',
         'cancel_reason_description',
+        'images',
         'refund_status',
+        'seller_approval',
+        'refund_method',
+        'transaction_id',
         'refund_date',
+        'refunded_at',
         'admin_note',
         'seller_note',
     ];
 
     protected $casts = [
+        'images' => 'array',
         'refund_date' => 'datetime',
+        'refunded_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
     // Relationships
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
+
     public function order(): BelongsTo
     {
         return $this->belongsTo(Pointofsalepo::class, 'order_id');

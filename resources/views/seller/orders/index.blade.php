@@ -230,41 +230,41 @@
 
     {{-- Stats Cards --}}
     <div class="stats-container">
-        <div class="stat-card">
+        <a href="{{ route('seller.orders.index', 'all') }}" class="stat-card text-decoration-none">
             <div class="stat-icon bg-all"><i class="bi bi-cart-fill"></i></div>
             <div class="stat-info">
                 <span class="value">{{ $totalOrders }}</span>
                 <span class="label">Total Orders</span>
             </div>
-        </div>
-        <div class="stat-card">
+        </a>
+        <a href="{{ route('seller.orders.index', 'pending') }}" class="stat-card text-decoration-none">
             <div class="stat-icon bg-pending"><i class="bi bi-clock-history"></i></div>
             <div class="stat-info">
                 <span class="value">{{ $pendingOrders }}</span>
                 <span class="label">Pending</span>
             </div>
-        </div>
-        <div class="stat-card">
+        </a>
+        <a href="{{ route('seller.orders.index', 'processing') }}" class="stat-card text-decoration-none">
             <div class="stat-icon bg-processing"><i class="bi bi-gear-fill"></i></div>
             <div class="stat-info">
                 <span class="value">{{ $processingOrders }}</span>
                 <span class="label">Processing</span>
             </div>
-        </div>
-        <div class="stat-card">
+        </a>
+        <a href="{{ route('seller.orders.index', 'shipped') }}" class="stat-card text-decoration-none">
             <div class="stat-icon bg-shipped"><i class="bi bi-truck"></i></div>
             <div class="stat-info">
                 <span class="value">{{ $shippedOrders }}</span>
                 <span class="label">Shipped</span>
             </div>
-        </div>
-        <div class="stat-card">
+        </a>
+        <a href="{{ route('seller.orders.index', 'delivered') }}" class="stat-card text-decoration-none">
             <div class="stat-icon bg-delivered"><i class="bi bi-check-circle-fill"></i></div>
             <div class="stat-info">
                 <span class="value">{{ $deliveredOrders }}</span>
                 <span class="label">Delivered</span>
             </div>
-        </div>
+        </a>
     </div>
 
     {{-- Filter Pills --}}
@@ -303,7 +303,6 @@
                     <option value="status:pending">Pending</option>
                     <option value="status:processing">Processing</option>
                     <option value="status:shipped">Shipped</option>
-                    <option value="status:delivered">Delivered</option>
                     <option value="status:cancelled">Cancelled</option>
                 </select>
 
@@ -440,12 +439,26 @@
                                 <div class="small text-muted">{{ count($items) }} items</div>
                             </td>
                             <td>
-                                <select class="form-select form-select-sm border-0 bg-light" onchange="updatePaymentStatus({{ $order->id }}, this.value)">
-                                    <option value="pending" {{ ($order->order->payment_status ?? 'pending') == 'pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="paid" {{ ($order->order->payment_status ?? 'pending') == 'paid' ? 'selected' : '' }}>Paid</option>
-                                    <option value="partial" {{ ($order->order->payment_status ?? 'pending') == 'partial' ? 'selected' : '' }}>Partial</option>
-                                    <option value="refunded" {{ ($order->order->payment_status ?? 'pending') == 'refunded' ? 'selected' : '' }}>Refunded</option>
-                                </select>
+                                @php 
+                                    $ps = strtolower($order->order->payment_status ?? ($order->payment_status ?? 'pending')); 
+                                @endphp
+                                @if($ps === 'paid')
+                                    <span class="badge bg-success text-white py-1 px-2 rounded-pill" style="font-size: 11px; font-weight: 700;">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Paid
+                                    </span>
+                                @elseif($ps === 'partial')
+                                    <span class="badge bg-info text-white py-1 px-2 rounded-pill" style="font-size: 11px; font-weight: 700;">
+                                        <i class="bi bi-pie-chart-fill me-1"></i> Partial
+                                    </span>
+                                @elseif($ps === 'refunded')
+                                    <span class="badge bg-danger text-white py-1 px-2 rounded-pill" style="font-size: 11px; font-weight: 700;">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i> Refunded
+                                    </span>
+                                @else
+                                    <span class="badge bg-warning text-dark py-1 px-2 rounded-pill" style="font-size: 11px; font-weight: 700;">
+                                        <i class="bi bi-hourglass-split me-1"></i> Pending
+                                    </span>
+                                @endif
                             </td>
                             <td>
                                 <select class="form-select form-select-sm border-0 bg-light" onchange="assignStaff({{ $order->id }}, this.value)">
@@ -457,31 +470,45 @@
                             </td>
                             <td>
                                 @php $s = $order->order->status ?? 'pending'; @endphp
-                                <select class="form-select form-select-sm status-badge status-{{ $s }}" onchange="updateStatus({{ $order->id }}, this.value)">
-                                    <option value="pending" {{ $s == 'pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="processing" {{ $s == 'processing' ? 'selected' : '' }}>Processing</option>
-                                    <option value="shipped" {{ $s == 'shipped' ? 'selected' : '' }}>Shipped</option>
-                                    <option value="delivered" {{ $s == 'delivered' ? 'selected' : '' }}>Delivered</option>
-                                    <option value="cancelled" {{ $s == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                                </select>
+                                @if($s === 'delivered')
+                                    <span class="badge bg-success py-1.5 px-2.5 rounded-pill fw-bold" style="font-size: 11px; text-transform: uppercase;">
+                                        <i class="bi bi-check2-all me-1"></i> Delivered
+                                    </span>
+                                @else
+                                    <select class="form-select form-select-sm status-badge status-{{ $s }}" onchange="updateStatus({{ $order->id }}, this.value)">
+                                        <option value="pending" {{ $s == 'pending' ? 'selected' : '' }}>Pending</option>
+                                        <option value="processing" {{ $s == 'processing' ? 'selected' : '' }}>Processing</option>
+                                        <option value="shipped" {{ $s == 'shipped' ? 'selected' : '' }}>Shipped</option>
+                                        <option value="cancelled" {{ $s == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                    </select>
+                                @endif
                             </td>
                             <td>
-                                @if($order->order->courier_name)
+                                @if($order->order?->courier_name)
                                     <div class="small fw-bold text-success">{{ $order->order->courier_name }}</div>
-                                    <div class="small text-muted">{{ $order->order->courier_status }}</div>
+                                    <div class="small text-muted text-uppercase" style="font-size: 10px;">{{ $order->order->courier_status ?? 'Sent' }}</div>
+                                    @if($order->order->steadfast_order_id)
+                                        <div class="text-muted" style="font-size: 10px;">ID: #{{ $order->order->steadfast_order_id }}</div>
+                                    @elseif($order->order->pathao_consignment_id)
+                                        <div class="text-muted" style="font-size: 10px;">ID: #{{ $order->order->pathao_consignment_id }}</div>
+                                    @endif
                                 @else
                                     <span class="text-muted small">Not Sent</span>
                                 @endif
                             </td>
                             <td>
-                                <div class="d-flex">
+                                <div class="d-flex gap-1">
                                     <a href="{{ route('seller.orders.show', $order->id) }}" class="action-btn btn-view" title="View"><i class="bi bi-eye"></i></a>
                                     <button onclick="performFraudCheck('{{ $customerPhone }}')" class="action-btn btn-fraud" title="Fraud Check" style="background: #f59e0b; border: none;"><i class="bi bi-shield-lock-fill"></i></button>
-                                    @if(!$order->order->steadfast_order_id)
+                                    @if(!$order->order?->steadfast_order_id && $order->order?->courier_name !== 'Steadfast')
                                         <a href="javascript:void(0)" onclick="sendIndividualCourier({{ $order->id }}, 'steadfast')" class="action-btn btn-steadfast" title="Send to Steadfast"><i class="bi bi-truck"></i></a>
+                                    @else
+                                        <span class="action-btn" title="Already sent to Steadfast (ID: {{ $order->order?->steadfast_order_id ?? 'Sent' }})" style="background: #e6fcf5; color: #0ca678; border: 1px solid #0ca678; cursor: default;"><i class="bi bi-check2-circle"></i></span>
                                     @endif
-                                    @if(!$order->order->pathao_consignment_id)
+                                    @if(!$order->order?->pathao_consignment_id && $order->order?->courier_name !== 'Pathao')
                                         <a href="javascript:void(0)" onclick="sendIndividualCourier({{ $order->id }}, 'pathao')" class="action-btn btn-pathao" style="background: #f72585;" title="Send to Pathao"><i class="bi bi-send"></i></a>
+                                    @else
+                                        <span class="action-btn" title="Already sent to Pathao (ID: {{ $order->order?->pathao_consignment_id ?? 'Sent' }})" style="background: #fff5f5; color: #e63946; border: 1px solid #e63946; cursor: default;"><i class="bi bi-check2-circle"></i></span>
                                     @endif
                                     <a href="javascript:void(0)" onclick="deleteOrder({{ $order->id }})" class="action-btn btn-delete" title="Delete"><i class="bi bi-trash"></i></a>
                                 </div>
@@ -498,8 +525,13 @@
                     </tbody>
                 </table>
             </div>
-            <div class="p-4">
-                {{ $orders->links() }}
+            <div class="px-4 py-3 border-top bg-white d-flex justify-content-between align-items-center flex-wrap gap-2" style="border-bottom-left-radius: var(--radius); border-bottom-right-radius: var(--radius);">
+                <div class="text-muted small">
+                    Showing {{ $orders->firstItem() ?? 0 }} to {{ $orders->lastItem() ?? 0 }} of {{ $orders->total() }} results
+                </div>
+                <div>
+                    {{ $orders->links() }}
+                </div>
             </div>
         </div>
     </div>
@@ -732,15 +764,50 @@
 
         fetch(url)
             .then(res => res.json())
-            .then(data => {
+            .then(resData => {
                 const select = document.getElementById(targetId);
                 select.innerHTML = `<option value="">Select ${type.charAt(0).toUpperCase() + type.slice(1, -1)}</option>`;
-                data.forEach(item => {
-                    const id = item.city_id || item.zone_id || item.area_id || item.store_id;
-                    const name = item.city_name || item.zone_name || item.area_name || item.store_name;
-                    select.innerHTML += `<option value="${id}">${name}</option>`;
-                });
+
+                if (resData.success === false) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Pathao API Error',
+                        text: resData.message || 'Failed to load data from Pathao API.'
+                    });
+                    return;
+                }
+
+                const list = Array.isArray(resData) ? resData : (resData.data || []);
+                if (list.length === 0 && type === 'areas') {
+                    select.innerHTML += `<option value="0">Default Area</option>`;
+                } else {
+                    list.forEach(item => {
+                        let id, name;
+                        if (type === 'stores') {
+                            id = item.store_id;
+                            name = item.store_name;
+                        } else if (type === 'cities') {
+                            id = item.city_id;
+                            name = item.city_name;
+                        } else if (type === 'zones') {
+                            id = item.zone_id;
+                            name = item.zone_name;
+                        } else if (type === 'areas') {
+                            id = item.area_id;
+                            name = item.area_name;
+                        } else {
+                            id = item.id || item.store_id || item.city_id || item.zone_id || item.area_id;
+                            name = item.name || item.store_name || item.city_name || item.zone_name || item.area_name;
+                        }
+                        if (id !== undefined && name !== undefined) {
+                            select.innerHTML += `<option value="${id}">${name}</option>`;
+                        }
+                    });
+                }
                 select.disabled = false;
+            })
+            .catch(err => {
+                Swal.fire('Error', 'Failed to connect to Pathao endpoint: ' + err.message, 'error');
             });
     }
 
@@ -759,10 +826,10 @@
         const storeId = document.getElementById('pathaoStore').value;
         const cityId = document.getElementById('pathaoCity').value;
         const zoneId = document.getElementById('pathaoZone').value;
-        const areaId = document.getElementById('pathaoArea').value;
+        const areaId = document.getElementById('pathaoArea').value || 0;
 
-        if (!storeId || !cityId || !zoneId || !areaId) {
-            Swal.fire('Error', 'Please select all location details.', 'error');
+        if (!storeId || !cityId || !zoneId) {
+            Swal.fire('Error', 'Please select Store, City, and Zone.', 'error');
             return;
         }
 
@@ -793,8 +860,21 @@
                 bootstrap.Modal.getInstance(document.getElementById('pathaoModal')).hide();
                 Swal.fire('Success!', data.message, 'success').then(() => location.reload());
             } else {
-                Swal.fire('Error', data.message, 'error');
+                let errorHtml = `<div class="text-start small">${data.message || 'Failed to send to Pathao'}</div>`;
+                if (data.errors && data.errors.length) {
+                    errorHtml = `<ul class="text-start small mb-0 mt-2 text-danger">` + data.errors.map(e => `<li>${e}</li>`).join('') + `</ul>`;
+                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Pathao Delivery Error',
+                    html: errorHtml
+                });
             }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerHTML = 'Send to Pathao';
+            Swal.fire('Error', 'Network error or server error occurred.', 'error');
         });
     }
 

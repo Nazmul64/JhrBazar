@@ -488,27 +488,39 @@ function posShowFmt($num, $cur) {
                 $custName    = $customer
                     ? trim(($customer->first_name ?? '') . ' ' . ($customer->last_name ?? ''))
                     : ($custUser?->name ?? '');
-                $custPhone   = $custUser?->phone ?? '';
+                $custPhone   = $custUser?->phone ?? ($invoice->order?->phone ?? '');
                 $custEmail   = $custUser?->email ?? '';
-                $custAddress = $customer?->address ?? '';
+                $custAddress = $customer?->address ?? ($custUser?->address ?? '');
 
-                if (!$custName && $invoice->order && $invoice->order->note && str_contains($invoice->order->note, 'Online Order')) {
+                if ($invoice->order && $invoice->order->note && str_contains($invoice->order->note, 'Online Order')) {
                     preg_match('/Name:\s*(.*)/', $invoice->order->note, $nameMatch);
                     preg_match('/Phone:\s*(.*)/', $invoice->order->note, $phoneMatch);
                     preg_match('/Email:\s*(.*)/', $invoice->order->note, $emailMatch);
                     preg_match('/Address:\s*(.*)/', $invoice->order->note, $addressMatch);
                     
-                    $custName = trim($nameMatch[1] ?? 'Walk-in Customer');
-                    $custPhone = trim($phoneMatch[1] ?? ($invoice->order->phone ?? ''));
-                    $custEmail = trim($emailMatch[1] ?? '');
-                    
-                    // The address might include city. If there are other lines after, they won't be captured without multi-line but since they are comma separated it works.
-                    // Address parsing fallback
-                    if (isset($addressMatch[1])) {
+                    if (empty($custName) || $custName === 'Walk-in Customer') {
+                        $custName = trim($nameMatch[1] ?? 'Valued Customer');
+                    }
+                    if (empty($custPhone)) {
+                        $custPhone = trim($phoneMatch[1] ?? ($invoice->order->phone ?? ''));
+                    }
+                    if (empty($custEmail)) {
+                        $custEmail = trim($emailMatch[1] ?? '');
+                    }
+                    if (empty($custAddress) && isset($addressMatch[1])) {
                         $custAddress = trim(explode("\n", $addressMatch[1])[0]);
                     }
                 } elseif (!$custName) {
                     $custName = 'Walk-in Customer';
+                }
+
+                $deliveryCharge = (float)($invoice->delivery_charge ?? ($invoice->order?->delivery_charge ?? 0));
+                if ($deliveryCharge > 100) {
+                    $custArea = 'Outside Dhaka (24-96 Hrs)';
+                } elseif ($deliveryCharge > 0) {
+                    $custArea = 'Inside Dhaka (24-48 Hrs)';
+                } else {
+                    $custArea = 'Standard / Store Pickup';
                 }
             @endphp
             <div class="od-card">
@@ -518,7 +530,7 @@ function posShowFmt($num, $cur) {
                 <div class="od-card-body">
                     <div class="info-row">
                         <span class="info-label">Name:</span>
-                        <span class="info-value">{{ $custName ?: 'Walk-in Customer' }}</span>
+                        <span class="info-value" style="font-weight:600;">{{ $custName ?: 'Walk-in Customer' }}</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Phone:</span>
@@ -536,10 +548,10 @@ function posShowFmt($num, $cur) {
                         <span class="info-value">{{ $custAddress }}</span>
                     </div>
                     @endif
-                    @if($customer?->date_of_birth)
+                    @if($invoice->order?->ip_address)
                     <div class="info-row">
-                        <span class="info-label">DOB:</span>
-                        <span class="info-value">{{ \Carbon\Carbon::parse($customer->date_of_birth)->format('d M Y') }}</span>
+                        <span class="info-label">Order IP:</span>
+                        <span class="info-value" style="color:var(--muted); font-family:monospace;">{{ $invoice->order->ip_address }} {{ $invoice->order->device_type ? '(' . ucfirst($invoice->order->device_type) . ')' : '' }}</span>
                     </div>
                     @endif
                     @if($invoice->note)
@@ -563,8 +575,9 @@ function posShowFmt($num, $cur) {
                     <select class="status-select" id="orderStatusSelect">
                         @php $currentStatus = $invoice->order?->status ?? 'completed'; @endphp
                         <option value="pending"   {{ $currentStatus === 'pending'   ? 'selected' : '' }}>Pending</option>
-                        <option value="completed"  {{ $currentStatus === 'completed'  ? 'selected' : '' }}>Delivered</option>
-                        <option value="draft"      {{ $currentStatus === 'draft'      ? 'selected' : '' }}>Draft</option>
+                        <option value="processing" {{ $currentStatus === 'processing' ? 'selected' : '' }}>Processing</option>
+                        <option value="shipped"    {{ $currentStatus === 'shipped'    ? 'selected' : '' }}>Shipped</option>
+                        <option value="completed"  {{ $currentStatus === 'completed' || $currentStatus === 'delivered' ? 'selected' : '' }}>Delivered</option>
                         <option value="cancelled"  {{ $currentStatus === 'cancelled'  ? 'selected' : '' }}>Cancelled</option>
                     </select>
                 </div>
@@ -588,22 +601,18 @@ function posShowFmt($num, $cur) {
                 <div class="sid-label">Shipping Address</div>
                 <div class="addr-item">
                     <span class="addr-label">Name:</span>
-                    <span class="addr-value">{{ $custName ?: '—' }}</span>
+                    <span class="addr-value" style="font-weight:600;">{{ $custName ?: '—' }}</span>
                 </div>
                 <div class="addr-item">
                     <span class="addr-label">Phone:</span>
                     <span class="addr-value">{{ $custPhone ?: '—' }}</span>
                 </div>
                 <div class="addr-item">
-                    <span class="addr-label">Address Type:</span>
-                    <span class="addr-na">—</span>
+                    <span class="addr-label">Area / Zone:</span>
+                    <span class="addr-value" style="color:var(--accent); font-weight:600;">{{ $custArea }}</span>
                 </div>
                 <div class="addr-item">
-                    <span class="addr-label">Area:</span>
-                    <span class="addr-na">N/A</span>
-                </div>
-                <div class="addr-item">
-                    <span class="addr-label">Address Line:</span>
+                    <span class="addr-label">Address:</span>
                     <span class="addr-value">{{ $custAddress ?: '—' }}</span>
                 </div>
             </div>

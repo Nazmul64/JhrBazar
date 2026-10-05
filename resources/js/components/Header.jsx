@@ -244,7 +244,7 @@ const Header = () => {
                                 style={{ fontSize: '11px', transition: 'all 0.2s' }}
                                 title="Switch to English"
                             >
-                                🇬🇧 English
+                                🇺🇸 English
                             </button>
                         </div>
 

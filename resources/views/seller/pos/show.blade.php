@@ -4,6 +4,42 @@
 @php
     $cur = $settings->default_currency ?? '৳';
     $order = $invoice->order;
+
+    // Resolve customer details robustly
+    $customer = $invoice->customer;
+    $customerUser = $customer?->user;
+    
+    $customerName = $customer
+        ? trim(($customer->first_name ?? '') . ' ' . ($customer->last_name ?? ''))
+        : ($customerUser?->name ?? null);
+    $customerPhone = $customerUser?->phone ?? ($customer?->phone ?? ($order?->phone ?? null));
+    $customerEmail = $customerUser?->email ?? ($customer?->email ?? null);
+    $customerAddress = $customer?->address ?? ($customerUser?->address ?? ($order?->shipping_address ?? ($order?->address ?? null)));
+    $customerIp = $order?->ip_address ?? ($invoice->ip_address ?? 'N/A');
+
+    $note = $invoice->note ?: ($order?->note ?: '');
+    if ($note) {
+        if (!$customerName && preg_match('/Name:\s*([^\r\n]+)/i', $note, $m)) {
+            $customerName = trim($m[1]);
+        }
+        if ((!$customerPhone || $customerPhone === 'N/A') && preg_match('/(?:Phone|Mobile):\s*([0-9\+\-\s]+)/i', $note, $m)) {
+            $customerPhone = trim($m[1]);
+        }
+        if ((!$customerPhone || $customerPhone === 'N/A') && preg_match('/(01[3-9]\d{8})/', $note, $m)) {
+            $customerPhone = trim($m[1]);
+        }
+        if ((!$customerEmail || $customerEmail === 'N/A') && preg_match('/Email:\s*([^\r\n]+)/i', $note, $m)) {
+            $customerEmail = trim($m[1]);
+        }
+        if ((!$customerAddress || $customerAddress === 'N/A') && preg_match('/Address:\s*([^\r\n]+)/i', $note, $m)) {
+            $customerAddress = trim($m[1]);
+        }
+    }
+
+    $customerName = $customerName ?: 'Guest Customer';
+    $customerPhone = $customerPhone ?: 'N/A';
+    $customerEmail = $customerEmail ?: 'N/A';
+    $customerAddress = $customerAddress ?: 'N/A';
 @endphp
 
 <style>
@@ -256,33 +292,41 @@
             <div class="card">
                 <div class="card-header"><h3 class="card-title">Customer Information</h3></div>
                 <div class="card-body">
-                    @if($invoice->customer)
-                        <div class="d-flex align-items-center gap-3 mb-4">
-                            <div style="width:48px; height:48px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-weight:800;">
-                                {{ strtoupper(substr($invoice->customer->first_name, 0, 1)) }}
-                            </div>
-                            <div>
-                                <div class="fw-bold">{{ $invoice->customer->first_name }} {{ $invoice->customer->last_name }}</div>
-                                <div class="text-muted small">Customer ID: #{{ $invoice->customer->id }}</div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="info-label mb-1">Email Address</div>
-                            <div class="info-value">{{ $invoice->customer->user->email ?? 'N/A' }}</div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="info-label mb-1">Phone Number</div>
-                            <div class="info-value">{{ $invoice->customer->user->phone ?? 'N/A' }}</div>
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div style="width:48px; height:48px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px;">
+                            {{ strtoupper(substr($customerName, 0, 1)) }}
                         </div>
                         <div>
-                            <div class="info-label mb-1">Shipping Address</div>
-                            <div class="info-value" style="line-height:1.5;">{{ $invoice->customer->address ?? 'N/A' }}</div>
+                            <div class="fw-bold" style="font-size:15px;">{{ $customerName }}</div>
+                            <div class="text-muted small">
+                                @if($customer)
+                                    Customer ID: #{{ $customer->id }}
+                                @else
+                                    <span class="badge bg-light text-secondary border">Online / Guest Customer</span>
+                                @endif
+                            </div>
                         </div>
-                    @else
-                        <div class="text-center py-4">
-                            <i class="bi bi-person-x" style="font-size:32px; color:var(--muted);"></i>
-                            <p class="mt-2 text-muted">Walk-in Customer</p>
+                    </div>
+                    <div class="mb-3">
+                        <div class="info-label mb-1"><i class="bi bi-telephone me-1"></i> Phone Number</div>
+                        <div class="info-value fw-bold text-dark">{{ $customerPhone }}</div>
+                    </div>
+                    @if($customerEmail !== 'N/A')
+                    <div class="mb-3">
+                        <div class="info-label mb-1"><i class="bi bi-envelope me-1"></i> Email Address</div>
+                        <div class="info-value">{{ $customerEmail }}</div>
+                    </div>
+                    @endif
+                    <div class="mb-3">
+                        <div class="info-label mb-1"><i class="bi bi-geo-alt me-1"></i> Shipping Address</div>
+                        <div class="info-value" style="line-height:1.5;">{{ $customerAddress }}</div>
+                    </div>
+                    @if($customerIp !== 'N/A')
+                    <div class="p-2 rounded bg-light border d-flex align-items-center justify-content-between mt-2">
+                        <div style="font-size:12px; font-weight:600; color:#475569;">
+                            <i class="bi bi-globe me-1 text-primary"></i> IP: {{ $customerIp }}
                         </div>
+                    </div>
                     @endif
                 </div>
             </div>

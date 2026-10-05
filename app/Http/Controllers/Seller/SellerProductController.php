@@ -61,14 +61,18 @@ class SellerProductController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->boolean('is_unlimited')) {
+            $request->merge(['stock_quantity' => 0]);
+        }
+
         $rules = [
             'name' => 'required|string|max:255',
             'category_id' => 'required|integer',
             'frontend_sections' => 'nullable|array',
             'buying_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
-            'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,webp,svg|max:10240',
-            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:10240',
+            'thumbnail' => 'nullable|file|max:20480',
+            'gallery_images.*' => 'nullable|file|max:20480',
         ];
 
         if ($request->video_type === 'upload') {
@@ -131,12 +135,13 @@ class SellerProductController extends Controller
             'online_payment'    => $request->has('online_payment'),
             'is_shipping_charge' => $request->has('is_shipping_charge'),
             'frontend_sections' => $request->frontend_sections ?? null,
-            'is_active'         => true,
+            'admin_status'      => 'pending',
+            'is_active'         => false,
         ]);
 
         Cache::forget('homepage_data_v2');
         Cache::forget('home_data_v2');
-        return redirect()->route('seller.product.index')->with('success', 'Product Created Successfully');
+        return redirect()->route('seller.product.index')->with('success', 'Product submitted successfully. It will be live after Admin approval.');
 
     }
 
@@ -156,6 +161,9 @@ class SellerProductController extends Controller
 
     public function update(Request $request, $id)
     {
+        if ($request->boolean('is_unlimited')) {
+            $request->merge(['stock_quantity' => 0]);
+        }
         $product = SellerProduct::where('seller_id', Auth::id())->findOrFail($id);
 
         $rules = [
@@ -164,8 +172,8 @@ class SellerProductController extends Controller
             'frontend_sections' => 'nullable|array',
             'buying_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:10240',
-            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:10240',
+            'thumbnail' => 'nullable|file|max:20480',
+            'gallery_images.*' => 'nullable|file|max:20480',
         ];
 
         if ($request->video_type === 'upload') {
@@ -247,11 +255,13 @@ class SellerProductController extends Controller
             'online_payment'    => $request->has('online_payment'),
             'is_shipping_charge' => $request->has('is_shipping_charge'),
             'frontend_sections' => $request->frontend_sections ?? null,
+            'admin_status'      => 'pending',
+            'is_active'         => false,
         ]);
 
         Cache::forget('homepage_data_v2');
         Cache::forget('home_data_v2');
-        return redirect()->route('seller.product.index')->with('success', 'Product Updated Successfully');
+        return redirect()->route('seller.product.index')->with('success', 'Product updated and resubmitted for Admin approval.');
 
     }
 
@@ -271,6 +281,11 @@ class SellerProductController extends Controller
     public function toggleStatus($id)
     {
         $product = SellerProduct::where('seller_id', Auth::id())->findOrFail($id);
+
+        if ($product->admin_status !== 'approved') {
+            return redirect()->back()->with('error', 'Cannot activate product until approved by Admin.');
+        }
+
         $product->update(['is_active' => !$product->is_active]);
 
         Cache::forget('homepage_data_v2');

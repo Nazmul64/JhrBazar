@@ -14,11 +14,31 @@ class SellerProduct extends Model
         'stock_quantity', 'thumbnail', 'gallery_images',
         'video_type', 'video',
         'meta_title', 'meta_description', 'meta_keywords',
-        'is_active',
+        'is_active', 'admin_status', 'rejection_reason',
         'is_new_arrival', 'is_best_seller', 'is_hot_product', 'is_flash_sale', 'is_just_for_you', 'is_popular',
         'cash_on_delivery', 'online_payment', 'is_shipping_charge',
         'frontend_sections',
     ];
+
+    public function seller()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'seller_id');
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->admin_status === 'approved';
+    }
+
+    public function isPending(): bool
+    {
+        return $this->admin_status === 'pending';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->admin_status === 'rejected';
+    }
 
     protected $casts = [
         'is_active'      => 'boolean',
